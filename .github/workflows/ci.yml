@@ -37,7 +37,7 @@ jobs:
         run: npm run build
 
   seb-client:
-    name: SEED-SEB Client (Typecheck, Lint & Nitro Build)
+    name: SEED-SEB Client (Typecheck, Lint, Rules Tests & Build)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -62,5 +62,38 @@ jobs:
       - name: ESLint Verification (Strict)
         run: npm run lint
 
+      - name: Automated Security Rules Tests
+        run: npm test
+
       - name: Production Nitro Bundle Build
         run: npm run build
+
+  desktop-runtime:
+    name: Desktop Assessment Engine & Sandbox Tests
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        python-version: ['3.10', '3.11']
+    defaults:
+      run:
+        working-directory: seed-seb/desktop
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Test Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests psutil
+
+      - name: Run Code Executor Sandbox Unit Tests
+        run: python -m unittest test_executor.py -v
+
+      - name: Run Assessment Engine Security & Scored Tests
+        run: python -m unittest test_assessment_engine.py -v
+

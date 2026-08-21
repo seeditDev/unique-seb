@@ -109,7 +109,7 @@ class AssessmentEngine:
             if uid:
                 raw_id = str(uid)
             else:
-                email = self.current_student.get("Email", "")
+                email = self.current_student.get("email") or self.current_student.get("Email", "")
                 if email:
                     raw_id = str(email)
         # Strict alphanumeric + hyphen + underscore only (prevents traversal)

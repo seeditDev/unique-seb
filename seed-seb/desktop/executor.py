@@ -172,6 +172,15 @@ class CodeExecutor:
             if var in env:
                 del env[var]
 
+        # Enforce sandbox network isolation: block outbound web requests by setting dummy unreachable proxy
+        env["http_proxy"] = "http://127.0.0.1:0"
+        env["https_proxy"] = "http://127.0.0.1:0"
+        env["all_proxy"] = "http://127.0.0.1:0"
+        env["HTTP_PROXY"] = "http://127.0.0.1:0"
+        env["HTTPS_PROXY"] = "http://127.0.0.1:0"
+        env["ALL_PROXY"] = "http://127.0.0.1:0"
+        env["NO_PROXY"] = ""
+
         return env
 
     def _execute_javascript(self, run_dir, code, stdin, time_limit):
@@ -408,6 +417,13 @@ class CodeExecutor:
         end_time = time.perf_counter()
         execution_time = end_time - start_time
         
+        # Protect against memory exhaustion from excessive output (truncate at 1MB)
+        MAX_BYTES = 1024 * 1024
+        if stdout and len(stdout) > MAX_BYTES:
+            stdout = stdout[:MAX_BYTES] + "\n... [Output Truncated: Exceeded 1MB limit]"
+        if stderr and len(stderr) > MAX_BYTES:
+            stderr = stderr[:MAX_BYTES] + "\n... [Error Output Truncated: Exceeded 1MB limit]"
+
         return {
             "stdout": stdout,
             "stderr": stderr,
