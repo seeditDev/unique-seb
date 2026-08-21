@@ -5,6 +5,7 @@ import time
 import shutil
 import subprocess
 import tempfile
+import threading
 from runtime_manager import runtime_manager
 
 class CodeExecutor:
@@ -128,13 +129,12 @@ class CodeExecutor:
 
         return result
 
-    def _get_run_env(self, binary_path):
-        """Prepares a sanitized, isolated environment with sensitive credentials and tokens stripped."""
-        # Whitelist safe standard system environment variables
+    def _get_run_env(self, binary_path, run_dir=None):
+        """Prepares a sanitized, isolated environment with sensitive credentials, tokens, and user paths stripped."""
+        # Whitelist only safe minimal system environment variables
         safe_keys = {
-            "SystemRoot", "SYSTEMROOT", "SYSTEMDRIVE", "TEMP", "TMP", "COMSPEC", "PATHEXT",
-            "WINDIR", "USERPROFILE", "HOMEDRIVE", "HOMEPATH", "APPDATA", "LOCALAPPDATA",
-            "PROGRAMDATA", "ALLUSERSPROFILE", "NUMBER_OF_PROCESSORS", "PROCESSOR_ARCHITECTURE",
+            "SystemRoot", "SYSTEMROOT", "SYSTEMDRIVE", "COMSPEC", "PATHEXT",
+            "WINDIR", "NUMBER_OF_PROCESSORS", "PROCESSOR_ARCHITECTURE",
             "OS", "PROCESSOR_IDENTIFIER", "PROCESSOR_LEVEL", "PROCESSOR_REVISION"
         }
         env = {k: v for k, v in os.environ.items() if k in safe_keys or k.upper() in safe_keys}
@@ -143,6 +143,11 @@ class CodeExecutor:
         sys_root = os.environ.get("SystemRoot", os.environ.get("SYSTEMROOT", "C:\\Windows"))
         env["SystemRoot"] = sys_root
         env["SYSTEMROOT"] = sys_root
+
+        # Isolate temporary files strictly to run_dir if provided
+        if run_dir and os.path.exists(run_dir):
+            env["TEMP"] = run_dir
+            env["TMP"] = run_dir
 
         path_additions = []
         if binary_path:
@@ -153,7 +158,6 @@ class CodeExecutor:
                 path_additions.append(arch_bin)
 
         # Retain standard Windows system paths for system DLLs & core executables
-        sys_root = os.environ.get("SystemRoot", "C:\\Windows")
         path_additions.extend([
             os.path.join(sys_root, "System32"),
             sys_root,
@@ -183,24 +187,6 @@ class CodeExecutor:
 
         return env
 
-    def _check_disk_quota(self, run_dir, max_bytes=50*1024*1024, max_files=100):
-        """Validates that the execution run directory does not exceed disk quota or file count limit."""
-        total_size = 0
-        total_files = 0
-        for root, dirs, files in os.walk(run_dir):
-            for f in files:
-                total_files += 1
-                if total_files > max_files:
-                    return False, f"File Count Quota Exceeded (Max {max_files} files)"
-                try:
-                    fp = os.path.join(root, f)
-                    total_size += os.path.getsize(fp)
-                    if total_size > max_bytes:
-                        return False, f"Disk Quota Exceeded (Max {max_bytes // (1024*1024)}MB)"
-                except Exception:
-                    pass
-        return True, None
-
     def _execute_javascript(self, run_dir, code, stdin, time_limit):
         file_path = os.path.join(run_dir, "solution.js")
         
@@ -223,7 +209,12 @@ class CodeExecutor:
             "  _child.spawn = () => _block('Subprocess spawning');\n"
             "  _child.exec = () => _block('Subprocess execution');\n"
             "  _child.execFile = () => _block('Subprocess execFile');\n"
-            "} catch(e) {}\n"
+            "  _child.spawnSync = () => _block('Subprocess spawnSync');\n"
+            "  _child.execSync = () => _block('Subprocess execSync');\n"
+            "} catch(e) {\n"
+            "  console.error('CRITICAL SANDBOX ERROR: Security initialization failed: ' + e.message);\n"
+            "  process.exit(1);\n"
+            "}\n"
         )
         
         with open(file_path, "w", encoding="utf-8") as f:
@@ -240,7 +231,7 @@ class CodeExecutor:
             }
 
         cmd = [node_bin, "solution.js"]
-        env = self._get_run_env(node_bin)
+        env = self._get_run_env(node_bin, run_dir)
         return self._run_process(cmd, run_dir, stdin, time_limit, env=env)
 
     def _execute_python(self, run_dir, code, stdin, time_limit):
@@ -264,8 +255,8 @@ class CodeExecutor:
             "        raise PermissionError(f'Sandbox Security: Subprocess spawning [{event}] is blocked in assessment mode.')\n"
             "try:\n"
             "    _sec_sys.addaudithook(_sec_audit_hook)\n"
-            "except Exception:\n"
-            "    pass\n"
+            "except Exception as _e:\n"
+            "    raise SystemExit(f'CRITICAL SANDBOX ERROR: Security initialization failed: {_e}')\n"
             "# --------------------------------------------\n"
         )
         
@@ -274,20 +265,79 @@ class CodeExecutor:
 
         python_bin = runtime_manager.get_binary_path("python")
         cmd = [python_bin, "solution.py"]
-        env = self._get_run_env(python_bin)
+        env = self._get_run_env(python_bin, run_dir)
         
         return self._run_process(cmd, run_dir, stdin, time_limit, env=env)
+
+    def _check_disk_quota(self, run_dir, max_bytes=50*1024*1024, max_files=100):
+        """Validates that the execution run directory does not exceed disk quota or file count limit."""
+        total_size = 0
+        total_files = 0
+        for root, dirs, files in os.walk(run_dir):
+            for f in files:
+                total_files += 1
+                if total_files > max_files:
+                    return False, f"File Count Quota Exceeded (Max {max_files} files limit exceeded)"
+                try:
+                    fp = os.path.join(root, f)
+                    total_size += os.path.getsize(fp)
+                    if total_size > max_bytes:
+                        return False, f"Disk Quota Exceeded (Max {max_bytes // (1024*1024)}MB limit exceeded)"
+                except Exception:
+                    pass
+        return True, None
+
+    def _write_c_guard_header(self, run_dir):
+        """Creates a security header to block socket and child process spawning in C/C++ without breaking stdlib."""
+        guard_path = os.path.join(run_dir, "sandbox_guard.h")
+        guard_content = (
+            "#ifndef SEED_SANDBOX_GUARD_H\n"
+            "#define SEED_SANDBOX_GUARD_H\n"
+            "#ifdef __cplusplus\n"
+            "#include <cstdlib>\n"
+            "#include <cstdio>\n"
+            "extern \"C\" {\n"
+            "#else\n"
+            "#include <stdlib.h>\n"
+            "#include <stdio.h>\n"
+            "#endif\n"
+            "static inline int __seed_blocked_call(void) { return -1; }\n"
+            "static inline void* __seed_blocked_null(void) { return (void*)0; }\n"
+            "#define socket(...) __seed_blocked_call()\n"
+            "#define connect(...) __seed_blocked_call()\n"
+            "#define WSAStartup(...) (1)\n"
+            "#define getaddrinfo(...) __seed_blocked_call()\n"
+            "#define gethostbyname(...) ((void*)0)\n"
+            "#define system(...) __seed_blocked_call()\n"
+            "#define popen(...) ((FILE*)__seed_blocked_null())\n"
+            "#define _popen(...) ((FILE*)__seed_blocked_null())\n"
+            "#define CreateProcessA(...) (0)\n"
+            "#define CreateProcessW(...) (0)\n"
+            "#define CreateProcess(...) (0)\n"
+            "#define WinExec(...) (0)\n"
+            "#define ShellExecuteA(...) ((void*)0)\n"
+            "#define ShellExecuteW(...) ((void*)0)\n"
+            "#define ShellExecute(...) ((void*)0)\n"
+            "#ifdef __cplusplus\n"
+            "}\n"
+            "#endif\n"
+            "#endif\n"
+        )
+        with open(guard_path, "w", encoding="utf-8") as f:
+            f.write(guard_content)
+        return guard_path
 
     def _execute_c(self, run_dir, code, stdin, time_limit):
         source_path = os.path.join(run_dir, "solution.c")
         exe_path = os.path.join(run_dir, "solution.exe")
+        self._write_c_guard_header(run_dir)
         
         with open(source_path, "w", encoding="utf-8") as f:
             f.write(code)
             
         gcc_bin = runtime_manager.get_binary_path("gcc")
-        compile_cmd = [gcc_bin, "-O2", "-o", exe_path, source_path]
-        env = self._get_run_env(gcc_bin)
+        compile_cmd = [gcc_bin, "-include", "sandbox_guard.h", "-O2", "-o", exe_path, source_path]
+        env = self._get_run_env(gcc_bin, run_dir)
         
         # Compile inside protected run process with 10s compile limit
         compile_res = self._run_process(compile_cmd, run_dir, "", time_limit=10.0, env=env)
@@ -306,13 +356,14 @@ class CodeExecutor:
     def _execute_cpp(self, run_dir, code, stdin, time_limit):
         source_path = os.path.join(run_dir, "solution.cpp")
         exe_path = os.path.join(run_dir, "solution.exe")
+        self._write_c_guard_header(run_dir)
         
         with open(source_path, "w", encoding="utf-8") as f:
             f.write(code)
             
         gpp_bin = runtime_manager.get_binary_path("g++")
-        compile_cmd = [gpp_bin, "-O2", "-std=c++17", "-o", exe_path, source_path]
-        env = self._get_run_env(gpp_bin)
+        compile_cmd = [gpp_bin, "-include", "sandbox_guard.h", "-O2", "-std=c++17", "-o", exe_path, source_path]
+        env = self._get_run_env(gpp_bin, run_dir)
         
         # Compile inside protected run process with 10s compile limit
         compile_res = self._run_process(compile_cmd, run_dir, "", time_limit=10.0, env=env)
@@ -337,7 +388,7 @@ class CodeExecutor:
             
         javac_bin = runtime_manager.get_binary_path("javac")
         compile_cmd = [javac_bin, "-d", ".", "Main.java"]
-        env = self._get_run_env(javac_bin)
+        env = self._get_run_env(javac_bin, run_dir)
         
         # Compile inside protected run process with 15s compile limit
         compile_res = self._run_process(compile_cmd, run_dir, "", time_limit=15.0, env=env)
@@ -350,10 +401,18 @@ class CodeExecutor:
                 "error": f"Compilation Error:\n{compile_res['stderr'] or compile_res['stdout']}"
             }
             
-        # Run
+        # Run with memory cap and network proxy locks
         java_bin = runtime_manager.get_binary_path("java")
-        run_cmd = [java_bin, "-Xmx128m", "-Xms16m", "-cp", ".", "Main"]
-        env_run = self._get_run_env(java_bin)
+        run_cmd = [
+            java_bin,
+            "-Xmx128m", "-Xms16m",
+            "-Djava.net.preferIPv4Stack=true",
+            "-Dhttp.proxyHost=127.0.0.1", "-Dhttp.proxyPort=0",
+            "-Dhttps.proxyHost=127.0.0.1", "-Dhttps.proxyPort=0",
+            "-Djava.awt.headless=true",
+            "-cp", ".", "Main"
+        ]
+        env_run = self._get_run_env(java_bin, run_dir)
         return self._run_process(run_cmd, run_dir, stdin, time_limit, env=env_run)
 
     def _run_process(self, cmd, run_dir, stdin, time_limit, env=None):
@@ -420,6 +479,44 @@ class CodeExecutor:
                 except Exception:
                     pass
             
+            # Start real-time active disk & file count quota monitor
+            stop_monitor = threading.Event()
+            quota_violated = threading.Event()
+            quota_reason = [""]
+
+            def _active_disk_monitor():
+                while not stop_monitor.is_set():
+                    total_size = 0
+                    total_files = 0
+                    try:
+                        for root, dirs, files in os.walk(run_dir):
+                            total_files += len(files)
+                            if total_files > 100:
+                                quota_reason[0] = "File Count Quota Exceeded (Max 100 files limit exceeded during execution)"
+                                quota_violated.set()
+                                try:
+                                    proc.kill()
+                                except Exception:
+                                    pass
+                                return
+                            for f in files:
+                                fp = os.path.join(root, f)
+                                total_size += os.path.getsize(fp)
+                                if total_size > 50 * 1024 * 1024:
+                                    quota_reason[0] = "Disk Quota Exceeded (50MB limit exceeded during execution)"
+                                    quota_violated.set()
+                                    try:
+                                        proc.kill()
+                                    except Exception:
+                                        pass
+                                    return
+                    except Exception:
+                        pass
+                    stop_monitor.wait(0.04) # Check every 40ms
+
+            monitor_thread = threading.Thread(target=_active_disk_monitor, daemon=True)
+            monitor_thread.start()
+
             try:
                 stdout, stderr = proc.communicate(input=stdin, timeout=time_limit)
                 exit_code = proc.returncode
@@ -443,6 +540,7 @@ class CodeExecutor:
         except Exception as e:
             error_msg = f"Runtime execution error: {str(e)}"
         finally:
+            stop_monitor.set()
             if job and sys.platform == "win32":
                 try:
                     import ctypes
@@ -453,11 +551,15 @@ class CodeExecutor:
         end_time = time.perf_counter()
         execution_time = end_time - start_time
         
-        # Check disk quota and file count quota
-        quota_ok, quota_err = self._check_disk_quota(run_dir)
-        if not quota_ok:
-            error_msg = quota_err
+        # If quota was actively violated during execution or after execution, flag error
+        if quota_violated.is_set():
+            error_msg = quota_reason[0]
             exit_code = -1
+        else:
+            quota_ok, post_err = self._check_disk_quota(run_dir)
+            if not quota_ok:
+                error_msg = post_err
+                exit_code = -1
         
         # Protect against memory exhaustion from excessive output (truncate at 1MB)
         MAX_BYTES = 1024 * 1024

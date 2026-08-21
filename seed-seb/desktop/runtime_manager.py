@@ -89,24 +89,50 @@ class RuntimeManager:
             print(f"  {lang}: {path} ({status})")
 
     def verify_resources(self):
-        """Verifies that all packaged local compilers are present and computes checksums."""
+        """Verifies that all packaged local compilers are present and accessible."""
         required_binaries = [
-            self.binaries.get("gcc"),
-            self.binaries.get("javac"),
-            self.binaries.get("python"),
-            self.binaries.get("node")
+            ("gcc", self.binaries.get("gcc")),
+            ("g++", self.binaries.get("g++")),
+            ("javac", self.binaries.get("javac")),
+            ("java", self.binaries.get("java")),
+            ("python", self.binaries.get("python")),
+            ("node", self.binaries.get("node"))
         ]
 
         missing = []
-        for path in required_binaries:
+        for name, path in required_binaries:
             if not path or not os.path.exists(path):
-                missing.append(str(path))
+                missing.append(f"{name} ({path})")
 
         if missing:
-            print(f"[RuntimeManager] ERROR: Missing compiled resources: {missing}")
+            print(f"[RuntimeManager] ERROR: Missing required compiled resources: {missing}")
             return False
 
         return True
+
+    def verify_runtime_integrity(self, expected_manifest=None):
+        """Validates cryptographic SHA-256 checksums of all runtime binaries against an expected manifest."""
+        if not expected_manifest:
+            # Generate baseline hashes for present runtimes
+            current_hashes = {}
+            for name, path in self.binaries.items():
+                if path and os.path.exists(path):
+                    current_hashes[name] = self.compute_sha256(path)
+            return True, current_hashes
+
+        mismatches = []
+        for name, expected_hash in expected_manifest.items():
+            path = self.binaries.get(name)
+            if not path or not os.path.exists(path):
+                mismatches.append(f"{name}: binary missing at {path}")
+                continue
+            actual_hash = self.compute_sha256(path)
+            if actual_hash.lower() != expected_hash.lower():
+                mismatches.append(f"{name}: hash mismatch (expected {expected_hash[:12]}..., got {actual_hash[:12]}...)")
+
+        if mismatches:
+            return False, mismatches
+        return True, "All runtime binaries verified against cryptographic manifest."
 
     def get_binary_path(self, binary_name):
         path = self.binaries.get(binary_name, binary_name)

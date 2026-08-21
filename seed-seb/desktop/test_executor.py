@@ -222,7 +222,60 @@ print("FILES_CREATED")
         self.assertIn("File Count Quota Exceeded", str(res.get("error", "")))
         print("File Count Quota enforcement verified.")
 
+    def test_c_socket_and_system_blocked(self):
+        print("Testing Native C socket and system command blocking...")
+        if not os.path.exists(runtime_manager.get_binary_path("gcc")):
+            self.skipTest("GCC not found; skipping C security test.")
+        code = """
+#include <stdio.h>
+int main() {
+    int s = socket(2, 1, 0);
+    int sys_res = system("cmd.exe");
+    printf("SOCKET_RES:%d SYS_RES:%d", s, sys_res);
+    return 0;
+}
+"""
+        res = code_executor.execute("c", code, time_limit=3.0)
+        self.assertIsNone(res["error"])
+        self.assertEqual(res["exit_code"], 0)
+        self.assertIn("SOCKET_RES:-1 SYS_RES:-1", res["stdout"].strip())
+        print("Native C socket and system command blocking verified.")
+
+    def test_cpp_network_and_process_blocked(self):
+        print("Testing Native C++ network and process blocking...")
+        if not os.path.exists(runtime_manager.get_binary_path("g++")):
+            self.skipTest("G++ not found; skipping C++ security test.")
+        code = """
+#include <iostream>
+int main() {
+    int c = connect(0, NULL, 0);
+    int wsa = WSAStartup(0, NULL);
+    std::cout << "CONNECT_RES:" << c << " WSA_RES:" << wsa;
+    return 0;
+}
+"""
+        res = code_executor.execute("c++", code, time_limit=3.0)
+        self.assertIsNone(res["error"])
+        self.assertEqual(res["exit_code"], 0)
+        self.assertIn("CONNECT_RES:-1 WSA_RES:1", res["stdout"].strip())
+        print("Native C++ network and process blocking verified.")
+
+    def test_runtime_integrity_manifest_verification(self):
+        print("Testing Cryptographic Runtime Integrity Manifest...")
+        # 1. Baseline verification returns true
+        ok, current_hashes = runtime_manager.verify_runtime_integrity()
+        self.assertTrue(ok)
+        self.assertIsInstance(current_hashes, dict)
+        
+        # 2. Tampered hash in manifest triggers verification failure
+        tampered_manifest = {k: "0000000000000000000000000000000000000000000000000000000000000000" for k in current_hashes.keys()}
+        ok_tampered, errors = runtime_manager.verify_runtime_integrity(tampered_manifest)
+        self.assertFalse(ok_tampered)
+        self.assertTrue(len(errors) > 0)
+        print("Cryptographic Runtime Integrity Manifest verified.")
+
 if __name__ == "__main__":
     unittest.main()
+
 
 
