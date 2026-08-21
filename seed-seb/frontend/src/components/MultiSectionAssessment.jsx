@@ -1051,63 +1051,73 @@ const MultiSectionAssessment = () => {
       
       const allViolations = proctoringData.violations;
 
-      const rawAttemptData = {
-        email: effectiveUser.email, rollNumber: effectiveUser.rollNumber ?? '', name: effectiveUser.name ?? '',
-        college, year, department: effectiveUser.department ?? '',
-        assessmentId: effectiveAssessment.id, assessmentTitle: effectiveAssessment.name,
-        assessmentId: effectiveAssessment.id, assessmentTitle: effectiveAssessment.name,
-        startedAt: startedAt,
-        submittedAt: serverTimestamp(), submittedAt: new Date().toISOString(),
-        type: 'multisection',
-        sections: examResults,
+      const userId = auth?.currentUser?.uid || effectiveUser?.uid;
+      if (!userId) {
+        throw new Error('[MSA] autoSubmitEntireExam: not authenticated, refusing Firestore write.');
+      }
+      const tenantId = effectiveUser?.tenantId || user?.tenantId;
+      if (!tenantId) {
+        throw new Error('[MSA] autoSubmitEntireExam: missing tenantId, refusing Firestore write.');
+      }
+
+      const attemptData = buildResultDoc({
+        user: {
+          uid: userId,
+          email: effectiveUser.email || '',
+          name: effectiveUser.name || '',
+          rollNumber: effectiveUser.rollNumber || '',
+          tenantId: tenantId,
+          college: effectiveUser.college || '',
+          department: effectiveUser.department || '',
+          year: effectiveUser.year || '',
+          cohortId: effectiveUser.cohortId || '',
+        },
+        assessment: {
+          id: effectiveAssessment.id,
+          title: effectiveAssessment.name || effectiveAssessment.title || '',
+          assessmentType: 'multi_section',
+        },
+        scores: {
+          totalScore,
+          maxScore: totalMarksSum,
+          percentage: totalMarksSum > 0 ? Math.min(100, Math.round(pct * 100)) : 0,
+          passed: totalMarksSum > 0 && (totalScore / totalMarksSum >= 0.5),
+        },
+        timing: {
+          startedAt: startedAt,
+          timeTakenSeconds: timeTaken,
+        },
+        submission: {
+          autoSubmitted: true,
+          submissionReason: reason || 'proctoring_violations',
+        },
         sections: sectionsList,
         questions: aggregatedQuestions,
-        coding: aggregatedCoding,
-        maxScore: totalMarksSum,
-        totalScore: totalScore,
-        totalQuestions: totalQ,
-        correctAnswers: totalScore,
-        incorrectAnswers: totalQ - totalScore,
-        percentage: totalMarksSum > 0 ? Math.min(100, Math.round(pct * 100)) : 0,
-        partialScore,
-        fullScore,
-        timeTaken: timeTakenFormatted,
-        timeTakenSeconds: timeTaken,
-        violationCount: totalViolations,
-        totalNoFace,
-        totalMultipleFaces,
-        violations: allViolations,
-        completed: true,
-        status: 'submitted',
-        autoSubmitted: true,
-        autoSubmitReason: reason || 'proctoring_violations'
-      };
+        codingSubmissions: aggregatedCoding,
+        proctoring: {
+          violationCount: totalViolations,
+          totalNoFace,
+          totalMultipleFaces,
+          violations: allViolations,
+        },
+      });
 
-      const attemptData = buildResultDoc(rawAttemptData);
+      const v2DocPath = `assessmentResults/${tenantId}/${effectiveAssessment.id}/${userId}`;
 
-      const userId = auth?.currentUser?.uid || effectiveUser?.uid || null;
-      if (!userId) {
-        console.error('[MSA] autoSubmitEntireExam: not authenticated, refusing Firestore write.');
-      } else {
-        const tenantId = effectiveUser?.tenantId || 'SEED-SEB';
-        const v2DocPath = `assessmentResults/${tenantId}/${effectiveAssessment.id}/${userId}`;
-
-        // SECTION 13: Final submission MUST be reliable. Await the write.
-        // On failure: save pending envelope for recovery on next login.
-        try {
-          await setDoc(doc(db, v2DocPath), attemptData, { merge: true });
-          console.log('[MSA] Final result saved to Firestore canonical path');
-        } catch (writeErr) {
-          console.error('[MSA] Final Firestore write failed — preserving pending envelope:', writeErr);
-          const envKey = `msa_pending_submission_${userId}_${effectiveAssessment.id}`;
-          savePendingEnvelope(envKey, {
-            uid: userId,
-            assessmentId: effectiveAssessment.id,
-            resultPayload: attemptData,
-            savedAt: new Date().toISOString(),
-            retryCount: 0,
-          }).catch(() => {});
-        }
+      // Final submission write
+      try {
+        await setDoc(doc(db, v2DocPath), attemptData);
+        console.log('[MSA] Final result saved to Firestore canonical path:', v2DocPath);
+      } catch (writeErr) {
+        console.error('[MSA] Final Firestore write failed — preserving pending envelope:', writeErr);
+        const envKey = `msa_pending_submission_${userId}_${effectiveAssessment.id}`;
+        savePendingEnvelope(envKey, {
+          uid: userId,
+          assessmentId: effectiveAssessment.id,
+          resultPayload: attemptData,
+          savedAt: new Date().toISOString(),
+          retryCount: 0,
+        }).catch(() => {});
       }
     }
 
@@ -1891,74 +1901,76 @@ const MultiSectionAssessment = () => {
           .filter(Boolean)
           .join(', ');
 
-        const rawAttemptData = {
-          email: user?.email ?? '', rollNumber: user?.rollNumber || '', name: user?.name ?? '',
-          college, year, department: user?.department ?? '',
-          assessmentId: assessment.id, assessmentTitle: assessment.name,
-          assessmentId: assessment.id, assessmentTitle: assessment.name,
-          // P1-02: deterministic attemptId = assessmentId_uid_startEpochMs
-          // Allows future attempt history lookup without changing the doc path.
-          attemptId: `${assessment.id}_${auth?.currentUser?.uid ?? ''}_${new Date(startedAt).getTime()}`,
-          startedAt: startedAt,
-          startedAtISO: startedAt,
-          submittedAt: serverTimestamp(), submittedAt: timeEndedISO,
-          type: 'multisection',
-          sections: updatedResults,
+        const userId = auth?.currentUser?.uid || user?.uid;
+        if (!userId) {
+          throw new Error('[MSA] handleFinalSubmit: not authenticated, refusing Firestore write.');
+        }
+        const tenantId = user?.tenantId || tenant?.tenantId;
+        if (!tenantId) {
+          throw new Error('[MSA] handleFinalSubmit: missing tenantId, refusing Firestore write.');
+        }
+
+        const attemptData = buildResultDoc({
+          user: {
+            uid: userId,
+            email: user?.email || '',
+            name: user?.name || '',
+            rollNumber: user?.rollNumber || '',
+            tenantId: tenantId,
+            college: user?.college || '',
+            department: user?.department || '',
+            year: user?.year || '',
+            cohortId: user?.cohortId || '',
+          },
+          assessment: {
+            id: assessment.id,
+            title: assessment.name || assessment.title || '',
+            assessmentType: 'multi_section',
+          },
+          scores: {
+            totalScore,
+            maxScore: totalMarksSum,
+            percentage: totalMarksSum > 0 ? Math.min(100, Math.round(pct * 100)) : 0,
+            passed: totalMarksSum > 0 && (totalScore / totalMarksSum >= 0.5),
+          },
+          timing: {
+            startedAt: startedAt,
+            timeTakenSeconds: timeTaken,
+          },
+          submission: {
+            autoSubmitted: Boolean(autoSubmitted),
+            submissionReason: autoSubmitReason || 'manual',
+          },
           sections: sectionsList,
           questions: aggregatedQuestions,
-          coding: aggregatedCoding,
-          spokenEnglish: aggregatedSpokenEnglish.length > 0 ? aggregatedSpokenEnglish[0] : null,
-          sea: aggregatedSpokenEnglish.length > 0 ? aggregatedSpokenEnglish[0] : null,
-          maxScore: totalMarksSum,
-          totalScore: totalScore,
-          totalQuestions: totalQ,
-          correctAnswers: totalScore,
-          incorrectAnswers: totalQ - totalScore,
-          percentage: totalMarksSum > 0 ? Math.min(100, Math.round(pct * 100)) : 0,
-          partialScore,
-          fullScore,
-          timeTaken: timeTakenFormatted,
-          timeTakenSeconds: timeTaken,
-          violationCount: totalViolations,
-          totalNoFace,
-          totalMultipleFaces,
-          violations: allViolations,
-          completed: true,
-          status: 'submitted',
-          autoSubmitted,
-          autoSubmitReason
-        };
+          codingSubmissions: aggregatedCoding,
+          proctoring: {
+            violationCount: totalViolations,
+            totalNoFace,
+            totalMultipleFaces,
+            violations: allViolations,
+          },
+        });
 
-        const attemptData = buildResultDoc(rawAttemptData);
+        const v2DocPath = `assessmentResults/${tenantId}/${assessment.id}/${userId}`;
 
-        const userId = auth?.currentUser?.uid;
-        if (!userId) {
-          console.error('[MSA] autoSubmitSection final: not authenticated, refusing Firestore write.');
-        } else {
-          let rawTid = String(user?.tenantId || (tenant?.tenantId  ?? '')).trim();
-          if (!rawTid || rawTid.includes(' ')) {
-            rawTid = 'SEED-SEB';
-          }
-          const v2DocPath = `assessmentResults/${rawTid}/${assessment.id}/${userId}`;
-
-          try {
-            await setDoc(doc(db, v2DocPath), attemptData, { merge: true });
-            console.log('[MSA] Final result saved to Firestore canonical path');
-          } catch (writeErr) {
-            console.error('[MSA] handleFinalSubmit: Firestore write failed — preserving pending envelope:', writeErr);
-            const envKey = `msa_pending_submission_${userId}_${assessment.id}`;
-            savePendingEnvelope(envKey, {
-              uid: userId,
-              assessmentId: assessment.id,
-              resultPayload: attemptData,
-              savedAt: new Date().toISOString(),
-              retryCount: 0,
-            }).catch(() => {});
-            toast.error(
-              ' Submission saved — please reconnect. Your answers are safe and will sync automatically.',
-              { duration: 8000 }
-            );
-          }
+        try {
+          await setDoc(doc(db, v2DocPath), attemptData);
+          console.log('[MSA] Final result saved to Firestore canonical path:', v2DocPath);
+        } catch (writeErr) {
+          console.error('[MSA] handleFinalSubmit: Firestore write failed — preserving pending envelope:', writeErr);
+          const envKey = `msa_pending_submission_${userId}_${assessment.id}`;
+          savePendingEnvelope(envKey, {
+            uid: userId,
+            assessmentId: assessment.id,
+            resultPayload: attemptData,
+            savedAt: new Date().toISOString(),
+            retryCount: 0,
+          }).catch(() => {});
+          toast.error(
+            ' Submission saved — please reconnect. Your answers are safe and will sync automatically.',
+            { duration: 8000 }
+          );
         }
 
         setExamFinished(true);

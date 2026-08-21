@@ -1434,55 +1434,71 @@ const MCQPage = ({ isEmbedded = false, testData = null, secTimer = 0, onSectionS
 
             const questionsDetails = (currentTest.questions || []).map((q, idx) => {
                 const selectedIdx = answers[idx];
-                const selectedAnswer = selectedIdx !== undefined ? (q.options?.[selectedIdx] ?? '') : '';
+                const selectedAnswer = selectedIdx !== undefined ? (q.options?.[selectedIdx] || '') : '';
                 const isCorrect = selectedAnswer === q.correctAnswer;
                 const timeSpent = timeSpentPerQ[idx] || 0;
                 return {
                     questionNumber: idx + 1,
-                    questionText: q.question || (q.text  ?? ''),
+                    questionText: q.question || q.text || '',
                     difficulty: (q.difficulty || currentTest.difficulty || 'medium').toLowerCase(),
-                    topic: q.topic || q.tag || (q.tags ? (Array.isArray(q.tags) ? q.tags[0] : q.tags) : 'General'),
-                    tags: Array.isArray(q.tags) ? q.tags : (q.tags ? [q.tags] : (q.topic ? [q.topic] : ['General'])),
+                    topic: q.topic || q.tag || (Array.isArray(q.tags) ? q.tags[0] : (q.tags || 'General')),
+                    tags: Array.isArray(q.tags) ? q.tags : (q.tags ? [q.tags] : [q.topic || 'General']),
                     isCorrect,
                     selectedAnswer,
-                    correctAnswer: q.correctAnswer ?? '',
+                    correctAnswer: q.correctAnswer || '',
                     timeSpent
                 };
             });
 
-            const rawResultData = {
-                email: user.email ?? '',
-                college: user.college ?? '',
-                year: user.year ?? '',
-                department: user.department ?? '',
-                rollNumber: user.rollNumber ?? '',
-                name: user.name ?? '',
-                tenantId: user.tenantId ?? '',
-                cohortId: user.cohortId || (user.CohortId  ?? ''),
-                assessmentID: currentTest.testInfo?.id || currentTest.id || 'unknown',
-                assessmentTitle: currentTest.name || currentTest.testInfo?.name || 'Unknown Test',
-                testType: 'mcq',
-                score: correctAnswers,
-                totalQuestions: totalQuestions,
-                correctAnswers: correctAnswers,
-                incorrectAnswers: incorrectAnswers,
-                maxScore: totalQuestions,
-                percentage: percentage,
-                timeTakenSeconds: timeTaken,
-                startedAt: teststartedAt || timeService.getNow().toISOString(),
-                submittedAt: timeService.getNow().toISOString(),
-                answers: answers,
-                questions: questionsDetails,
-                timeSpentPerQ: timeSpentPerQ,
-                autoSubmitted: currentTest.autoSubmitted || false,
-                autoSubmitReason: '',
-                violationCount: finalViolationCount,
-                totalNoFace: violationStats.totalNoFace || 0,
-                totalMultipleFaces: violationStats.totalMultipleFaces || 0,
-                violations: allViolations
-            };
+            const targetAssessmentId = currentTest.id || currentTest.testInfo?.id;
+            const tenantId = user?.tenantId;
+            if (!tenantId) {
+                throw new Error('[MCQPage] Missing user.tenantId for result submission');
+            }
+            const userId = auth?.currentUser?.uid || user?.uid;
+            if (!userId) {
+                throw new Error('[MCQPage] Missing userId for result submission');
+            }
 
-            const resultData = buildResultDoc(rawResultData);
+            const resultData = buildResultDoc({
+                user: {
+                    uid: userId,
+                    email: user.email || '',
+                    name: user.name || '',
+                    rollNumber: user.rollNumber || '',
+                    tenantId: tenantId,
+                    college: user.college || '',
+                    department: user.department || '',
+                    year: user.year || '',
+                    cohortId: user.cohortId || '',
+                },
+                assessment: {
+                    id: targetAssessmentId,
+                    title: currentTest.name || currentTest.testInfo?.name || 'MCQ Assessment',
+                    assessmentType: 'mcq',
+                },
+                scores: {
+                    totalScore: correctAnswers,
+                    maxScore: totalQuestions,
+                    percentage: percentage,
+                    passed: totalQuestions > 0 && (correctAnswers / totalQuestions >= 0.5),
+                },
+                timing: {
+                    startedAt: teststartedAt || timeService.getNow().toISOString(),
+                    timeTakenSeconds: timeTaken,
+                },
+                submission: {
+                    autoSubmitted: Boolean(currentTest.autoSubmitted),
+                    submissionReason: currentTest.autoSubmitReason || 'manual',
+                },
+                questions: questionsDetails,
+                proctoring: {
+                    violationCount: finalViolationCount,
+                    totalNoFace: violationStats.totalNoFace || 0,
+                    totalMultipleFaces: violationStats.totalMultipleFaces || 0,
+                    violations: allViolations,
+                },
+            });
 
             console.log('[MCQPage] Submitting result:', resultData);
 
@@ -1530,9 +1546,8 @@ const MCQPage = ({ isEmbedded = false, testData = null, secTimer = 0, onSectionS
                 setSubmissionStatus('success');
 
                 submitGuard.complete();
-                // Denormalise completion so the dashboard needs no per-card reads.
                 const canonicalMainId = isEmbedded
-                    ? (testData?.assessmentId || testData?.mainAssessmentId || testData?.id)
+                    ? (testData?.assessmentId || testData?.id)
                     : (currentTest?.assessmentId || currentTest?.testInfo?.id || currentTest?.id);
                 await markAssessmentCompleted(user, canonicalMainId);
 
@@ -1540,8 +1555,9 @@ const MCQPage = ({ isEmbedded = false, testData = null, secTimer = 0, onSectionS
                 try {
                     const courseCtx = JSON.parse(localStorage.getItem('mcqTestCourseCtx') || '{}');
                     if (courseCtx.courseId && courseCtx.seriesId) {
-                        await MCQService.markCourseProgress({
-                            uid: user.uid || (user.UID  ?? ''),
+                        const { markTestComplete } = await import('../lib/firestore/courseProgress');
+                        await markTestComplete({
+                            uid: userId,
                             courseId: courseCtx.courseId,
                             seriesId: courseCtx.seriesId,
                             assessmentId: courseCtx.assessmentId || canonicalMainId,
@@ -1556,7 +1572,6 @@ const MCQPage = ({ isEmbedded = false, testData = null, secTimer = 0, onSectionS
                 setActiveTestSlug(null);
                 stopGlobalCameraStream();
                 toast.success('Assessment submitted successfully!', { id: 'mcq-submit' });
-                // Removed immediate reload so the success popup can be seen
             } else {
                 throw new Error('Submission failed. Please try again.');
             }

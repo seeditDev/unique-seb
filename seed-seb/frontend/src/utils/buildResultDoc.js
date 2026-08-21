@@ -38,8 +38,19 @@ export function buildResultDoc({
   if (!user || !user.uid) {
     throw new Error('[buildResultDoc] Missing required user.uid');
   }
+  if (!user?.tenantId) {
+    throw new Error('[buildResultDoc] Missing required user.tenantId');
+  }
   if (!assessment || !assessment.id) {
     throw new Error('[buildResultDoc] Missing required assessment.id');
+  }
+  const assessmentType = assessment.assessmentType || assessment.type;
+  if (!assessmentType) {
+    throw new Error('[buildResultDoc] Missing required assessment.assessmentType');
+  }
+  const submissionReason = submission?.submissionReason;
+  if (!submissionReason) {
+    throw new Error('[buildResultDoc] Missing required submission.submissionReason');
   }
 
   const uid = user.uid;
@@ -50,20 +61,20 @@ export function buildResultDoc({
   return {
     // Identity
     userId:      uid,
-    email:       user.email ?? '',
-    name:        user.name ?? '',
-    rollNumber:  user.rollNumber ?? '',
-    tenantId:    user.tenantId ?? '',
-    college:     user.college ?? '',
-    department:  user.department ?? '',
-    year:        user.year ?? '',
-    cohortId:    user.cohortId ?? '',
+    email:       user.email || '',
+    name:        user.name || '',
+    rollNumber:  user.rollNumber || '',
+    tenantId:    user.tenantId,
+    college:     user.college || '',
+    department:  user.department || '',
+    year:        user.year || '',
+    cohortId:    user.cohortId || '',
 
     // Assessment reference
     id:              assessment.id,
     assessmentId:    assessment.id,
-    assessmentTitle: assessment.title ?? assessment.name ?? '',
-    assessmentType:  assessment.type ?? assessment.assessmentType ?? 'mcq',
+    assessmentTitle: assessment.title || assessment.name || '',
+    assessmentType:  assessmentType,
     attemptId:       `${assessment.id}_${uid}_${new Date(startedAt).getTime()}`,
 
     // Timing
@@ -74,7 +85,7 @@ export function buildResultDoc({
     // Submission State
     status:           'submitted',
     autoSubmitted:    Boolean(submission?.autoSubmitted),
-    submissionReason: submission?.submissionReason ?? 'manual',
+    submissionReason: submissionReason,
     completed:        true,
 
     // Scores

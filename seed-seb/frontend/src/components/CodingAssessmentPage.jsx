@@ -1768,67 +1768,72 @@ const CodingAssessmentPage = ({ isEmbedded = false, testData = null, secTimer = 
                 };
             });
 
-            const targetAssessmentId = activeAssessment.id || activeAssessment.assessmentId || activeAssessment.assessmentId || activeAssessment.assessmentId;
-            const rawResultData = {
-                email: authData.Email || (authData.email  ?? ''),
-                college: authData.College || (authData.college  ?? ''),
-                year: authData.Year || (authData.year  ?? ''),
-                department: authData.Department || (authData.department  ?? ''),
-                rollNumber: authData["Roll Number"] || (authData.rollNumber  ?? ''),
-                name: authData.Name || (authData.name  ?? ''),
-                tenantId: authData.tenantId || authData.tenantId || (authData.tenantId  ?? ''),
-                cohortId: authData.cohortId || (authData.CohortId  ?? ''),
-                id: targetAssessmentId,
-                assessmentId: targetAssessmentId,
-                assessmentID: targetAssessmentId,
-                assessmentId: targetAssessmentId,
-                assessmentId: targetAssessmentId,
-                assessmentTitle: activeAssessment.name || activeAssessment.title || 'Coding Assessment',
-                testType: 'coding',
-                score: totalEarnedWeight,
-                totalQuestions: activeQuestions.length,
-                correctAnswers: totalEarnedWeight, // mapped for GAS Row compatibility
-                incorrectAnswers: totalMaxWeight - totalEarnedWeight,
-                maxScore: totalMaxWeight,
-                percentage: finalPercent,
-                timeTaken: elapsed,
-                timeTakenSeconds: elapsed,
-                startedAt: new Date(parseInt(storedStartTime, 10)).toISOString(),
-                submittedAt: timeService.getNow().toISOString(),
-                startedAt: new Date(parseInt(storedStartTime, 10)).toISOString(),
-                timeEndedISO: timeService.getNow().toISOString(),
-                autoSubmitted: true,
-                autoSubmitReason: reason === 'timer' 
-                    ? 'Timer hit 0' 
-                    : (reason === 'proctoring_violations' ? 'Proctoring violations exceeded limit' : 'Tab switch limit lockout'),
-                violationCount: (() => {
-                    const vInfo = getViolations(activeAssessment.id, authData.Email);
-                    return Math.max(violationCount, vInfo.violationCount, (vInfo.violations || []).length);
-                })(),
-                totalNoFace: (() => {
-                    const vInfo = getViolations(activeAssessment.id, authData.Email);
-                    return (vInfo.violations || []).filter(v => v.type === 'no_face').length;
-                })(),
-                totalMultipleFaces: (() => {
-                    const vInfo = getViolations(activeAssessment.id, authData.Email);
-                    return (vInfo.violations || []).filter(v => v.type === 'multiple_faces').length;
-                })(),
-                violations: (() => {
-                    const vInfo = getViolations(activeAssessment.id, authData.Email);
-                    return vInfo.violations.length > 0
-                        ? vInfo.violations
-                        : [{ type: 'tab_switch', count: violationCount, reason: 'Tab switch limit lockout' }];
-                })(),
-                languageUsed: language,
-                coding: codingSubmissions,
-                codingSubmissions: codingSubmissions,
-                executionStats: {
-                    scores: finalScores,
-                    codeMap: storedCodeMap
-                }
-            };
+            const targetAssessmentId = activeAssessment.id;
+            const tenantId = authData?.tenantId || user?.tenantId;
+            if (!tenantId) {
+                throw new Error('[CodingAssessment] Missing tenantId for result submission');
+            }
+            const userId = auth?.currentUser?.uid || user?.uid;
+            if (!userId) {
+                throw new Error('[CodingAssessment] Missing userId for result submission');
+            }
 
-            const resultData = buildResultDoc(rawResultData);
+            const resultData = buildResultDoc({
+                user: {
+                    uid: userId,
+                    email: authData.email || user?.email || '',
+                    name: authData.name || user?.name || '',
+                    rollNumber: authData.rollNumber || user?.rollNumber || '',
+                    tenantId: tenantId,
+                    college: authData.college || user?.college || '',
+                    department: authData.department || user?.department || '',
+                    year: authData.year || user?.year || '',
+                    cohortId: authData.cohortId || user?.cohortId || '',
+                },
+                assessment: {
+                    id: targetAssessmentId,
+                    title: activeAssessment.name || activeAssessment.title || 'Coding Assessment',
+                    assessmentType: 'coding',
+                },
+                scores: {
+                    totalScore: totalEarnedWeight,
+                    maxScore: totalMaxWeight,
+                    percentage: finalPercent,
+                    passed: totalMaxWeight > 0 && (totalEarnedWeight / totalMaxWeight >= 0.5),
+                },
+                timing: {
+                    startedAt: new Date(parseInt(storedStartTime, 10)).toISOString(),
+                    timeTakenSeconds: elapsed,
+                },
+                submission: {
+                    autoSubmitted: true,
+                    submissionReason: reason === 'timer'
+                        ? 'Timer hit 0'
+                        : (reason === 'proctoring_violations' ? 'Proctoring violations exceeded limit' : 'Tab switch limit lockout'),
+                },
+                codingSubmissions: codingSubmissions,
+                proctoring: {
+                    violationCount: (() => {
+                        const vInfo = getViolations(activeAssessment.id, authData.email);
+                        return Math.max(violationCount, vInfo.violationCount, (vInfo.violations || []).length);
+                    })(),
+                    totalNoFace: (() => {
+                        const vInfo = getViolations(activeAssessment.id, authData.email);
+                        return (vInfo.violations || []).filter(v => v.type === 'no_face').length;
+                    })(),
+                    totalMultipleFaces: (() => {
+                        const vInfo = getViolations(activeAssessment.id, authData.email);
+                        return (vInfo.violations || []).filter(v => v.type === 'multiple_faces').length;
+                    })(),
+                    violations: (() => {
+                        const vInfo = getViolations(activeAssessment.id, authData.email);
+                        return vInfo.violations?.length > 0
+                            ? vInfo.violations
+                            : [{ type: 'tab_switch', count: violationCount, reason: 'Tab switch limit lockout' }];
+                    })(),
+                },
+            });
+
             await CodingAssessmentService.submitCodingResult(resultData);
             await markAssessmentCompleted(authData, activeAssessment.id);
             clearLocalSession();
@@ -2014,59 +2019,67 @@ const CodingAssessmentPage = ({ isEmbedded = false, testData = null, secTimer = 
                 };
             });
 
-            const targetAssessmentId = currentAssessment.id || currentAssessment.id || currentAssessment.id || currentAssessment.id;
-            const rawResultData = {
-                email: user.email ?? '',
-                college: user.college ?? '',
-                year: user.year ?? '',
-                department: user.department ?? '',
-                rollNumber: user.rollNumber ?? '',
-                name: user.name ?? '',
-                tenantId: user.tenantId ?? '',
-                cohortId: user.cohortId || (user.CohortId  ?? ''),
-                id: targetAssessmentId,
-                assessmentId: targetAssessmentId,
-                assessmentID: targetAssessmentId,
-                assessmentId: targetAssessmentId,
-                assessmentId: targetAssessmentId,
-                assessmentTitle: currentAssessment.name || currentAssessment.title || 'Coding Assessment',
-                testType: 'coding',
-                score: totalEarnedWeight,
-                totalQuestions: questions.length,
-                correctAnswers: totalEarnedWeight,
-                incorrectAnswers: totalMaxWeight - totalEarnedWeight,
-                maxScore: totalMaxWeight,
-                percentage: finalPercent,
-                timeTakenSeconds: elapsed,
-                startedAt: new Date(startTime).toISOString(),
-                submittedAt: timeService.getNow().toISOString(),
-                autoSubmitted: false,
-                autoSubmitReason: '',
-                violationCount: (() => {
-                    const vInfo = getViolations(currentAssessment.id, user.email);
-                    return Math.max(violationCount, vInfo.violationCount, (vInfo.violations || []).length);
-                })(),
-                totalNoFace: (() => {
-                    const vInfo = getViolations(currentAssessment.id, user.email);
-                    return (vInfo.violations || []).filter(v => v.type === 'no_face').length;
-                })(),
-                totalMultipleFaces: (() => {
-                    const vInfo = getViolations(currentAssessment.id, user.email);
-                    return (vInfo.violations || []).filter(v => v.type === 'multiple_faces').length;
-                })(),
-                violations: (() => {
-                    const vInfo = getViolations(currentAssessment.id, user.email);
-                    return vInfo.violations;
-                })(),
-                languageUsed: language,
-                codingSubmissions: codingSubmissions,
-                executionStats: {
-                    scores: finalScores,
-                    codeMap: codeMap
-                }
-            };
+            const targetAssessmentId = currentAssessment.id;
+            const tenantId = user?.tenantId;
+            if (!tenantId) {
+                throw new Error('[CodingAssessment] Missing user.tenantId for result submission');
+            }
+            const userId = auth?.currentUser?.uid || user?.uid;
+            if (!userId) {
+                throw new Error('[CodingAssessment] Missing userId for result submission');
+            }
 
-            const resultData = buildResultDoc(rawResultData);
+            const resultData = buildResultDoc({
+                user: {
+                    uid: userId,
+                    email: user.email || '',
+                    name: user.name || '',
+                    rollNumber: user.rollNumber || '',
+                    tenantId: tenantId,
+                    college: user.college || '',
+                    department: user.department || '',
+                    year: user.year || '',
+                    cohortId: user.cohortId || '',
+                },
+                assessment: {
+                    id: targetAssessmentId,
+                    title: currentAssessment.name || currentAssessment.title || 'Coding Assessment',
+                    assessmentType: 'coding',
+                },
+                scores: {
+                    totalScore: totalEarnedWeight,
+                    maxScore: totalMaxWeight,
+                    percentage: finalPercent,
+                    passed: totalMaxWeight > 0 && (totalEarnedWeight / totalMaxWeight >= 0.5),
+                },
+                timing: {
+                    startedAt: new Date(startTime).toISOString(),
+                    timeTakenSeconds: elapsed,
+                },
+                submission: {
+                    autoSubmitted: false,
+                    submissionReason: 'manual',
+                },
+                codingSubmissions: codingSubmissions,
+                proctoring: {
+                    violationCount: (() => {
+                        const vInfo = getViolations(currentAssessment.id, user.email);
+                        return Math.max(violationCount, vInfo.violationCount, (vInfo.violations || []).length);
+                    })(),
+                    totalNoFace: (() => {
+                        const vInfo = getViolations(currentAssessment.id, user.email);
+                        return (vInfo.violations || []).filter(v => v.type === 'no_face').length;
+                    })(),
+                    totalMultipleFaces: (() => {
+                        const vInfo = getViolations(currentAssessment.id, user.email);
+                        return (vInfo.violations || []).filter(v => v.type === 'multiple_faces').length;
+                    })(),
+                    violations: (() => {
+                        const vInfo = getViolations(currentAssessment.id, user.email);
+                        return vInfo.violations || [];
+                    })(),
+                },
+            });
 
             await CodingAssessmentService.submitCodingResult(resultData);
             await markAssessmentCompleted(user, targetAssessmentId);

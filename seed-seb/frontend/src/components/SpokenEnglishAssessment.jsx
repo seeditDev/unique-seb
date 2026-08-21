@@ -463,61 +463,59 @@ const SpokenEnglishAssessment = ({ assessmentData, user, onBack, onComplete, onS
     const totalNoFace = allViolations.filter(v => v.type === 'no_face').length;
     const totalMultipleFaces = allViolations.filter(v => v.type === 'multiple_faces').length;
 
-    const firestorePayload = {
-      userId,
-      uid: userId,
-      email: userEmail,
-      name: currentUser?.name || 'Candidate',
-      rollNumber: currentUser?.rollNumber ?? '',
-      college: currentUser?.tenantId ?? '',
-      department: currentUser?.department ?? '',
-      year: currentUser?.year ?? '',
-      assessmentId: testId,
-      assessmentTitle: assessmentData?.name || 'Spoken English Assessment',
-      testType: 'spoken_english',
-      assessmentType: 'spoken_english',
-      type: 'spoken_english',
-      score: evaluation.percentage,
-      totalScore: evaluation.percentage,
-      percentage: evaluation.percentage,
-      maxScore: 100,
-      totalMarks: 100,
-      passed: evaluation.percentage >= 50,
-      cefrLevel: evaluation.cefr.level,
-      cefrName: evaluation.cefr.name,
-      wpm: evaluation.wpm,
-      fillerCount: evaluation.fillerCount,
-      parameters: evaluation.parameters,
-      grammarErrors: evaluation.grammarErrors,
-      responses: allResp.map(r => ({
-        questionId: r.questionId,
-        moduleType: r.moduleType,
-        transcript: r.transcript,
-        durationSeconds: r.durationSeconds,
-        attemptCount: r.attemptCount
-      })),
-      violationCount: finalViolationCount,
-      totalNoFace,
-      totalMultipleFaces,
-      violations: allViolations,
-      submittedAt: new Date().toISOString(),
-    };
-
     // Canonical Firestore path: assessmentResults/{tenantId}/{testId}/{userId}
-    const tenantId = currentUser?.tenantId ?? '';
+    const tenantId = currentUser?.tenantId;
+    if (!tenantId) {
+      throw new Error('[SEA] Missing tenantId for result submission');
+    }
     try {
       const v2DocPath = `assessmentResults/${tenantId}/${testId}/${userId}`;
       const unifiedPayload = buildResultDoc({
-        ...firestorePayload,
-        tenantId,
-        userId,
-        completed: true,
-        status: 'submitted',
-        submittedAt: serverTimestamp(),
-        lastUpdatedAt: serverTimestamp()
+        user: {
+          uid: userId,
+          email: currentUser.email || '',
+          name: currentUser.name || '',
+          rollNumber: currentUser.rollNumber || '',
+          tenantId: tenantId,
+          college: currentUser.college || '',
+          department: currentUser.department || '',
+          year: currentUser.year || '',
+          cohortId: currentUser.cohortId || '',
+        },
+        assessment: {
+          id: testId,
+          title: testName || testId,
+          assessmentType: 'sea',
+        },
+        scores: {
+          totalScore: evaluation.overallScore || 0,
+          maxScore: 100,
+          percentage: evaluation.percentage || 0,
+          passed: (evaluation.percentage || 0) >= 50,
+        },
+        timing: {
+          startedAt: assessmentStartTimeRef.current ? new Date(assessmentStartTimeRef.current).toISOString() : new Date().toISOString(),
+          timeTakenSeconds: Math.round(((Date.now() - assessmentStartTimeRef.current) / 1000)),
+        },
+        submission: {
+          autoSubmitted: false,
+          submissionReason: 'manual',
+        },
+        speech: {
+          cefrLevel: evaluation.cefrLevel || 'B1',
+          cefrName: evaluation.cefrName || 'Intermediate',
+          wpm: evaluation.wpm || 0,
+          fillerCount: evaluation.fillerCount || 0,
+        },
+        proctoring: {
+          violationCount: totalViolations,
+          totalNoFace,
+          totalMultipleFaces,
+          violations: allViolations,
+        },
       });
-      await setDoc(doc(db, v2DocPath), unifiedPayload, { merge: true });
-      console.log('[SEA] Result saved to Firestore canonical path');
+      await setDoc(doc(db, v2DocPath), unifiedPayload);
+      console.log('[SEA] Result saved to Firestore canonical path:', v2DocPath);
     } catch (fireErr) {
       console.warn('[SEA] Firestore write failed:', fireErr);
     }
@@ -526,12 +524,12 @@ const SpokenEnglishAssessment = ({ assessmentData, user, onBack, onComplete, onS
     try {
       const courseCtx = JSON.parse(sessionStorage.getItem('seaCourseCtx') || '{}');
       if (courseCtx.courseId && courseCtx.seriesId) {
-        const { default: MCQService } = await import('../services/mcqService');
-        await MCQService.markCourseProgress({
+        const { markTestComplete } = await import('../lib/firestore/courseProgress');
+        await markTestComplete({
           uid: userId,
           courseId: courseCtx.courseId,
           seriesId: courseCtx.seriesId,
-          assessmentId: courseCtx.assessmentId || testId,
+          testId: courseCtx.assessmentId || testId,
           score: evaluation.percentage || 0,
           maxScore: courseCtx.maxScore || 100,
         });
