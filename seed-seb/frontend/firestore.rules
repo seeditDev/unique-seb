@@ -97,15 +97,20 @@ service cloud.firestore {
       allow get:    if isUser(userId) || isAdmin() || (isStaff() && tenantAllowed(resource.data.get('tenantId', '')));
       allow list:   if isAdmin();
 
-      // Student can self-provision during initial sign-up (requires non-empty tenantId)
-      allow create: if (isUser(userId)
-          && request.resource.data.get('role', 'student') == 'student'
-          && request.resource.data.get('uid', '') == userId
-          && request.resource.data.get('tenantId', '') != '')
-        || isAdmin()
+      // User Provisioning:
+      // - Admins can create any user
+      // - Staff can create students within their own tenant
+      // - Students self-provisioning during initial sign-up MUST have their tenantId bound to a trusted auth token claim (or invitation)
+      //   to prevent choosing arbitrary target tenants.
+      allow create: if isAdmin()
         || (isStaff()
             && tenantAllowed(request.resource.data.get('tenantId', ''))
-            && request.resource.data.get('role', 'student') == 'student');
+            && request.resource.data.get('role', 'student') == 'student')
+        || (isUser(userId)
+            && request.resource.data.get('role', 'student') == 'student'
+            && request.resource.data.get('uid', '') == userId
+            && request.auth.token.get('tenantId', '') != ''
+            && request.resource.data.get('tenantId', '') == request.auth.token.get('tenantId', ''));
 
       // Updates restricted: role and tenantId are strictly immutable for staff and students (Admin only)
       allow update: if isAdmin()
@@ -134,8 +139,8 @@ service cloud.firestore {
               && request.resource.data.get('completed', false) == false
               && request.resource.data.get('score', 0) == 0
               && request.resource.data.get('percentage', 0) == 0);
-        // Student updates are restricted to client-owned learning state (notes, bookmarks, currentStep, lastLesson)
-        // All authoritative placement/completion fields are strictly locked against student modification
+        // Student updates are restricted to client-owned learning state allowlist.
+        // All authoritative placement/completion fields are strictly locked against student modification.
         allow update: if isAdmin()
           || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/users/$(userId)).data.get('tenantId', '')))
           || (isUser(userId)
@@ -144,7 +149,13 @@ service cloud.firestore {
               && request.resource.data.get('eligible', false) == resource.data.get('eligible', false)
               && request.resource.data.get('completed', false) == resource.data.get('completed', false)
               && request.resource.data.get('score', 0) == resource.data.get('score', 0)
-              && request.resource.data.get('percentage', 0) == resource.data.get('percentage', 0));
+              && request.resource.data.get('percentage', 0) == resource.data.get('percentage', 0)
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+                   'notes', 'bookmarks', 'currentStep', 'lastLesson', 'lastPosition',
+                   'practiceState', 'updatedAt', 'progressPercentage', 'history',
+                   'completedLessons', 'activeSession', 'lastAccessedAt', 'status',
+                   'verified', 'certified', 'eligible', 'completed', 'score', 'percentage'
+                 ]));
         allow delete: if isAdmin();
       }
 
@@ -200,11 +211,23 @@ service cloud.firestore {
       }
 
       match /profile/{docId} {
-        allow read, write: if isUser(userId) || isAdmin() || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/users/$(userId)).data.get('tenantId', '')));
+        allow read: if isUser(userId) || isAdmin() || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/users/$(userId)).data.get('tenantId', '')));
+        allow write: if isAdmin()
+          || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/users/$(userId)).data.get('tenantId', '')))
+          || (isUser(userId)
+              && !('role' in request.resource.data)
+              && !('tenantId' in request.resource.data)
+              && !('permissions' in request.resource.data));
       }
 
       match /settings/{docId} {
-        allow read, write: if isUser(userId) || isAdmin() || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/users/$(userId)).data.get('tenantId', '')));
+        allow read: if isUser(userId) || isAdmin() || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/users/$(userId)).data.get('tenantId', '')));
+        allow write: if isAdmin()
+          || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/users/$(userId)).data.get('tenantId', '')))
+          || (isUser(userId)
+              && !('role' in request.resource.data)
+              && !('tenantId' in request.resource.data)
+              && !('permissions' in request.resource.data));
       }
     }
 
@@ -215,7 +238,7 @@ service cloud.firestore {
     match /tenants/{tenantId} {
       allow get:    if isAdmin() || (isStaff() && tenantAllowed(tenantId)) || isTenantMember(tenantId);
       allow list:   if isAdmin();
-      allow create, update, delete: if isAdmin() || (isStaff() && tenantAllowed(tenantId));
+      allow create, update, delete: if isAdmin();
 
       match /cohorts/{cohortId} {
         allow get, list: if isAdmin() || (isStaff() && tenantAllowed(tenantId)) || isTenantMember(tenantId);

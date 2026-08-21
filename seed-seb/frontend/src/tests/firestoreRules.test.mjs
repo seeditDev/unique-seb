@@ -333,8 +333,16 @@ class RulesSimulator {
     return (
       block.includes("request.resource.data.get('role', 'student') == 'student'") &&
       block.includes("request.resource.data.get('uid', '') == userId") &&
-      block.includes("request.resource.data.get('tenantId', '') != ''")
+      block.includes("request.auth.token.get('tenantId', '') != ''") &&
+      block.includes("request.resource.data.get('tenantId', '') == request.auth.token.get('tenantId', '')")
     );
+  }
+
+  isTenantRootWriteAdminOnly() {
+    const match = this.rules.match(/match\s+\/tenants\/\{tenantId\}\s*\{([\s\S]*?)\n\s*match\s+\/cohorts/);
+    if (!match) return false;
+    const block = match[1];
+    return block.includes("allow create, update, delete: if isAdmin();");
   }
 
   isCourseProgressTamperLocked() {
@@ -353,7 +361,8 @@ class RulesSimulator {
       block.includes("request.resource.data.get('eligible', false) == resource.data.get('eligible', false)") &&
       block.includes("request.resource.data.get('completed', false) == resource.data.get('completed', false)") &&
       block.includes("request.resource.data.get('score', 0) == resource.data.get('score', 0)") &&
-      block.includes("request.resource.data.get('percentage', 0) == resource.data.get('percentage', 0)")
+      block.includes("request.resource.data.get('percentage', 0) == resource.data.get('percentage', 0)") &&
+      block.includes("affectedKeys().hasOnly")
     );
   }
 }
@@ -460,14 +469,18 @@ console.log('✓ Test 23 Passed: Nested result list permission restricted to Adm
 assert(sim.isResultBoundToAssessmentTenant(), 'FAIL: Result creation must validate that assessment belongs to user tenant');
 console.log('✓ Test 24 Passed: Result creation strictly validates matching tenantId with referenced assessment (cross-tenant result spoofing blocked)');
 
-// Test 25: User Self-Provisioning Tenant Required
-assert(sim.isUserSelfProvisioningTenantRequired(), 'FAIL: User self-provisioning must require non-empty tenantId');
-console.log('✓ Test 25 Passed: User self-provisioning requires explicit non-empty tenantId (broken onboarding prevented)');
+// Test 25: User Self-Provisioning Tenant Required & Bound to Token
+assert(sim.isUserSelfProvisioningTenantRequired(), 'FAIL: User self-provisioning must bind tenantId to trusted auth token claim');
+console.log('✓ Test 25 Passed: User self-provisioning strictly binds tenantId to trusted auth token claim (arbitrary tenant hijacking blocked)');
 
 // Test 26: Course Progress Certification/Verification Tamper Locked
 assert(sim.isCourseProgressTamperLocked(), 'FAIL: Course progress must lock verified and certified status against student manipulation');
 console.log('✓ Test 26 Passed: Course progress certification/verification fields strictly locked against student tampering');
 
+// Test 27: Tenant Root Document Modification Admin Only
+assert(sim.isTenantRootWriteAdminOnly(), 'FAIL: Root /tenants/{tenantId} mutations must be restricted to Admin only');
+console.log('✓ Test 27 Passed: Tenant root document mutations strictly locked to Admin only (staff cannot alter tenant limits/billing)');
+
 console.log('\n========================================');
-console.log('ALL 26/26 FIRESTORE SECURITY RULES TESTS PASSED (OK)');
+console.log('ALL 27/27 FIRESTORE SECURITY RULES TESTS PASSED (OK)');
 console.log('========================================\n');

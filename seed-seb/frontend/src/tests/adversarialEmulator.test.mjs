@@ -168,6 +168,28 @@ class AdversarialContext {
   }
 
   // 5. User Self-Updates / Privilege Escalation
+  canCreateUser(targetUserId, payload) {
+    if (this.isAdmin()) return true;
+    if (this.isStaff() && this.tenantAllowed(payload.tenantId) && payload.role === 'student') return true;
+
+    // Student self-provisioning:
+    // isUser(targetUserId) && payload.role == 'student' && payload.uid == targetUserId
+    // && auth.token.tenantId != '' && payload.tenantId == auth.token.tenantId
+    if (this.isUser(targetUserId)) {
+      if (payload.role !== 'student') return false;
+      if (payload.uid !== targetUserId) return false;
+      const tokenTenant = this.auth.token?.tenantId || '';
+      if (!tokenTenant) return false;
+      if (payload.tenantId !== tokenTenant) return false;
+      return true;
+    }
+    return false;
+  }
+
+  canMutateTenantRoot(tenantId) {
+    return this.isAdmin();
+  }
+
   canUpdateUser(targetUserId, currentDoc, newDoc) {
     if (this.isAdmin()) return true;
     if (this.isStaff() && this.tenantAllowed(currentDoc?.tenantId)) return true;
@@ -207,6 +229,7 @@ const databaseFixture = {
 // Create Actor Contexts
 const studentA = new AdversarialContext({ uid: 'student_A', token: { role: 'student', tenantId: 'TN000026' } }, databaseFixture);
 const studentB = new AdversarialContext({ uid: 'student_B', token: { role: 'student', tenantId: 'TN000027' } }, databaseFixture);
+const studentUnassigned = new AdversarialContext({ uid: 'attacker_user', token: { role: 'student' } }, databaseFixture);
 const staffA = new AdversarialContext({ uid: 'staff_A', token: { role: 'staff', tenantId: 'TN000026' } }, databaseFixture);
 const staffB = new AdversarialContext({ uid: 'staff_B', token: { role: 'staff', tenantId: 'TN000027' } }, databaseFixture);
 const adminUser = new AdversarialContext({ uid: 'admin_root', token: { role: 'admin', tenantId: 'TN000026' } }, databaseFixture);
@@ -350,8 +373,24 @@ assert.strictEqual(
   false,
   'Staff A MUST NOT be allowed to alter Tenant B students'
 );
-console.log('  ✓ Staff A -> alter Student B (Tenant B): BLOCKED (Cross-tenant staff action denied)\n');
+console.log('  ✓ Staff A -> alter Student B (Tenant B): BLOCKED (Cross-tenant staff action denied)');
 
-console.log('================================================================');
+// Attack 7: Attacker attempts to self-provision with arbitrary target tenant
+assert.strictEqual(
+  studentUnassigned.canCreateUser('attacker_user', { uid: 'attacker_user', role: 'student', tenantId: 'TN000026' }),
+  false,
+  'Unassigned user MUST NOT be allowed to self-assign arbitrary tenant'
+);
+console.log('  ✓ Unassigned user -> self-provision arbitrary Tenant A: BLOCKED (Tenant selection denied)');
+
+// Attack 8: Staff attempts to modify root tenant document
+assert.strictEqual(
+  staffA.canMutateTenantRoot('TN000026'),
+  false,
+  'Staff A MUST NOT be allowed to mutate root tenant document'
+);
+console.log('  ✓ Staff A -> mutate root tenant document: BLOCKED (Admin-only)');
+
+console.log('\n================================================================');
 console.log('ALL ADVERSARIAL ATTACK MATRIX VECTORS VERIFIED (100% PASS)');
 console.log('================================================================\n');
