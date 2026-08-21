@@ -67,29 +67,8 @@ class RuntimeManager:
             return False
 
     def resolve_paths(self):
-        """Set paths strictly to the portable runtimes inside resources/runtimes."""
-        exe_dir = os.path.dirname(os.path.abspath(sys.executable))
-        exe_runtimes = os.path.join(exe_dir, "resources", "runtimes")
-        hardcoded_dir = r"C:\Program Files (x86)\SEED-SEB\resources\runtimes"
-        file_dir = os.path.dirname(os.path.abspath(__file__))
-        file_runtimes = os.path.join(os.path.dirname(file_dir), "resources", "runtimes")
-        
-        if os.path.exists(exe_runtimes):
-            self.runtimes_dir = exe_runtimes
-        elif os.path.exists(hardcoded_dir):
-            self.runtimes_dir = hardcoded_dir
-        elif os.path.exists(file_runtimes):
-            self.runtimes_dir = file_runtimes
-        else:
-            candidates = [
-                os.path.join(os.path.dirname(file_dir), "runtimes"),
-                os.path.join(os.path.dirname(self.app_root), "runtimes"),
-                os.path.join(os.path.dirname(os.path.dirname(self.app_root)), "runtimes"),
-            ]
-            for c in candidates:
-                if os.path.exists(c):
-                    self.runtimes_dir = c
-                    break
+        r"""Set paths strictly to the single canonical location: C:\Program Files (x86)\SEED-SEB\resources\runtimes."""
+        self.runtimes_dir = r"C:\Program Files (x86)\SEED-SEB\resources\runtimes"
 
         # C/C++ (MinGW)
         mingw_bin = os.path.join(self.runtimes_dir, "mingw64", "bin")
@@ -137,9 +116,8 @@ class RuntimeManager:
     def load_trusted_manifest(self):
         """Loads, validates strict schema, and cryptographically verifies the Ed25519 signed manifest."""
         manifest_paths = [
-            os.path.join(self.app_root, "resources", "runtime-manifest.json"),
-            os.path.join(os.path.dirname(os.path.abspath(__file__)), "resources", "runtime-manifest.json"),
-            os.path.join(getattr(sys, '_MEIPASS', ''), "resources", "runtime-manifest.json")
+            r"C:\Program Files (x86)\SEED-SEB\resources\runtime-manifest.json",
+            os.path.join(os.path.dirname(os.path.abspath(__file__)), "resources", "runtime-manifest.json")
         ]
         for p in manifest_paths:
             if p and os.path.exists(p):
@@ -215,35 +193,7 @@ class RuntimeManager:
         return True, "All runtime binaries verified against cryptographic manifest."
 
     def get_binary_path(self, binary_name):
-        path = self.binaries.get(binary_name, binary_name)
-        if path and os.path.exists(path):
-            return path
-
-        meipass = getattr(sys, '_MEIPASS', '')
-        alt_paths = [
-            os.path.join(self.app_root, "resources", "runtimes", "python-embed", "python.exe") if binary_name == "python" else "",
-            os.path.join(meipass, "resources", "runtimes", "python-embed", "python.exe") if binary_name == "python" else "",
-            os.path.join(self.app_root, "resources", "runtimes", "mingw64", "bin", f"{binary_name}.exe"),
-            os.path.join(self.app_root, "resources", "runtimes", "jdk", "bin", f"{binary_name}.exe"),
-            os.path.join(meipass, "resources", "runtimes", "mingw64", "bin", f"{binary_name}.exe"),
-            os.path.join(meipass, "resources", "runtimes", "jdk", "bin", f"{binary_name}.exe")
-        ]
-        for p in alt_paths:
-            if p and os.path.exists(p):
-                return p
-
-        # Allow system fallback ONLY if development mode is explicitly enabled
-        is_dev = os.environ.get("SEED_SEB_DEV_MODE") == "1" or not getattr(sys, 'frozen', False)
-        if is_dev:
-            if binary_name == "python":
-                exe_base = os.path.basename(sys.executable).lower() if sys.executable else ""
-                if exe_base in ("python.exe", "pythonw.exe", "python3.exe", "python310.exe", "python311.exe"):
-                    return sys.executable
-            found = shutil.which(binary_name) or shutil.which(f"{binary_name}.exe")
-            if found:
-                return found
-
-        return path
+        return self.binaries.get(binary_name, binary_name)
 
 
 # Singleton instance

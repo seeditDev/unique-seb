@@ -12,6 +12,7 @@ class CodeExecutor:
     def __init__(self):
         self.app_root = runtime_manager.app_root
         candidate_dir = os.path.join(self.app_root, "temp_workspace")
+        is_dev = os.environ.get("SEED_SEB_DEV_MODE") == "1" or not getattr(sys, 'frozen', False)
         try:
             os.makedirs(candidate_dir, exist_ok=True)
             test_file = os.path.join(candidate_dir, ".write_test")
@@ -19,9 +20,12 @@ class CodeExecutor:
                 f.write("test")
             os.remove(test_file)
             self.workspace_dir = candidate_dir
-        except Exception:
-            self.workspace_dir = os.path.join(tempfile.gettempdir(), "seed_seb_temp_workspace")
-            os.makedirs(self.workspace_dir, exist_ok=True)
+        except Exception as e:
+            if is_dev:
+                self.workspace_dir = os.path.join(tempfile.gettempdir(), "seed_seb_temp_workspace")
+                os.makedirs(self.workspace_dir, exist_ok=True)
+            else:
+                raise RuntimeError(f"CRITICAL: Production workspace directory {candidate_dir} is unavailable or unwritable: {e}")
 
     def _create_temp_run_dir(self):
         """Creates a unique directory for the execution run to support concurrency and clean isolation."""
