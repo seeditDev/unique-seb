@@ -262,12 +262,29 @@ class RulesSimulator {
     if (!matchC || !matchA) return false;
     const blockC = matchC[1];
     const blockA = matchA[1];
-    const check = (block) =>
+    const checkA = (block) =>
       block.includes("isUser(userId)") &&
       block.includes("request.resource.data.get('uid', '') == userId") &&
       block.includes("myTenant() != ''") &&
-      block.includes("request.resource.data.get('tenantId', '') == myTenant()");
-    return check(blockC) && check(blockA);
+      block.includes("request.resource.data.get('tenantId', '') == myTenant()") &&
+      block.includes("isTenantMember(get(/databases/$(database)/documents/assessments/$(request.resource.data.get('assessmentId', ''))).data.get('tenantId', ''))");
+    const checkC = (block) =>
+      block.includes("isUser(userId)") &&
+      block.includes("request.resource.data.get('uid', '') == userId") &&
+      block.includes("myTenant() != ''") &&
+      block.includes("request.resource.data.get('tenantId', '') == myTenant()") &&
+      block.includes("isTenantMember(get(/databases/$(database)/documents/assessments/$(request.resource.data.get('assessmentId', ''))).data.get('tenantId', ''))");
+    return checkA(blockA) && checkC(blockC);
+  }
+
+  isNestedResultListLockedToStaffAndAdmin() {
+    const match = this.rules.match(/match\s+\/assessmentResults\/\{tenantId\}\s*\{[\s\S]*?match\s+\/\{assessmentId\}\/\{userId\}\s*\{([\s\S]*?)\n\s*\/\/\s*Strict create/);
+    if (!match) return false;
+    const block = match[1];
+    return (
+      block.includes("allow get:    if isAdmin() || (isStaff() && tenantAllowed(tenantId)) || isUser(userId);") &&
+      block.includes("allow list:   if isAdmin() || (isStaff() && tenantAllowed(tenantId));")
+    );
   }
 }
 
@@ -361,10 +378,14 @@ console.log('✓ Test 20 Passed: /tenants/{tenantId} uses explicit subcollection
 assert(sim.isAssessmentListTenantBound(), 'FAIL: /assessments list rule must enforce tenantAllowed(resource.data.get("tenantId", ""))');
 console.log('✓ Test 21 Passed: /assessments collection listing strictly enforces resource tenant scoping (unrestricted / cross-tenant queries rejected)');
 
-// Test 22: Attempt Cross-Tenant Creation Lock (Prevent Cross-Tenant Attempt Manufacturing)
-assert(sim.isAttemptCrossTenantCreationBlocked(), 'FAIL: Student attempt creation must strictly validate request.resource.data.tenantId == myTenant()');
-console.log('✓ Test 22 Passed: Student assessmentAttempts & contestAttempts creation strictly validates matching student tenantId (cross-tenant attempt spoofing blocked)');
+// Test 22: Attempt Cross-Tenant Creation Lock (Enforce Attempt Tenant == Assessment Tenant)
+assert(sim.isAttemptCrossTenantCreationBlocked(), 'FAIL: Student attempt creation must validate request.resource.data.tenantId == myTenant() AND assessment.tenantId == myTenant()');
+console.log('✓ Test 22 Passed: Student attempt creation strictly binds attempt tenant and referenced assessment tenant to student identity (cross-tenant attempt spoofing blocked)');
+
+// Test 23: Nested Result Document List Permission Lock
+assert(sim.isNestedResultListLockedToStaffAndAdmin(), 'FAIL: Nested result list permission must be restricted to Admin and Staff only');
+console.log('✓ Test 23 Passed: Nested result list permission restricted to Admin and Staff only (students limited strictly to getDoc for own result)');
 
 console.log('\n========================================');
-console.log('ALL 22/22 FIRESTORE SECURITY RULES TESTS PASSED (OK)');
+console.log('ALL 23/23 FIRESTORE SECURITY RULES TESTS PASSED (OK)');
 console.log('========================================\n');

@@ -132,6 +132,10 @@ service cloud.firestore {
             && request.resource.data.get('uid', '') == userId
             && myTenant() != ''
             && request.resource.data.get('tenantId', '') == myTenant()
+            && (
+              !('assessmentId' in request.resource.data)
+              || isTenantMember(get(/databases/$(database)/documents/assessments/$(request.resource.data.get('assessmentId', ''))).data.get('tenantId', ''))
+            )
           )
           || isAdmin()
           || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/users/$(userId)).data.get('tenantId', '')));
@@ -157,6 +161,7 @@ service cloud.firestore {
             && request.resource.data.get('uid', '') == userId
             && myTenant() != ''
             && request.resource.data.get('tenantId', '') == myTenant()
+            && isTenantMember(get(/databases/$(database)/documents/assessments/$(request.resource.data.get('assessmentId', ''))).data.get('tenantId', ''))
           )
           || isAdmin()
           || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/users/$(userId)).data.get('tenantId', '')));
@@ -257,7 +262,7 @@ service cloud.firestore {
 
       match /{assessmentId}/{userId} {
         allow get:    if isAdmin() || (isStaff() && tenantAllowed(tenantId)) || isUser(userId);
-        allow list:   if isAdmin() || (isStaff() && tenantAllowed(tenantId)) || isUser(userId);
+        allow list:   if isAdmin() || (isStaff() && tenantAllowed(tenantId));
         
         // Strict create: must belong to authenticated user, matching tenantId and assessmentId
         allow create: if isAdmin() || (isStaff() && tenantAllowed(tenantId))
