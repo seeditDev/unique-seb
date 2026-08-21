@@ -183,24 +183,46 @@ class CodeExecutor:
 
         return env
 
+    def _check_disk_quota(self, run_dir, max_bytes=50*1024*1024, max_files=100):
+        """Validates that the execution run directory does not exceed disk quota or file count limit."""
+        total_size = 0
+        total_files = 0
+        for root, dirs, files in os.walk(run_dir):
+            for f in files:
+                total_files += 1
+                if total_files > max_files:
+                    return False, f"File Count Quota Exceeded (Max {max_files} files)"
+                try:
+                    fp = os.path.join(root, f)
+                    total_size += os.path.getsize(fp)
+                    if total_size > max_bytes:
+                        return False, f"Disk Quota Exceeded (Max {max_bytes // (1024*1024)}MB)"
+                except Exception:
+                    pass
+        return True, None
+
     def _execute_javascript(self, run_dir, code, stdin, time_limit):
         file_path = os.path.join(run_dir, "solution.js")
         
-        # Self-contained Node sandbox network guard (allows stdio pipes, blocks network sockets)
+        # Self-contained Node sandbox guard (allows stdio pipes, blocks network and child process spawning)
         js_prelude = (
             "try {\n"
             "  const _net = require('net');\n"
+            "  const _child = require('child_process');\n"
             "  const _OrigSocket = _net.Socket;\n"
-            "  const _block = () => { throw new Error('Sandbox Security: Network operations are disabled during assessment execution.'); };\n"
+            "  const _block = (op) => { throw new Error('Sandbox Security: ' + op + ' is disabled during assessment execution.'); };\n"
             "  _net.Socket = function(options) {\n"
             "    if (options && (typeof options.fd === 'number' || options.handle)) {\n"
             "      return new _OrigSocket(options);\n"
             "    }\n"
-            "    _block();\n"
+            "    _block('Network operations');\n"
             "  };\n"
             "  _net.Socket.prototype = _OrigSocket.prototype;\n"
-            "  _net.connect = _block;\n"
-            "  _net.createConnection = _block;\n"
+            "  _net.connect = () => _block('Network connect');\n"
+            "  _net.createConnection = () => _block('Network createConnection');\n"
+            "  _child.spawn = () => _block('Subprocess spawning');\n"
+            "  _child.exec = () => _block('Subprocess execution');\n"
+            "  _child.execFile = () => _block('Subprocess execFile');\n"
             "} catch(e) {}\n"
         )
         
@@ -224,9 +246,10 @@ class CodeExecutor:
     def _execute_python(self, run_dir, code, stdin, time_limit):
         file_path = os.path.join(run_dir, "solution.py")
         
-        # Self-contained Python sandbox network guard
+        # Self-contained Python sandbox guard with CPython audit hook (immune to importlib.reload or module deletion)
         py_prelude = (
             "# --- SEED-SEB Sandbox Security Isolation ---\n"
+            "import sys as _sec_sys\n"
             "import socket as _sec_socket\n"
             "def _sec_block_net(*a, **kw):\n"
             "    raise PermissionError('Sandbox Security: Network operations are disabled during assessment execution.')\n"
@@ -234,6 +257,15 @@ class CodeExecutor:
             "_sec_socket.create_connection = _sec_block_net\n"
             "_sec_socket.getaddrinfo = _sec_block_net\n"
             "_sec_socket.gethostbyname = _sec_block_net\n"
+            "def _sec_audit_hook(event, args):\n"
+            "    if event in ('socket.connect', 'socket.bind', 'socket.send', 'socket.getaddrinfo', 'socket.gethostbyname'):\n"
+            "        raise PermissionError(f'Sandbox Security: Network call [{event}] is blocked in assessment mode.')\n"
+            "    if event in ('os.system', 'subprocess.Popen'):\n"
+            "        raise PermissionError(f'Sandbox Security: Subprocess spawning [{event}] is blocked in assessment mode.')\n"
+            "try:\n"
+            "    _sec_sys.addaudithook(_sec_audit_hook)\n"
+            "except Exception:\n"
+            "    pass\n"
             "# --------------------------------------------\n"
         )
         
@@ -350,7 +382,7 @@ class CodeExecutor:
                 creationflags=creationflags
             )
             
-            # Attach to Windows Job Object with KILL_ON_JOB_CLOSE
+            # Attach to Windows Job Object with KILL_ON_JOB_CLOSE & UI Restrictions
             if sys.platform == "win32":
                 try:
                     import ctypes
@@ -377,6 +409,13 @@ class CodeExecutor:
                         limits.ProcessMemoryLimit = mem_limit_bytes
                         limits.JobMemoryLimit = mem_limit_bytes
                         kernel32.SetInformationJobObject(job, 9, ctypes.byref(limits), ctypes.sizeof(limits))
+                        
+                        # Apply UI restrictions (0x00FF = handles, clipboard, desktop, system parameters)
+                        class UI_RESTRICTIONS(ctypes.Structure):
+                            _fields_ = [("UIRestrictionsClass", wintypes.DWORD)]
+                        ui_limits = UI_RESTRICTIONS(0x00FF)
+                        kernel32.SetInformationJobObject(job, 4, ctypes.byref(ui_limits), ctypes.sizeof(ui_limits))
+                        
                         kernel32.AssignProcessToJobObject(job, int(proc._handle))
                 except Exception:
                     pass
@@ -413,6 +452,12 @@ class CodeExecutor:
             
         end_time = time.perf_counter()
         execution_time = end_time - start_time
+        
+        # Check disk quota and file count quota
+        quota_ok, quota_err = self._check_disk_quota(run_dir)
+        if not quota_ok:
+            error_msg = quota_err
+            exit_code = -1
         
         # Protect against memory exhaustion from excessive output (truncate at 1MB)
         MAX_BYTES = 1024 * 1024

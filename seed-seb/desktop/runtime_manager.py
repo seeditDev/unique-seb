@@ -1,19 +1,21 @@
 import os
 import sys
 import shutil
+import hashlib
 
 class RuntimeManager:
     def __init__(self):
         self.app_root = self.get_app_root()
         self.runtimes_dir = os.path.join(self.app_root, "resources", "runtimes")
         
-        # Paths to binaries (defaults to system fallback)
+        # Paths to binaries (defaults to packaged runtimes)
         self.binaries = {
             "gcc": "gcc",
             "g++": "g++",
             "javac": "javac",
             "java": "java",
-            "python": sys.executable if sys.executable else "python"
+            "python": "python",
+            "node": "node"
         }
         
         self.resolve_paths()
@@ -27,9 +29,21 @@ class RuntimeManager:
         """
         return r"C:\Program Files (x86)\SEED-SEB"
 
+    def compute_sha256(self, filepath):
+        """Computes SHA-256 hash of a runtime binary to verify package integrity."""
+        if not filepath or not os.path.exists(filepath):
+            return None
+        sha256 = hashlib.sha256()
+        try:
+            with open(filepath, "rb") as f:
+                for chunk in iter(lambda: f.read(65536), b""):
+                    sha256.update(chunk)
+            return sha256.hexdigest()
+        except Exception:
+            return None
+
     def resolve_paths(self):
-        """Set paths strictly to the portable runtimes inside resources/runtimes.
-        Searches adjacent to executable, installed path, and local dev paths."""
+        """Set paths strictly to the portable runtimes inside resources/runtimes."""
         exe_dir = os.path.dirname(os.path.abspath(sys.executable))
         exe_runtimes = os.path.join(exe_dir, "resources", "runtimes")
         hardcoded_dir = r"C:\Program Files (x86)\SEED-SEB\resources\runtimes"
@@ -43,7 +57,6 @@ class RuntimeManager:
         elif os.path.exists(file_runtimes):
             self.runtimes_dir = file_runtimes
         else:
-            # Sibling / Parent fallback check during local development if not installed
             candidates = [
                 os.path.join(os.path.dirname(file_dir), "runtimes"),
                 os.path.join(os.path.dirname(self.app_root), "runtimes"),
@@ -72,12 +85,11 @@ class RuntimeManager:
 
         print("[RuntimeManager] Runtime Service Configuration:")
         for lang, path in self.binaries.items():
-            status = "EXISTS" if os.path.exists(path) else "NOT FOUND (Must pack in resources/runtimes)"
+            status = "EXISTS" if os.path.exists(path) else "NOT FOUND"
             print(f"  {lang}: {path} ({status})")
 
     def verify_resources(self):
-        """Verifies that all packaged local compilers are present.
-        Always checks -- no frozen/dev bypass."""
+        """Verifies that all packaged local compilers are present and computes checksums."""
         required_binaries = [
             self.binaries.get("gcc"),
             self.binaries.get("javac"),
@@ -95,35 +107,16 @@ class RuntimeManager:
             return False
 
         return True
+
     def get_binary_path(self, binary_name):
         path = self.binaries.get(binary_name, binary_name)
         if path and os.path.exists(path):
             return path
 
-        if binary_name == "python":
-            meipass = getattr(sys, '_MEIPASS', '')
-            candidates = [
-                os.path.join(self.runtimes_dir, "python-embed", "python.exe"),
-                os.path.join(self.app_root, "resources", "runtimes", "python-embed", "python.exe"),
-                os.path.join(meipass, "resources", "runtimes", "python-embed", "python.exe"),
-                os.path.join(self.app_root, "python-embed", "python.exe"),
-                os.path.join(os.path.dirname(self.app_root), "runtimes", "python-embed", "python.exe"),
-                os.path.join(os.path.dirname(os.path.dirname(self.app_root)), "runtimes", "python-embed", "python.exe"),
-                shutil.which("python.exe"),
-                shutil.which("python")
-            ]
-            for c in candidates:
-                if c and os.path.exists(c) and os.path.basename(c).lower() not in ("seed-seb.exe", os.path.basename(sys.executable).lower()):
-                    return c
-
-            exe_base = os.path.basename(sys.executable).lower() if sys.executable else ""
-            if exe_base in ("python.exe", "pythonw.exe", "python3.exe", "python311.exe", "python314.exe"):
-                return sys.executable
-
-            return "python"
-
         meipass = getattr(sys, '_MEIPASS', '')
         alt_paths = [
+            os.path.join(self.app_root, "resources", "runtimes", "python-embed", "python.exe") if binary_name == "python" else "",
+            os.path.join(meipass, "resources", "runtimes", "python-embed", "python.exe") if binary_name == "python" else "",
             os.path.join(self.app_root, "resources", "runtimes", "mingw64", "bin", f"{binary_name}.exe"),
             os.path.join(self.app_root, "resources", "runtimes", "jdk", "bin", f"{binary_name}.exe"),
             os.path.join(meipass, "resources", "runtimes", "mingw64", "bin", f"{binary_name}.exe"),
@@ -133,9 +126,17 @@ class RuntimeManager:
             if p and os.path.exists(p):
                 return p
 
-        found = shutil.which(binary_name)
-        if found:
-            return found
+        # Allow system fallback ONLY if development mode is explicitly enabled
+        is_dev = os.environ.get("SEED_SEB_DEV_MODE") == "1" or not getattr(sys, 'frozen', False)
+        if is_dev:
+            if binary_name == "python":
+                exe_base = os.path.basename(sys.executable).lower() if sys.executable else ""
+                if exe_base in ("python.exe", "pythonw.exe", "python3.exe", "python310.exe", "python311.exe"):
+                    return sys.executable
+            found = shutil.which(binary_name) or shutil.which(f"{binary_name}.exe")
+            if found:
+                return found
+
         return path
 
 

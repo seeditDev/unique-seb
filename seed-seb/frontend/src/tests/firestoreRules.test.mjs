@@ -108,6 +108,7 @@ class RulesSimulator {
     return (
       block.includes("resource.data.get('completed', false) == false") &&
       block.includes("request.resource.data.get('durationSeconds', 0) == resource.data.get('durationSeconds', 0)") &&
+      block.includes("request.resource.data.get('startedAt', '') == resource.data.get('startedAt', '')") &&
       block.includes("request.resource.data.get('uid', '') == resource.data.get('uid', '')")
     );
   }

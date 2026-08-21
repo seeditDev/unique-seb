@@ -154,6 +154,75 @@ print("VITE_IN_ENV:", "VITE_INTERNAL_URL" in os.environ)
         self.assertIn("VITE_IN_ENV: False", res["stdout"])
         print("Environment Secret Stripping verified.")
 
+    def test_python_reload_socket_bypass_fails(self):
+        print("Testing Python importlib.reload(socket) bypass prevention...")
+        code = """
+try:
+    import importlib
+    import socket
+    importlib.reload(socket)
+    s = socket.socket()
+    s.connect(("8.8.8.8", 53))
+    print("UNEXPECTED_BYPASS_SUCCESS")
+except PermissionError as e:
+    print("AUDIT_HOOK_BLOCKED_OK")
+except Exception as e:
+    print("RELOAD_FAILED_OK")
+"""
+        res = code_executor.execute("python", code, time_limit=2.0)
+        self.assertNotIn("UNEXPECTED_BYPASS_SUCCESS", res["stdout"])
+        print("Python importlib.reload bypass prevention verified.")
+
+    def test_python_subprocess_spawn_fails(self):
+        print("Testing Python subprocess spawning prevention...")
+        code = """
+try:
+    import subprocess
+    p = subprocess.Popen(["cmd.exe"])
+    print("UNEXPECTED_SUBPROCESS_SPAWNED")
+except PermissionError as e:
+    print("SUBPROCESS_BLOCKED_OK")
+except Exception as e:
+    print("SPAWN_PREVENTED_OK")
+"""
+        res = code_executor.execute("python", code, time_limit=2.0)
+        self.assertNotIn("UNEXPECTED_SUBPROCESS_SPAWNED", res["stdout"])
+        print("Python subprocess spawning prevention verified.")
+
+    def test_javascript_subprocess_spawn_fails(self):
+        print("Testing JavaScript child_process spawning prevention...")
+        code = """
+try:
+    const cp = require('child_process');
+    cp.spawn('cmd.exe');
+    console.log('UNEXPECTED_JS_SPAWN');
+} catch(e) {
+    console.log('JS_SUBPROCESS_BLOCKED_OK');
+}
+"""
+        res = code_executor.execute("javascript", code, time_limit=2.0)
+        if res.get("error") == "JavaScript runtime not available":
+            self.skipTest("Node.js not installed; skipping.")
+        self.assertNotIn("UNEXPECTED_JS_SPAWN", res["stdout"])
+        print("JavaScript child_process spawning prevention verified.")
+
+    def test_disk_quota_file_count_enforcement(self):
+        print("Testing File Count Quota enforcement...")
+        # Attempt to create 150 files to trigger file count quota (> 100 files limit)
+        code = """
+for i in range(150):
+    try:
+        with open(f"test_file_{i}.txt", "w") as f:
+            f.write("data")
+    except Exception:
+        pass
+print("FILES_CREATED")
+"""
+        res = code_executor.execute("python", code, time_limit=3.0)
+        self.assertIn("File Count Quota Exceeded", str(res.get("error", "")))
+        print("File Count Quota enforcement verified.")
+
 if __name__ == "__main__":
     unittest.main()
+
 
