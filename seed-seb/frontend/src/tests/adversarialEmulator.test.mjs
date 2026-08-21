@@ -203,6 +203,75 @@ class AdversarialContext {
     }
     return false;
   }
+
+  // 6. Result Score Integrity (P0 FIX)
+  // Students may only create result stubs with all score fields at zero/false.
+  canCreateResultWithScores(tenantId, assessmentId, targetUserId, payload) {
+    if (this.isAdmin()) return true;
+    if (this.isStaff() && this.tenantAllowed(tenantId)) return true;
+
+    if (!this.isUser(targetUserId)) return false;
+    if (!this.myTenant()) return false;
+    if (tenantId !== this.myTenant()) return false;
+    if (payload.tenantId !== this.myTenant()) return false;
+    if (payload.assessmentId !== assessmentId) return false;
+    if (payload.userId !== targetUserId) return false;
+
+    const assessmentDoc = this.getDoc(`assessments/${assessmentId}`);
+    if (!assessmentDoc) return false;
+    if (!this.isTenantMember(assessmentDoc.tenantId || '')) return false;
+
+    // P0 FIX: Score fields must be at zero/false on create
+    if ((payload.score ?? 0) !== 0) return false;
+    if ((payload.percentage ?? 0) !== 0) return false;
+    if ((payload.correctAnswers ?? 0) !== 0) return false;
+    if ((payload.totalMarks ?? 0) !== 0) return false;
+    if ((payload.maxMarks ?? 0) !== 0) return false;
+    if ((payload.rank ?? 0) !== 0) return false;
+    if (payload.qualified !== undefined && payload.qualified !== false) return false;
+    if (payload.grade !== undefined && payload.grade !== '') return false;
+    if (payload.completed !== undefined && payload.completed !== false) return false;
+    if (payload.evaluationStatus !== undefined && payload.evaluationStatus === 'completed') return false;
+    if (payload.status !== undefined && payload.status === 'submitted') return false;
+    // evaluationSource must be 'client'
+    if ((payload.evaluationSource ?? 'client') !== 'client') return false;
+
+    return true;
+  }
+
+  // 7. Proctoring Attempt Ownership (P0 FIX)
+  // Proctoring log create must verify the attemptId belongs to auth.uid
+  canCreateProctoringLog(attemptId, payload) {
+    if (!this.isSignedIn()) return false;
+    if (!this.myTenant()) return false;
+    if (payload.userId !== this.auth.uid) return false;
+    if (payload.tenantId !== this.myTenant()) return false;
+    if (payload.attemptId !== attemptId) return false;
+
+    // P0 FIX: Cross-document attempt ownership binding
+    const attemptDoc = this.getDoc(`users/${this.auth.uid}/assessmentAttempts/${attemptId}`);
+    if (!attemptDoc) return false;
+    if (attemptDoc.uid !== this.auth.uid) return false;
+    if (attemptDoc.tenantId !== this.myTenant()) return false;
+
+    return true;
+  }
+
+  // 8. Proctoring Event Ownership (P0 FIX)
+  // Event create must verify the parent log belongs to auth.uid
+  canCreateProctoringEvent(attemptId, payload) {
+    if (!this.isSignedIn()) return false;
+    if (payload.userId !== this.auth.uid) return false;
+    if (payload.attemptId !== attemptId) return false;
+
+    const parentLog = this.getDoc(`proctoringLogs/${attemptId}`);
+    if (!parentLog) return false;
+    if (payload.tenantId !== parentLog.tenantId) return false;
+    // P0 FIX: Parent log must belong to the authenticated user
+    if (parentLog.userId !== this.auth.uid) return false;
+
+    return true;
+  }
 }
 
 // Database Fixture
@@ -224,6 +293,14 @@ const databaseFixture = {
 
   'assessmentResults/TN000026/asm_alpha_1/student_A': { tenantId: 'TN000026', assessmentId: 'asm_alpha_1', userId: 'student_A', score: 95 },
   'assessmentResults/TN000027/asm_beta_1/student_B': { tenantId: 'TN000027', assessmentId: 'asm_beta_1', userId: 'student_B', score: 88 },
+
+  // Attempt records for proctoring attempt-ownership binding tests
+  'users/student_A/assessmentAttempts/att_A_1': { uid: 'student_A', tenantId: 'TN000026', assessmentId: 'asm_alpha_1' },
+  'users/student_B/assessmentAttempts/att_B_1': { uid: 'student_B', tenantId: 'TN000027', assessmentId: 'asm_beta_1' },
+
+  // Proctoring logs
+  'proctoringLogs/att_A_1': { userId: 'student_A', tenantId: 'TN000026', attemptId: 'att_A_1', status: 'active' },
+  'proctoringLogs/att_B_1': { userId: 'student_B', tenantId: 'TN000027', attemptId: 'att_B_1', status: 'active' },
 };
 
 // Create Actor Contexts
@@ -391,6 +468,116 @@ assert.strictEqual(
 );
 console.log('  ✓ Staff A -> mutate root tenant document: BLOCKED (Admin-only)');
 
-console.log('\n================================================================');
+// ── SECTION 6: RESULT SCORE INTEGRITY (P0) ───────────────────────────────────
+console.log('[Phase 6] Result Score Fabrication Attack Matrix:');
+
+// Legitimate stub creation (all zeros)
+assert.strictEqual(
+  studentA.canCreateResultWithScores('TN000026', 'asm_alpha_1', 'student_A', {
+    tenantId: 'TN000026', assessmentId: 'asm_alpha_1', userId: 'student_A',
+    score: 0, percentage: 0, qualified: false, grade: '', completed: false,
+    evaluationStatus: 'pending', evaluationSource: 'client'
+  }),
+  true,
+  'Student A MUST be allowed to create a zero-scored result stub'
+);
+console.log('  ✓ Student A -> create result stub (all zeros): ALLOWED');
+
+// Attack 1: Student writes score=100 directly
+assert.strictEqual(
+  studentA.canCreateResultWithScores('TN000026', 'asm_alpha_1', 'student_A', {
+    tenantId: 'TN000026', assessmentId: 'asm_alpha_1', userId: 'student_A',
+    score: 100, percentage: 100, qualified: true, grade: 'A+', completed: true,
+    evaluationStatus: 'completed', evaluationSource: 'client'
+  }),
+  false,
+  'Student A MUST NOT be allowed to create result with score=100 (score fabrication attack)'
+);
+console.log('  ✓ Student A -> create result with score=100: BLOCKED (Score fabrication denied)');
+
+// Attack 2: Student writes qualified=true
+assert.strictEqual(
+  studentA.canCreateResultWithScores('TN000026', 'asm_alpha_1', 'student_A', {
+    tenantId: 'TN000026', assessmentId: 'asm_alpha_1', userId: 'student_A',
+    score: 0, percentage: 0, qualified: true, grade: '', completed: false,
+    evaluationStatus: 'pending', evaluationSource: 'client'
+  }),
+  false,
+  'Student A MUST NOT be allowed to create result with qualified=true'
+);
+console.log('  ✓ Student A -> create result with qualified=true: BLOCKED (Qualification spoofing denied)');
+
+// Attack 3: Student writes grade='A+'
+assert.strictEqual(
+  studentA.canCreateResultWithScores('TN000026', 'asm_alpha_1', 'student_A', {
+    tenantId: 'TN000026', assessmentId: 'asm_alpha_1', userId: 'student_A',
+    score: 0, percentage: 0, qualified: false, grade: 'A+', completed: false,
+    evaluationStatus: 'pending', evaluationSource: 'client'
+  }),
+  false,
+  'Student A MUST NOT be allowed to create result with grade=A+'
+);
+console.log('  ✓ Student A -> create result with grade=A+: BLOCKED (Grade spoofing denied)');
+
+// Attack 4: Student writes evaluationStatus=completed
+assert.strictEqual(
+  studentA.canCreateResultWithScores('TN000026', 'asm_alpha_1', 'student_A', {
+    tenantId: 'TN000026', assessmentId: 'asm_alpha_1', userId: 'student_A',
+    score: 0, percentage: 0, qualified: false, grade: '', completed: false,
+    evaluationStatus: 'completed', evaluationSource: 'client'
+  }),
+  false,
+  'Student A MUST NOT be allowed to create result with evaluationStatus=completed'
+);
+console.log('  ✓ Student A -> create result with evaluationStatus=completed: BLOCKED (Evaluation status spoofing denied)');
+
+// Attack 5: Student writes evaluationSource=server (claiming server verification)
+assert.strictEqual(
+  studentA.canCreateResultWithScores('TN000026', 'asm_alpha_1', 'student_A', {
+    tenantId: 'TN000026', assessmentId: 'asm_alpha_1', userId: 'student_A',
+    score: 0, percentage: 0, qualified: false, grade: '', completed: false,
+    evaluationStatus: 'pending', evaluationSource: 'server'
+  }),
+  false,
+  'Student A MUST NOT be allowed to claim evaluationSource=server'
+);
+console.log('  ✓ Student A -> create result claiming evaluationSource=server: BLOCKED (Attestation spoofing denied)\n');
+
+// ── SECTION 7: PROCTORING ATTEMPT OWNERSHIP BINDING (P0) ─────────────────────
+console.log('[Phase 7] Proctoring Attempt Substitution Attack Matrix:');
+
+// Legitimate log creation (Student A for own attempt)
+assert.strictEqual(
+  studentA.canCreateProctoringLog('att_A_1', { userId: 'student_A', tenantId: 'TN000026', attemptId: 'att_A_1' }),
+  true,
+  'Student A MUST be allowed to create proctoring log for own attempt'
+);
+console.log('  ✓ Student A -> create proctoring log for own attempt (att_A_1): ALLOWED');
+
+// Attack 6: Student A tries to create proctoring log for Student B's attempt
+assert.strictEqual(
+  studentA.canCreateProctoringLog('att_B_1', { userId: 'student_A', tenantId: 'TN000026', attemptId: 'att_B_1' }),
+  false,
+  'Student A MUST NOT be allowed to create proctoring log for Student B attempt (att_B_1)'
+);
+console.log('  ✓ Student A -> create proctoring log for Student B attempt (att_B_1): BLOCKED (Attempt substitution denied)');
+
+// Attack 7: Student A tries to create an event under Student B's log
+assert.strictEqual(
+  studentA.canCreateProctoringEvent('att_B_1', { userId: 'student_A', tenantId: 'TN000027', attemptId: 'att_B_1' }),
+  false,
+  'Student A MUST NOT be allowed to create event under Student B proctoring log'
+);
+console.log('  ✓ Student A -> create event under Student B log (att_B_1): BLOCKED (Log ownership verification failed)');
+
+// Legitimate event creation (Student A for own log)
+assert.strictEqual(
+  studentA.canCreateProctoringEvent('att_A_1', { userId: 'student_A', tenantId: 'TN000026', attemptId: 'att_A_1' }),
+  true,
+  'Student A MUST be allowed to create event under own proctoring log'
+);
+console.log('  ✓ Student A -> create event under own log (att_A_1): ALLOWED\n');
+
+console.log('================================================================');
 console.log('ALL ADVERSARIAL ATTACK MATRIX VECTORS VERIFIED (100% PASS)');
 console.log('================================================================\n');

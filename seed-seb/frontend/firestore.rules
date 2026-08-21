@@ -313,6 +313,11 @@ service cloud.firestore {
     // ══════════════════════════════════════════════════════════════════════
     // 5. Assessment Results (Strict 4-Segment Path & Immutability)
     //   Path: assessmentResults/{tenantId}/{assessmentId}/{userId}
+    //
+    //   Trust model: Client-generated results (evaluationSource == 'client').
+    //   Score fields are LOCKED TO ZERO on create — the evaluation engine
+    //   fills them in via update. Admin/Staff may set any values.
+    //   Students cannot manufacture scores at creation time.
     // ══════════════════════════════════════════════════════════════════════
 
     match /assessmentResults/{tenantId} {
@@ -322,8 +327,11 @@ service cloud.firestore {
       match /{assessmentId}/{userId} {
         allow get:    if isAdmin() || (isStaff() && tenantAllowed(tenantId)) || isUser(userId);
         allow list:   if isAdmin() || (isStaff() && tenantAllowed(tenantId));
-        
-        // Strict create: must belong to authenticated user, matching tenantId and assessmentId, and assessment must belong to tenant
+
+        // ── P0 FIX: Score fields MUST be at safe zero/false defaults on student create.
+        // Students can only write the result "stub". The evaluation engine fills scores
+        // via update. This prevents a student from bypassing the evaluator and writing
+        // an arbitrary score directly into Firestore.
         allow create: if isAdmin() || (isStaff() && tenantAllowed(tenantId))
           || (isUser(userId)
               && myTenant() != ''
@@ -331,9 +339,25 @@ service cloud.firestore {
               && request.resource.data.get('tenantId', '') == myTenant()
               && request.resource.data.get('assessmentId', '') == assessmentId
               && request.resource.data.get('userId', '') == userId
-              && isTenantMember(get(/databases/$(database)/documents/assessments/$(assessmentId)).data.get('tenantId', '')));
-        
-        // Strict update: only permitted while attempt is active. All evaluation & score fields locked against student tampering.
+              && isTenantMember(get(/databases/$(database)/documents/assessments/$(assessmentId)).data.get('tenantId', ''))
+              // Score integrity: all evaluation fields must be at initial safe values on create
+              && request.resource.data.get('score', 0) == 0
+              && request.resource.data.get('percentage', 0) == 0
+              && request.resource.data.get('correctAnswers', 0) == 0
+              && request.resource.data.get('totalMarks', 0) == 0
+              && request.resource.data.get('maxMarks', 0) == 0
+              && request.resource.data.get('rank', 0) == 0
+              && request.resource.data.get('qualified', false) == false
+              && request.resource.data.get('grade', '') == ''
+              && request.resource.data.get('completed', false) == false
+              && request.resource.data.get('status', '') != 'submitted'
+              && request.resource.data.get('evaluationStatus', '') != 'completed'
+              // Attestation: mark this result as client-generated
+              && request.resource.data.get('evaluationSource', '') == 'client');
+
+        // ── P1 FIX: Explicit field allowlist + all score fields locked against student tampering on update.
+        // Students can update answers/responses while active, but cannot add arbitrary fields
+        // or change any evaluation/completion fields (score, grade, status, etc.).
         allow update: if isAdmin() || (isStaff() && tenantAllowed(tenantId))
           || (isUser(userId)
               && resource.data.get('completed', false) == false
@@ -341,6 +365,7 @@ service cloud.firestore {
               && request.resource.data.get('userId', '') == userId
               && request.resource.data.get('tenantId', '') == resource.data.get('tenantId', '')
               && request.resource.data.get('assessmentId', '') == resource.data.get('assessmentId', '')
+              // All evaluation/score fields strictly locked
               && request.resource.data.get('score', 0) == resource.data.get('score', 0)
               && request.resource.data.get('percentage', 0) == resource.data.get('percentage', 0)
               && request.resource.data.get('rank', 0) == resource.data.get('rank', 0)
@@ -349,25 +374,51 @@ service cloud.firestore {
               && request.resource.data.get('maxMarks', 0) == resource.data.get('maxMarks', 0)
               && request.resource.data.get('evaluationStatus', '') == resource.data.get('evaluationStatus', '')
               && request.resource.data.get('qualified', false) == resource.data.get('qualified', false)
-              && request.resource.data.get('grade', '') == resource.data.get('grade', ''));
+              && request.resource.data.get('grade', '') == resource.data.get('grade', '')
+              && request.resource.data.get('evaluationSource', 'client') == resource.data.get('evaluationSource', 'client')
+              // Explicit field allowlist: prevents writing arbitrary undeclared fields
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+                   'answers', 'responses', 'codingSubmissions', 'timeSpent',
+                   'updatedAt', 'lastSyncAt', 'heartbeatAt',
+                   'score', 'percentage', 'correctAnswers', 'totalMarks', 'maxMarks',
+                   'qualified', 'grade', 'rank', 'evaluationStatus',
+                   'completed', 'status', 'submittedAt',
+                   'evaluationSource', 'runtimeVersion', 'runtimeManifestHash'
+                 ]));
 
         allow delete: if isAdmin();
       }
     }
 
     // ══════════════════════════════════════════════════════════════════════
-    // 6. Proctoring Logs & Events (Tenant Scoped & Immutable Event Log)
+    // 6. Proctoring Logs & Events (Attempt-Bound, Tenant Scoped & Immutable)
+    //
+    //   P0 FIX: proctoringLogs/{attemptId} is now strictly bound to the
+    //   authenticated user's own attempt. Student A cannot create or update
+    //   a proctoring log for Student B's attemptId. The cross-document check
+    //   verifies that assessmentAttempts/{attemptId}.uid == request.auth.uid.
     // ══════════════════════════════════════════════════════════════════════
 
     match /proctoringLogs/{attemptId} {
       allow read: if isAdmin()
         || (isStaff() && (resource == null || tenantAllowed(resource.data.get('tenantId', ''))))
         || (isSignedIn() && (resource == null || resource.data.get('userId', '') == request.auth.uid));
+
+      // ── P0 FIX: Bind proctoring log to the authenticated student's actual attempt.
+      // Cross-document check: assessmentAttempts/{attemptId} must belong to request.auth.uid
+      // and to the student's own tenant. Prevents Student A writing a log for Student B's attemptId.
       allow create: if isSignedIn()
         && myTenant() != ''
         && request.resource.data.get('userId', '') == request.auth.uid
         && request.resource.data.get('tenantId', '') == myTenant()
-        && request.resource.data.get('attemptId', '') == attemptId;
+        && request.resource.data.get('attemptId', '') == attemptId
+        // Cross-document attempt ownership verification
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)/assessmentAttempts/$(attemptId)).data.get('uid', '') == request.auth.uid
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)/assessmentAttempts/$(attemptId)).data.get('tenantId', '') == myTenant();
+
+      // ── P1 FIX: Explicit student-writable field allowlist on update.
+      // Prevents students from manipulating proctoring metadata such as
+      // violationCount, riskScore, finalDecision, suspicionScore.
       allow update: if isAdmin()
         || (isStaff() && tenantAllowed(resource.data.get('tenantId', '')))
         || (isSignedIn()
@@ -375,17 +426,29 @@ service cloud.firestore {
             && resource.data.get('status', '') != 'finalized'
             && request.resource.data.get('userId', '') == resource.data.get('userId', '')
             && request.resource.data.get('tenantId', '') == resource.data.get('tenantId', '')
-            && request.resource.data.get('attemptId', '') == resource.data.get('attemptId', ''));
+            && request.resource.data.get('attemptId', '') == resource.data.get('attemptId', '')
+            // Explicit allowlist: only benign session-state fields are student-writable
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+                 'browserState', 'cameraStatus', 'microphoneStatus',
+                 'lastHeartbeat', 'heartbeatAt', 'updatedAt',
+                 'sessionState', 'networkState', 'focusState'
+               ]));
       allow delete: if isAdmin();
 
       match /events/{eventId} {
         allow read: if isAdmin()
           || (isStaff() && (resource == null || tenantAllowed(get(/databases/$(database)/documents/proctoringLogs/$(attemptId)).data.get('tenantId', ''))))
           || (isSignedIn() && (resource == null || resource.data.get('userId', '') == request.auth.uid));
+
+        // ── P0 FIX: Event create also verifies the parent log belongs to the authenticated user.
+        // Prevents Student A writing events under proctoringLogs/StudentBAttempt
+        // even if the payload fields are internally self-consistent.
         allow create: if isSignedIn()
           && request.resource.data.get('userId', '') == request.auth.uid
           && request.resource.data.get('attemptId', '') == attemptId
-          && request.resource.data.get('tenantId', '') == get(/databases/$(database)/documents/proctoringLogs/$(attemptId)).data.get('tenantId', '');
+          && request.resource.data.get('tenantId', '') == get(/databases/$(database)/documents/proctoringLogs/$(attemptId)).data.get('tenantId', '')
+          // Parent log must belong to the authenticated user (closes attempt substitution attack)
+          && get(/databases/$(database)/documents/proctoringLogs/$(attemptId)).data.get('userId', '') == request.auth.uid;
         allow update: if false; // Strict immutability
         allow delete: if isAdmin();
       }

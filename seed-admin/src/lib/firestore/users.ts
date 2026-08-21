@@ -54,15 +54,25 @@ export async function getUserDoc(uid: string): Promise<AppUser | null> {
   return snap.exists() ? mapUser(snap.id, snap.data() as Record<string, unknown>) : null;
 }
 
-/** Resolves the portal account for a signed-in admin: uid doc first, then sanitized-email doc. */
-export async function resolveAccount(uid: string, email: string): Promise<AppUser | null> {
+/** Resolves the portal account for a signed-in admin using ONLY the Firebase Auth UID.
+ * Firebase Auth UID is the single identity authority. Email-based lookups are NOT
+ * used for authorization to prevent UID/email key mismatches.
+ */
+export async function resolveAccount(uid: string, _email?: string): Promise<AppUser | null> {
+  // Authoritative lookup: users/{firebaseUid} only
   const byUid = await getUserDoc(uid);
   if (byUid) return byUid;
+  // UID not found — do not fall back to email-based identity for authorization.
+  return null;
+}
+
+/** Non-authoritative email search for admin UI lookup/search purposes only.
+ * MUST NOT be used for authorization decisions; use resolveAccount(uid) instead.
+ */
+export async function findUserByEmail(email: string): Promise<AppUser | null> {
   if (!email) return null;
-  const byEmail = await getUserDoc(sanitizeEmailKey(email));
-  if (byEmail) return byEmail;
   const matches = await getDocs(
-    query(collection(getDb(), USERS), where("email", "==", email.toLowerCase())),
+    query(collection(getDb(), USERS), where('email', '==', email.toLowerCase())),
   );
   const first = matches.docs[0];
   return first ? mapUser(first.id, first.data() as Record<string, unknown>) : null;
@@ -146,7 +156,15 @@ export async function provisionAccount(
     input = { ...input, year, cohortId: input.cohortId || yearToCohortCode(year) };
   }
 
-  const password = input.password?.trim() || "Seedit@123";
+  // P1 FIX: No default password. A password is required for every provisioned account.
+  // A known hardcoded fallback (e.g. "Seedit@123") would give all auto-provisioned
+  // accounts the same known credential, creating a mass credential exposure risk.
+  if (!input.password?.trim()) {
+    throw new Error(
+      "A temporary password is required. Use the \"Generate Password\" button to create a secure credential for the student."
+    );
+  }
+  const password = input.password.trim();
   if (password.length < 6) throw new Error("Password must be at least 6 characters.");
 
   let uid = sanitizeEmailKey(email);
@@ -236,7 +254,30 @@ export async function updateStudent(uid: string, patch: Partial<AppUser>): Promi
   await updateDoc(doc(getDb(), USERS, uid), clean);
 }
 
+/**
+ * Deletes the Firestore user profile document.
+ *
+ * ⚠️  AUTH LIFECYCLE INCOMPLETE ⚠️
+ * This function ONLY removes the Firestore profile. The Firebase Authentication
+ * credential (email + password / OAuth) is NOT disabled or deleted by this call.
+ * The student can still sign in after this operation.
+ *
+ * For a production-safe account deactivation:
+ *   1. Disable the Auth user via Firebase Admin SDK (requires a Cloud Function or
+ *      server-side endpoint — cannot be done safely from a browser client).
+ *   2. Optionally delete or archive the Firestore profile.
+ *   3. Revoke any active refresh tokens.
+ *   4. Write an audit log entry.
+ *
+ * TODO: Wire this to a Cloud Function that calls admin.auth().updateUser(uid, { disabled: true })
+ *       before deleting the Firestore profile.
+ */
 export async function deleteStudent(uid: string): Promise<void> {
+  // Log a visible warning so this limitation surfaces during admin operations
+  console.warn(
+    `[deleteStudent] Firestore profile for ${uid} deleted. ` +
+    `Firebase Auth credential NOT revoked. Implement Cloud Function to complete auth lifecycle.`
+  );
   await deleteDoc(doc(getDb(), USERS, uid));
 }
 

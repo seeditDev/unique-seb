@@ -304,7 +304,8 @@ class RulesSimulator {
   }
 
   isResultBoundToAssessmentTenant() {
-    const match = this.rules.match(/match\s+\/assessmentResults\/\{tenantId\}\s*\{[\s\S]*?match\s+\/\{assessmentId\}\/\{userId\}\s*\{([\s\S]*?)\n\s*\/\/\s*Strict update/);
+    // Match the nested /{assessmentId}/{userId} block up to the first allow update comment
+    const match = this.rules.match(/match\s+\/assessmentResults\/\{tenantId\}\s*\{[\s\S]*?match\s+\/\{assessmentId\}\/\{userId\}\s*\{([\s\S]*?)\n\s*\/\/\s*(?:Strict update|──\s*P1 FIX:)/);
     if (!match) return false;
     const block = match[1];
     return (
@@ -317,7 +318,8 @@ class RulesSimulator {
   }
 
   isNestedResultListLockedToStaffAndAdmin() {
-    const match = this.rules.match(/match\s+\/assessmentResults\/\{tenantId\}\s*\{[\s\S]*?match\s+\/\{assessmentId\}\/\{userId\}\s*\{([\s\S]*?)\n\s*\/\/\s*Strict create/);
+    // Match the nested /{assessmentId}/{userId} block up to the first allow create comment
+    const match = this.rules.match(/match\s+\/assessmentResults\/\{tenantId\}\s*\{[\s\S]*?match\s+\/\{assessmentId\}\/\{userId\}\s*\{([\s\S]*?)\n\s*\/\/\s*(?:Strict create|──\s*P0 FIX:)/);
     if (!match) return false;
     const block = match[1];
     return (

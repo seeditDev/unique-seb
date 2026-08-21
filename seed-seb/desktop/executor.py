@@ -626,28 +626,41 @@ class CodeExecutor:
             # Start real-time active disk, reparse point & file count quota monitor
             def _active_disk_monitor():
                 while not stop_monitor.is_set():
-                    total_size = 0
-                    total_files = 0
                     try:
+                        total_size = 0
+                        total_files = 0
                         for root, dirs, files in os.walk(run_dir, followlinks=False):
                             for d in dirs:
                                 dp = os.path.join(root, d)
                                 if self._is_reparse_or_link(dp):
                                     quota_reason[0] = "Sandbox Security Violation: Directory symlink/junction detected"
                                     quota_violated.set()
-                                    try:
-                                        proc.kill()
-                                    except Exception:
-                                        pass
+                                    # Terminate entire job tree (authoritative process-tree kill)
+                                    if sys.platform == "win32" and job:
+                                        try:
+                                            ctypes.windll.kernel32.TerminateJobObject(job, 1)
+                                        except Exception:
+                                            pass
+                                    else:
+                                        try:
+                                            proc.kill()
+                                        except Exception:
+                                            pass
                                     return
                             total_files += len(files)
                             if total_files > 100:
                                 quota_reason[0] = "File Count Quota Exceeded (Max 100 files limit exceeded during execution)"
                                 quota_violated.set()
-                                try:
-                                    proc.kill()
-                                except Exception:
-                                    pass
+                                if sys.platform == "win32" and job:
+                                    try:
+                                        ctypes.windll.kernel32.TerminateJobObject(job, 1)
+                                    except Exception:
+                                        pass
+                                else:
+                                    try:
+                                        proc.kill()
+                                    except Exception:
+                                        pass
                                 return
                             for f in files:
                                 fp = os.path.join(root, f)
@@ -656,23 +669,49 @@ class CodeExecutor:
                                     if not self._is_path_contained(real_target, canonical_run_dir):
                                         quota_reason[0] = "Sandbox Security Violation: Symlink/reparse point targeting outside workspace detected"
                                         quota_violated.set()
-                                        try:
-                                            proc.kill()
-                                        except Exception:
-                                            pass
+                                        if sys.platform == "win32" and job:
+                                            try:
+                                                ctypes.windll.kernel32.TerminateJobObject(job, 1)
+                                            except Exception:
+                                                pass
+                                        else:
+                                            try:
+                                                proc.kill()
+                                            except Exception:
+                                                pass
                                         return
                                 total_size += os.path.getsize(fp)
                                 if total_size > 50 * 1024 * 1024:
                                     quota_reason[0] = "Disk Quota Exceeded (50MB limit exceeded during execution)"
                                     quota_violated.set()
-                                    try:
-                                        proc.kill()
-                                    except Exception:
-                                        pass
+                                    if sys.platform == "win32" and job:
+                                        try:
+                                            ctypes.windll.kernel32.TerminateJobObject(job, 1)
+                                        except Exception:
+                                            pass
+                                    else:
+                                        try:
+                                            proc.kill()
+                                        except Exception:
+                                            pass
                                     return
-                    except Exception:
-                        pass
-                    stop_monitor.wait(0.03) # Check every 30ms
+                    except Exception as monitor_exc:
+                        # FAIL-CLOSED: monitor exception terminates the process tree.
+                        # Silent pass is not acceptable — an unmonitored process continues unaudited.
+                        quota_reason[0] = f"Sandbox Monitor Failure: disk sentinel error ({monitor_exc})"
+                        quota_violated.set()
+                        if sys.platform == "win32" and job:
+                            try:
+                                ctypes.windll.kernel32.TerminateJobObject(job, 1)
+                            except Exception:
+                                pass
+                        else:
+                            try:
+                                proc.kill()
+                            except Exception:
+                                pass
+                        return
+                    stop_monitor.wait(0.03)  # Check every 30ms
 
             monitor_thread = threading.Thread(target=_active_disk_monitor, daemon=True)
             monitor_thread.start()
@@ -681,19 +720,28 @@ class CodeExecutor:
                 stdout, stderr = proc.communicate(input=stdin, timeout=time_limit)
                 exit_code = proc.returncode
             except subprocess.TimeoutExpired:
-                # Terminate process tree recursively
-                try:
-                    import psutil
-                    parent = psutil.Process(proc.pid)
-                    for child in parent.children(recursive=True):
-                        try:
-                            child.kill()
-                        except Exception:
-                            pass
-                except Exception:
-                    pass
-                proc.kill()
-                stdout, stderr = proc.communicate() # Drain pipes after killing
+                # AUTHORITATIVE PROCESS-TREE KILL: Use TerminateJobObject on Windows so all
+                # child processes (compiler sub-shells, forked workers) are terminated atomically.
+                # Avoids the race condition between psutil recursive kill and Job Object lifecycle.
+                if sys.platform == "win32" and job:
+                    try:
+                        ctypes.windll.kernel32.TerminateJobObject(job, 1)
+                    except Exception:
+                        pass
+                else:
+                    # Non-Windows fallback: psutil recursive kill
+                    try:
+                        import psutil
+                        parent = psutil.Process(proc.pid)
+                        for child in parent.children(recursive=True):
+                            try:
+                                child.kill()
+                            except Exception:
+                                pass
+                    except Exception:
+                        pass
+                    proc.kill()
+                stdout, stderr = proc.communicate()  # Drain pipes after killing
                 exit_code = -9
                 error_msg = "Time Limit Exceeded (TLE)"
                 
