@@ -454,7 +454,7 @@ const SpokenEnglishAssessment = ({ assessmentData, user, onBack, onComplete, onS
       return;
     }
 
-    const userEmail = (currentUser?.Email || (currentUser?.email  ?? '')).toLowerCase();
+    const userEmail = (currentUser?.email ?? '').toLowerCase();
     const testId = assessmentData?.id ?? 'AS003_T001';
 
     const vInfo = getViolations(testId, userEmail);

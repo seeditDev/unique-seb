@@ -1803,7 +1803,7 @@ const MultiSectionAssessment = () => {
       }
       if (user?.email && tenant.valid) {
         const { year } = tenant;
-        const tenantId = user?.tenantId || (tenant.tenantId  ?? '');
+        const tenantId = user?.tenantId ?? tenant.tenantId ?? '';
         const userId = auth?.currentUser?.uid;
         if (!userId) {
           console.error('[MSA] autoSubmitSection partial: not authenticated, refusing Firestore write.');
@@ -1811,7 +1811,6 @@ const MultiSectionAssessment = () => {
           setDoc(doc(db, `assessmentResults/${tenantId}/${assessment.id}/${userId}`), {
             userId, email: user.email, rollNumber: user.rollNumber ?? '', name: user.name ?? '',
             tenantId: tenantId, cohortId: user?.cohortId ?? year ?? "",
-            assessmentId: assessment.id, assessmentTitle: assessment.name,
             assessmentId: assessment.id, assessmentTitle: assessment.name,
             type: 'multisection', status: 'partial',
             sectionsCompleted: currentSecIdx + 1, totalSections,
@@ -1831,8 +1830,8 @@ const MultiSectionAssessment = () => {
       // All sections done — final submission
       setIsSubmittingEntireExam(true);
       const tenant = resolveTenant(user);
-      const college = tenant.valid ? tenant.college : (user?.college ?? user?.tenantId ?? "");
-      const year = tenant.valid ? tenant.year : (user?.year ?? "");
+      const college = user?.college ?? tenant.college ?? '';
+      const year = user?.year ?? tenant.year ?? '';
       
       try {
         const sectionsList = Object.values(updatedResults).map(sec => {

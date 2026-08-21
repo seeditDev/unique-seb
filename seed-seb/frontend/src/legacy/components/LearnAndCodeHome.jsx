@@ -222,7 +222,7 @@ const LearnAndCodeHome = () => {
                 </div>
                 <div className="header-right">
                     <div className="user-profile-circle">
-                        {user?.Name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : <FaUser />}
+                        {user?.name ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : <FaUser />}
                     </div>
                     <button className="learn-logout-btn" onClick={handleLogout} aria-label="Logout">
                         <FaSignOutAlt />
