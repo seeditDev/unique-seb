@@ -184,10 +184,7 @@ const StudentDashboard = () => {
     }
     const updated = {
       ...user,
-      Name: editName.trim(),
       name: editName.trim(),
-      displayName: editName.trim(),
-      rollNumber: editRollNo.trim(),
       rollNumber: editRollNo.trim(),
       phone: editPhone.trim(),
       photoURL: avatarUrl
@@ -197,7 +194,6 @@ const StudentDashboard = () => {
     if (user?.uid) {
       try {
         await updateDoc(doc(db, 'users', user.uid), {
-          displayName: editName.trim(),
           name: editName.trim(),
           rollNumber: editRollNo.trim(),
           phone: editPhone.trim(),
@@ -1061,31 +1057,25 @@ const StudentDashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const authData = JSON.parse(localStorage.getItem("auth_data") ?? "{}");
-    const userEmail = authData.Email || authData.email;
-    const userUid = authData.uid || authData.UID;
-    if (userEmail || authData.Name) {
+    const authData = getAuthData() || {};
+    const userEmail = (authData.email ?? '').toLowerCase();
+    const userUid = authData.uid ?? auth?.currentUser?.uid ?? '';
+    if (userEmail || userUid) {
       setUser(authData);
       loadAssessments(authData);
 
       // ── Force completion refresh when returning from an assessment ──
       if (location.state?.justCompleted) {
-        const email = authData.Email || (authData.email  ?? '');
-        if (email) invalidateCompletionCache(email);
+        if (userEmail) invalidateCompletionCache(userEmail);
         window.history.replaceState({}, '', window.location.pathname);
       }
 
       // ── Firestore profile enrichment (background, non-blocking) ──
-      // Reads users/{uid} and merges fresh profile fields into user state
-      // so the profile tab always shows Firestore-authoritative data.
+      // Reads users/{uid} and merges fresh canonical profile fields into user state
       const enrichProfile = async () => {
-        // FIX P2: Use auth.currentUser.uid as the canonical Firestore lookup ID.
-        // The previous fallback `userEmail.replace(/[@.]/g,'_')` could produce
-        // wrong paths if the uid was never set in auth_data, or could leak one
-        // student's profile into another session.
         const lookupId = auth?.currentUser?.uid || userUid;
         if (!lookupId) {
-          console.warn('[Dashboard] enrichProfile: no Firebase Auth UID and no cached uid. Skipping.');
+          console.warn('[Dashboard] enrichProfile: no Firebase Auth UID. Skipping.');
           return;
         }
         try {
@@ -1093,38 +1083,32 @@ const StudentDashboard = () => {
           if (profileSnap.exists()) {
             const p = profileSnap.data();
 
-            // Derive Year from cohortId if not on profile: "2K27" → "2027"
-            const cohortId = p.tenantId ? (p.cohortId || (authData.cohortId  ?? '')) : (authData.cohortId ?? '');
-            let derivedYear = p.year || p.graduationYear || (authData.Year  ?? '');
-            if (!derivedYear && cohortId) {
-              const m = cohortId.match(/^2K(\d{2})/i);
-              if (m) derivedYear = `20${m[1]}`;
-            }
-            // tenantId IS the college key for all Firestore paths
-            const effectiveCollege = p.college || p.institution || authData.College
-              || p.tenantId || (authData.tenantId  ?? '');
-
             const enriched = {
               ...authData,
               ...p,
-              uid: p.uid || userUid || lookupId,
-              tenantId: effectiveCollege,
-              college: effectiveCollege,
-              cohortId: p.cohortId || (authData.cohortId  ?? ''),
-              year: derivedYear || p.year || authData.year || (authData.Year  ?? ''),
-              seedCredits: p.seedCredits ?? p.credits ?? authData.seedCredits ?? 2450,
-              streak: p.streak ?? authData.streak ?? 1,
+              uid: lookupId,
+              email: (p.email ?? authData.email ?? userEmail).toLowerCase(),
+              tenantId: p.tenantId ?? authData.tenantId ?? '',
+              college: p.college ?? authData.college ?? '',
+              name: p.name ?? authData.name ?? '',
+              rollNumber: p.rollNumber ?? authData.rollNumber ?? '',
+              cohortId: p.cohortId ?? authData.cohortId ?? '',
+              year: p.year ?? authData.year ?? '',
+              department: p.department ?? authData.department ?? '',
+              role: p.role ?? authData.role ?? 'student',
+              isPremium: Boolean(p.isPremium ?? authData.isPremium),
+              seedCredits: typeof p.seedCredits === 'number' ? p.seedCredits : (typeof authData.seedCredits === 'number' ? authData.seedCredits : 0),
+              streak: typeof p.streak === 'number' ? p.streak : (typeof authData.streak === 'number' ? authData.streak : 0),
+              lastStreakDate: p.lastStreakDate ?? authData.lastStreakDate ?? null,
+              photoURL: p.photoURL ?? authData.photoURL ?? '',
+              isAuthenticated: true,
             };
             setUser(enriched);
             if (enriched.seedCredits !== undefined) setSeedCredits(enriched.seedCredits);
             if (enriched.streak !== undefined) setUserStreak(enriched.streak);
             localStorage.setItem('auth_data', JSON.stringify(enriched));
 
-            // Re-load assessments if College or Year was missing before enrichment
-            // (new students provisioned via Admin may have incomplete auth_data on first load)
-            const wasIncomplete = !authData.College || !authData.Year;
-            const nowComplete = !!enriched.College;
-            if (wasIncomplete && nowComplete) {
+            if (!authData.tenantId && enriched.tenantId) {
               console.info('[Dashboard] Profile enriched — reloading assessments with complete tenant info.');
               loadAssessments(enriched);
             }
@@ -2739,7 +2723,7 @@ const StudentDashboard = () => {
                         style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-main)', fontSize: '13px', width: '220px' }}
                       />
                     ) : (
-                      <span className="field-value">{user?.name || name}</span>
+                      <span className="field-value">{user?.name || "—"}</span>
                     )}
                   </div>
                   <div className="info-field-row">
@@ -2752,12 +2736,12 @@ const StudentDashboard = () => {
                         style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--bg-primary)', color: 'var(--text-main)', fontSize: '13px', width: '220px' }}
                       />
                     ) : (
-                      <span className="field-value">{user?.rollNumber || rollNumber}</span>
+                      <span className="field-value">{user?.rollNumber || "—"}</span>
                     )}
                   </div>
                   <div className="info-field-row">
                     <span className="field-label">Email Address</span>
-                    <span className="field-value">{email}</span>
+                    <span className="field-value">{user?.email || email || "—"}</span>
                   </div>
                   <div className="info-field-row">
                     <span className="field-label">Phone Number</span>
@@ -2807,7 +2791,7 @@ const StudentDashboard = () => {
                     />
                   ) : (
                     <div className="profile-avatar-circle-green">
-                      {name.charAt(0).toUpperCase()}
+                      {(user?.name || name || 'S').charAt(0).toUpperCase()}
                     </div>
                   )}
                   <button
@@ -2829,15 +2813,15 @@ const StudentDashboard = () => {
               <div className="academic-fields-stack">
                 <div className="info-field-row">
                   <span className="field-label">College</span>
-                  <span className="field-value">{college}</span>
+                  <span className="field-value">{user?.college || college || "—"}</span>
                 </div>
                 <div className="info-field-row">
                   <span className="field-label">Department</span>
-                  <span className="field-value">{dept}</span>
+                  <span className="field-value">{user?.department || dept || "—"}</span>
                 </div>
                 <div className="info-field-row">
                   <span className="field-label">Graduation Year</span>
-                  <span className="field-value">{year}</span>
+                  <span className="field-value">{user?.year || year || "—"}</span>
                 </div>
               </div>
             </div>
@@ -2896,23 +2880,23 @@ const StudentDashboard = () => {
                 <div className="profile-details-table">
                   <div className="profile-detail-row">
                     <span className="profile-detail-label">Roll Number</span>
-                    <span className="profile-detail-val">{rollNumber}</span>
+                    <span className="profile-detail-val">{user?.rollNumber || rollNumber || "—"}</span>
                   </div>
                   <div className="profile-detail-row">
                     <span className="profile-detail-label">College</span>
-                    <span className="profile-detail-val">{college}</span>
+                    <span className="profile-detail-val">{user?.college || college || "—"}</span>
                   </div>
                   <div className="profile-detail-row">
                     <span className="profile-detail-label">Department</span>
-                    <span className="profile-detail-val">{dept}</span>
+                    <span className="profile-detail-val">{user?.department || dept || "—"}</span>
                   </div>
                   <div className="profile-detail-row">
                     <span className="profile-detail-label">Graduation Year</span>
-                    <span className="profile-detail-val">{year}</span>
+                    <span className="profile-detail-val">{user?.year || year || "—"}</span>
                   </div>
                   <div className="profile-detail-row">
                     <span className="profile-detail-label">Registered Email</span>
-                    <span className="profile-detail-val">{email}</span>
+                    <span className="profile-detail-val">{user?.email || email || "—"}</span>
                   </div>
                 </div>
               </div>

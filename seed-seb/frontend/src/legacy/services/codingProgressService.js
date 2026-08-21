@@ -42,9 +42,6 @@ const resolveEffectiveUid = (uid) => {
   try {
     const authData = JSON.parse(localStorage.getItem('auth_data') ?? '{}');
     if (authData.uid) return authData.uid;
-    if (authData.UID) return authData.UID;
-    if (authData.userId) return authData.userId;
-    if (authData.Email) return authData.Email.replace(/[@.]/g, '_');
   } catch (_) {}
   return '';
 };

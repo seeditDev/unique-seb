@@ -120,7 +120,7 @@ class MCQService {
     static async writeGuestResult(payload, testId, guestSession) {
         try {
             const guestId = guestSession.guestId || `guest_${Date.now()}`;
-            const tenantId = guestSession.college || guestSession.tenantId || '_guest_';
+            const tenantId = guestSession.tenantId ?? '_guest_';
             const guestRef = doc(db, `assessmentResults/${tenantId}/${testId}/${guestId}`);
             await setDoc(guestRef, {
                 ...payload,
@@ -340,7 +340,7 @@ class MCQService {
             // while leaving the document writable for the final result.
             const authData = JSON.parse(localStorage.getItem('auth_data') ?? '{}');
             const liveUid = auth?.currentUser?.uid ?? authData.uid ?? '';
-            const tenantId = authData.tenantId ?? college ?? '';
+            const tenantId = authData.tenantId ?? '';
             await this.writeCanonicalResult(update, {
                 assessmentId: assessmentId,
                 userId: liveUid,

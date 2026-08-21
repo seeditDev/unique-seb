@@ -85,7 +85,10 @@ class DataService {
             const firebaseUser = credential.user;
 
             // 3. Read Firestore profile
-            const profile = await DataService.getUserProfile(firebaseUser.uid);
+            let profile = await DataService.getUserProfile(firebaseUser.uid);
+            if (!profile && firebaseUser.email) {
+                profile = await DataService.getUserProfileByEmail(firebaseUser.email.toLowerCase());
+            }
 
             try {
                 await setDoc(doc(db, COLLECTIONS.USERS, firebaseUser.uid), {

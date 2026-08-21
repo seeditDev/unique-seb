@@ -389,7 +389,7 @@ The JSON structure MUST match this exactly:
 
     const email = user.email ?? "";
     const name = user.name ?? "";
-    const rollNumber = user.rollNumber || (user.roll  ?? "");
+    const rollNumber = user.rollNumber ?? "";
     const college = user.college ?? "";
     const year = user.year ?? "";
     const dept = user.department ?? "";
