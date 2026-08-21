@@ -92,14 +92,14 @@ class MCQService {
         // Belt-and-braces: validate UID one more time at write boundary
         const canonicalUid = getCanonicalUid(userId);
         const normUser = userProfile || {};
-        const tenantId = user.tenantId;
+        const tenantId = normUser.tenantId ?? '';
         const canonRef = doc(db, this.canonicalPath(assessmentId, canonicalUid, tenantId));
         await setDoc(canonRef, { ...payload, userId: canonicalUid, tenantId }, { merge: true });
 
         // Mark attempt in the completion index so dashboard shows Completed
         try {
             const { markAssessmentCompleted, invalidateCompletionCache } = await import('./attemptStatusService');
-            const email = user.email ?? '';
+            const email = normUser.email ?? '';
             if (email) {
                 await markAssessmentCompleted(normUser, assessmentId);
                 invalidateCompletionCache(email);

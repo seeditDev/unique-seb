@@ -56,12 +56,14 @@ export async function markTestComplete(params: {
   uid: string;
   courseId: string;
   seriesId: string;
-  assessmentId: string;
+  testId?: string;
+  assessmentId?: string;
   score: number;
   maxScore: number;
   totalTestsInSeries?: number;
 }): Promise<void> {
-  const { uid, courseId, seriesId, testId, score, maxScore, totalTestsInSeries } = params;
+  const { uid, courseId, seriesId, score, maxScore, totalTestsInSeries } = params;
+  const testId = params.testId ?? params.assessmentId ?? "";
   try {
     const db = getDb();
     const ref = doc(db, "users", uid, "courseProgress", courseId);
