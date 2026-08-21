@@ -306,6 +306,7 @@ export async function saveAssessment(input: AssessmentInput, createdBy?: string)
   }
 
   // ── Content/optional fields — conditional for both new and existing ────
+  payload['published'] = (input.status ?? payload['status']) === 'active';
   if (input.questions)                           payload['questions']      = input.questions;
   if (input.problem)                             payload['problem']        = input.problem;
   if (input.challenges && input.challenges.length > 0) payload['challenges'] = input.challenges;

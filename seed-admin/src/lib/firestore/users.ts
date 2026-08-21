@@ -196,26 +196,26 @@ export async function provisionAccount(
         // ── Identity ─────────────────────────────────────────────────
         uid,
         email,
-        name: input.name.trim(),
+        name:        input.name.trim(),
         rollNumber:  input.rollNumber,
         role,
         active:      true,
 
-        // ── Tenant / Cohort (primary fields, used by SEB buildAuthData) ──
+        // ── Tenant / Cohort ──────────────────────────────────────────
         tenantId:    collegeCode,     // college code e.g. "TN000026"
         cohortId:    finalCohortId,   // e.g. "2K27"
         year:        finalYear,       // numeric graduation year e.g. "2027"
         department:  input.department,
-
-        // ── College name fields (redundant aliases — ensures SEB never needs derivation) ──
         college:     collegeName,     // human-readable name
-        collegeName: collegeName,     // alias for legacy readers
-        collegeCode: collegeCode,     // alias = tenantId, for clarity
 
-        // ── Premium / timestamps ──────────────────────────────────────
-        premium:     input.premium,
-        createdAt:   serverTimestamp(),
-        lastLoginAt: null,
+        // ── Premium / Gamification / timestamps ──────────────────────
+        isPremium:       Boolean(input.premium),
+        seedCredits:     0,
+        streak:          0,
+        lastStreakDate:  null,
+        photoURL:        "",
+        createdAt:       serverTimestamp(),
+        lastLoginAt:     null,
       },
       { merge: true },
     );
@@ -244,7 +244,7 @@ export async function bulkSetPremium(uids: string[], premium: boolean): Promise<
   for (let i = 0; i < uids.length; i += BATCH_LIMIT) {
     const chunk = uids.slice(i, i + BATCH_LIMIT);
     const batch = writeBatch(db);
-    for (const uid of chunk) batch.update(doc(db, USERS, uid), { premium });
+    for (const uid of chunk) batch.update(doc(db, USERS, uid), { isPremium: premium });
     await batch.commit();
     written += chunk.length;
   }
