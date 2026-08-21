@@ -66,7 +66,7 @@ const PracticeContestPage = () => {
     }
   };
 
-  const isPremiumUser = user?.Premium === true || user?.Premium === 'true' || !!user?.isPremium;
+  const isPremiumUser = Boolean(user?.isPremium);
 
   const handleQuestionClick = (q, status) => {
     if (status === 'LOCKED') {

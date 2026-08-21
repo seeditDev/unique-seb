@@ -473,7 +473,7 @@ const MCQPage = ({ isEmbedded = false, testData = null, secTimer = 0, onSectionS
             const accessibleTests = Object.entries(mcqModules)
                 .filter(([key, module]) => {
                     const moduleId = module.id;
-                    const isPremiumUser = userData?.Premium === true || userData?.Premium === 'true' || userData?.Premium === 1 || userData?.Premium === 2 || userData?.Premium === 'Yes' || !!userData?.isPremium;
+                    const isPremiumUser = Boolean(userData?.isPremium);
                     const isPremiumModule = !!module.isPremium;
                     const premiumAccess = !isPremiumModule || isPremiumUser;
                     return allowedModuleIds.includes(moduleId) && premiumAccess;
@@ -1420,7 +1420,7 @@ const MCQPage = ({ isEmbedded = false, testData = null, secTimer = 0, onSectionS
 
             // Prepare result data with proctoring information from local cache + state
             const assessmentId = currentTest.testInfo?.id || currentTest.id || 'unknown';
-            const vInfo = getViolations(assessmentId, user?.Email);
+            const vInfo = getViolations(assessmentId, user?.email);
             const allViolations = (vInfo.violations && vInfo.violations.length > 0)
                 ? vInfo.violations
                 : (proctoringData.violations || []);

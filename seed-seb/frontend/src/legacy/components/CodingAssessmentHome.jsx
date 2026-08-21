@@ -330,7 +330,7 @@ const CodingAssessmentHome = () => {
 
                         {/* Progress Sidebar Panel */}
                         <div className="progress-panel">
-                            {(user?.Premium === true || user?.Premium === 'true' || user?.Premium === 1 || user?.Premium === 2 || user?.Premium === 'Yes' || !!user?.isPremium) ? (
+                            {(Boolean(user?.isPremium)) ? (
                                 <div className="premium-status-banner premium">
                                     <FaKey className="status-banner-icon" />
                                     <span>SEED-IT Premium Active</span>

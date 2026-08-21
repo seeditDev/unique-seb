@@ -466,7 +466,7 @@ const PracticeCourseSandbox = () => {
 
         const seqItem = flatSequence.find(item => item.questionId === questionId);
         const isPremiumQ = seqItem ? !!seqItem.isPremium : false;
-        const isPremiumUser = authData?.Premium === true || authData?.Premium === 'true' || authData?.Premium === 1 || authData?.Premium === 'Yes' || !!authData?.isPremium;
+        const isPremiumUser = Boolean(authData?.isPremium);
 
         if (isPremiumQ && !isPremiumUser) {
           throw new Error('Premium Course Module. Please upgrade your SEED-IT account to access this lesson.');
@@ -642,7 +642,7 @@ const PracticeCourseSandbox = () => {
   };
 
   const handleMarkConceptComplete = async () => {
-    const uid = user?.uid || user?.UID || user?.userId || (getAuthData()?.uid) || '';
+    const uid = user?.uid ?? getAuthData()?.uid ?? "";
     if (!uid || !questionId) return;
 
     try {
@@ -685,7 +685,7 @@ const isCodeBlankOrEmpty = (codeStr) => {
     let totalWeight = 0;
     let earnedWeight = 0;
     // STRICT UID: canonical Practice identity is Firebase Auth UID only.
-    const uid = user?.uid || user?.UID || user?.userId || (getAuthData()?.uid) || '';
+    const uid = user?.uid ?? getAuthData()?.uid ?? "";
     if (!uid) {
       console.warn('[PracticeCourseSandbox] No Firebase UID at submit — progress not saved');
     }

@@ -564,7 +564,7 @@ const PracticeHome = ({ initialTab = 'paths', initialCourse = null }) => {
     setLoading(true);
     try {
       // STRICT UID: canonical Practice identity is Firebase Auth UID only.
-      const uid = authData?.uid || authData?.UID || (authData?.userId  ?? '');
+      const uid = authData?.uid ?? "";
 
       // Auto sync with cloud at start
       if (uid && navigator.onLine) {
@@ -1385,7 +1385,7 @@ const PracticeHome = ({ initialTab = 'paths', initialCourse = null }) => {
     );
   };
 
-  const isPremiumUser = user?.Premium === true || user?.Premium === 'true' || user?.Premium === 1 || user?.Premium === 'Yes' || !!user?.isPremium;
+  const isPremiumUser = Boolean(user?.isPremium);
   const isQuestionPremium = (qid) => {
     if (qid && String(qid).startsWith('Q0.')) return false;
     const q = questions.find(item => item.questionId === qid);

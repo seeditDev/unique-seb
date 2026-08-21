@@ -371,7 +371,7 @@ const Assessment = ({ isOpen, onClose, user, isRunningInPyQt }) => {
 
         // Premium validation
         const isPremiumModule = !!module.isPremium;
-        const isPremiumUser = user?.Premium === true || user?.Premium === 'true' || user?.Premium === 1 || user?.Premium === 2 || user?.Premium === 'Yes' || !!user?.isPremium;
+        const isPremiumUser = Boolean(user?.isPremium);
         
         if (isPremiumModule && !isPremiumUser) {
             console.log('Access denied: Premium module for non-premium user');
@@ -691,7 +691,7 @@ const Assessment = ({ isOpen, onClose, user, isRunningInPyQt }) => {
 
                 // Premium check
                 const isPremiumModule = !!module.isPremium;
-                const isPremiumUser = user?.Premium === true || user?.Premium === 'true' || user?.Premium === 1 || user?.Premium === 2 || user?.Premium === 'Yes' || !!user?.isPremium;
+                const isPremiumUser = Boolean(user?.isPremium);
                 const premiumAccess = !isPremiumModule || isPremiumUser;
 
                 // Visible in list if access granted, date range matches, and premium access is allowed

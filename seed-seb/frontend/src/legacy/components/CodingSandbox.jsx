@@ -300,7 +300,7 @@ const CodingSandbox = () => {
         if (challenges.length > 0 && challengeParam) {
             const found = challenges.find(ch => ch.id === challengeParam);
             if (found) {
-                const isPremiumUser = user?.Premium === true || user?.Premium === 'true' || user?.Premium === 1 || user?.Premium === 2 || user?.Premium === 'Yes' || !!user?.isPremium;
+                const isPremiumUser = Boolean(user?.isPremium);
                 if (found.isPremium && (!user || !isPremiumUser)) {
                     if (user) {
                         toast.warning("This is a Premium challenge. Please upgrade your subscription to access it.");
@@ -573,7 +573,7 @@ const isCodeBlankOrEmpty = (codeStr) => {
                         </div>
                         <div className="drawer-challenges-list">
                             {challenges.filter(ch => ch.title.toLowerCase().includes(drawerSearch.toLowerCase())).map((ch) => {
-                                const isPremiumUser = user?.Premium === true || user?.Premium === 'true' || user?.Premium === 1 || user?.Premium === 2 || user?.Premium === 'Yes' || !!user?.isPremium;
+                                const isPremiumUser = Boolean(user?.isPremium);
                                 const isLocked = ch.isPremium && !isPremiumUser;
                                 return (
                                     <button

@@ -211,7 +211,7 @@ const PracticeSandbox = () => {
   const workspaceRef = useRef(null);
   const rightPanelRef = useRef(null);
 
-  const isPremiumUser = user?.Premium === true || user?.Premium === 'true' || user?.Premium === 1 || user?.Premium === 'Yes' || !!user?.isPremium;
+  const isPremiumUser = Boolean(user?.isPremium);
   const hasTutorApiKey = (() => {
     if (localStorage.getItem('gemini_api_key') || localStorage.getItem('nvidia_api_key')) return true;
     try {
@@ -274,7 +274,7 @@ const PracticeSandbox = () => {
     const loadSidebarData = async () => {
       try {
         // STRICT UID: canonical Practice identity is Firebase Auth UID only.
-        const uid = authData?.uid || authData?.UID || (authData?.userId  ?? '');
+        const uid = authData?.uid ?? "";
         if (!uid) {
           console.warn('[PracticeSandbox] Firebase UID not available — progress sync skipped');
         } else if (navigator.onLine) {
@@ -341,7 +341,7 @@ const PracticeSandbox = () => {
       setLanguage(defaultLang);
 
       // Check if code is saved in local progress.
-      const progressUid = authData?.uid || authData?.UID || (authData?.userId  ?? '');
+      const progressUid = authData?.uid ?? "";
       const progress = progressUid
         ? await getQuestionProgress(progressUid, questionId).catch(() => null)
         : null;
@@ -669,7 +669,7 @@ const isCodeBlankOrEmpty = (codeStr) => {
 
     // Canonical Practice identity: user prop -> getAuthData() -> Firebase Auth UID
     const authStorage = getAuthData();
-    const uid = user?.uid || user?.UID || authStorage?.uid || authStorage?.UID;
+    const uid = user?.uid ?? authStorage?.uid ?? '';
     if (!uid) {
       console.warn('[PracticeSandbox] No authenticated UID at submit — progress may not sync');
     }

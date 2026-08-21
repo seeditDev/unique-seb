@@ -770,7 +770,7 @@ const CodingAssessmentPage = ({ isEmbedded = false, testData = null, secTimer = 
 
                 // If local storage was cleared (e.g. system power off / reboot in PyQt SEB), attempt Firestore restore
                 if (!hasPending && assessmentSlug) {
-                    const liveUid = auth?.currentUser?.uid || authData.uid || authData.UID;
+                    const liveUid = auth?.currentUser?.uid ?? authData.uid ?? '';
                     const tenantId = authData.tenantId || authData.tenantId || authData.tenantId || (authData.College  ?? '');
                     if (liveUid && tenantId) {
                         try {
@@ -918,7 +918,7 @@ const CodingAssessmentPage = ({ isEmbedded = false, testData = null, secTimer = 
 
             const accessible = Object.entries(codingModules)
                 .filter(([key, module]) => {
-                    const isPremiumUser = userData?.Premium === true || userData?.Premium === 'true' || userData?.Premium === 1 || userData?.Premium === 'Yes' || !!userData?.isPremium;
+                    const isPremiumUser = Boolean(userData?.isPremium);
                     const isPremiumModule = !!module.isPremium;
                     const premiumAccess = !isPremiumModule || isPremiumUser;
                     return allowedModuleIds.includes(module.id) && premiumAccess;
@@ -1877,7 +1877,7 @@ const CodingAssessmentPage = ({ isEmbedded = false, testData = null, secTimer = 
                 const next = prev + 1;
                 recordViolation(
                     currentAssessment?.id || 'coding',
-                    user?.Email,
+                    user?.email,
                     type,
                     { message: `Tab switch violation ${next}` },
                     auth?.currentUser?.uid ?? null  // activates Firestore audit trail
@@ -2121,7 +2121,7 @@ const CodingAssessmentPage = ({ isEmbedded = false, testData = null, secTimer = 
                     import('../services/mcqService').then(({ default: MCQService }) => {
                         const totalScore = Object.values(questionScores || {}).reduce((s, q) => s + (q.score || 0), 0);
                         MCQService.markCourseProgress({
-                            uid: user?.uid || (user?.UID  ?? ''),
+                            uid: user?.uid ?? "",
                             courseId: courseCtx.courseId,
                             seriesId: courseCtx.seriesId,
                             assessmentId: courseCtx.assessmentId || currentAssessment.id,
@@ -2607,8 +2607,8 @@ const CodingAssessmentPage = ({ isEmbedded = false, testData = null, secTimer = 
     // RENDER: WORKSPACE VIEW
     // ==========================================
     const authData = JSON.parse(localStorage.getItem('auth_data') ?? '{}');
-    const candidateRoll = authData.rollNumber || authData['Roll Number'] || user?.rollNumber || authData.uid || 'CANDIDATE';
-    const tenantId = authData.tenantId || authData.tenantId || authData.tenantId || user?.tenantId || 'SEED-SEB';
+    const candidateRoll = authData.rollNumber ?? user?.rollNumber ?? authData.uid ?? 'CANDIDATE';
+    const tenantId = authData.tenantId ?? user?.tenantId ?? 'SEED-SEB';
 
     return (
         <div className="coding-workspace-page">

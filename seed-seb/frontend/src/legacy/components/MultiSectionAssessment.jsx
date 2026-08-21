@@ -1483,7 +1483,7 @@ const MultiSectionAssessment = () => {
     const nowMs = new Date().getTime();
     const snapshot = {
       assessmentId: assessment.id,
-      email: user?.Email ?? '',
+      email: user?.email ?? '',
       completedSections: secCompleted,
       examResults,
       currentSecIdx,
@@ -1620,7 +1620,7 @@ const MultiSectionAssessment = () => {
     if (secTimer <= saveAt && secTimer > 0) {
       oneThirdSavedRef.current = true;
       const activeSec = assessment?.sections?.[currentSecIdx];
-      if (!activeSec || !user?.Email) return;
+      if (!activeSec || !user?.email) return;
       const sectionId = activeSec.sectionId || activeSec.name;
       // Read current MCQ answers from localStorage (MCQSectionView persists them there)
       let savedAnswers = {};
@@ -1701,7 +1701,7 @@ const MultiSectionAssessment = () => {
 
     // ── Firestore: mark section started ──
     const authData = JSON.parse(localStorage.getItem('auth_data') ?? '{}');
-    if (assessment?.sections?.[idx] && authData?.Email) {
+    if (assessment?.sections?.[idx] && authData?.email) {
       const sec = assessment.sections[idx];
       markSectionStarted(assessment.id, {
         sectionId: sec.sectionId || sec.id || sec.name,
@@ -1788,7 +1788,7 @@ const MultiSectionAssessment = () => {
       const progressKey = `msaProgress_${assessment.id}`;
       const snapshot = {
         assessmentId: assessment.id,
-        email: user?.Email ?? '',
+        email: user?.email ?? '',
         completedSections: Object.fromEntries(Object.keys(updatedResults).map(id => [id, true])),
         examResults: updatedResults,
         lastSectionIdx: currentSecIdx,
@@ -1798,10 +1798,10 @@ const MultiSectionAssessment = () => {
 
       // See autoSubmitEntireExam: never substitute a tenant, skip the write.
       const tenant = resolveTenant(user);
-      if (user?.Email && !tenant.valid) {
+      if (user?.email && !tenant.valid) {
         console.error('[MSA] Incomplete profile, refusing remote write:', tenant.missing);
       }
-      if (user?.Email && tenant.valid) {
+      if (user?.email && tenant.valid) {
         const { year } = tenant;
         const tenantId = user?.tenantId || (tenant.tenantId  ?? '');
         const userId = auth?.currentUser?.uid;
@@ -1832,7 +1832,7 @@ const MultiSectionAssessment = () => {
       setIsSubmittingEntireExam(true);
       const tenant = resolveTenant(user);
       const college = tenant.valid ? tenant.college : (user?.college ?? user?.tenantId ?? "");
-      const year = tenant.valid ? tenant.year : (user?.Year || (user?.year  ?? ''));
+      const year = tenant.valid ? tenant.year : (user?.year ?? "");
       
       try {
         const sectionsList = Object.values(updatedResults).map(sec => {
@@ -1893,8 +1893,8 @@ const MultiSectionAssessment = () => {
           .join(', ');
 
         const rawAttemptData = {
-          email: user?.Email ?? '', rollNumber: user?.['Roll Number'] || '', name: user?.Name ?? '',
-          college, year, department: user?.Department ?? '',
+          email: user?.email ?? '', rollNumber: user?.rollNumber || '', name: user?.name ?? '',
+          college, year, department: user?.department ?? '',
           assessmentId: assessment.id, assessmentTitle: assessment.name,
           assessmentId: assessment.id, assessmentTitle: assessment.name,
           // P1-02: deterministic attemptId = assessmentId_uid_startEpochMs
@@ -2018,7 +2018,7 @@ const MultiSectionAssessment = () => {
   if (loading || !assessment) {
     return (
       <div className="msa-loading">
-        <SecurityWatermark email={user?.Email} />
+        <SecurityWatermark email={user?.email} />
         <div className="msa-spinner" />
         <p>Loading multi-section exam environment...</p>
       </div>
@@ -2029,11 +2029,11 @@ const MultiSectionAssessment = () => {
   if (examFinished) {
     return (
       <div className="msa-finished-container" style={{ maxWidth: '600px', margin: '100px auto', padding: '45px', background: '#1e293b', borderRadius: '12px', color: '#f8fafc', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.3)', fontFamily: "'Inter',sans-serif", textAlign: 'center' }}>
-        <SecurityWatermark email={user?.Email} />
+        <SecurityWatermark email={user?.email} />
         <FaCheckCircle style={{ color: '#10b981', fontSize: '5rem', marginBottom: '20px' }} />
         <h1 style={{ fontSize: '2.4rem', fontWeight: '800', color: 'white', marginBottom: '15px' }}>Assessment Completed!</h1>
         <p style={{ color: '#94a3b8', fontSize: '1.2rem', lineHeight: '1.6', marginBottom: '40px' }}>
-          Congratulations <strong>{user?.Name}</strong>, your answers have been successfully recorded and submitted. You may now safely return to the dashboard.
+          Congratulations <strong>{user?.name}</strong>, your answers have been successfully recorded and submitted. You may now safely return to the dashboard.
         </p>
         <button
           onClick={() => {
@@ -2055,7 +2055,7 @@ const MultiSectionAssessment = () => {
     const nextSec = assessment.sections?.[relaxationNextIdx];
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)', fontFamily: "'Inter', sans-serif" }}>
-        <SecurityWatermark email={user?.Email} />
+        <SecurityWatermark email={user?.email} />
         <div style={{ textAlign: 'center', padding: '48px', background: 'rgba(255,255,255,0.05)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.1)', maxWidth: '520px', width: '90%' }}>
           <FaCheckCircle style={{ color: '#10b981', fontSize: '4rem', marginBottom: '20px' }} />
           <h2 style={{ color: '#f1f5f9', fontSize: '1.8rem', fontWeight: '700', margin: '0 0 12px' }}>Section Submitted!</h2>
@@ -2152,8 +2152,8 @@ const MultiSectionAssessment = () => {
 
   return (
     <>
-      <SecurityWatermark email={user?.Email} />
-      {shouldUseProctoring && user?.Email && (
+      <SecurityWatermark email={user?.email} />
+      {shouldUseProctoring && user?.email && (
         <ProctoringEngine
           uid={user.email}
           assessmentId={assessment.id}
@@ -2164,7 +2164,7 @@ const MultiSectionAssessment = () => {
           onAutoSubmit={handleProctorAutoSubmit}
         />
       )}
-      {shouldUseAudioProctoring && user?.Email && (
+      {shouldUseAudioProctoring && user?.email && (
         <AudioProctoringEngine
           uid={user.email}
           assessmentId={assessment.id}
@@ -2279,14 +2279,14 @@ const MultiSectionAssessment = () => {
   // ── Welcome / Navigation screen (currentSecIdx === -1 or between sections)
   return (
     <div className="msa-root">
-      <SecurityWatermark email={user?.Email} />
+      <SecurityWatermark email={user?.email} />
       <header className="msa-header">
         <div className="msa-header-title">
           <span></span> {assessment.name}
         </div>
         <div className="msa-candidate-info">
-          <span>{user?.Name ?? ''}</span>
-          <span className="msa-email">{user?.Email}</span>
+          <span>{user?.name ?? ''}</span>
+          <span className="msa-email">{user?.email}</span>
         </div>
       </header>
 

@@ -278,7 +278,7 @@ const LearnAndCodeHome = () => {
                                     <tbody>
                                         {filteredChallenges.length > 0 ? (
                                             filteredChallenges.map((ch) => {
-                                                const isPremiumUser = user?.Premium === true || user?.Premium === 'true' || user?.Premium === 1 || user?.Premium === 2 || user?.Premium === 'Yes' || !!user?.isPremium;
+                                                const isPremiumUser = Boolean(user?.isPremium);
                                                 const isLocked = ch.isPremium && !isPremiumUser;
                                                 return (
                                                     <tr 
@@ -340,7 +340,7 @@ const LearnAndCodeHome = () => {
 
                         {/* Progress Sidebar Panel */}
                         <div className="progress-panel">
-                            {(user?.Premium === true || user?.Premium === 'true' || user?.Premium === 1 || user?.Premium === 2 || user?.Premium === 'Yes' || !!user?.isPremium) ? (
+                            {(Boolean(user?.isPremium)) ? (
                                 <div className="premium-status-banner premium">
                                     <FaKey className="status-banner-icon" />
                                     <span>SEED-IT Premium Active</span>

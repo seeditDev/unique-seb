@@ -389,7 +389,7 @@ const StudentDashboard = () => {
 
       if (user) {
         if (user.seedCredits !== undefined) setSeedCredits(user.seedCredits);
-        else if (user.credits !== undefined) setSeedCredits(user.credits);
+        else if (user.seedCredits !== undefined) setSeedCredits(user.seedCredits);
       }
     } catch (err) {
       console.warn('[Dashboard] Daily goals evaluation skipped:', err);
@@ -1204,8 +1204,7 @@ const StudentDashboard = () => {
       // ── NEW: fetch TestDocs directly from courses/{courseId}/series/{seriesId}/tests/{testId}
       const testDocs = await DataService.getAllowedTestDocs();
 
-      const isPremiumUser = userData?.Premium === true || userData?.Premium === 'true'
-        || userData?.isPremium === true;
+      const isPremiumUser = Boolean(userData?.isPremium) === true;
 
       const combined = testDocs
         .filter(t => !t.isPremium || isPremiumUser)
@@ -1627,12 +1626,12 @@ const StudentDashboard = () => {
     });
   };
 
-  const name = user?.name || "Student";
-  const email = user?.email;
-  const college = user?.college;
+  const name = user?.name ?? "Student";
+  const email = user?.email ?? "";
+  const college = user?.college ?? "";
   const rollNumber = user?.rollNumber ?? "";
-  const year = user?.Year || "2027";
-  const dept = user?.Department || "CSE";
+  const year = user?.year ?? "2027";
+  const dept = user?.department ?? "CSE";
 
   const renderDashboardHome = () => {
     return (
@@ -2458,7 +2457,7 @@ const StudentDashboard = () => {
   };
 
   const renderProfile = () => {
-    const isPremium = userPremiumState !== null ? userPremiumState : (user?.Premium === true || user?.Premium === 'true' || user?.Premium === 1 || user?.Premium === 'Yes' || !!user?.isPremium);
+    const isPremium = userPremiumState !== null ? userPremiumState : (Boolean(user?.isPremium));
 
     const getCompletedCourses = () => {
       const badges = [];
