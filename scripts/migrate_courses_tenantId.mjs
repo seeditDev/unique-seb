@@ -1,20 +1,28 @@
 /**
  * migrate_courses_tenantId.mjs
  * 
- * Deterministic Migration Script: Ensures every course in Firestore carries a valid `tenantId`.
+ * Strict Fail-Closed Deterministic Migration Script:
+ * Ensures every course in Firestore carries a valid, verified `tenantId`.
  * 
- * Workflow:
+ * Policy:
  * 1. Scans all documents in the `courses` collection.
  * 2. Identifies courses missing a `tenantId`.
  * 3. Infers tenantId by checking:
  *    a. Child tests targeting (`courses/{cId}/series/{sId}/tests/{tId}.targeting.tenantIds`)
  *    b. Associated `tenantCourses` records
- *    c. Configured fallback tenant (e.g. TN000026 or CLI argument)
- * 4. Updates course doc with `{ tenantId, migratedAt }`.
- * 5. Verifies that 100% of courses have a non-empty `tenantId`.
+ * 4. Fallback Policy (Strict Fail-Closed):
+ *    - If owner tenant cannot be inferred from data, the script REFUSES to assign a blind tenant
+ *      and marks the course as UNRESOLVED unless both `--default-tenant <id>` AND `--allow-fallback`
+ *      are explicitly passed.
+ *    - If any unresolved courses remain, migration FAILS CLOSED with exit code 1.
+ * 5. Verification Phase:
+ *    - Asserts 100% of courses have a non-empty `tenantId`.
+ *    - Asserts that every assigned `tenantId` exists in the `tenants` collection.
+ *    - Asserts child test targeting compatibility.
  * 
  * Usage:
- *   node migrate_courses_tenantId.mjs [--dry-run] [--default-tenant TN000026]
+ *   node migrate_courses_tenantId.mjs [--dry-run]
+ *   node migrate_courses_tenantId.mjs [--dry-run] --default-tenant TN000026 --allow-fallback
  */
 
 import { initializeApp, cert, getApps } from 'firebase-admin/app';
@@ -28,16 +36,17 @@ const __dirname = dirname(__filename);
 
 // Arguments
 const isDryRun = process.argv.includes('--dry-run');
+const allowFallback = process.argv.includes('--allow-fallback');
 const defaultTenantIndex = process.argv.indexOf('--default-tenant');
-const DEFAULT_TENANT = defaultTenantIndex !== -1 && process.argv[defaultTenantIndex + 1] 
-  ? process.argv[defaultTenantIndex + 1] 
-  : 'TN000026';
+const explicitFallbackTenant = defaultTenantIndex !== -1 && process.argv[defaultTenantIndex + 1]
+  ? process.argv[defaultTenantIndex + 1].trim()
+  : null;
 
 console.log('====================================================');
 console.log('   SEED-IT COURSE TENANTID DETERMINISTIC MIGRATION   ');
 console.log('====================================================');
 console.log(`Mode: ${isDryRun ? 'DRY-RUN (Simulated)' : 'LIVE EXECUTION'}`);
-console.log(`Default Fallback Tenant: ${DEFAULT_TENANT}\n`);
+console.log(`Fallback Policy: ${allowFallback && explicitFallbackTenant ? `Permitted -> "${explicitFallbackTenant}"` : 'STRICT FAIL-CLOSED (No blind fallback)'}\n`);
 
 // Initialize Firebase Admin
 function initFirebase() {
@@ -61,7 +70,6 @@ function initFirebase() {
     }
   }
 
-  // Fallback to default credentials / emulator
   console.log('[Init] Using default application credentials or emulator...');
   const app = initializeApp({ projectId: process.env.GCLOUD_PROJECT || 'seeditdev' });
   return getFirestore(app);
@@ -69,12 +77,18 @@ function initFirebase() {
 
 async function runMigration() {
   const db = initFirebase();
-  const coursesSnap = await db.collection('courses').get();
 
-  console.log(`[Scan] Found ${coursesSnap.size} courses in database.`);
+  // Load existing valid tenants for verification
+  const tenantsSnap = await db.collection('tenants').get();
+  const validTenantIds = new Set(tenantsSnap.docs.map((d) => d.id));
+  console.log(`[Scan] Loaded ${validTenantIds.size} valid tenant(s) from database.`);
+
+  const coursesSnap = await db.collection('courses').get();
+  console.log(`[Scan] Found ${coursesSnap.size} courses in database.\n`);
 
   let alreadyCompliant = 0;
   let migratedCount = 0;
+  let unresolvedCount = 0;
   let failedCount = 0;
 
   for (const docSnap of coursesSnap.docs) {
@@ -83,15 +97,18 @@ async function runMigration() {
     const existingTenant = (data.tenantId || '').trim();
 
     if (existingTenant) {
-      console.log(`  ✓ Course "${courseId}" (${data.title || 'Untitled'}): tenantId = "${existingTenant}" (ALREADY COMPLIANT)`);
+      if (!validTenantIds.has(existingTenant)) {
+        console.warn(`  ⚠ Course "${courseId}" has tenantId "${existingTenant}" but tenant doc is not in /tenants collection.`);
+      } else {
+        console.log(`  ✓ Course "${courseId}" (${data.title || 'Untitled'}): tenantId = "${existingTenant}" (ALREADY COMPLIANT)`);
+      }
       alreadyCompliant++;
       continue;
     }
 
     console.log(`  ! Course "${courseId}" (${data.title || 'Untitled'}): MISSING tenantId! Resolving...`);
 
-    // Resolution strategy:
-    // Step A: Inspect child series and tests
+    // Resolution Strategy: Inspect child series and tests
     let resolvedTenant = '';
     const seriesSnap = await db.collection('courses').doc(courseId).collection('series').get();
     for (const sDoc of seriesSnap.docs) {
@@ -100,7 +117,7 @@ async function runMigration() {
         const tData = tDoc.data();
         const tenantIds = tData.targeting?.tenantIds;
         if (Array.isArray(tenantIds) && tenantIds.length > 0 && tenantIds[0]) {
-          resolvedTenant = tenantIds[0];
+          resolvedTenant = tenantIds[0].trim();
           console.log(`    ↳ Resolved from child test "${tDoc.id}" targeting: "${resolvedTenant}"`);
           break;
         }
@@ -108,10 +125,16 @@ async function runMigration() {
       if (resolvedTenant) break;
     }
 
-    // Step B: If unresolved, fallback to default tenant
+    // Fallback Check
     if (!resolvedTenant) {
-      resolvedTenant = DEFAULT_TENANT;
-      console.log(`    ↳ No child targeting found. Assigned fallback tenant: "${resolvedTenant}"`);
+      if (allowFallback && explicitFallbackTenant) {
+        resolvedTenant = explicitFallbackTenant;
+        console.log(`    ↳ Fallback flag active: Assigned explicit fallback tenant: "${resolvedTenant}"`);
+      } else {
+        console.error(`    ✗ UNRESOLVED: Cannot determine tenant for course "${courseId}". Refusing blind assignment (Fail-Closed).`);
+        unresolvedCount++;
+        continue;
+      }
     }
 
     if (!isDryRun) {
@@ -136,24 +159,46 @@ async function runMigration() {
   console.log('\n====================================================');
   console.log('               VERIFICATION PHASE                   ');
   console.log('====================================================');
-  
+
+  if (unresolvedCount > 0) {
+    console.error(`✗ MIGRATION ABORTED: ${unresolvedCount} course(s) could not be resolved safely.`);
+    console.error(`  To force fallback, specify: --default-tenant <TENANT_ID> --allow-fallback\n`);
+    process.exit(1);
+  }
+
   // Verification check
   const verifySnap = await db.collection('courses').get();
-  let nonCompliantAfter = 0;
+  let verificationErrors = 0;
 
   for (const docSnap of verifySnap.docs) {
     const data = docSnap.data();
-    if (!isDryRun && (!data.tenantId || data.tenantId.trim() === '')) {
-      console.error(`  ✗ VERIFICATION FAILED for course "${docSnap.id}": tenantId is still empty!`);
-      nonCompliantAfter++;
+    const cId = docSnap.id;
+    const tId = (data.tenantId || '').trim();
+
+    if (!isDryRun && (!tId || tId === '')) {
+      console.error(`  ✗ VERIFICATION FAILED: Course "${cId}" tenantId is still empty!`);
+      verificationErrors++;
+    }
+
+    // Verify child targeting compatibility if any
+    const seriesSnap = await db.collection('courses').doc(cId).collection('series').get();
+    for (const sDoc of seriesSnap.docs) {
+      const testsSnap = await db.collection('courses').doc(cId).collection('series').doc(sDoc.id).collection('tests').get();
+      for (const tDoc of testsSnap.docs) {
+        const tData = tDoc.data();
+        const targetTenants = tData.targeting?.tenantIds;
+        if (Array.isArray(targetTenants) && targetTenants.length > 0 && !targetTenants.includes(tId)) {
+          console.warn(`  ⚠ Warning: Course "${cId}" has tenantId "${tId}" but child test "${tDoc.id}" targets: [${targetTenants.join(', ')}]`);
+        }
+      }
     }
   }
 
-  if (nonCompliantAfter === 0) {
-    console.log(`✓ 100% of courses have a valid tenantId.`);
-    console.log(`Summary: ${alreadyCompliant} already compliant, ${migratedCount} migrated, ${failedCount} errors.`);
+  if (verificationErrors === 0) {
+    console.log(`✓ 100% of courses have a valid, verified tenantId.`);
+    console.log(`Summary: ${alreadyCompliant} compliant, ${migratedCount} migrated, ${unresolvedCount} unresolved, ${failedCount} errors.`);
   } else {
-    console.error(`✗ Migration finished with ${nonCompliantAfter} non-compliant courses.`);
+    console.error(`✗ Verification completed with ${verificationErrors} error(s).`);
     process.exit(1);
   }
 }

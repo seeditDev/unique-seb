@@ -127,8 +127,12 @@ service cloud.firestore {
 
       match /contestAttempts/{attemptId} {
         allow read: if isUser(userId) || isAdmin() || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/users/$(userId)).data.get('tenantId', '')));
-        allow create: if isUser(userId)
-          && request.resource.data.get('uid', '') == userId
+        allow create: if (
+            isUser(userId)
+            && request.resource.data.get('uid', '') == userId
+            && myTenant() != ''
+            && request.resource.data.get('tenantId', '') == myTenant()
+          )
           || isAdmin()
           || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/users/$(userId)).data.get('tenantId', '')));
         // Students can update answers/session state while active, but cannot tamper with immutable metadata
@@ -148,8 +152,12 @@ service cloud.firestore {
 
       match /assessmentAttempts/{attemptId} {
         allow read: if isUser(userId) || isAdmin() || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/users/$(userId)).data.get('tenantId', '')));
-        allow create: if isUser(userId)
-          && request.resource.data.get('uid', '') == userId
+        allow create: if (
+            isUser(userId)
+            && request.resource.data.get('uid', '') == userId
+            && myTenant() != ''
+            && request.resource.data.get('tenantId', '') == myTenant()
+          )
           || isAdmin()
           || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/users/$(userId)).data.get('tenantId', '')));
         allow update: if isAdmin()
@@ -226,8 +234,8 @@ service cloud.firestore {
     match /assessments/{assessmentId} {
       // Direct document reads strictly scoped to tenant members
       allow get: if isTenantMember(resource.data.get('tenantId', ''));
-      // Collection queries strictly scoped to Admin or Staff with non-empty tenant
-      allow list: if isAdmin() || (isStaff() && myTenant() != '');
+      // Collection queries strictly scoped to Admin or Staff querying their matching tenant
+      allow list: if isAdmin() || (isStaff() && tenantAllowed(resource.data.get('tenantId', '')));
       allow create: if isAdmin() || (isStaff() && myTenant() != '' && request.resource.data.get('tenantId', '') == myTenant());
       allow update, delete: if isAdmin() || (isStaff() && tenantAllowed(resource.data.get('tenantId', '')));
 

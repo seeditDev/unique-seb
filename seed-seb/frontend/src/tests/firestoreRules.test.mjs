@@ -185,21 +185,14 @@ class RulesSimulator {
       block.includes("request.resource.data.get('tenantId', '') == resource.data.get('tenantId', '')")
     );
   }
+  
   isAssessmentReadTenantScoped() {
     const match = this.rules.match(/match\s+\/assessments\/\{assessmentId\}\s*\{([\s\S]*?)\n\s*match\s+\/assessmentResults/);
     if (!match) return false;
     const block = match[1];
-    return block.includes("allow get: if isTenantMember(resource.data.get('tenantId', ''));") &&
-           block.includes("allow list: if isAdmin() || (isStaff() && myTenant() != '');");
-  }
-
-  isAssessmentSubcollectionTenantScoped() {
-    const match = this.rules.match(/match\s+\/assessments\/\{assessmentId\}\s*\{([\s\S]*?)\n\s*match\s+\/assessmentResults/);
-    if (!match) return false;
-    const block = match[1];
     return (
-      block.includes("allow get: if isTenantMember(get(/databases/$(database)/documents/assessments/$(assessmentId)).data.get('tenantId', ''));") &&
-      block.includes("isStaff() && tenantAllowed(get(/databases/$(database)/documents/assessments/$(assessmentId)).data.get('tenantId', ''))")
+      block.includes("allow get: if isTenantMember(resource.data.get('tenantId', ''));") &&
+      block.includes("allow list: if isAdmin() || (isStaff() && tenantAllowed(resource.data.get('tenantId', '')));")
     );
   }
 
@@ -254,6 +247,27 @@ class RulesSimulator {
       block.includes("match /cohorts/{cohortId}") &&
       block.includes("match /settings/{docId}")
     );
+  }
+
+  isAssessmentListTenantBound() {
+    const match = this.rules.match(/match\s+\/assessments\/\{assessmentId\}\s*\{([\s\S]*?)\n\s*match\s+\/\{document=\*\*\}/);
+    if (!match) return false;
+    const block = match[1];
+    return block.includes("allow list: if isAdmin() || (isStaff() && tenantAllowed(resource.data.get('tenantId', '')));");
+  }
+
+  isAttemptCrossTenantCreationBlocked() {
+    const matchC = this.rules.match(/match\s+\/contestAttempts\/\{attemptId\}\s*\{([\s\S]*?)\n\s*match\s+\/assessmentAttempts/);
+    const matchA = this.rules.match(/match\s+\/assessmentAttempts\/\{attemptId\}\s*\{([\s\S]*?)\n\s*match\s+\/profile/);
+    if (!matchC || !matchA) return false;
+    const blockC = matchC[1];
+    const blockA = matchA[1];
+    const check = (block) =>
+      block.includes("isUser(userId)") &&
+      block.includes("request.resource.data.get('uid', '') == userId") &&
+      block.includes("myTenant() != ''") &&
+      block.includes("request.resource.data.get('tenantId', '') == myTenant()");
+    return check(blockC) && check(blockA);
   }
 }
 
@@ -343,6 +357,14 @@ console.log('✓ Test 19 Passed: Parent assessmentResults/{tenantId} list permis
 assert(sim.isTenantSubcollectionsExplicit(), 'FAIL: /tenants/{tenantId} must not contain broad wildcard /{sub=**} and must define explicit subcollections');
 console.log('✓ Test 20 Passed: /tenants/{tenantId} uses explicit subcollection rules (cohorts, settings) with no blanket wildcard');
 
+// Test 21: Assessment List Scoping Enforces Resource Tenant Query Filtering
+assert(sim.isAssessmentListTenantBound(), 'FAIL: /assessments list rule must enforce tenantAllowed(resource.data.get("tenantId", ""))');
+console.log('✓ Test 21 Passed: /assessments collection listing strictly enforces resource tenant scoping (unrestricted / cross-tenant queries rejected)');
+
+// Test 22: Attempt Cross-Tenant Creation Lock (Prevent Cross-Tenant Attempt Manufacturing)
+assert(sim.isAttemptCrossTenantCreationBlocked(), 'FAIL: Student attempt creation must strictly validate request.resource.data.tenantId == myTenant()');
+console.log('✓ Test 22 Passed: Student assessmentAttempts & contestAttempts creation strictly validates matching student tenantId (cross-tenant attempt spoofing blocked)');
+
 console.log('\n========================================');
-console.log('ALL 20/20 FIRESTORE SECURITY RULES TESTS PASSED (OK)');
+console.log('ALL 22/22 FIRESTORE SECURITY RULES TESTS PASSED (OK)');
 console.log('========================================\n');
