@@ -103,8 +103,6 @@ interface Draft {
   prompts: SeaPrompt[];
   rubric: SeaRubric;
   status: AssessmentStatus;
-  guestEnabled: boolean;
-  assessmentCode: string;
   isNew: boolean;
 }
 
@@ -126,8 +124,6 @@ function emptyDraft(scopedTenantId: string | null): Draft {
     prompts: [newPrompt()],
     rubric: { ...DEFAULT_SEA_RUBRIC },
     status: "draft",
-    guestEnabled: false,
-    assessmentCode: "",
     isNew: true,
   };
 }
@@ -161,8 +157,6 @@ function fromAssessment(a: AssessmentDoc): Draft {
     prompts: a.prompts.length ? a.prompts : [newPrompt()],
     rubric: a.rubric ?? { ...DEFAULT_SEA_RUBRIC },
     status: a.status,
-    guestEnabled: a.guestEnabled ?? false,
-    assessmentCode: a.assessmentCode ?? "",
     isNew: false,
   };
 }
@@ -190,7 +184,7 @@ function SeaCreatorPage() {
   const [draft, setDraft] = useState<Draft | null>(null);
   const [pendingDelete, setPendingDelete] = useState<AssessmentDoc | null>(null);
 
-  const assessmentsQ = useQuery({ queryKey: ["assessments"], queryFn: listAssessments });
+  const assessmentsQ = useQuery({ queryKey: ["assessments", scopedTenantId], queryFn: () => listAssessments(scopedTenantId ?? undefined) });
   const tenantsQ = useQuery({ queryKey: ["tenants"], queryFn: listTenants });
 
   const tenants = useMemo(() => {
@@ -227,8 +221,6 @@ function SeaCreatorPage() {
           proctorConfig: d.proctorConfig,
           prompts: d.prompts,
           rubric: d.rubric,
-          guestEnabled: d.guestEnabled,
-          assessmentCode: d.assessmentCode || null,
         },
         account?.uid,
       ),

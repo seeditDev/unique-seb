@@ -85,7 +85,7 @@ function AssignModulesPage() {
   const [assignedSelected, setAssignedSelected] = useState<Set<string>>(new Set());
 
   const tenantsQ = useQuery({ queryKey: ["tenants"], queryFn: listTenants });
-  const coursesQ = useQuery({ queryKey: ["courses"], queryFn: listCourses });
+  const coursesQ = useQuery({ queryKey: ["courses", scopedTenantId], queryFn: () => listCourses(scopedTenantId ?? undefined) });
 
   const tenants = useMemo(() => {
     const all = tenantsQ.data ?? [];

@@ -23,7 +23,7 @@ const resolveEffectiveUid = (uid) => {
     const authData = JSON.parse(localStorage.getItem('auth_data') ?? '{}');
     if (authData.uid) return authData.uid;
   } catch (_) {}
-  return 'guest';
+  return null;
 };
 
 /**
@@ -34,6 +34,7 @@ const resolveEffectiveUid = (uid) => {
  */
 export const logUserActivity = async (uid, type, details = {}) => {
   const effectiveUid = resolveEffectiveUid(uid);
+  if (!effectiveUid) return;
   const now = new Date();
   const timestamp = now.toISOString();
   const dateStr = timestamp.split('T')[0];
@@ -59,7 +60,7 @@ export const logUserActivity = async (uid, type, details = {}) => {
   } catch (_) {}
 
   // 2. Desktop Profile Disk Cache
-  if (effectiveUid && effectiveUid !== 'guest') {
+  if (effectiveUid) {
     try {
       const diskActivities = (await desktopBridge.loadUserProfileCache(effectiveUid, 'activity_logs')) || [];
       if (Array.isArray(diskActivities)) {
@@ -71,7 +72,7 @@ export const logUserActivity = async (uid, type, details = {}) => {
   }
 
   // 3. Firestore userActivities/{uid}/logs/{logId}
-  if (effectiveUid && effectiveUid !== 'guest' && db) {
+  if (effectiveUid && db) {
     try {
       const logRef = doc(db, 'userActivities', effectiveUid, 'logs', logId);
       const userMetaRef = doc(db, 'userActivities', effectiveUid);

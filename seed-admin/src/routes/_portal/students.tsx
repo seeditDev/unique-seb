@@ -191,7 +191,7 @@ function StudentsPage() {
   }, []);
 
   const tenantsQ = useQuery({ queryKey: ["tenants"], queryFn: listTenants });
-  const usersQ = useQuery({ queryKey: ["users", "all"], queryFn: listAllUsers });
+  const usersQ = useQuery({ queryKey: ["users", "all", scopedTenantId], queryFn: () => listAllUsers(scopedTenantId ?? undefined) });
 
   const tenants = useMemo(() => {
     const all = tenantsQ.data ?? [];

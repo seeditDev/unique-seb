@@ -398,21 +398,6 @@ export function AssessmentListCard({
                       </button>
                     </div>
                   )}
-                  {/* Guest code badge */}
-                  {a.guestEnabled && a.assessmentCode && (
-                    <div className="mt-1 flex items-center gap-1">
-                      <span className="text-[10px] text-blue-600 font-medium">Guest code:</span>
-                      <code className="text-[10px] font-mono font-bold tracking-wider">{a.assessmentCode}</code>
-                      <button
-                        type="button"
-                        className="shrink-0 rounded p-0.5 hover:bg-muted"
-                        title="Copy guest code"
-                        onClick={() => navigator.clipboard.writeText(a.assessmentCode!)}
-                      >
-                        <Copy className="size-2.5 text-muted-foreground" />
-                      </button>
-                    </div>
-                  )}
                   {/* Delivery status strip — shows tests/cohort/student counts */}
                   <div className="mt-1.5">
                     <AssessmentDeliveryPanel assessmentId={a.id} compact />

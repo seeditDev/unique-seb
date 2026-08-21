@@ -52,6 +52,7 @@ import {
   upsertCohort,
   upsertTenant,
 } from "@/lib/firestore/tenants";
+import { useAuth } from "@/lib/auth-context";
 import { listAllUsers } from "@/lib/firestore/users";
 import {
   ALLOWED_YEARS,
@@ -74,8 +75,7 @@ export const Route = createFileRoute("/_portal/colleges")({
       { title: "Colleges & Cohorts | SEED-IT Admin" },
       {
         name: "description",
-        content:
-          "Create institutional tenants, build academic-year cohorts with department tags and manage default proctor settings.",
+        content: "Manage Colleges, Cohorts, and Academic Years in the SEED-IT Admin Hub.",
       },
       { property: "og:title", content: "Colleges & Cohorts | SEED-IT Admin" },
       {
@@ -89,23 +89,33 @@ export const Route = createFileRoute("/_portal/colleges")({
 
 const PROCTOR_MODES: ProctorMode[] = ["face+audio", "face", "audio", "off"];
 
-interface CollegeEntry { code: string; name: string; shortName: string; city: string; }
-/** JSON structure: collegesMap[state][city] = [{code, name, shortName}] */
-interface SouthIndiaIndex { states: string[]; citiesByState: Record<string, string[]>; collegesMap: Record<string, Record<string, unknown[]>>; }
+interface CollegeEntry {
+  code: string;
+  name: string;
+  shortName: string;
+  state: string;
+  city: string;
+  searchTags: string[];
+}
 
-/** Flatten collegesMap into a flat list of {code, name, shortName, city}. */
+interface SouthIndiaIndex {
+  version: string;
+  totalColleges: number;
+  colleges: {
+    tamilNadu?: CollegeEntry[];
+    kerala?: CollegeEntry[];
+    karnataka?: CollegeEntry[];
+    andhraPradesh?: CollegeEntry[];
+    telangana?: CollegeEntry[];
+  };
+}
+
 function flattenCollegeIndex(data: SouthIndiaIndex): CollegeEntry[] {
   const result: CollegeEntry[] = [];
-  if (!data?.collegesMap) return result;
-  for (const cityMap of Object.values(data.collegesMap)) {
-    for (const [city, colleges] of Object.entries(cityMap)) {
-      for (const c of colleges) {
-        if (typeof c === "object" && c !== null) {
-          const entry = c as Record<string, string>;
-          if (entry['code']) result.push({ code: entry['code'], name: entry['name'] ?? entry['code'], shortName: entry['shortName'] ?? "", city });
-        }
-      }
-    }
+  const states = data.colleges;
+  if (!states) return result;
+  for (const list of Object.values(states)) {
+    if (Array.isArray(list)) result.push(...list);
   }
   return result.sort((a, b) => a.name.localeCompare(b.name));
 }
@@ -115,8 +125,6 @@ interface TenantDraft {
   name: string;
   slug: string;
   active: boolean;
-  /** Optional guest portal gate key for this college */
-  gateKey: string;
   settings: TenantSettings;
   isNew: boolean;
 }
@@ -131,7 +139,6 @@ function emptyTenantDraft(): TenantDraft {
     name: "",
     slug: "",
     active: true,
-    gateKey: "",
     settings: { ...DEFAULT_TENANT_SETTINGS },
     isNew: true,
   };
@@ -144,7 +151,6 @@ function emptyCohortDraft(): CohortDraft {
     year: "",
     departments: [],
     allowedModules: [],
-    gateKey: "",
     batchStart: "",
     batchEnd: "",
     active: true,
@@ -154,6 +160,7 @@ function emptyCohortDraft(): CohortDraft {
 
 function CollegesPage() {
   const qc = useQueryClient();
+  const { scopedTenantId } = useAuth();
   const [selectedTenantId, setSelectedTenantId] = useState<string>("");
   const [tenantDraft, setTenantDraft] = useState<TenantDraft | null>(null);
   const [cohortDraft, setCohortDraft] = useState<CohortDraft | null>(null);
@@ -181,7 +188,7 @@ function CollegesPage() {
   }, [collegeSearch, collegeIndex, selectedCollegeEntry]);
 
   const tenantsQ = useQuery({ queryKey: ["tenants"], queryFn: listTenants });
-  const usersQ = useQuery({ queryKey: ["users", "all"], queryFn: listAllUsers });
+  const usersQ = useQuery({ queryKey: ["users", "all", scopedTenantId], queryFn: () => listAllUsers(scopedTenantId ?? undefined) });
 
   const tenants = tenantsQ.data ?? [];
   const activeTenantId = selectedTenantId || (tenants[0]?.id ?? "");
@@ -211,7 +218,6 @@ function CollegesPage() {
         name: draft.name,
         slug: draft.slug,
         active: draft.active,
-        gateKey: draft.gateKey,
         settings: draft.settings,
         isNew: draft.isNew,
       }),
@@ -261,7 +267,6 @@ function CollegesPage() {
       name: tenant.name,
       slug: tenant.slug,
       active: tenant.active,
-      gateKey: tenant.gateKey ?? "",
       settings: { ...tenant.settings },
       isNew: false,
     });
@@ -525,7 +530,7 @@ function CollegesPage() {
                         onChange={(e) => {
                           if (selectedCollegeEntry) {
                             setSelectedCollegeEntry(null);
-                            setTenantDraft(prev => prev ? { ...prev, id: "", name: "", slug: "", gateKey: prev.gateKey } : prev);
+                            setTenantDraft(prev => prev ? { ...prev, id: "", name: "", slug: "" } : prev);
                           }
                           setCollegeSearch(e.target.value);
                         }}
@@ -678,24 +683,6 @@ function CollegesPage() {
                       setTenantDraft((prev) => (prev ? { ...prev, active } : prev))
                     }
                   />
-                </div>
-
-                {/* ── GateKey ── */}
-                <div className="space-y-2">
-                  <Label htmlFor="tenant-gatekey">🔑 Guest Portal GateKey <span className="text-muted-foreground text-xs">(optional)</span></Label>
-                  <Input
-                    id="tenant-gatekey"
-                    className="rounded-xl font-mono"
-                    placeholder="e.g. KITE2025 (leave blank for open access)"
-                    value={tenantDraft.gateKey}
-                    onChange={(e) =>
-                      setTenantDraft((prev) => (prev ? { ...prev, gateKey: e.target.value } : prev))
-                    }
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    If set, guests must enter this key after selecting <strong>{tenantDraft.name ?? "this college"}</strong> before seeing available assessments.
-                    Share this key with your students during placement drives or events.
-                  </p>
                 </div>
               </div>
 
@@ -853,25 +840,6 @@ function CollegesPage() {
                       }
                     />
                   </div>
-                </div>
-
-                {/* ── Guest Portal Gate Key ── */}
-                <div className="space-y-2">
-                  <Label htmlFor="cohort-gatekey">🔑 Guest Portal Gate Key <span className="text-muted-foreground text-xs">(optional)</span></Label>
-                  <Input
-                    id="cohort-gatekey"
-                    className="rounded-xl font-mono tracking-widest"
-                    placeholder="e.g. SEED2K27 or leave blank for open access"
-                    value={cohortDraft.gateKey ?? ""}
-                    onChange={(e) =>
-                      setCohortDraft((prev) => (prev ? { ...prev, gateKey: e.target.value.trim() } : prev))
-                    }
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Guests must enter this key to access <strong>this cohort's assessments only</strong>.
-                    Each cohort can have a unique key — guests are automatically scoped to this batch.
-                    Leave blank for open access.
-                  </p>
                 </div>
               </div>
 

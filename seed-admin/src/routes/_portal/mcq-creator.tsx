@@ -55,7 +55,6 @@ import { listTenants } from "@/lib/firestore/tenants";
 import {
   deleteAssessment,
   duplicateAssessment,
-  generateAssessmentCode,
   getAssessment,
   listAssessments,
   saveAssessment,
@@ -147,9 +146,6 @@ interface McqDraft {
   scheduledEnd: string | null;
   proctorConfig: ProctorConfig;
   questions: McqQuestion[];
-  /** Guest access code — students can enter this to start test without login */
-  assessmentCode: string | null;
-  guestEnabled: boolean;
 }
 
 function emptyDraft(): McqDraft {
@@ -166,8 +162,6 @@ function emptyDraft(): McqDraft {
     scheduledEnd: null,
     proctorConfig: { ...DEFAULT_PROCTOR_CONFIG },
     questions: [],
-    assessmentCode: null,
-    guestEnabled: false,
   };
 }
 
@@ -186,8 +180,6 @@ function draftFromDoc(doc: AssessmentDoc): McqDraft {
     scheduledEnd: doc.scheduledEnd ?? null,
     proctorConfig: doc.proctorConfig,
     questions: doc.questions.length > 0 ? doc.questions : [],
-    assessmentCode: doc.assessmentCode ?? null,
-    guestEnabled: doc.guestEnabled ?? false,
   };
 }
 
@@ -251,7 +243,7 @@ function McqCreatorPage() {
   const [customQ, setCustomQ] = useState<CustomQForm>(emptyCustomQ());
 
   /* ---- Queries ---- */
-  const assessmentsQ = useQuery({ queryKey: ["assessments"], queryFn: listAssessments });
+  const assessmentsQ = useQuery({ queryKey: ["assessments", scopedTenantId], queryFn: () => listAssessments(scopedTenantId ?? undefined) });
   const tenantsQ = useQuery({ queryKey: ["tenants"], queryFn: listTenants });
 
   const tenants = useMemo(() => {
@@ -545,8 +537,6 @@ function McqCreatorPage() {
           proctorConfig: d.proctorConfig,
           questions: d.questions,
           status: resolvedStatus,
-          assessmentCode: d.assessmentCode,
-          guestEnabled: d.guestEnabled,
         },
         account?.uid,
       );
@@ -807,62 +797,6 @@ function McqCreatorPage() {
                   onChange={(next) => setDraft((prev) => prev ? { ...prev, ...next } : prev)} />
                 <ProctoringBar config={draft.proctorConfig}
                   onChange={(proctorConfig) => setDraft((prev) => prev ? { ...prev, proctorConfig } : prev)} />
-
-                {/* ── Guest Access (Assessment Code) ── */}
-                <Card className="rounded-2xl border-dashed">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle className="text-sm font-semibold">Guest Access</CardTitle>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          Allow students to take this assessment without logging in.
-                          They enter the code + their college / year / name / roll no.
-                        </p>
-                      </div>
-                      <Switch
-                        id="mcq-guest-enabled"
-                        checked={draft.guestEnabled}
-                        onCheckedChange={(v) => setDraft((prev) => prev ? {
-                          ...prev,
-                          guestEnabled: v,
-                          assessmentCode: v ? (prev.assessmentCode ?? generateAssessmentCode()) : prev.assessmentCode,
-                        } : prev)}
-                      />
-                    </div>
-                  </CardHeader>
-                  {draft.guestEnabled && (
-                    <CardContent className="pt-0 space-y-2">
-                      <Label htmlFor="mcq-code">Assessment Code</Label>
-                      <div className="flex gap-2">
-                        <Input
-                          id="mcq-code"
-                          className="rounded-xl font-mono font-bold tracking-widest uppercase"
-                          maxLength={10}
-                          value={draft.assessmentCode ?? ""}
-                          onChange={(e) => setDraft((prev) => prev ? { ...prev, assessmentCode: e.target.value.toUpperCase().trim() } : prev)}
-                        />
-                        <Button type="button" size="icon" variant="outline" className="rounded-xl shrink-0"
-                          title="Generate new code"
-                          onClick={() => setDraft((prev) => prev ? { ...prev, assessmentCode: generateAssessmentCode() } : prev)}>
-                          <RefreshCw className="size-4" />
-                        </Button>
-                        {draft.assessmentCode && (
-                          <Button type="button" size="icon" variant="outline" className="rounded-xl shrink-0"
-                            title="Copy code"
-                            onClick={() => navigator.clipboard.writeText(draft.assessmentCode!)}
-                          >
-                            <Copy className="size-4" />
-                          </Button>
-                        )}
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        Share this code with students. They visit the guest portal, enter the code,
-                        fill in their details (name, college, year, roll no), and start the test immediately.
-                        No account required.
-                      </p>
-                    </CardContent>
-                  )}
-                </Card>
 
                 {/* ── Questions section ── */}
                 <Card className="rounded-2xl">

@@ -90,26 +90,6 @@ export interface AssessmentDoc extends Assessment {
    * Set when the assessment is published; null for draft-only assessments.
    */
   cdnUrl: string | null;
-
-  /**
-   * Assessment access code — a short alphanumeric code (e.g. "SEED2024A") that
-   * allows ANYONE to access and take this specific assessment without logging in.
-   *
-   * Guest flow:
-   *   1. User goes to /guest (no login)
-   *   2. Enters assessmentCode
-   *   3. If guestEnabled = true, they fill in name / college / year / rollno
-   *   4. They can start the assessment immediately
-   *
-   * Null = no guest access (login required).
-   */
-  assessmentCode: string | null;
-
-  /**
-   * Whether this assessment allows unauthenticated (guest) access via assessmentCode.
-   * When true, the assessmentCode acts as a passkey that anyone can use.
-   */
-  guestEnabled: boolean;
 }
 
 export const DEFAULT_CODING_PROBLEM: CodingProblem = {
@@ -165,44 +145,14 @@ function mapAssessment(id: string, data: Record<string, unknown>): AssessmentDoc
     prompts: Array.isArray(data['prompts']) ? (data['prompts'] as SeaPrompt[]) : [],
     rubric: (data['rubric'] as SeaRubric | undefined) ?? null,
     cdnUrl: data['cdnUrl'] ? String(data['cdnUrl']) : null,
-    assessmentCode: data['assessmentCode'] ? String(data['assessmentCode']) : null,
-    guestEnabled: Boolean(data['guestEnabled'] ?? false),
     version: Number(data['version'] ?? 1),
   };
 }
 
-/**
- * Generate a unique 8-character alphanumeric assessment code.
- * e.g. "SEED2024", "MCQ7AB3X"
- * Admin can regenerate this from the UI.
- */
-export function generateAssessmentCode(prefix = ""): string {
-  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // unambiguous chars (no 0/O/I/1)
-  const rand = Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
-  return `${prefix ? prefix.toUpperCase().slice(0, 4) : "SEED"}${rand}`;
-}
-
-/**
- * Fetch a single assessment by its assessmentCode (for guest access).
- * Returns null if not found or guest access is disabled.
- */
-export async function getAssessmentByCode(code: string): Promise<AssessmentDoc | null> {
-  const { query: fsQuery, where, getDocs: getDs } = await import("firebase/firestore");
-  const snap = await getDs(
-    fsQuery(collection(getDb(), ASSESSMENTS),
-      where("assessmentCode", "==", code.toUpperCase().trim()),
-      where("guestEnabled", "==", true),
-    )
-  );
-  if (snap.empty) return null;
-  return mapAssessment(snap.docs[0]!.id, snap.docs[0]!.data() as Record<string, unknown>);
-}
-
-export async function listAssessments(tenantId?: string | { queryKey: unknown }): Promise<AssessmentDoc[]> {
-  const actualTenantId = typeof tenantId === 'string' ? tenantId : undefined;
+export async function listAssessments(tenantId?: string): Promise<AssessmentDoc[]> {
   const { query: fsQuery, where } = await import("firebase/firestore");
   const colRef = collection(getDb(), ASSESSMENTS);
-  const q = actualTenantId ? fsQuery(colRef, where("tenantId", "==", actualTenantId)) : colRef;
+  const q = tenantId ? fsQuery(colRef, where("tenantId", "==", tenantId)) : colRef;
   const snap = await getDocs(q);
   return snap.docs
     .map((d) => mapAssessment(d.id, d.data() as Record<string, unknown>))
@@ -317,9 +267,6 @@ export async function saveAssessment(input: AssessmentInput, createdBy?: string)
   if (input.prompts)                             payload['prompts']        = input.prompts;
   if (input.rubric)                              payload['rubric']         = input.rubric;
   if (input.cdnUrl !== undefined)                payload['cdnUrl']         = input.cdnUrl ?? null;
-  if (input.assessmentCode !== undefined)        payload['assessmentCode'] = input.assessmentCode ?? null;
-  if (input.guestEnabled !== undefined)          payload['guestEnabled']   = Boolean(input.guestEnabled);
-
   await setDoc(doc(getDb(), ASSESSMENTS, id), payload, { merge: true });
   return id;
 }

@@ -132,23 +132,12 @@ export interface TestDoc {
   maxAttempts: number;
   passkey: string;
   isPremium: boolean;
-  /**
-   * Allow non-authenticated (guest) users to take this test.
-   * When true, students enter name/college/roll-no instead of logging in.
-   */
-  guestEnabled: boolean;
-  /**
-   * Short code used to find this test via the guest portal (e.g. "PLACE2025").
-   * Required when guestEnabled = true.
-   */
-  assessmentCode: string;
   display_order: number;
   schedule: ScheduleConfig;
   /** Behaviour/display settings */
   settings: TestSettings;
   /** Which colleges/cohorts can access this test */
   targeting: AssessmentTargeting;
-  /** Tenant (college code) this test belongs to — used for guestTests sync */
   tenantId?: string;
   createdAt?: unknown;
   updatedAt?: unknown;
@@ -168,6 +157,7 @@ export interface CourseDoc {
   id: string;
   title: string;
   description: string;
+  tenantId: string;
   display_order: number;
   active: boolean;
   createdAt?: unknown;
@@ -195,6 +185,7 @@ function mapCourse(id: string, d: Record<string, unknown>): CourseDoc {
     id,
     title: String(d["title"] ?? id),
     description: String(d["description"] ?? ""),
+    tenantId: String(d["tenantId"] ?? ""),
     display_order: Number(d["display_order"] ?? 999),
     active: d["active"] !== false,
     createdAt: d["createdAt"],
@@ -244,8 +235,6 @@ function mapTest(id: string, d: Record<string, unknown>): TestDoc {
     maxAttempts: Number(d["maxAttempts"] ?? 1),
     passkey: String(d["passkey"] ?? ""),
     isPremium: Boolean(d["isPremium"]),
-    guestEnabled: Boolean(d["guestEnabled"]),
-    assessmentCode: String(d["assessmentCode"] ?? ""),
     display_order: Number(d["display_order"] ?? 999),
     schedule: (d["schedule"] as ScheduleConfig) ?? { ...DEFAULT_SCHEDULE },
     settings: {
@@ -273,10 +262,9 @@ const testsCol = (courseId: string, seriesId: string) =>
 
 /* ─────────────────────── Course CRUD ──────────────────────────── */
 
-export async function listCourses(tenantId?: string | { queryKey: unknown }): Promise<CourseDoc[]> {
-  const actualTenantId = typeof tenantId === 'string' ? tenantId : undefined;
-  const q = actualTenantId
-    ? query(coursesCol(), where("tenantId", "==", actualTenantId), orderBy("display_order"))
+export async function listCourses(tenantId?: string): Promise<CourseDoc[]> {
+  const q = tenantId
+    ? query(coursesCol(), where("tenantId", "==", tenantId), orderBy("display_order"))
     : query(coursesCol(), orderBy("display_order"));
   const snap = await getDocs(q);
   return snap.docs.map((d) => mapCourse(d.id, d.data() as Record<string, unknown>));
@@ -289,6 +277,7 @@ export async function saveCourse(input: Omit<CourseDoc, "createdAt" | "updatedAt
     id,
     title: input.title.trim(),
     description: input.description,
+    tenantId: input.tenantId ?? "",
     display_order: input.display_order,
     active: input.active,
     updatedAt: serverTimestamp(),
@@ -436,8 +425,6 @@ export async function saveTest(
     maxAudioViolations: input.maxAudioViolations,
     passkey: input.passkey,
     isPremium: input.isPremium,
-    guestEnabled: Boolean(input.guestEnabled),
-    assessmentCode: input.assessmentCode ?? "",
     display_order: input.display_order,
     schedule: input.schedule,
     targeting: input.targeting,
@@ -448,7 +435,6 @@ export async function saveTest(
 
   // ── Sync tenantCourses (non-blocking, best-effort) ──
   // For all tenants in targeting.tenantIds, upsert the test summary.
-  // On guest-toggle changes this keeps the guest portal list current.
   const targetYears = input.targeting?.years ?? [];
   void syncTenantCourseTests(
     [], // no previous tracking on plain save — we only add, never remove
@@ -466,7 +452,6 @@ export async function saveTest(
       passkey: input.passkey,
       proctored: input.proctored,
       audioProctored: input.audioProctored,
-      guestEnabled: Boolean(input.guestEnabled),
       schedule: input.schedule ?? {},
       years: targetYears,
       targetYears: targetYears,
@@ -529,7 +514,6 @@ export async function updateTestTargeting(
         passkey: String(d["passkey"] ?? ""),
         proctored: Boolean(d["proctored"]),
         audioProctored: Boolean(d["audioProctored"]),
-        guestEnabled: Boolean(d["guestEnabled"]),
         schedule: (d["schedule"] ?? {}) as import("@/lib/firestore/courses").ScheduleConfig,
         years: tYears,
         targetYears: tYears,
@@ -561,8 +545,6 @@ export function testToAccessControlJson(test: TestDoc): Record<string, unknown> 
     maxAudioViolations: test.maxAudioViolations,
     passkey: test.passkey,
     isPremium: test.isPremium,
-    guestEnabled: Boolean(test.guestEnabled),
-    assessmentCode: test.assessmentCode ?? "",
     display_order: test.display_order,
     schedule: test.schedule,
     targeting: test.targeting,

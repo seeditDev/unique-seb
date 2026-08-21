@@ -46,7 +46,6 @@ export interface TenantCourseTest {
   passkey: string;
   proctored: boolean;
   audioProctored: boolean;
-  guestEnabled: boolean;
   schedule: Partial<ScheduleConfig>;
   years?: string[];
   targetYears?: string[];
@@ -98,16 +97,12 @@ export async function deleteTenantCourseTest(
 /**
  * List tests for a tenant.
  * @param tenantId  - College code (e.g. "TN000026")
- * @param guestOnly - If true, only return tests with guestEnabled == true
  */
 export async function listTenantCourseTests(
   tenantId: string,
-  guestOnly = false,
 ): Promise<TenantCourseTest[]> {
   const col = tenantTestsCol(tenantId);
-  const snap = guestOnly
-    ? await getDocs(query(col, where("guestEnabled", "==", true)))
-    : await getDocs(col);
+  const snap = await getDocs(col);
 
   return snap.docs.map((d) => {
     const raw = d.data() as Record<string, unknown>;
@@ -130,7 +125,6 @@ export async function listTenantCourseTests(
       passkey: String(raw["passkey"] ?? ""),
       proctored: Boolean(raw["proctored"]),
       audioProctored: Boolean(raw["audioProctored"]),
-      guestEnabled: Boolean(raw["guestEnabled"]),
       schedule: (raw["schedule"] ?? {}) as Partial<ScheduleConfig>,
       years: rawYears,
       targetYears: rawYears,

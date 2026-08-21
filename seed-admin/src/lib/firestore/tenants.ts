@@ -15,9 +15,6 @@ import type { Cohort, Tenant, TenantSettings } from "@/types/seedit";
 import { DEFAULT_TENANT_SETTINGS } from "@/types/seedit";
 
 const TENANTS = "tenants";
-/** Minimal public projection — fields safe for unauthenticated reads. */
-const PUBLIC_TENANTS = "publicTenants";
-
 
 function normaliseSettings(raw: unknown): TenantSettings {
   const s = (raw ?? {}) as Partial<TenantSettings>;
@@ -39,7 +36,6 @@ export async function listTenants(): Promise<Tenant[]> {
         slug: String(data['slug'] ?? d.id.toLowerCase()),
         logoUrl: data['logoUrl'] ? String(data['logoUrl']) : undefined,
         active: data['active'] !== false,
-        gateKey: data['gateKey'] ? String(data['gateKey']) : undefined,
         createdAt: (data['createdAt'] ?? null) as Tenant["createdAt"],
         settings: normaliseSettings(data['settings']),
       } satisfies Tenant;
@@ -52,12 +48,10 @@ export async function upsertTenant(input: {
   name: string;
   slug: string;
   active: boolean;
-  gateKey?: string;
   settings: TenantSettings;
   isNew: boolean;
 }): Promise<void> {
   const ref = doc(getDb(), TENANTS, input.id);
-  const pubRef = doc(getDb(), PUBLIC_TENANTS, input.id);
 
   if (input.isNew) {
     const existing = await getDoc(ref);
@@ -67,33 +61,17 @@ export async function upsertTenant(input: {
       name: input.name,
       slug: input.slug,
       active: input.active,
-      gateKey: input.gateKey ?? "",
       settings: input.settings,
       createdAt: serverTimestamp(),
     });
-    // Write safe public projection (no gateKey/settings)
-    await setDoc(pubRef, {
-      name: input.name,
-      slug: input.slug,
-      active: input.active,
-      updatedAt: serverTimestamp(),
-    }, { merge: true });
     return;
   }
   await updateDoc(ref, {
     name: input.name,
     slug: input.slug,
     active: input.active,
-    gateKey: input.gateKey ?? "",
     settings: input.settings,
   });
-  // Keep public projection in sync
-  await setDoc(pubRef, {
-    name: input.name,
-    slug: input.slug,
-    active: input.active,
-    updatedAt: serverTimestamp(),
-  }, { merge: true });
 }
 
 
@@ -101,8 +79,6 @@ export async function deleteTenant(tenantId: string): Promise<void> {
   const cohorts = await getDocs(collection(getDb(), TENANTS, tenantId, "cohorts"));
   await Promise.all(cohorts.docs.map((c) => deleteDoc(c.ref)));
   await deleteDoc(doc(getDb(), TENANTS, tenantId));
-  // Remove public projection too
-  await deleteDoc(doc(getDb(), PUBLIC_TENANTS, tenantId)).catch(() => {});
 }
 
 
@@ -125,7 +101,6 @@ export async function listCohorts(tenantId: string): Promise<Cohort[]> {
       year: String(data['year'] ?? d.id),
       departments,
       allowedModules: Array.isArray(data['allowedModules']) ? (data['allowedModules'] as string[]) : [],
-      gateKey: data['gateKey'] ? String(data['gateKey']) : undefined,
       batchStart: data['batchStart'] ? String(data['batchStart']) : undefined,
       batchEnd: data['batchEnd'] ? String(data['batchEnd']) : undefined,
       active: data['active'] !== false,
@@ -143,7 +118,6 @@ export async function upsertCohort(tenantId: string, cohort: Cohort): Promise<vo
       year: cohort.year,
       departments: cohort.departments,
       allowedModules: cohort.allowedModules,
-      gateKey: cohort.gateKey ?? "",
       batchStart: cohort.batchStart ?? "",
       batchEnd: cohort.batchEnd ?? "",
       active: cohort.active !== false,

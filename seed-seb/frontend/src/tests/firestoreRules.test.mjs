@@ -230,6 +230,10 @@ class RulesSimulator {
       block.includes("allow create, update, delete: if isAdmin() || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/courses/$(courseId)).data.get('tenantId', '')));")
     );
   }
+
+  isGuestBackdoorRemoved() {
+    return !this.rules.includes('publicTenants') && !this.rules.includes('guestTests') && !this.rules.includes('isGuest');
+  }
 }
 
 // ── Test Execution ──────────────────────────────────────────────────────────
@@ -291,7 +295,7 @@ assert(sim.isProctoringCreationFailClosed(), 'FAIL: Proctoring creation must fai
 console.log('✓ Test 13 Passed: Proctoring creation strictly fails closed on missing/empty tenant');
 
 // Test 14: Proctoring Update Identity Locks
-assert(sim.isProctoringUpdateIdentityLocked(), 'FAIL: Proctoring update must lock tenantId, attemptId, and userId');
+assert(sim.isProctoringUpdateIdentityLocked(), 'FAIL: Proctoring updates must lock tenantId, attemptId, and userId');
 console.log('✓ Test 14 Passed: Proctoring updates strictly lock tenantId, attemptId, and userId');
 
 // Test 15: Assessment Read Tenant Scoping & List Scoping
@@ -306,6 +310,10 @@ console.log('✓ Test 16 Passed: Result scoring fields (score, percentage, rank,
 assert(sim.isCoursesTenantScoped(), 'FAIL: Courses and nested series/tests must be tenant-scoped');
 console.log('✓ Test 17 Passed: Course, series, and test read/write access strictly tenant-scoped');
 
+// Test 18: Complete Guest Backdoor Removal
+assert(sim.isGuestBackdoorRemoved(), 'FAIL: publicTenants and unauthenticated read backdoors must be completely removed');
+console.log('✓ Test 18 Passed: Unauthenticated guest backdoors and publicTenants completely excised');
+
 console.log('\n========================================');
-console.log('ALL 17/17 FIRESTORE SECURITY RULES TESTS PASSED (OK)');
+console.log('ALL 18/18 FIRESTORE SECURITY RULES TESTS PASSED (OK)');
 console.log('========================================\n');

@@ -90,8 +90,8 @@ function DashboardPage() {
   const { scopedTenantId, account } = useAuth();
 
   const tenantsQ = useQuery({ queryKey: ["tenants"], queryFn: listTenants });
-  const usersQ = useQuery({ queryKey: ["users", "all"], queryFn: listAllUsers });
-  const assessmentsQ = useQuery({ queryKey: ["assessments"], queryFn: listAssessments });
+  const usersQ = useQuery({ queryKey: ["users", "all", scopedTenantId], queryFn: () => listAllUsers(scopedTenantId ?? undefined) });
+  const assessmentsQ = useQuery({ queryKey: ["assessments", scopedTenantId], queryFn: () => listAssessments(scopedTenantId ?? undefined) });
   const resultsQ = useQuery({ queryKey: ["results"], queryFn: () => listResults(1500) });
 
   const loading = tenantsQ.isLoading || usersQ.isLoading || assessmentsQ.isLoading;

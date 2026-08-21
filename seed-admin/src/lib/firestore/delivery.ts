@@ -405,15 +405,10 @@ export async function validateCohortAssignment(
     return { valid: false, errors, warnings };
   }
 
-  // Tenant check (accepts publicTenants or tenants)
-  const tenantSnap = await getDoc(doc(getDb(), "publicTenants", tenantId)).catch(() => null);
-  const tenantExists = tenantSnap?.exists() ?? false;
-  if (!tenantExists) {
-    // Fallback: check tenants collection
-    const privateTenantSnap = await getDoc(doc(getDb(), "tenants", tenantId)).catch(() => null);
-    if (!privateTenantSnap?.exists()) {
-      errors.push(`College/tenant "${tenantId}" not found. Verify the tenant is configured.`);
-    }
+  // Tenant check
+  const tenantSnap = await getDoc(doc(getDb(), "tenants", tenantId)).catch(() => null);
+  if (!tenantSnap?.exists()) {
+    errors.push(`College/tenant "${tenantId}" not found. Verify the tenant is configured.`);
   }
 
   // Cohort check

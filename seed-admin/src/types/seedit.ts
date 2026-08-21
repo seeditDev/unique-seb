@@ -25,13 +25,6 @@ export interface Tenant {
   slug: string;
   logoUrl?: string | undefined;
   active: boolean;
-  /**
-   * Optional college-level gate key for the Guest Portal.
-   * If set, guests must enter this key after selecting their college
-   * before they can see personal details form and assessment list.
-   * Leave empty for open guest access.
-   */
-  gateKey?: string | undefined;
   createdAt?: Timestamp | null | undefined;
   settings: TenantSettings;
 }
@@ -42,8 +35,6 @@ export interface Cohort {
   year: string;
   departments: string[];
   allowedModules: string[];
-  /** Per-cohort gate key for the Guest Portal. Guests entering this key get exactly this cohort's assessments. */
-  gateKey?: string | undefined;
   batchStart?: string | undefined;
   batchEnd?: string | undefined;
   active?: boolean | undefined;

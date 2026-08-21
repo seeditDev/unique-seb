@@ -169,7 +169,7 @@ function CodingCreatorPage() {
   const [bankError, setBankError] = useState<string | null>(null);
 
   /* ── Queries ── */
-  const assessmentsQ = useQuery({ queryKey: ["assessments"], queryFn: listAssessments });
+  const assessmentsQ = useQuery({ queryKey: ["assessments", scopedTenantId], queryFn: () => listAssessments(scopedTenantId ?? undefined) });
   const tenantsQ = useQuery({ queryKey: ["tenants"], queryFn: listTenants });
 
   const tenants = useMemo(() => {

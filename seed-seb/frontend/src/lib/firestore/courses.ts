@@ -85,8 +85,6 @@ export interface TestDoc {
   maxAttempts: number;
   passkey: string;
   isPremium: boolean;
-  guestEnabled: boolean;
-  assessmentCode: string;
   display_order: number;
   schedule: ScheduleConfig;
   settings: TestSettings;
@@ -120,13 +118,13 @@ export interface NewModuleKey {
   isNew: true;
   courseId: string;
   seriesId: string;
-  assessmentId: string;
+  testId: string;
 }
 
 export function parseModuleKey(key: string): NewModuleKey | null {
   const parts = key.split("::");
   if (parts.length === 3 && parts[0] && parts[1] && parts[2]) {
-    return { isNew: true, courseId: parts[0], seriesId: parts[1], assessmentId: parts[2] };
+    return { isNew: true, courseId: parts[0], seriesId: parts[1], testId: parts[2] };
   }
   return null; // Unrecognised key format — skip
 }
@@ -162,8 +160,6 @@ function mapTest(
     maxAttempts: Number(d["maxAttempts"] ?? 1),
     passkey: String(d["passkey"] ?? ""),
     isPremium: Boolean(d["isPremium"]),
-    guestEnabled: Boolean(d["guestEnabled"]),
-    assessmentCode: String(d["assessmentCode"] ?? ""),
     display_order: Number(d["display_order"] ?? 999),
     schedule: (d["schedule"] as ScheduleConfig) ?? { start: null, end: null, autoClose: false },
     settings: {
@@ -191,7 +187,7 @@ function mapTest(
 export async function getTest(
   courseId: string,
   seriesId: string,
-  assessmentId: string,
+  testId: string,
 ): Promise<TestDoc | null> {
   try {
     const snap = await getDoc(
@@ -279,46 +275,4 @@ export async function getAllowedTests(allowedModules: string[]): Promise<TestDoc
   );
 
   return results.sort((a, b) => a.display_order - b.display_order);
-}
-
-/**
- * Find a test by assessmentCode — for the guest portal.
- * Uses a Firestore collectionGroup query across all 'tests' subcollections.
- */
-export async function findTestByCode(assessmentCode: string): Promise<TestDoc | null> {
-  try {
-    const q = query(
-      collectionGroup(getDb(), "tests"),
-      where("guestEnabled", "==", true),
-      where("assessmentCode", "==", assessmentCode.toUpperCase()),
-    );
-    const snap = await getDocs(q);
-    if (snap.empty) return null;
-    const d = snap.docs[0];
-    if (!d) return null;
-    // Path: courses/{courseId}/series/{seriesId}/tests/{testId}
-    const parts = d.ref.path.split("/");
-    const courseId = parts[1] ?? "";
-    const seriesId = parts[3] ?? "";
-    const t = mapTest(d.id, courseId, seriesId, d.data() as Record<string, unknown>);
-    // Enrich titles
-    try {
-      if (courseId && seriesId) {
-        const [cSnap, sSnap] = await Promise.all([
-          getDoc(doc(getDb(), "courses", courseId)),
-          getDoc(doc(getDb(), "courses", courseId, "series", seriesId)),
-        ]);
-        const cData = cSnap.data();
-        const sData = sSnap.data();
-        t.courseTitle = cSnap.exists() && cData ? String(cData["title"] ?? courseId) : courseId;
-        t.seriesTitle = sSnap.exists() && sData ? String(sData["title"] ?? seriesId) : seriesId;
-      }
-    } catch {
-      /* non-fatal */
-    }
-    return t;
-  } catch (err) {
-    console.error("[courses.ts] findTestByCode error:", err);
-    return null;
-  }
 }

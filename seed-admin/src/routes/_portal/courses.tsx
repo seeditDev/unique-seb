@@ -79,7 +79,7 @@ import {
   removeTestFromTracker,
   type QuestionTracker,
 } from "@/lib/firestore/questionTracker";
-import { generateAssessmentCode, checkAssessmentDeletable } from "@/lib/firestore/assessments";
+import { checkAssessmentDeletable } from "@/lib/firestore/assessments";
 // tenantCourses sync is now handled inside courses.ts updateTestTargeting / saveTest
 
 
@@ -294,8 +294,6 @@ function blankTest(seriesId: string, order: number): TestDoc {
     maxAttempts: 1,
     passkey: "",
     isPremium: false,
-    guestEnabled: false,
-    assessmentCode: "",
     display_order: order,
     schedule: { ...DEFAULT_SCHEDULE },
     settings: {
@@ -323,7 +321,7 @@ function CoursesPage() {
 
   /* ── course dialog ── */
   const [courseDialog, setCourseDialog] = useState(false);
-  const [courseForm, setCourseForm] = useState<CourseDoc>({ id: "", title: "", description: "", display_order: 1, active: true });
+  const [courseForm, setCourseForm] = useState<CourseDoc>({ id: "", title: "", description: "", tenantId: scopedTenantId ?? "", display_order: 1, active: true });
   const [courseIsNew, setCourseIsNew] = useState(true);
 
   /* ── series dialog ── */
@@ -348,7 +346,7 @@ function CoursesPage() {
   const [previewJson, setPreviewJson] = useState<string | null>(null);
 
   /* ── queries ── */
-  const coursesQ = useQuery({ queryKey: ["courses"], queryFn: listCourses });
+  const coursesQ = useQuery({ queryKey: ["courses", scopedTenantId], queryFn: () => listCourses(scopedTenantId ?? undefined) });
   const tenantsQ = useQuery({ queryKey: ["tenants"], queryFn: listTenants });
   const contentUrlsQ = useQuery({ queryKey: ["contentUrls"], queryFn: () => listContentUrls() });
 
@@ -517,7 +515,7 @@ function CoursesPage() {
 
   /* ─── openers ─── */
   function openNewCourse() {
-    setCourseForm({ id: "", title: "", description: "", display_order: (coursesQ.data?.length ?? 0) + 1, active: true });
+    setCourseForm({ id: "", title: "", description: "", tenantId: scopedTenantId ?? "", display_order: (coursesQ.data?.length ?? 0) + 1, active: true });
     setCourseIsNew(true);
     setCourseDialog(true);
   }
@@ -1248,31 +1246,6 @@ function CoursesPage() {
                 <Input id="test-passkey" className="rounded-xl" placeholder="optional passkey"
                   value={testForm.passkey}
                   onChange={(e) => setTestForm((p) => ({ ...p, passkey: e.target.value }))} />
-              </div>
-
-              {/* Guest Access */}
-              <div className="space-y-2">
-                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Guest Access</p>
-                <div className="flex items-center justify-between rounded-xl border p-3">
-                  <div>
-                    <Label className="text-sm">🔓 Allow guest (non-login) access</Label>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      Students select their college on the Guest Portal and see this test automatically.
-                      Assign targeting below to control which college(s) this appears for.
-                    </p>
-                  </div>
-                  <Switch checked={testForm.guestEnabled ?? false}
-                    onCheckedChange={(v) => {
-                      setTestForm((p) => ({ ...p, guestEnabled: v }));
-                    }} />
-                </div>
-                {testForm.guestEnabled && (
-                  <div className="rounded-xl border bg-accent/20 px-3 py-2 text-xs text-muted-foreground">
-                    ℹ️ Guest-enabled tests are visible on the Guest Portal for colleges listed in the <strong>Targeting</strong> section below.
-                    Students find them by selecting their college — no code required.
-                    Add a <strong>Passkey</strong> above if you want to restrict access.
-                  </div>
-                )}
               </div>
 
               {/* Proctoring */}

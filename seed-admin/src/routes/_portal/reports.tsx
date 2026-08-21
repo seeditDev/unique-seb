@@ -240,9 +240,9 @@ function ReportsPage() {
   const [isPulling, setIsPulling] = useState(false);
   const [pulledRows, setPulledRows] = useState<ResultRow[]>([]);
 
-  const tenantsQ = useQuery({ queryKey: ["tenants"], queryFn: listTenants });
-  const assessmentsQ = useQuery({ queryKey: ["assessments"], queryFn: listAssessments });
-  const coursesQ = useQuery({ queryKey: ["courses"], queryFn: listCourses });
+   const tenantsQ = useQuery({ queryKey: ["tenants"], queryFn: listTenants });
+  const assessmentsQ = useQuery({ queryKey: ["assessments", scopedTenantId], queryFn: () => listAssessments(scopedTenantId ?? undefined) });
+  const coursesQ = useQuery({ queryKey: ["courses", scopedTenantId], queryFn: () => listCourses(scopedTenantId ?? undefined) });
 
   // Effective tenant for filtering
   const effectiveTenant = scopedTenantId || (tenantFilter !== "all" ? tenantFilter : "");
