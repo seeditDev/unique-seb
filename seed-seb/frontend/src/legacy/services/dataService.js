@@ -34,18 +34,33 @@ import { cacheManager } from '../utils/cacheManager';
 
 /**
  * Merges Firebase Auth identity with the canonical Firestore user document.
- * The Firestore profile IS the canonical source - fields are read as-is.
- * uid and email are taken from Firebase Auth (authoritative source for identity).
+ * Guarantees tenantId and core identity fields are always defined and canonical.
  */
-function buildAuthData(firebaseUser, profile) {
+function buildAuthData(firebaseUser, profile = {}) {
+    const rawTenantId = profile.tenantId ?? profile.TenantId ?? profile.collegeCode ?? '';
+    const tenantId = (typeof rawTenantId === 'string' && rawTenantId.trim()) ? rawTenantId.trim() : '';
+
     return {
         ...profile,
         uid:             firebaseUser.uid,
         email:           (firebaseUser.email ?? profile?.email ?? '').toLowerCase(),
-        photoURL:        firebaseUser.photoURL ?? profile?.photoURL ?? '',
+        tenantId:        tenantId,
+        college:         profile?.college ?? profile?.College ?? '',
+        name:            profile?.name ?? profile?.Name ?? profile?.displayName ?? '',
+        rollNumber:      profile?.rollNumber ?? profile?.rollNo ?? profile?.['Roll Number'] ?? '',
+        cohortId:        profile?.cohortId ?? profile?.cohort ?? '',
+        year:            profile?.year ?? profile?.Year ?? '',
+        department:      profile?.department ?? profile?.Department ?? '',
+        role:            profile?.role ?? 'student',
+        isPremium:       !!(profile?.isPremium ?? profile?.premium),
+        seedCredits:     typeof profile?.seedCredits === 'number' ? profile.seedCredits : 0,
+        streak:          typeof profile?.streak === 'number' ? profile.streak : 0,
+        lastStreakDate:  profile?.lastStreakDate ?? null,
+        photoURL:        firebaseUser.photoURL ?? profile?.photoURL ?? profile?.photoUrl ?? '',
         isAuthenticated: true,
     };
 }
+
 
 
 
@@ -236,10 +251,13 @@ class DataService {
             return null;
         }
         try {
-            const profile  = await DataService.getUserProfile(firebaseUser.uid);
-            const authData = buildAuthData(firebaseUser, profile);
+            let profile  = await DataService.getUserProfile(firebaseUser.uid);
+            if (!profile && firebaseUser.email) {
+                profile = await DataService.getUserProfileByEmail(firebaseUser.email.toLowerCase());
+            }
+            const authData = buildAuthData(firebaseUser, profile || {});
             localStorage.setItem('auth_data', JSON.stringify(authData));
-            console.log('[DataService] refreshAuthData: auth_data rebuilt for uid:', firebaseUser.uid);
+            console.log('[DataService] refreshAuthData: auth_data rebuilt for uid:', firebaseUser.uid, 'tenantId:', authData.tenantId);
             return authData;
         } catch (err) {
             console.error('[DataService] refreshAuthData error:', err?.code || err);
