@@ -1,0 +1,142 @@
+{
+  "questionId": "Q9050",
+  "title": "Minimum or Maximum",
+  "slug": "minimum-or-maximum",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Arrays | Greedy",
+    "difficulty": "Easy",
+    "isPremium": true,
+    "tags": [
+      "Prefix maximum",
+      "Prefix minimum",
+      "Greedy",
+      "Linear scan"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Ad-hoc & Implementation"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "From a hidden array AAA of length NNN, Stack constructs an array BBB of length NNN such that:\n\n\nFor all iii (1≤i≤N)(1 \\leq i \\leq N)(1≤i≤N), Bi=max⁡(A1,A2,…,Ai)B_i=\\max(A_1,A_2,\\ldots,A_i)Bi​=max(A1​,A2​,…,Ai​) **or** Bi=min⁡(A1,A2,…,Ai)B_i=\\min(A_1,A_2,\\ldots,A_i)Bi​=min(A1​,A2​,…,Ai​).\nFor the given array BBB of length NNN, Stack wants you to check whether a possible array AAA exists or not.\n\n\nInput Format\n\nThe first line of input contains a single integer TTT, denoting the number of test cases. The description of TTT test cases follow.\nThe first line of each test case contains an integer NNN - the length of the array BBB.\nThe second line of each test case contains NNN space-separated integers B1,B2,…,BNB_1,B_2,\\ldots,B_NB1​,B2​,…,BN​ representing the array BBB.\n\n\nOutput Format\nFor each test case, output in a single line `YES` if AAA exists, otherwise print `NO`.\n\n\nYou may print each character of the string in uppercase or lowercase (for example, the strings `YES`, `yEs`, `yes`, and `yeS` will all be treated as identical).",
+    "constraints": [
+      "1 ≤ T ≤ 10^5",
+      "1 ≤ N ≤ 10^5",
+      "1 ≤ Bi ≤ 10^5",
+      "Sum of N over all test cases ≤ 10^5"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, the first line contains an integer N, the length of array B. The second line contains N space‑separated integers B1 … BN.",
+    "outputFormat": "For each test case output a single line containing \"YES\" if there exists at least one array A that can generate the given B, otherwise output \"NO\".",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n1\n343\n4\n1 1 2 3\n3\n1 3 2",
+        "output": "YES\nYES\nNO",
+        "explanation": "Test case 1: A=[343] works. Test case 2: A can be [1,1,2,3] giving prefix max each step. Test case 3: No possible A because B3=2 lies between current max=3 and min=1."
+      },
+      {
+        "id": "sample_2",
+        "input": "2\n5\n1 1 1 1 1\n5\n1 2 1 2 1",
+        "output": "YES\nYES",
+        "explanation": "First case: all elements equal to 1. Second case: one feasible A is [1,2,1,1,1]; the sequence of B alternates between max and min as allowed."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n6\n5 5 4 4 6 2",
+        "output": "NO",
+        "explanation": "Start with curMax=curMin=5. B2=5 OK. B3=4 ≤ curMin, curMin becomes 4. B4=4 OK. B5=6 ≥ curMax, curMax becomes 6. B6=2 is neither ≥6 nor ≤4, so impossible."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n1",
+        "expectedOutput": "YES",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n5\n100000 100000 100000 100000 100000",
+        "expectedOutput": "YES",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case decreasing then increasing",
+        "input": "1\n4\n10 5 5 8",
+        "expectedOutput": "YES",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n7\n3 3 2 2 4 4 1",
+        "expectedOutput": "YES",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n6\n2 3 2 4 3 5",
+        "expectedOutput": "NO",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "We construct the array A from left to right while keeping the current prefix maximum (curMax) and prefix minimum (curMin). For i = 1 we must have A1 = B1, therefore curMax = curMin = B1. For each subsequent i we need Bi to be either the new prefix maximum or the new prefix minimum. This is possible iff Bi ≥ curMax (we can make Bi the new maximum by setting Ai = Bi) or Bi ≤ curMin (we can make Bi the new minimum by setting Ai = Bi). If Bi lies strictly between curMin and curMax, no choice of Ai can satisfy the condition, and the answer is \"NO\". When Bi satisfies one of the two inequalities we update curMax or curMin accordingly (if Bi expands the range). If we finish the whole array without contradiction, the answer is \"YES\". The algorithm is a single linear scan per test case.",
+    "timeComplexity": "O(N) per test case, O(ΣN) overall (≤ 10^5).",
+    "spaceComplexity": "O(1) additional memory.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    while(T--){\n        int N; scanf(\"%d\", &N);\n        long long curMax, curMin, x;\n        for(int i=0;i<N;i++){\n            scanf(\"%lld\", &x);\n            if(i==0){\n                curMax = curMin = x;\n            }else{\n                if(x >= curMax){\n                    if(x > curMax) curMax = x;\n                }else if(x <= curMin){\n                    if(x < curMin) curMin = x;\n                }else{\n                    // consume remaining inputs of this test case\n                    for(int j=i+1;j<N;j++) scanf(\"%lld\", &x);\n                    printf(\"NO\\n\");\n                    goto nextcase;\n                }\n            }\n        }\n        printf(\"YES\\n\");\n        nextcase: ;\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N; cin>>N;\n        long long curMax=0, curMin=0, x;\n        bool ok=true;\n        for(int i=0;i<N;i++){\n            cin>>x;\n            if(i==0){\n                curMax = curMin = x;\n            }else if(ok){\n                if(x>=curMax){\n                    curMax = max(curMax, x);\n                }else if(x<=curMin){\n                    curMin = min(curMin, x);\n                }else{\n                    ok=false;\n                }\n            }\n        }\n        cout<<(ok?\"YES\":\"NO\")<<'\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner(System.in);\n        int T = fs.nextInt();\n        StringBuilder sb = new StringBuilder();\n        while (T-- > 0) {\n            int N = fs.nextInt();\n            long curMax = 0, curMin = 0, x;\n            boolean ok = true;\n            for (int i = 0; i < N; i++) {\n                x = fs.nextLong();\n                if (i == 0) {\n                    curMax = curMin = x;\n                } else if (ok) {\n                    if (x >= curMax) {\n                        curMax = Math.max(curMax, x);\n                    } else if (x <= curMin) {\n                        curMin = Math.min(curMin, x);\n                    } else {\n                        ok = false;\n                    }\n                }\n            }\n            sb.append(ok ? \"YES\" : \"NO\").append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n    // Fast scanner for large input\n    static class FastScanner {\n        private final InputStream in;\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        FastScanner(InputStream in) { this.in = in; }\n        private int readByte() throws IOException {\n            if (ptr >= len) {\n                len = in.read(buffer);\n                ptr = 0;\n                if (len <= 0) return -1;\n            }\n            return buffer[ptr++];\n        }\n        long nextLong() throws IOException {\n            int c; do { c = readByte(); } while (c <= ' ');\n            boolean neg = false;\n            if (c == '-') { neg = true; c = readByte(); }\n            long val = 0;\n            while (c > ' ') {\n                val = val * 10 + (c - '0');\n                c = readByte();\n            }\n            return neg ? -val : val;\n        }\n        int nextInt() throws IOException { return (int) nextLong(); }\n    }\n}",
+      "Python3": "import sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    t = int(next(it))\n    out_lines = []\n    for _ in range(t):\n        n = int(next(it))\n        cur_max = cur_min = int(next(it))\n        ok = True\n        for i in range(1, n):\n            b = int(next(it))\n            if not ok:\n                continue\n            if b >= cur_max:\n                if b > cur_max:\n                    cur_max = b\n            elif b <= cur_min:\n                if b < cur_min:\n                    cur_min = b\n            else:\n                ok = False\n        out_lines.append('YES' if ok else 'NO')\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet outputs = [];\nfor (let tc = 0; tc < T; tc++) {\n  const N = Number(input[idx++]);\n  let curMax = Number(input[idx++]);\n  let curMin = curMax;\n  let ok = true;\n  for (let i = 1; i < N; i++) {\n    const b = Number(input[idx++]);\n    if (!ok) continue;\n    if (b >= curMax) {\n      if (b > curMax) curMax = b;\n    } else if (b <= curMin) {\n      if (b < curMin) curMin = b;\n    } else {\n      ok = false;\n    }\n  }\n  outputs.push(ok ? 'YES' : 'NO');\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

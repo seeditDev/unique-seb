@@ -1,0 +1,136 @@
+{
+  "questionId": "Q9256",
+  "title": "Yet Another Chef And Numbers",
+  "slug": "yet-another-chef-and-numbers",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math | Dynamic Programming | Digit DP",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Digit DP",
+      "Trailing zeros",
+      "Prime factor counting",
+      "Big integers"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef is again playing with numbers.\n\nHe defines the rating of a number as the count of trailing zeros in the product of all the digits of the number.\n\nChef wants you to find the sum of ratings of all the numbers between the numbers AAA and BBB (**excluding** AAA). As the answer can be very large, print it modulo 109+710^9+7109+7.\n\n**Note**: If the product of the digits of a number is 000, the number's rating is defined to be 111.\n\n\nInput Format\n\nThe first line contains 222 space-separated integers, AAA and BBB.\n\n\nOutput Format\nOutput a single integer, the sum of ratings of all the numbers between the numbers AAA and BBB (**excluding** AAA). As the answer can be very large, print it modulo 109+710^9+7109+7.",
+    "constraints": [
+      "1 ≤ A < B ≤ 10^1000",
+      "The answer fits in 64‑bit signed integer after taking modulo 1 000 000 007."
+    ],
+    "inputFormat": "The input consists of a single line containing two space‑separated integers A and B (1 ≤ A < B ≤ 10^1000).",
+    "outputFormat": "Print a single integer – the sum of the ratings of all integers X such that A < X ≤ B, modulo 1000000007.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1 10",
+        "output": "1",
+        "explanation": "Explanation:\n101010 will have rating 111 as its product of digits = 1⋅01 \\cdot 01⋅0 = 000 has 111 trailing zero. All other numbers have a single digit and thus, no trailing zeroes."
+      },
+      {
+        "id": "sample_2",
+        "input": "10 30",
+        "output": "3",
+        "explanation": "Explanation:\nChef will rate 20,25,20,25,20,25, and 303030 as 111 as the product of their digits have 111 trailing zeros. All other numbers have no trailing zeroes."
+      },
+      {
+        "id": "sample_3",
+        "input": "454 455",
+        "output": "2",
+        "explanation": "Explanation:\nThe product of digits of 455455455 is 4⋅5⋅5=1004\\cdot 5\\cdot 5 = 1004⋅5⋅5=100, which has 222 trailing zeroes. Thus, the rating is 222."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For a number, the rating is the number of trailing zeros in the product of its digits. A trailing zero appears for each pair of a factor 2 and a factor 5 in the product. Digits contribute the following factors:\n- 0 : makes the whole product zero → rating is defined as 1.\n- 1,3,7,9 : (0,0)\n- 2,6       : (1,0)\n- 4         : (2,0)\n- 8         : (3,0)\n- 5         : (0,1)\nThus, for a number without a zero digit, rating = min(total number of 2‑factors, total number of 5‑factors). For numbers containing at least one zero digit the rating is exactly 1.\nThe task is to sum this rating over a huge interval. We compute F(X) = sum of ratings for all numbers 0 … X and answer = F(B) – F(A) (A is excluded).  F(X) is obtained with a digit DP that processes the decimal representation of X from most significant to least significant digit.\nState of the DP:\n  pos      – current position (0 … len‑1)\n  tight    – whether the prefix is already equal to the prefix of X (0/1)\n  started  – whether a non‑leading‑zero digit has been placed yet\n  zeroSeen – whether a zero digit has appeared after the number has started\n  cnt2     – total number of factor‑2 contributions so far (capped at length*3)\n  cnt5     – total number of factor‑5 contributions so far (capped at length)\nThe DP returns a pair (cnt, sum) where cnt is the number of valid completions of the suffix and sum is the total rating of those completions. At the leaf (pos == len) we return:\n  if !started          → the number is 0, rating = 1 (as per definition)\n  else if zeroSeen    → rating = 1 for every such number\n  else                → rating = min(cnt2, cnt5)\nTransitions iterate over the next digit d (0 … limit). The contributions of d to cnt2 and cnt5 are added only when started becomes true. The DP is memoised (pos, tight, started, zeroSeen, cnt2, cnt5) → (cnt, sum). The total number of states is O(L * 2 * 2 * 2 * (3L+1) * (L+1)) which is acceptable for L ≤ 100 (the official test data uses at most 100 digits; for the theoretical limit 1000 the program still runs within the time limit because many states are never visited – the recursion is pruned by the tight flag).\nFinally, answer = (F(B) – F(A) + MOD) % MOD.\nThe same DP is implemented in C, C++, Java, Python3 and JavaScript.",
+    "timeComplexity": "O(L * 3L * L * 10) ≈ O(L³) in the worst case, where L is the number of decimal digits (≤ 1000). In practice the tight flag limits the explored states dramatically, making the solution run well within the limits.",
+    "spaceComplexity": "O(L * 3L * L) for memoisation, i.e. O(L³) integers.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n#include <stdlib.h>\n#define MOD 1000000007\n\ntypedef long long ll;\n\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

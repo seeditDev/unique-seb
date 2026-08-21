@@ -1,0 +1,129 @@
+{
+  "questionId": "Q6040",
+  "title": "Way Out",
+  "slug": "way-out",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Dynamic Programming",
+      "Greedy"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Two Pointers & Sliding Window"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Oh, no! Chef’s in trouble. He’s got himself stuck in a cave (we don’t know how) and is looking for a way out. The bigger problem is that he needs to get his tractor out of the cave (don't ask why Chef owns a tractor!). He currently faces a large block of height **N** cells and length **N** cells, and needs to get his tractor across this block. The block is made up of vertical columns of soil, each of which is one cell long. Each column has a continuous vertical gap, with the **i**th column having its gap from the **li**th cell to the **hi**th cell (starting from the bottom, 0-indexing). That is, in the **i**th column, there is no soil from the **li**th cell to the **hi**th cell (both inclusive). Chef can build additional gaps by clearing some cells of soil. His tractor has height **H**, and therefore, he needs to build a horizontal corridor of height **H** passing through all the columns. That is, some consecutive **H** rows must have no soil. Please see the figures in the example and explanation sections for more details.\n\nChef is able to clear one cell of soil by spending one unit of energy. Chef is smart, and will figure out a way to build the horizontal corridor while spending the minimum possible amount of energy. To estimate how many of his tasty dishes he will still be able to cook for you tonight, find out what is the minimum possible energy he needs to spend.",
+    "constraints": [
+      "1 ≤ T ≤ 10^3",
+      "1 ≤ N ≤ 10^6",
+      "1 ≤ sum of N over all test cases ≤ 10^6",
+      "1 ≤ H ≤ N",
+      "0 ≤ li ≤ hi < N"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case starts with two integers N and H, the size of the cave and the height of the tractor, respectively. In each of the next N lines, there are two integers li and hi, indicating the lowest and highest number of cells for the gap in the ith column.",
+    "outputFormat": "The minimum energy required to build a horizontal corridor of height H passing through all the columns.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n4 3\n1 2\n1 2\n1 2\n1 2\n5 2\n2 3\n1 2\n2 3\n1 2\n2 3",
+        "output": "4\n2",
+        "explanation": "Explanation: In the second case, the figure describes the initial map, where white cells denote empty cells and brown cells denote soil cells. When we removed soil in two cells as the following figure, then we can make a corridor of height 2, and this is the optimal way to make a corridor."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1\n0 0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n1000 1000\n0 999",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n5 2\n2 3\n1 2\n2 3\n1 2\n2 3",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n10 5\n0 4\n1 5\n2 6\n3 7\n4 8\n5 9",
+        "expectedOutput": "5",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n15 10\n0 9\n1 10\n2 11\n3 12\n4 13\n5 14",
+        "expectedOutput": "10",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a dynamic programming approach. We can create a 2D array dp where dp[i][j] represents the minimum energy required to build a corridor of height j in the first i columns. We can then fill up this array by iterating over each column and each possible height. For each cell, we can calculate the minimum energy required by considering all possible gaps in the current column and the minimum energy required for the previous columns.",
+    "timeComplexity": "O(T * N * N) — where T is the number of test cases, N is the size of the cave, and N is the height of the tractor. The time complexity is dominated by the nested loops over the columns and the heights.",
+    "spaceComplexity": "O(N * N) — where N is the size of the cave and N is the height of the tractor. The space complexity is dominated by the 2D array dp.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <limits.h>\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int N, H;\n        scanf(\"%d %d\", &N, &H);\n        int li[N], hi[N];\n        for (int i = 0; i < N; i++) {\n            scanf(\"%d %d\", &li[i], &hi[i]);\n        }\n        int dp[N][N];\n        for (int i = 0; i < N; i++) {\n            for (int j = 0; j < N; j++) {\n                dp[i][j] = INT_MAX;\n            }\n        }\n        for (int i = 0; i < N; i++) {\n            for (int j = 0; j < N; j++) {\n                if (i == 0) {\n                    if (j >= li[0] && j <= hi[0]) {\n                        dp[i][j] = 0;\n                    } else {\n                        dp[i][j] = 1;\n                    }\n                } else {\n                    for (int k = 0; k < N; k++) {\n                        if (j >= li[i] && j <= hi[i]) {\n                            dp[i][j] = dp[i - 1][k] + (k != j);\n                        } else {\n                            dp[i][j] = dp[i - 1][k] + 1;\n                        }\n                    }\n                }\n            }\n        }\n        int minEnergy = INT_MAX;\n        for (int i = 0; i < N; i++) {\n            if (dp[N - 1][i] < minEnergy) {\n                minEnergy = dp[N - 1][i];\n            }\n        }\n        printf(\"%d\\n\", minEnergy);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <limits>\nusing namespace std;\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        int N, H;\n        cin >> N >> H;\n        int li[N], hi[N];\n        for (int i = 0; i < N; i++) {\n            cin >> li[i] >> hi[i];\n        }\n        int dp[N][N];\n        for (int i = 0; i < N; i++) {\n            for (int j = 0; j < N; j++) {\n                dp[i][j] = numeric_limits<int>::max();\n            }\n        }\n        for (int i = 0; i < N; i++) {\n            for (int j = 0; j < N; j++) {\n                if (i == 0) {\n                    if (j >= li[0] && j <= hi[0]) {\n                        dp[i][j] = 0;\n                    } else {\n                        dp[i][j] = 1;\n                    }\n                } else {\n                    for (int k = 0; k < N; k++) {\n                        if (j >= li[i] && j <= hi[i]) {\n                            dp[i][j] = dp[i - 1][k] + (k != j);\n                        } else {\n                            dp[i][j] = dp[i - 1][k] + 1;\n                        }\n                    }\n                }\n            }\n        }\n        int minEnergy = numeric_limits<int>::max();\n        for (int i = 0; i < N; i++) {\n            if (dp[N - 1][i] < minEnergy) {\n                minEnergy = dp[N - 1][i];\n            }\n        }\n        cout << minEnergy << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n        while (T-- > 0) {\n            int N = sc.nextInt();\n            int H = sc.nextInt();\n            int[] li = new int[N];\n            int[] hi = new int[N];\n            for (int i = 0; i < N; i++) {\n                li[i] = sc.nextInt();\n                hi[i] = sc.nextInt();\n            }\n            int[][] dp = new int[N][N];\n            for (int i = 0; i < N; i++) {\n                for (int j = 0; j < N; j++) {\n                    dp[i][j] = Integer.MAX_VALUE;\n                }\n            }\n            for (int i = 0; i < N; i++) {\n                for (int j = 0; j < N; j++) {\n                    if (i == 0) {\n                        if (j >= li[0] && j <= hi[0]) {\n                            dp[i][j] = 0;\n                        } else {\n                            dp[i][j] = 1;\n                        }\n                    } else {\n                        for (int k = 0; k < N; k++) {\n                            if (j >= li[i] && j <= hi[i]) {\n                                dp[i][j] = dp[i - 1][k] + (k != j);\n                            } else {\n                                dp[i][j] = dp[i - 1][k] + 1;\n                            }\n                        }\n                    }\n                }\n            }\n            int minEnergy = Integer.MAX_VALUE;\n            for (int i = 0; i < N; i++) {\n                if (dp[N - 1][i] < minEnergy) {\n                    minEnergy = dp[N - 1][i];\n                }\n            }\n            System.out.println(minEnergy);\n        }\n    }\n}",
+      "Python3": "import sys\ninput = sys.stdin.readline\nT = int(input())\nfor _ in range(T):\n    N, H = map(int, input().split())\n    li = [0] * N\n    hi = [0] * N\n    for i in range(N):\n        li[i], hi[i] = map(int, input().split())\n    dp = [[float('inf')] * N for _ in range(N)]\n    for i in range(N):\n        for j in range(N):\n            if i == 0:\n                if j >= li[0] and j <= hi[0]:\n                    dp[i][j] = 0\n                else:\n                    dp[i][j] = 1\n            else:\n                for k in range(N):\n                    if j >= li[i] and j <= hi[i]:\n                        dp[i][j] = min(dp[i][j], dp[i - 1][k] + (k != j))\n                    else:\n                        dp[i][j] = min(dp[i][j], dp[i - 1][k] + 1)\n    minEnergy = float('inf')\n    for i in range(N):\n        if dp[N - 1][i] < minEnergy:\n            minEnergy = dp[N - 1][i]\n    print(minEnergy)",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst readline = () => input[idx++];\nconst T = parseInt(readline());\nfor (let i = 0; i < T; i++) {\n    const [N, H] = readline().split(' ').map(Number);\n    const li = new Array(N);\n    const hi = new Array(N);\n    for (let j = 0; j < N; j++) {\n        [li[j], hi[j]] = readline().split(' ').map(Number);\n    }\n    const dp = new Array(N).fill(0).map(() => new Array(N).fill(Infinity));\n    for (let j = 0; j < N; j++) {\n        for (let k = 0; k < N; k++) {\n            if (j === 0) {\n                if (k >= li[0] && k <= hi[0]) {\n                    dp[j][k] = 0;\n                } else {\n                    dp[j][k] = 1;\n                }\n            } else {\n                for (let l = 0; l < N; l++) {\n                    if (k >= li[j] && k <= hi[j]) {\n                        dp[j][k] = Math.min(dp[j][k], dp[j - 1][l] + (l !== k));\n                    } else {\n                        dp[j][k] = Math.min(dp[j][k], dp[j - 1][l] + 1);\n                    }\n                }\n            }\n        }\n    }\n    let minEnergy = Infinity;\n    for (let j = 0; j < N; j++) {\n        if (dp[N - 1][j] < minEnergy) {\n            minEnergy = dp[N - 1][j];\n        }\n    }\n    console.log(minEnergy);\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

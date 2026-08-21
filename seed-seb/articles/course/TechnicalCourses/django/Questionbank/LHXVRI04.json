@@ -1,0 +1,82 @@
+{
+  "questionId": "LHXVRI04",
+  "title": "Custom Validation Methods in Django Forms",
+  "slug": "lhxvri04",
+  "version": 1,
+  "createdAt": "2026-07-13",
+  "updatedAt": "2026-07-13",
+  "source": {
+    "platform": "SEED-IT",
+    "courseSlug": "django",
+    "contestCode": "ZQTTXI",
+    "module": "Forms, Validations & User Interactions",
+    "submodule": "Validation and error handling",
+    "contentType": "mcq",
+    "originalUrl": "https://www.codechef.com/learn/course/django/ZQTTXI/problems/LHXVRI04"
+  },
+  "metadata": {
+    "category": "Concept",
+    "difficulty": "Beginner",
+    "isPremium": false,
+    "tags": [
+      "python3"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Forms, Validations & User Interactions",
+      "Validation and error handling"
+    ],
+    "QBCategory": "SEED-IT"
+  },
+  "content": {
+    "problemStatement": "You've already learned that Django Forms come with many helpful built-in ways to check user input. But what if you have a special rule that Django doesn't know about? That's where **Custom Validation Methods** come in!\n\nCustom validation methods allow you to write your own Python code to check the data submitted in a form. This gives you complete control over the validation process. You'll write these methods directly inside your form class (e.g., in your `forms.py` file).\n\nThere are two main types of custom validation methods you can add to your Django Form classes:\n\n1.  **`clean_()` methods:** For validating a single, specific field.\n2.  **`clean()` method:** For validations that involve multiple fields or require a more general check of the form's data.\n\nLet's explore them!\n\n**1. Validating a Specific Field: `clean_()`**\n\nImagine you have a registration form and you want to prevent users from choosing \"admin\" as their username. Django's built-in `CharField` doesn't have a rule for this specific word. You can create a custom method for the `username` field.\n\n*   **How it works:**\n    *   You define a method in your form class named `clean_` followed by the name of your field. For a field named `username`, the method would be `def clean_username(self):`.\n    *   Inside this method, you get the current value of the field from `self.cleaned_data.get('fieldname')`. `cleaned_data` is a dictionary that Django prepares with data that has passed initial cleaning (like type conversion).\n    *   You then write your Python logic to check the data.\n    *   If the data is invalid according to your rule, you **raise** a `forms.ValidationError` with a message explaining the error.\n    *   **Crucially**, if the data is valid, you must **return** the cleaned data for that field.\n\n*   **Example:**\n\n    Let's say you have a `RegistrationForm` in your `forms.py`:\n\n    ```python\n    # In your app's forms.py\n    from django import forms\n\n    class RegistrationForm(forms.Form):\n        username = forms.CharField(max_length=100)\n        email = forms.EmailField()\n        age = forms.IntegerField()\n\n        def clean_username(self):\n            # Get the data for the username field\n            username_data = self.cleaned_data.get('username')\n\n            # Your custom validation logic\n            if username_data and username_data.lower() == 'admin':\n                # If validation fails, raise an error\n                raise forms.ValidationError(\"Sorry, 'admin' cannot be used as a username.\")\n\n            # Always return the cleaned data, whether you changed it or not\n            return username_data\n\n        def clean_age(self):\n            age_data = self.cleaned_data.get('age')\n            if age_data and age_data ()` methods have successfully executed.\n    *   The first thing you should do in your `clean()` method is call the `clean()` method of the parent class: `cleaned_data = super().clean()`. This ensures all standard cleaning logic is performed and `self.cleaned_data` is fully populated.\n    *   You can then access the values of any field from the `cleaned_data` dictionary (e.g., `cleaned_data.get('start_date')`, `cleaned_data.get('end_date')`).\n    *   Perform your cross-field validation logic.\n    *   If your validation fails, you **raise** a `forms.ValidationError` with an appropriate message.\n    *   **Crucially**, you must **return** the entire `cleaned_data` dictionary at the end of the method.\n\n*   **Example:**\n\n    Let's create a form where a password must be confirmed:\n\n    ```python\n    # In your app's forms.py\n    from django import forms\n\n    class PasswordChangeForm(forms.Form):\n        new_password = forms.CharField(max_length=30)\n        confirm_password = forms.CharField(max_length=30, label=\"Confirm new password\")\n\n        def clean(self):\n            # Call the parent class's clean method first!\n            cleaned_data = super().clean()\n\n            # Get the data for the fields you want to compare\n            new_password_data = cleaned_data.get(\"new_password\")\n            confirm_password_data = cleaned_data.get(\"confirm_password\")\n\n            # Your custom validation logic\n            # Make sure both fields have data before comparing\n            if new_password_data and confirm_password_data:\n                if new_password_data != confirm_password_data:\n                    # If validation fails, raise an error\n                    raise forms.ValidationError(\"The two password fields do not match.\")\n\n            # Always return the full cleaned_data dictionary\n            return cleaned_data\n    ```\n\n#### How It All Works Together\nWhen you use a form in your view:\n```python\nform = RegistrationForm(request.POST)\nif form.is_valid():\n    # Django runs:\n    # 1. Built-in validation\n    # 2. clean_() methods\n    # 3. clean() method (if defined)\n    # If all pass, you can safely use form.cleaned_data\n```\n\nIf anything fails, Django will store the error, and form.is_valid() returns False.\n\nCustom validation helps enforce your app’s specific rules.\nYou can use it with both forms.Form and forms.ModelForm.",
+    "constraints": [
+      "Time Limit: 2s",
+      "Memory Limit: 256MB"
+    ],
+    "inputFormat": "Standard input",
+    "outputFormat": "Standard output",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "input": "",
+        "expectedOutput": "expected",
+        "weight": 100
+      }
+    ],
+    "totalTestCases": 1,
+    "totalWeight": 100
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      100
+    ],
+    "maxScore": 100
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // Write your C code here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your C++ code here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) {\n        // Write your Java code here\n    }\n}",
+    "Python3": "# Write your Python code here\n",
+    "JavaScript": "// Write your JavaScript code here\n",
+    "Go": "package main\n\nimport \"fmt\"\n\nfunc main() {\n    // Write your Go code here\n}",
+    "Rust": "fn main() {\n    // Write your Rust code here\n}",
+    "C#": "using System;\n\nclass Program {\n    static void Main() {\n        // Write your C# code here\n    }\n}",
+    "SQL": "-- Write your SQL query here\n"
+  }
+}

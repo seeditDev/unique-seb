@@ -1,0 +1,128 @@
+{
+  "questionId": "Q8006",
+  "title": "Independent Set",
+  "slug": "independent-set",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Complement Graph",
+      "BFS",
+      "Connected Components",
+      "Degree Check",
+      "Hash Set"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Data Structures"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given a graph GGG with NNN vertices (numbered 111 through NNN) and MMM edges. You should partition the vertices of GGG into two sets AAA and BBB such that:\n\n\neach vertex of GGG belongs to exactly one of these sets\nAAA is non-empty\nAAA is an independent set in GGG, i.e. for each pair of vertices u,v∈Au, v \\in Au,v∈A, GGG does not contain an edge (u,v)(u, v)(u,v)\nfor each vertex a∈Aa \\in Aa∈A and each vertex b∈Bb \\in Bb∈B, there is an edge (a,b)(a, b)(a,b) in GGG\nFind the number of such partitions (A,B)(A, B)(A,B). Also, give an example of one of these partitions or determine that no such partition exists.\n\nTwo partitions are considered different if there is a vertex that is in the set AAA in one partition and in the set BBB in the other partition.",
+    "constraints": [
+      "1 ≤ T ≤ 5·10^5",
+      "1 ≤ N, M ≤ 5·10^5",
+      "Sum of N over all test cases ≤ 5·10^5",
+      "Sum of M over all test cases ≤ 5·10^5",
+      "1 ≤ u, v ≤ N"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, the first line contains two integers N and M – the number of vertices and edges. The next M lines each contain two integers u and v (1‑based) denoting an undirected edge. The graph has no self‑loops or multiple edges.",
+    "outputFormat": "For each test case output two lines. The first line contains a single integer – the number of partitions (A,B) that satisfy the conditions. The second line contains a string of length N consisting of '1' and '0'. If no partition exists, the string must be all '0'. Otherwise, a '1' at position i means vertex i belongs to set A, and '0' means it belongs to set B.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n5 7\n1 3\n1 4\n1 5\n2 3\n2 4\n2 5\n3 4",
+        "output": "1\n11000",
+        "explanation": "Explanation:\nExample case 1: The only possible partition satisfying the given conditions is A={1,2},B={3,4,5}A = \\{1, 2\\}, B = \\{3, 4, 5\\}A={1,2},B={3,4,5}."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For a set A to be valid we need:\n1. A is non‑empty and independent in the original graph (no edges inside A).\n2. Every vertex of A is adjacent to every vertex of B = V\\A.\nIn the complement graph (edges where the original graph has none) condition 1 means that A is a clique, and condition 2 means that there are no edges from A to B in the complement. Hence A must be a connected component of the complement graph that is a complete subgraph (a clique).\\n\\nAlgorithm per test case:\\n• Build adjacency lists of the original graph and store each vertex degree. Also store each adjacency list in an unordered_set for O(1) neighbour checks.\\n• Find all connected components of the complement graph without constructing it explicitly. Keep a set `unvisited` of vertices not yet assigned to a component. For a vertex v taken from the queue, all vertices u still in `unvisited` that are **not** neighbours of v in the original graph are adjacent to v in the complement and belong to the same component. Those u are removed from `unvisited` and pushed to the BFS queue. This runs in O(N+M).\\n• For each discovered component C (size = sz) compute the sum of original degrees `sumDeg`. The component is a valid A iff `sumDeg == sz * (N - sz)`. The equality guarantees that there are no edges inside C (independence) and that every vertex of C is connected to all vertices outside C.\\n• Count all components satisfying the equality. Store the first such component to output an example partition.\\n\\nIf no component satisfies the condition, answer is 0 and the output string is N zeros; otherwise the string has '1' on positions belonging to the stored component and '0' elsewhere.",
+    "timeComplexity": "O(N + M) per test case – each vertex is removed from the unvisited set once and each edge is examined at most twice during neighbour checks.",
+    "spaceComplexity": "O(N + M) – adjacency lists, degree array, visited flags and the set of unvisited vertices.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdbool.h>\n#include <stdint.h>\n#include <inttypes.h>\n#include <unordered_set>\n#include <set>\n#include <vector>\n#include <queue>\n\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

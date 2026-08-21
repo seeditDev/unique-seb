@@ -1,0 +1,129 @@
+{
+  "questionId": "Q2392",
+  "title": "Moving Coins",
+  "slug": "moving-coins",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Greedy",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "Greedy Algorithm",
+      "Coin Movement",
+      "Greedy"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Ad-hoc & Implementation"
+    ]
+  },
+  "content": {
+    "problemStatement": "There is a line with 1000 cells numbered from 1 to 1000 from left to right and **N** coins placed on it. Coin **i** is placed at cell **Xi**, and no two coins are placed at the same cell.\n\n\nBob would like to move the coins to the **N** leftmost cells of the line. To do this, he is allowed to take a coin from any cell **T** and move it to cell **T**-**j**, where **j** is an integer between 1 and **K**, inclusive. This action is possible only if:\n\n\n cell **T**-**j** actually exists and doesn't contain a coin;\n each of the cells **T**-**j**+1, ..., **T**-1 contains a coin.\nOne coin movement takes exactly one second. Find the smallest time in which Bob can achieve his goal.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 1000",
+      "1 <= K <= 1000",
+      "1 <= Xi <= 1000",
+      "All Xi are distinct"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case consists of two lines. The first line contains two integers N and K, where N is the number of coins and K is the maximum number of cells a coin can be moved. The second line contains N integers representing the positions of the coins.",
+    "outputFormat": "For each test case, output the minimum time required to move all coins to the leftmost N cells.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n3 2\n2 4 7\n5 3\n1 2 3 4 5",
+        "output": "5\n0",
+        "explanation": "In the first example, Bob can move the coin from cell 7 to cells 6, 5, 3, and 1, and then move the coin from cell 4 to cell 3. In the second example, there is nothing to move."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n4 2\n1 3 5 7",
+        "output": "3",
+        "explanation": "Bob can move the coin from cell 7 to cell 5, then to cell 3, and finally to cell 1."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n2 1\n1 2",
+        "output": "0",
+        "explanation": "There is nothing to move."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1\n1",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n1000 1000\n1000",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n5 1\n1 2 3 4 5",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n3 2\n3 5 7",
+        "expectedOutput": "3",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "2\n3 2\n2 4 7\n5 3\n1 2 3 4 5",
+        "expectedOutput": "5\n0",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The key insight is to move the coins from right to left, ensuring that each coin is moved to the leftmost available position. We use a greedy approach to move each coin as far left as possible in each step, without violating the condition that each cell between the original and final position of the coin must contain a coin.",
+    "timeComplexity": "O(T * N * K) per test case, O(T * N * K) total.",
+    "spaceComplexity": "O(N) \u2014 for storing the positions of the coins.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nint compare(const void *a, const void *b) {\n    return (*(int*)a - *(int*)b);\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int N, K;\n        scanf(\"%d %d\", &N, &K);\n        int coins[N];\n        for (int i = 0; i < N; i++) {\n            scanf(\"%d\", &coins[i]);\n        }\n        qsort(coins, N, sizeof(int), compare);\n        int time = 0;\n        for (int i = 0; i < N; i++) {\n            int target = i + 1;\n            while (coins[i] > target) {\n                int move = K;\n                if (coins[i] - target < K) {\n                    move = coins[i] - target;\n                }\n                coins[i] -= move;\n                time++;\n            }\n        }\n        printf(\"%d\\n\", time);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <algorithm>\nusing namespace std;\n\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        int N, K;\n        cin >> N >> K;\n        int coins[N];\n        for (int i = 0; i < N; i++) {\n            cin >> coins[i];\n        }\n        sort(coins, coins + N);\n        int time = 0;\n        for (int i = 0; i < N; i++) {\n            int target = i + 1;\n            while (coins[i] > target) {\n                int move = K;\n                if (coins[i] - target < K) {\n                    move = coins[i] - target;\n                }\n                coins[i] -= move;\n                time++;\n            }\n        }\n        cout << time << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Arrays;\nimport java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int T = scanner.nextInt();\n        while (T-- > 0) {\n            int N = scanner.nextInt();\n            int K = scanner.nextInt();\n            int[] coins = new int[N];\n            for (int i = 0; i < N; i++) {\n                coins[i] = scanner.nextInt();\n            }\n            Arrays.sort(coins);\n            int time = 0;\n            for (int i = 0; i < N; i++) {\n                int target = i + 1;\n                while (coins[i] > target) {\n                    int move = K;\n                    if (coins[i] - target < K) {\n                        move = coins[i] - target;\n                    }\n                    coins[i] -= move;\n                    time++;\n                }\n            }\n            System.out.println(time);\n        }\n    }\n}",
+      "Python3": "import sys\n\nT = int(input())\nfor _ in range(T):\n    N, K = map(int, input().split())\n    coins = list(map(int, input().split()))\n    coins.sort()\n    time = 0\n    for i in range(N):\n        target = i + 1\n        while coins[i] > target:\n            move = K\n            if coins[i] - target < K:\n                move = coins[i] - target\n            coins[i] -= move\n            time += 1\n    print(time)",
+      "JavaScript": "const lines = require('fs').readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\n\nfunction readline() {\n    return lines[idx++];\n}\n\nlet T = parseInt(readline());\nwhile (T-- > 0) {\n    let [N, K] = readline().split(' ').map(Number);\n    let coins = readline().split(' ').map(Number).sort((a, b) => a - b);\n    let time = 0;\n    for (let i = 0; i < N; i++) {\n        let target = i + 1;\n        while (coins[i] > target) {\n            let move = K;\n            if (coins[i] - target < K) {\n                move = coins[i] - target;\n            }\n            coins[i] -= move;\n            time++;\n        }\n    }\n    console.log(time);\n}"
+    }
+  }
+}

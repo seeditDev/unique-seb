@@ -1,0 +1,116 @@
+{
+  "questionId": "Q3955",
+  "title": "Broken Heart",
+  "slug": "broken-heart",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graphs",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "DFS",
+      "Graph",
+      "Graphs",
+      "Connected Components"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Data Structures"
+    ]
+  },
+  "content": {
+    "problemStatement": "Abhijeet just got his heart broken recently and thus he  decided to make a hard problem this time.\n \nThe problem is stated below : \n A tree containing **N** nodes and rooted at node **1** is given. On each node of the tree, there is a monkey having information about a graph **G**.\n\n\n**G** is a graph containing **N** nodes.\nThe information contained on each node is an edge of the graph **G** .\n\n\nNow for every node **X**, consider the path from root to **X**. You have to collect the information about edges from this path and construct a new graph **G'**.\nThe constructed graph G' will be a sub-graph of graph G obviously.\n\n\nFor each node you need to find the number of connected component in graph **G'**.",
+    "constraints": [
+      "1 <= N <= 100000",
+      "1 <= U <= N",
+      "1 <= V <= N"
+    ],
+    "inputFormat": "The first line of input contains an integer N denoting the number of nodes in tree and the graph G. The next N-1 lines contains two space separated integers, U and V which means there is a bidirectional edge between node U and node V in the tree. The next N lines contains two space separated integers, U and V which is information contained by the node from 1 to N.",
+    "outputFormat": "For each node starting from 1 to N, print the required answer for each node in a new line.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "5\n3 2\n4 2\n4 1\n5 3\n1 1\n4 5\n1 5\n5 1\n3 3",
+        "output": "5\n3\n3\n4\n3",
+        "explanation": "For each node, we construct the graph G' by collecting the information about edges from the path from the root to the node. We then count the number of connected components in G'."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "100000",
+        "expectedOutput": "100000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "2\n1 2\n1 2",
+        "expectedOutput": "1\n2",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "5\n1 2\n2 3\n3 4\n4 5\n1 5",
+        "expectedOutput": "1\n2\n3\n4\n5",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "10\n1 2\n2 3\n3 4\n4 5\n5 6\n6 7\n7 8\n8 9\n9 10\n1 10",
+        "expectedOutput": "1\n2\n3\n4\n5\n6\n7\n8\n9\n10",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we will use Depth-First Search (DFS) to traverse the tree and construct the graph G' for each node. We will then use DFS again to count the number of connected components in G'. The time complexity of this approach is O(N^2) in the worst case, where N is the number of nodes in the tree.",
+    "timeComplexity": "O(N^2) \u2014 per query is O(N), total is O(N^2)",
+    "spaceComplexity": "O(N) \u2014 we need to store the adjacency list of the tree and the graph G'",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#define MAXN 100005\nint n;\nint tree[MAXN][2];\nint graph[MAXN][2];\nint visited[MAXN];\nint count;\nvoid dfs(int node) {\n    visited[node] = 1;\n    count++;\n    if (tree[node][0] != -1 && !visited[tree[node][0]]) {\n        dfs(tree[node][0]);\n    }\n    if (tree[node][1] != -1 && !visited[tree[node][1]]) {\n        dfs(tree[node][1]);\n    }\n}\nint main() {\n    scanf(\"%d\", &n);\n    for (int i = 0; i < n - 1; i++) {\n        int u, v;\n        scanf(\"%d %d\", &u, &v);\n        if (tree[u][0] == -1) {\n            tree[u][0] = v;\n        } else {\n            tree[u][1] = v;\n        }\n        if (tree[v][0] == -1) {\n            tree[v][0] = u;\n        } else {\n            tree[v][1] = u;\n        }\n    }\n    for (int i = 1; i <= n; i++) {\n        int u, v;\n        scanf(\"%d %d\", &u, &v);\n        graph[u][0] = v;\n    }\n    for (int i = 1; i <= n; i++) {\n        count = 0;\n        for (int j = 1; j <= n; j++) {\n            visited[j] = 0;\n        }\n        dfs(1);\n        int components = 0;\n        for (int j = 1; j <= n; j++) {\n            if (!visited[j]) {\n                components++;\n                dfs(j);\n            }\n        }\n        printf(\"%d\\n\", components);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\nusing namespace std;\nconst int MAXN = 100005;\nint n;\nvector<int> tree[MAXN];\nvector<int> graph[MAXN];\nbool visited[MAXN];\nint count;\nvoid dfs(int node) {\n    visited[node] = true;\n    count++;\n    for (int i = 0; i < tree[node].size(); i++) {\n        if (!visited[tree[node][i]]) {\n            dfs(tree[node][i]);\n        }\n    }\n}\nint main() {\n    cin >> n;\n    for (int i = 0; i < n - 1; i++) {\n        int u, v;\n        cin >> u >> v;\n        tree[u].push_back(v);\n        tree[v].push_back(u);\n    }\n    for (int i = 1; i <= n; i++) {\n        int u, v;\n        cin >> u >> v;\n        graph[u].push_back(v);\n    }\n    for (int i = 1; i <= n; i++) {\n        count = 0;\n        for (int j = 1; j <= n; j++) {\n            visited[j] = false;\n        }\n        dfs(1);\n        int components = 0;\n        for (int j = 1; j <= n; j++) {\n            if (!visited[j]) {\n                components++;\n                dfs(j);\n            }\n        }\n        cout << components << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.ArrayList;\nimport java.util.Scanner;\npublic class Main {\n    static final int MAXN = 100005;\n    static int n;\n    static ArrayList<Integer>[] tree = new ArrayList[MAXN];\n    static ArrayList<Integer>[] graph = new ArrayList[MAXN];\n    static boolean[] visited = new boolean[MAXN];\n    static int count;\n    public static void dfs(int node) {\n        visited[node] = true;\n        count++;\n        for (int i = 0; i < tree[node].size(); i++) {\n            if (!visited[tree[node].get(i)]) {\n                dfs(tree[node].get(i));\n            }\n        }\n    }\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        n = sc.nextInt();\n        for (int i = 0; i < MAXN; i++) {\n            tree[i] = new ArrayList<>();\n            graph[i] = new ArrayList<>();\n        }\n        for (int i = 0; i < n - 1; i++) {\n            int u = sc.nextInt();\n            int v = sc.nextInt();\n            tree[u].add(v);\n            tree[v].add(u);\n        }\n        for (int i = 1; i <= n; i++) {\n            int u = sc.nextInt();\n            int v = sc.nextInt();\n            graph[u].add(v);\n        }\n        for (int i = 1; i <= n; i++) {\n            count = 0;\n            for (int j = 1; j <= n; j++) {\n                visited[j] = false;\n            }\n            dfs(1);\n            int components = 0;\n            for (int j = 1; j <= n; j++) {\n                if (!visited[j]) {\n                    components++;\n                    dfs(j);\n                }\n            }\n            System.out.println(components);\n        }\n    }\n}",
+      "Python3": "import sys\nMAXN = 100005\ntree = [[] for _ in range(MAXN)]\ngraph = [[] for _ in range(MAXN)]\nvisited = [False] * MAXN\ncount = 0\ndef dfs(node):\n    global count\n    visited[node] = True\n    count += 1\n    for i in tree[node]:\n        if not visited[i]:\n            dfs(i)\nn = int(input())\nfor i in range(n - 1):\n    u, v = map(int, input().split())\n    tree[u].append(v)\n    tree[v].append(u)\nfor i in range(1, n + 1):\n    u, v = map(int, input().split())\n    graph[u].append(v)\nfor i in range(1, n + 1):\n    count = 0\n    for j in range(1, n + 1):\n        visited[j] = False\n    dfs(1)\n    components = 0\n    for j in range(1, n + 1):\n        if not visited[j]:\n            components += 1\n            dfs(j)\n    print(components)\n",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst MAXN = 100005;\nconst tree = Array.from({ length: MAXN }, () => []);\nconst graph = Array.from({ length: MAXN }, () => []);\nconst visited = Array.from({ length: MAXN }, () => false);\nlet count = 0;\nfunction dfs(node) {\n    visited[node] = true;\n    count++;\n    for (let i = 0; i < tree[node].length; i++) {\n        if (!visited[tree[node][i]]) {\n            dfs(tree[node][i]);\n        }\n    }\n}\nconst n = parseInt(lines[idx++]);\nfor (let i = 0; i < n - 1; i++) {\n    const [u, v] = lines[idx++].split(' ').map(Number);\n    tree[u].push(v);\n    tree[v].push(u);\n}\nfor (let i = 1; i <= n; i++) {\n    const [u, v] = lines[idx++].split(' ').map(Number);\n    graph[u].push(v);\n}\nfor (let i = 1; i <= n; i++) {\n    count = 0;\n    for (let j = 1; j <= n; j++) {\n        visited[j] = false;\n    }\n    dfs(1);\n    let components = 0;\n    for (let j = 1; j <= n; j++) {\n        if (!visited[j]) {\n            components++;\n            dfs(j);\n        }\n    }\n    console.log(components);\n}"
+    }
+  }
+}

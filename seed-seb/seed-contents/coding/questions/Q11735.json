@@ -1,0 +1,120 @@
+{
+  "questionId": "Q11735",
+  "title": "Split array - largest sum",
+  "slug": "split-array-largest-sum",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Array",
+      "Partition",
+      "Minimize Maximum Sum"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Given an integer array ‘A’ of size ‘N’ and an integer ‘K'. Split the array ‘A’ into ‘K’ non-empty subarrays such that the largest sum of any subarray is minimized. Your task is to return the minimized largest sum of the split.\nA subarray is a contiguous part of the array.",
+    "constraints": [
+      "1 <= N <= 10^5",
+      "1 <= K <= N",
+      "-10^9 <= A[i] <= 10^9",
+      "1 <= |A| <= 10^5"
+    ],
+    "inputFormat": "The first line contains an integer 'N' denoting the size of the array 'A'. The second line contains 'N' space-separated integers representing the array 'A'. The third line contains an integer 'K' representing the number of subarrays to split 'A' into.",
+    "outputFormat": "The output will be a single integer representing the minimized largest sum of any subarray after splitting 'A' into 'K' subarrays.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "1\n10\n1",
+        "expectedOutput": "10",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "5\n1 2 3 4 5\n1",
+        "expectedOutput": "15",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": "5\n5 5 5 5 5\n5",
+        "expectedOutput": "5",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case / empty-like / negative if allowed",
+        "input": "5\n-1 -2 -3 -4 -5\n1",
+        "expectedOutput": "-15",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": "10\n1 2 3 4 5 6 7 8 9 10\n3",
+        "expectedOutput": "18",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Use binary search to find the minimum maximum sum. For each possible maximum sum, count the number of subarrays needed.",
+    "timeComplexity": "O(N log S)",
+    "spaceComplexity": "O(1)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nint countPartitions(int* a, int n, int maxSum) {\n    int partitions = 1;\n    long long subarraySum = 0;\n    for (int i = 0; i < n; i++) {\n        if (subarraySum + a[i] <= maxSum) {\n            subarraySum += a[i];\n        } else {\n            partitions++;\n            subarraySum = a[i];\n        }\n    }\n    return partitions;\n}\n\nint largestSubarraySumMinimized(int* a, int n, int k) {\n    int low = a[0];\n    int high = 0;\n    for (int i = 0; i < n; i++) {\n        low = (low > a[i]) ? a[i] : low;\n        high += a[i];\n    }\n    while (low < high) {\n        int mid = low + (high - low) / 2;\n        if (countPartitions(a, n, mid) <= k) {\n            high = mid;\n        } else {\n            low = mid + 1;\n        }\n    }\n    return low;\n}\n\nint main() {\n    int n;\n    scanf(\"%d\", &n);\n    int* a = (int*)malloc(n * sizeof(int));\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &a[i]);\n    }\n    int k;\n    scanf(\"%d\", &k);\n    int ans = largestSubarraySumMinimized(a, n, k);\n    printf(\"%d\\n\", ans);\n    free(a);\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nclass SubarrayPartitioner {\npublic:\n    // Function to count how many partitions are needed\n    // if each subarray sum is restricted to at most maxSum\n    int countPartitions(vector<int> &a, int maxSum) {\n        int n = a.size(); // size of the array\n        int partitions = 1; // always have at least 1 partition\n        long long subarraySum = 0; // sum of the current subarray\n\n        for (int i = 0; i < n; i++) {\n            // If adding this element doesn't exceed maxSum, keep adding to current subarray\n            if (subarraySum + a[i] <= maxSum) {\n                subarraySum += a[i];\n            }\n            else {\n                // Otherwise, start a new subarray\n                partitions++;\n                subarraySum = a[i];\n            }\n        }\n        return partitions;\n    }\n\n    // Function to find the smallest maximum subarray sum possible\n    // such that the array is split into exactly k subarrays\n    int largestSubarraySumMinimized(vector<int> &a, int k) {\n        // Lower bound: max element in array (can't be smaller than that)\n        int low = *max_element(a.begin(), a.end());\n        // Upper bound: sum of entire array (only one subarray)\n        int high = accumulate(a.begin(), a.end(), 0);\n\n        // Brute-force: test each possible maxSum from low to high\n        while (low < high) {\n            int mid = low + (high - low) / 2;\n            if (countPartitions(a, mid) <= k) {\n                high = mid;\n            } else {\n                low = mid + 1;\n            }\n        }\n        return low;\n    }\n};\n\nint main() {\n    vector<int> a = {10, 20, 30, 40};\n    int k = 2;\n    SubarrayPartitioner sp; // Create object\n    int ans = sp.largestSubarraySumMinimized(a, k);\n    cout << \"The answer is: \" << ans << \"\\n\";\n    return 0;\n}",
+      "Java": "import java.util.*;\n\nclass SubarrayPartitioner {\n    // Counts how many partitions are needed for a given maxSum limit\n    public int countPartitions(int[] a, int maxSum) {\n        int n = a.length; // size of array\n        int partitions = 1; // at least one partition\n        long subarraySum = 0; // sum of current subarray\n\n        for (int i = 0; i < n; i++) {\n            // Add to current subarray if possible\n            if (subarraySum + a[i] <= maxSum) {\n                subarraySum += a[i];\n            } else {\n                // Start new subarray\n                partitions++;\n                subarraySum = a[i];\n            }\n        }\n        return partitions;\n    }\n\n    // Finds smallest possible largest subarray sum to get exactly k partitions\n    public int largestSubarraySumMinimized(int[] a, int k) {\n        int low = Arrays.stream(a).max().getAsInt(); // max element\n        int high = Arrays.stream(a).sum(); // sum of all elements\n\n        // Brute-force from low to high\n        while (low < high) {\n            int mid = low + (high - low) / 2;\n            if (countPartitions(a, mid) <= k) {\n                high = mid;\n            } else {\n                low = mid + 1;\n            }\n        }\n        return low;\n    }\n\n    public static void main(String[] args) {\n        int[] a = {10, 20, 30, 40};\n        int k = 2;\n        SubarrayPartitioner sp = new SubarrayPartitioner();\n        int ans = sp.largestSubarraySumMinimized(a, k);\n        System.out.println(\"The answer is: \" + ans);\n    }\n}",
+      "Python3": "class SubarrayPartitioner:\n    # Counts how many partitions are needed given maxSum\n    def count_partitions(self, a, max_sum):\n        partitions = 1  # at least one partition\n        subarray_sum = 0  # current subarray sum\n\n        for num in a:\n            # Add to current subarray if it doesn't exceed max_sum\n            if subarray_sum + num <= max_sum:\n                subarray_sum += num\n            else:\n                # Start a new subarray\n                partitions += 1\n                subarray_sum = num\n        return partitions\n\n    # Finds smallest possible largest subarray sum for exactly k partitions\n    def largest_subarray_sum_minimized(self, a, k):\n        low = max(a)  # minimum possible max sum\n        high = sum(a)  # maximum possible max sum\n\n        # Brute-force check\n        while low < high:\n            mid = low + (high - low) // 2\n            if self.count_partitions(a, mid) <= k:\n                high = mid\n            else:\n                low = mid + 1\n        return low\n\n\nif __name__ == \"__main__\":\n    a = [10, 20, 30, 40]\n    k = 2\n    sp = SubarrayPartitioner()\n    ans = sp.largest_subarray_sum_minimized(a, k)\n    print(\"The answer is:\", ans)",
+      "JavaScript": "class SubarrayPartitioner {\n    // Counts how many partitions are needed given maxSum\n    countPartitions(a, maxSum) {\n        let partitions = 1; // at least one partition\n        let subarraySum = 0; // current subarray sum\n\n        for (let num of a) {\n            // Add to current subarray if it doesn't exceed maxSum\n            if (subarraySum + num <= maxSum) {\n                subarraySum += num;\n            } else {\n                // Start a new subarray\n                partitions++;\n                subarraySum = num;\n            }\n        }\n        return partitions;\n    }\n\n    // Finds smallest possible largest subarray sum for exactly k partitions\n    largestSubarraySumMinimized(a, k) {\n        let low = Math.max(...a); // max element\n        let high = a.reduce((acc, val) => acc + val, 0); // sum of array\n\n        // Brute-force from low to high\n        while (low < high) {\n            let mid = low + Math.floor((high - low) / 2);\n            if (this.countPartitions(a, mid) <= k) {\n                high = mid;\n            } else {\n                low = mid + 1;\n            }\n        }\n        return low;\n    }\n}\n\n// Example usage\nlet a = [10, 20, 30, 40];\nlet k = 2;\nlet sp = new SubarrayPartitioner();\nlet ans = sp.largestSubarraySumMinimized(a, k);\nconsole.log(\"The answer is:\", ans);"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

@@ -1,0 +1,130 @@
+{
+  "questionId": "Q2452",
+  "title": "Little Elephant and CNSes",
+  "slug": "little-elephant-and-cnses",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Lucky Strings",
+      "Non-decreasing Lucky String",
+      "Strings",
+      "CNSes"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Data Structures"
+    ]
+  },
+  "content": {
+    "problemStatement": "A Little Elephant from the Zoo of Lviv likes lucky strings, i.e., the strings that consist only of the lucky digits **4** and **7**.\n\n The Little Elephant has **N** favorite strings **S1, S2, ..., SN** and the favorite number **K**. Each character in **Si** (**1 \u2264 i \u2264 N**) is either the lucky digit (**4** or **7**) or the question mark **?**.\n\nConsider some non-decreasing lucky string **S**. In other words, **S** has one of the following forms: **444...444**, **777...777**, **444...444777...777**. The string **S** is called a  CNS (plural form is CNSes) if we can replace some (possibly zero) number of question marks with the lucky digits in each of the string **S1, S2, ..., SN** in a such way that the total number of replacements for all strings does not exceed **K** and **S** is a subsequence of each of the strings derived after the replacement.\n\nThe Little Elephant wants to know the total number of all different non-empty CNSes. Help him to find this number.\n\n\n**Notes.**\n\nLet **S** be some string (possibly not lucky). Then\n\n\n**|S|** denotes the length of the string **S**;\n**S[i]** (**1 \u2264 i \u2264 |S|**) denotes the **i**th character of **S** (the numeration of characters starts from **1**);\n\nThe string **T** is called a subsequence of the string **S** if **T** can be derived from **S** by deleting some (possibly zero) number of characters without changing the order of the remaining characters. For example, **T = 474** is a subsequence of **S = 74477747??** since after deleting characters at positions **1, 2, 5, 6, 8, 9, 10** from **S** we obtain **T**. Note that, the empty string and the string **S** itself are always the subsequences of **S**.",
+    "constraints": [
+      "1 <= N <= 7474",
+      "0 <= K <= 10^9",
+      "1 <= |Si| <= 100000 for all i",
+      "The total length of all N strings does not exceed 100000",
+      "Each character in Si is either '4', '7', or '?'"
+    ],
+    "inputFormat": "First line contains two space-separated integers N and K, where N is the number of strings and K is the favorite number. Each of the following N lines contains a string Si.",
+    "outputFormat": "The total number of different non-empty CNSes.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3 2\n4447\n47???74\n4?77?",
+        "output": "5",
+        "explanation": "The CNSes are: 4, 7, 44, 47, 447"
+      },
+      {
+        "id": "sample_2",
+        "input": "2 1\n4?\n7?",
+        "output": "2",
+        "explanation": "The CNSes are: 4, 7"
+      },
+      {
+        "id": "sample_3",
+        "input": "1 0\n?",
+        "output": "0",
+        "explanation": "There are no CNSes"
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1 0\n?",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "7474 1000000000\n?",
+        "expectedOutput": "100005",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1 0\n????",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "2 1\n4?\n7?",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "3 2\n4447\n47???74\n4?77?",
+        "expectedOutput": "5",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The key insight is to generate all possible non-decreasing lucky strings and check if each string can be a subsequence of each of the given strings with at most K replacements. We can use a recursive approach to generate all possible lucky strings and then check each string against the given strings.",
+    "timeComplexity": "O(2^100000) per test case, O(T * 2^100000) total. However, this can be optimized by using a more efficient algorithm to generate the lucky strings and by pruning the search space.",
+    "spaceComplexity": "O(100000) \u2014 the dominant structure is the recursive call stack.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n#define MAXN 100005\n#define MAXK 1000000000\nint N, K;\nchar S[MAXN];\nint dp[MAXN][MAXN];\nvoid generateLuckyStrings(char *str, int len, int idx) {\n    if (idx == len) {\n        // Check if the generated string is a CNS\n        int replacements = 0;\n        for (int i = 0; i < N; i++) {\n            int j = 0;\n            for (int k = 0; k < len; k++) {\n                while (j < strlen(S) && S[j] != str[k]) j++;\n                if (j == strlen(S)) {\n                    replacements += len - k;\n                    break;\n                }\n                j++;\n            }\n        }\n        if (replacements <= K) {\n            printf(\"%s\\n\", str);\n        }\n    } else {\n        str[idx] = '4';\n        generateLuckyStrings(str, len, idx + 1);\n        str[idx] = '7';\n        generateLuckyStrings(str, len, idx + 1);\n    }\n}\nint main() {\n    scanf(\"%d %d\", &N, &K);\n    for (int i = 0; i < N; i++) {\n        scanf(\"%s\", S);\n    }\n    for (int len = 1; len <= MAXN; len++) {\n        char str[len + 1];\n        str[len] = '\\0';\n        generateLuckyStrings(str, len, 0);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <string>\nusing namespace std;\n#define MAXN 100005\n#define MAXK 1000000000\nint N, K;\nstring S;\nvoid generateLuckyStrings(string str, int len, int idx) {\n    if (idx == len) {\n        // Check if the generated string is a CNS\n        int replacements = 0;\n        for (int i = 0; i < N; i++) {\n            int j = 0;\n            for (int k = 0; k < len; k++) {\n                while (j < S.length() && S[j] != str[k]) j++;\n                if (j == S.length()) {\n                    replacements += len - k;\n                    break;\n                }\n                j++;\n            }\n        }\n        if (replacements <= K) {\n            cout << str << endl;\n        }\n    } else {\n        str[idx] = '4';\n        generateLuckyStrings(str, len, idx + 1);\n        str[idx] = '7';\n        generateLuckyStrings(str, len, idx + 1);\n    }\n}\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(NULL);\n    cin >> N >> K;\n    for (int i = 0; i < N; i++) {\n        cin >> S;\n    }\n    for (int len = 1; len <= MAXN; len++) {\n        string str(len, ' ');\n        generateLuckyStrings(str, len, 0);\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int N = sc.nextInt();\n        int K = sc.nextInt();\n        String[] S = new String[N];\n        for (int i = 0; i < N; i++) {\n            S[i] = sc.next();\n        }\n        for (int len = 1; len <= 100005; len++) {\n            generateLuckyStrings(\"\", len, S, K);\n        }\n    }\n    public static void generateLuckyStrings(String str, int len, String[] S, int K) {\n        if (str.length() == len) {\n            // Check if the generated string is a CNS\n            int replacements = 0;\n            for (int i = 0; i < S.length; i++) {\n                int j = 0;\n                for (int k = 0; k < len; k++) {\n                    while (j < S[i].length() && S[i].charAt(j) != str.charAt(k)) j++;\n                    if (j == S[i].length()) {\n                        replacements += len - k;\n                        break;\n                    }\n                    j++;\n                }\n            }\n            if (replacements <= K) {\n                System.out.println(str);\n            }\n        } else {\n            generateLuckyStrings(str + \"4\", len, S, K);\n            generateLuckyStrings(str + \"7\", len, S, K);\n        }\n    }\n}",
+      "Python3": "import sys\nN, K = map(int, sys.stdin.readline().split())\nS = [sys.stdin.readline().strip() for _ in range(N)]\ndef generateLuckyStrings(str, len, idx):\n    if idx == len:\n        # Check if the generated string is a CNS\n        replacements = 0\n        for i in range(N):\n            j = 0\n            for k in range(len):\n                while j < len(S[i]) and S[i][j] != str[k]:\n                    j += 1\n                if j == len(S[i]):\n                    replacements += len - k\n                    break\n                j += 1\n        if replacements <= K:\n            print(str)\n    else:\n        generateLuckyStrings(str + '4', len, idx + 1)\n        generateLuckyStrings(str + '7', len, idx + 1)\nfor len in range(1, 100005):\n    generateLuckyStrings('', len, 0)",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet i = 0;\nconst readline = () => lines[i++];\nconst N = parseInt(readline().split(' ')[0]);\nconst K = parseInt(readline().split(' ')[1]);\nconst S = [];\nfor (let i = 0; i < N; i++) {\n    S.push(readline());\n}\nfunction generateLuckyStrings(str, len, idx) {\n    if (idx == len) {\n        // Check if the generated string is a CNS\n        let replacements = 0;\n        for (let i = 0; i < N; i++) {\n            let j = 0;\n            for (let k = 0; k < len; k++) {\n                while (j < S[i].length && S[i][j] != str[k]) j++;\n                if (j == S[i].length) {\n                    replacements += len - k;\n                    break;\n                }\n                j++;\n            }\n        }\n        if (replacements <= K) {\n            console.log(str);\n        }\n    } else {\n        generateLuckyStrings(str + '4', len, idx + 1);\n        generateLuckyStrings(str + '7', len, idx + 1);\n    }\n}\nfor (let len = 1; len <= 100005; len++) {\n    generateLuckyStrings('', len, 0);\n}"
+    }
+  }
+}

@@ -1,0 +1,193 @@
+{
+  "questionId": "Q11384",
+  "title": "Reorder List",
+  "slug": "reorder-list",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Linked List",
+    "difficulty": "Easy",
+    "isPremium": true,
+    "tags": [
+      "Reorder List",
+      "Singly Linked List"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given the head of a singly linked-list. The list can be represented as:\n\n\nL0 → L1 → … → Ln - 1 → Ln \n\nReorder the list to be on the following form:\n\n\nL0 → Ln → L1 → Ln - 1 → L2 → Ln - 2 → …\n\nYou may not modify the values in the list's nodes. Only nodes themselves may be changed.",
+    "constraints": [
+      "1 <= number of nodes in the linked list <= 10^4",
+      "0 <= node value <= 10^4"
+    ],
+    "inputFormat": "The input is the head of a singly linked list.",
+    "outputFormat": "The output is the head of the reordered linked list.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": {
+          "list": [
+            1
+          ]
+        },
+        "expectedOutput": {
+          "list": [
+            1
+          ]
+        },
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": {
+          "list": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+          ]
+        },
+        "expectedOutput": {
+          "list": [
+            1,
+            9,
+            2,
+            8,
+            3,
+            7,
+            4,
+            6,
+            5
+          ]
+        },
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": {
+          "list": [
+            1,
+            1,
+            1,
+            1,
+            1
+          ]
+        },
+        "expectedOutput": {
+          "list": [
+            1,
+            1,
+            1,
+            1,
+            1
+          ]
+        },
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": {
+          "list": [
+            1,
+            2
+          ]
+        },
+        "expectedOutput": {
+          "list": [
+            1,
+            2
+          ]
+        },
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": {
+          "list": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6
+          ]
+        },
+        "expectedOutput": {
+          "list": [
+            1,
+            6,
+            2,
+            5,
+            3,
+            4
+          ]
+        },
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Three steps: find the middle of the list, reverse the second half, and merge the two halves alternately.",
+    "timeComplexity": "O(n)",
+    "spaceComplexity": "O(1)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\n// Definition for singly-linked list.\ntypedef struct ListNode {\n    int val;\n    struct ListNode *next;\n} ListNode;\n\nvoid reorderList(ListNode* head) {\n    if (head == NULL || head->next == NULL || head->next->next == NULL) return;\n\n    ListNode* slow = head;\n    ListNode* fast = head;\n    while (fast->next && fast->next->next) {\n        slow = slow->next;\n        fast = fast->next->next;\n    }\n\n    ListNode* prev = NULL;\n    ListNode* curr = slow->next;\n    while (curr) {\n        ListNode* nextNode = curr->next;\n        curr->next = prev;\n        prev = curr;\n        curr = nextNode;\n    }\n\n    slow->next = NULL;\n\n    ListNode* first = head;\n    ListNode* second = prev;\n    while (second) {\n        ListNode* tmp1 = first->next;\n        ListNode* tmp2 = second->next;\n\n        first->next = second;\n        second->next = tmp1;\n\n        first = tmp1;\n        second = tmp2;\n    }\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\n// Definition of singly-linked list node\nstruct ListNode {\n    int val;\n    ListNode* next;\n    ListNode(int x) : val(x), next(NULL) {}\n};\n\nclass Solution {\npublic:\n    // Function to reorder the linked list\n    void reorderList(ListNode* head) {\n        // Edge case: if list has 0 or 1 node, do nothing\n        if (!head || !head->next || !head->next->next) return;\n\n        // Step 1: Find the middle of the linked list\n        ListNode* slow = head;\n        ListNode* fast = head;\n        while (fast->next && fast->next->next) {\n            slow = slow->next;\n            fast = fast->next->next;\n        }\n\n        // Step 2: Reverse the second half of the list\n        ListNode* prev = NULL;\n        ListNode* curr = slow->next;\n        while (curr) {\n            ListNode* nextNode = curr->next;\n            curr->next = prev;\n            prev = curr;\n            curr = nextNode;\n        }\n\n        // Disconnect the first half from the second\n        slow->next = NULL;\n\n        // Step 3: Merge both halves alternately\n        ListNode* first = head;\n        ListNode* second = prev;\n        while (second) {\n            ListNode* tmp1 = first->next;\n            ListNode* tmp2 = second->next;\n\n            first->next = second;\n            second->next = tmp1;\n\n            first = tmp1;\n            second = tmp2;\n        }\n    }\n};\n",
+      "Java": "import java.util.*;\n// Definition of singly-linked list node\nclass ListNode {\n    int val;\n    ListNode next;\n    ListNode(int val) {\n        this.val = val;\n        this.next = null;\n    }\n}\n\nclass Solution {\n    // Function to reorder the linked list\n    public void reorderList(ListNode head) {\n        // Edge case: if list has less than 3 nodes, no reordering needed\n        if (head == null || head.next == null || head.next.next == null) return;\n\n        // Step 1: Find the middle using slow and fast pointers\n        ListNode slow = head, fast = head;\n        while (fast.next != null && fast.next.next != null) {\n            slow = slow.next;\n            fast = fast.next.next;\n        }\n\n        // Step 2: Reverse the second half\n        ListNode prev = null, curr = slow.next;\n        while (curr != null) {\n            ListNode nextNode = curr.next;\n            curr.next = prev;\n            prev = curr;\n            curr = nextNode;\n        }\n\n        // Disconnect first and second halves\n        slow.next = null;\n\n        // Step 3: Merge the two halves\n        ListNode first = head, second = prev;\n        while (second != null) {\n            ListNode tmp1 = first.next;\n            ListNode tmp2 = second.next;\n\n            first.next = second;\n            second.next = tmp1;\n\n            first = tmp1;\n            second = tmp2;\n        }\n    }\n}\n",
+      "Python3": "# Definition for singly-linked list node\nclass ListNode:\n    def __init__(self, val=0, next=None):\n        self.val = val\n        self.next = next\n\nclass Solution:\n    # Function to reorder the linked list\n    def reorderList(self, head):\n        # Edge case: list too short to reorder\n        if not head or not head.next or not head.next.next:\n            return\n\n        # Step 1: Find the middle node\n        slow, fast = head, head\n        while fast.next and fast.next.next:\n            slow = slow.next\n            fast = fast.next.next\n\n        # Step 2: Reverse second half\n        prev = None\n        curr = slow.next\n        while curr:\n            next_node = curr.next\n            curr.next = prev\n            prev = curr\n            curr = next_node\n\n        # Disconnect the first half\n        slow.next = None\n\n        # Step 3: Merge two halves\n        first = head\n        second = prev\n        while second:\n            tmp1 = first.next\n            tmp2 = second.next\n\n            first.next = second\n            second.next = tmp1\n\n            first = tmp1\n            second = tmp2\n\n# Driver code\ndef printList(head):\n    while head:\n        print(head.val, end=\" \")\n        head = head.next\n\n# Create linked list: 1->2->3->4\nhead = ListNode(1)\nhead.next = ListNode(2)\nhead.next.next = ListNode(3)\nhead.next.next.next = ListNode(4)\n\nsol = Solution()\nsol.reorderList(head)\nprintList(head)\n",
+      "JavaScript": "// Definition for singly-linked list node\nclass ListNode {\n    constructor(val, next = null) {\n        this.val = val;\n        this.next = next;\n    }\n}\n\nclass Solution {\n    // Function to reorder the linked list\n    reorderList(head) {\n        // Edge case\n        if (!head || !head.next || !head.next.next) return;\n\n        // Step 1: Find middle using slow/fast\n        let slow = head, fast = head;\n        while (fast.next && fast.next.next) {\n            slow = slow.next;\n            fast = fast.next.next;\n        }\n\n        // Step 2: Reverse second half\n        let prev = null;\n        let curr = slow.next;\n        while (curr) {\n            let nextNode = curr.next;\n            curr.next = prev;\n            prev = curr;\n            curr = nextNode;\n        }\n\n        // Disconnect first and second halves\n        slow.next = null;\n\n        // Step 3: Merge alternately\n        let first = head, second = prev;\n        while (second) {\n            let tmp1 = first.next;\n            let tmp2 = second.next;\n\n            first.next = second;\n            second.next = tmp1;\n\n            first = tmp1;\n            second = tmp2;\n        }\n    }\n}\n\n// Driver code\nfunction printList(head) {\n    let curr = head;\n    let res = [];\n    while (curr) {\n        res.push(curr.val);\n        curr = curr.next;\n    }\n    console.log(res.join(\" \"));\n}\n\n// Create linked list: 1->2->3->4\nlet head = new ListNode(1);\nhead.next = new ListNode(2);\nhead.next.next = new ListNode(3);\nhead.next.next.next = new ListNode(4);\n\nlet sol = new Solution();\nsol.reorderList(head);\nprintList(head);\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

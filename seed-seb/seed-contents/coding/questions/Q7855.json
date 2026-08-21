@@ -1,0 +1,129 @@
+{
+  "questionId": "Q7855",
+  "title": "Few Different Elements",
+  "slug": "few-different-elements",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Arrays | Greedy",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Greedy",
+      "Sliding Window",
+      "Array Manipulation"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Let's call a sequence with length KKK good if there are at most K2+1\\frac{K}{2} + 12K​+1 distinct elements in it. For example, the sequence (3,3,2,1,3)(3, 3, 2, 1, 3)(3,3,2,1,3) is good, since it contains 3≤52+13 \\le \\frac{5}{2} + 13≤25​+1 distinct elements, while the sequence (1,4,8,8,2)(1, 4, 8, 8, 2)(1,4,8,8,2) is not good, since it contains 4&gt;52+14 \\gt \\frac{5}{2} + 14&gt;25​+1 distinct elements.\n\nYou are given a sequence of integers A1,A2,…,ANA_1, A_2, \\ldots, A_NA1​,A2​,…,AN​. You may perform any number of operations (including zero) on this sequence. In one operation, you should choose one element of the sequence and replace it by any integer you choose. You want all contiguous subsequences of the resulting sequence to be good. What is the smallest number of operations you need to perform to achieve this?",
+    "constraints": [
+      "1 ≤ T ≤ 40",
+      "1 ≤ N ≤ 10^5",
+      "1 ≤ Ai ≤ 10^9",
+      "Sum of N over all test cases ≤ 5·10^5"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Then for each test case:\n- A line with an integer N, the length of the sequence.\n- A line with N space‑separated integers A1 … AN.\nAll numbers fit in 32‑bit signed integer range.",
+    "outputFormat": "For each test case output a single line containing the minimum number of operations required so that every contiguous subsequence of the final array is good.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n6\n1 1 1 2 2 2\n4\n1 100 10000 1000000\n5\n1 2 3 2 1",
+        "output": "0\n1\n1",
+        "explanation": "Test case 1: No three consecutive elements are pairwise distinct, so 0 changes are needed.\nTest case 2: The first three numbers (1,100,10000) are all different. Changing the third element to 100 makes the whole array good – only 1 operation.\nTest case 3: The prefix (1,2,3) is bad. Changing the third element to 2 yields 1 2 2 2 1, which satisfies the condition."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "A subarray of length K is good iff it contains at most floor(K/2)+1 distinct values. For K=3 this bound is 2, therefore **any three consecutive elements must contain at most two distinct numbers**. This condition is also sufficient for all longer subarrays: if every window of size three satisfies the rule, any larger window automatically satisfies the bound because the number of distinct elements can increase by at most one when the window size grows by two.\n\nThus the whole problem reduces to eliminating all length‑3 windows that contain three different values. We may change any element to any integer, so when we encounter a bad triple (Ai, Ai+1, Ai+2) with three distinct values we can fix it by changing the third element (Ai+2) to be equal to Ai+1 (or Ai). After this change the current triple becomes good and any future triple that starts at i+1 will also be good because it now contains at most two distinct values.\n\nGreedy algorithm:\n1. Iterate i from 0 to N‑3.\n2. If Ai, Ai+1, Ai+2 are pairwise different, increment answer and set Ai+2 = Ai+1 (any value equal to one of the previous two). This simulates performing an operation.\n3. Continue scanning. The modification guarantees that overlapping triples are handled correctly and no additional operation is needed for them.\n4. For N < 3 the answer is 0.\n\nThe algorithm runs in O(N) time per test case and uses O(1) extra memory.\n",
+    "timeComplexity": "O(N) per test case, O(ΣN) over the whole input.",
+    "spaceComplexity": "O(1) besides the input array.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    while(T--){\n        int N; scanf(\"%d\", &N);\n        int *a = (int*)malloc(N * sizeof(int));\n        for(int i=0;i<N;i++) scanf(\"%d\", &a[i]);\n        long long ans = 0;\n        for(int i=0;i+2<N;i++){\n            if(a[i]!=a[i+1] && a[i]!=a[i+2] && a[i+1]!=a[i+2]){\n                ans++;\n                a[i+2] = a[i+1]; // simulate change\n            }\n        }\n        printf(\"%lld\\n\", ans);\n        free(a);\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N; cin>>N;\n        vector<int> a(N);\n        for(int &x: a) cin>>x;\n        long long ans=0;\n        for(int i=0;i+2<N;i++){\n            if(a[i]!=a[i+1] && a[i]!=a[i+2] && a[i+1]!=a[i+2]){\n                ++ans;\n                a[i+2]=a[i+1]; // change third element\n            }\n        }\n        cout<<ans<<\"\\n\";\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner(System.in);\n        int T = fs.nextInt();\n        StringBuilder sb = new StringBuilder();\n        while (T-- > 0) {\n            int N = fs.nextInt();\n            int[] a = new int[N];\n            for (int i = 0; i < N; i++) a[i] = fs.nextInt();\n            long ans = 0;\n            for (int i = 0; i + 2 < N; i++) {\n                if (a[i] != a[i+1] && a[i] != a[i+2] && a[i+1] != a[i+2]) {\n                    ans++;\n                    a[i+2] = a[i+1]; // simulate change\n                }\n            }\n            sb.append(ans).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n\n    // Fast scanner for competitive programming\n    static class FastScanner {\n        private final InputStream in;\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        FastScanner(InputStream in) { this.in = in; }\n        private int readByte() throws IOException {\n            if (ptr >= len) {\n                len = in.read(buffer);\n                ptr = 0;\n                if (len <= 0) return -1;\n            }\n            return buffer[ptr++];\n        }\n        int nextInt() throws IOException {\n            int c, sign = 1, val = 0;\n            do { c = readByte(); } while (c <= ' ');\n            if (c == '-') { sign = -1; c = readByte(); }\n            while (c > ' ') {\n                val = val * 10 + (c - '0');\n                c = readByte();\n            }\n            return val * sign;\n        }\n    }\n}\n",
+      "Python3": "import sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out = []\n    for _ in range(T):\n        N = int(next(it))\n        a = [int(next(it)) for _ in range(N)]\n        ans = 0\n        i = 0\n        while i + 2 < N:\n            if a[i] != a[i+1] and a[i] != a[i+2] and a[i+1] != a[i+2]:\n                ans += 1\n                a[i+2] = a[i+1]  # simulate change\n            i += 1\n        out.append(str(ans))\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/).map(Number);\nlet idx = 0;\nconst T = input[idx++];\nlet results = [];\nfor (let t = 0; t < T; t++) {\n  const N = input[idx++];\n  const a = input.slice(idx, idx + N);\n  idx += N;\n  let ans = 0;\n  for (let i = 0; i + 2 < N; i++) {\n    if (a[i] !== a[i+1] && a[i] !== a[i+2] && a[i+1] !== a[i+2]) {\n      ans++;\n      a[i+2] = a[i+1]; // change third element\n    }\n  }\n  results.push(String(ans));\n}\nconsole.log(results.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

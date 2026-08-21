@@ -1,0 +1,141 @@
+{
+  "questionId": "Q4857",
+  "title": "Cycle in a linked list",
+  "slug": "cycle-in-a-linked-list",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Data Structures",
+    "difficulty": "Easy",
+    "isPremium": true,
+    "tags": [
+      "Two Pointers",
+      "Floyd's Cycle Detection",
+      "Linked List"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Linked Lists"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Cycle in a Linked List  (5 Marks)You are given a linked list **A** of size **N**.\n\nReturn the node where the cycle begins in the linked list.\n\nIf there is no cycle, return **None**.\n\n\nInput Format\n\nThe first line contains an integer **T**, the number of test cases.\nFor each test case:\n\nThe first line contains an integer **N**, the length of the linked list.\nThe second line contains **N** space-separated integers\n\n`A1 A2 A3 ... AN` representing the values of the linked list nodes.\nThe third line contains an integer **pos**, denoting the index (0-based) of the node where the cycle starts.\n\nIf `pos = -1`, it means there is no cycle.\n\n\n\n\n\n\nOutput Format\n\nFor each test case:\n\nPrint the value of the node where the cycle begins.\nIf there is no cycle, print `NULL`.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 100000",
+      "-10^9 <= Ai <= 10^9",
+      "-1 <= pos < N"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases.\nFor each test case:\n- A line with integer N, the length of the linked list.\n- A line with N space‑separated integers representing node values.\n- A line with integer pos, the 0‑based index where the last node points to create a cycle. If pos = -1 there is no cycle.",
+    "outputFormat": "For each test case output a single line:\n- The value of the node where the cycle begins, or\n- \"NULL\" (without quotes) if the list has no cycle.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\\n3\\n2 0 -4\\n1",
+        "output": "0",
+        "explanation": "The list is 2 → 0 → -4 and the last node points back to index 1 (value 0). The cycle starts at the node with value 0."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\\n4\\n1 2 3 4\\n-1",
+        "output": "NULL",
+        "explanation": "No connection is created (pos = -1), so the list has no cycle."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\\n5\\n1 2 3 4 5\\n2",
+        "output": "3",
+        "explanation": "The tail connects to index 2 (value 3), therefore the cycle begins at the node with value 3."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\\n1\\n42\\n-1",
+        "expectedOutput": "NULL",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\\n15\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15\\n0",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\\n2\\n5 10\\n1",
+        "expectedOutput": "10",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\\n6\\n3 1 4 1 5 9\\n3",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\\n7\\n-5 -10 0 5 10 15 20\\n2",
+        "expectedOutput": "0",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Use Floyd's Tortoise and Hare algorithm. First move two pointers (slow moves 1 step, fast moves 2 steps) until they meet or fast reaches the end (no cycle). If they meet, reset slow to head and move both one step at a time; the node where they meet again is the start of the cycle. This runs in O(N) time and O(1) extra space.",
+    "timeComplexity": "O(N) per test case, where N is the length of the linked list.",
+    "spaceComplexity": "O(1) auxiliary space.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\ntypedef struct Node {\n    int data;\n    struct Node* next;\n} Node;\n\nNode* detectCycle(Node* head) {\n    if (!head || !head->next) return NULL;\n    Node *slow = head, *fast = head;\n    while (fast && fast->next) {\n        slow = slow->next;\n        fast = fast->next->next;\n        if (slow == fast) {\n            slow = head;\n            while (slow != fast) {\n                slow = slow->next;\n                fast = fast->next;\n            }\n            return slow;\n        }\n    }\n    return NULL;\n}\n\nint main() {\n    int T; scanf(\"%d\", &T);\n    while (T--) {\n        int N; scanf(\"%d\", &N);\n        Node **nodes = (Node**)malloc(N * sizeof(Node*));\n        Node *head = NULL, *cur = NULL;\n        for (int i = 0; i < N; ++i) {\n            int val; scanf(\"%d\", &val);\n            Node *nd = (Node*)malloc(sizeof(Node));\n            nd->data = val; nd->next = NULL;\n            if (!head) head = nd; else cur->next = nd;\n            cur = nd;\n            nodes[i] = nd;\n        }\n        int pos; scanf(\"%d\", &pos);\n        if (pos != -1) cur->next = nodes[pos];\n        Node *start = detectCycle(head);\n        if (start) printf(\"%d\\n\", start->data);\n        else printf(\"NULL\\n\");\n        free(nodes);\n        // Note: not freeing the whole list because of possible cycles; judge process ends here.\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nstruct Node {\n    int data;\n    Node* next;\n    Node(int x) : data(x), next(nullptr) {}\n};\n\nNode* detectCycle(Node* head) {\n    if (!head || !head->next) return nullptr;\n    Node *slow = head, *fast = head;\n    while (fast && fast->next) {\n        slow = slow->next;\n        fast = fast->next->next;\n        if (slow == fast) {\n            slow = head;\n            while (slow != fast) {\n                slow = slow->next;\n                fast = fast->next;\n            }\n            return slow;\n        }\n    }\n    return nullptr;\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; cin >> T;\n    while (T--) {\n        int N; cin >> N;\n        vector<Node*> nodes(N);\n        Node *head = nullptr, *cur = nullptr;\n        for (int i = 0; i < N; ++i) {\n            int val; cin >> val;\n            Node* nd = new Node(val);\n            if (!head) head = nd; else cur->next = nd;\n            cur = nd;\n            nodes[i] = nd;\n        }\n        int pos; cin >> pos;\n        if (pos != -1) cur->next = nodes[pos];\n        Node* start = detectCycle(head);\n        if (start) cout << start->data << '\\n';\n        else cout << \"NULL\\n\";\n        // Memory cleanup omitted for brevity (cycles make it non‑trivial).\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    static class Node {\n        int data;\n        Node next;\n        Node(int d) { data = d; }\n    }\n\n    static Node detectCycle(Node head) {\n        if (head == null || head.next == null) return null;\n        Node slow = head, fast = head;\n        while (fast != null && fast.next != null) {\n            slow = slow.next;\n            fast = fast.next.next;\n            if (slow == fast) {\n                slow = head;\n                while (slow != fast) {\n                    slow = slow.next;\n                    fast = fast.next;\n                }\n                return slow;\n            }\n        }\n        return null;\n    }\n\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st;\n        int T = Integer.parseInt(br.readLine().trim());\n        while (T-- > 0) {\n            int N = Integer.parseInt(br.readLine().trim());\n            st = new StringTokenizer(br.readLine());\n            Node[] nodes = new Node[N];\n            Node head = null, cur = null;\n            for (int i = 0; i < N; ++i) {\n                int val = Integer.parseInt(st.nextToken());\n                Node nd = new Node(val);\n                if (head == null) head = nd; else cur.next = nd;\n                cur = nd;\n                nodes[i] = nd;\n            }\n            int pos = Integer.parseInt(br.readLine().trim());\n            if (pos != -1) cur.next = nodes[pos];\n            Node start = detectCycle(head);\n            if (start != null) System.out.println(start.data);\n            else System.out.println(\"NULL\");\n        }\n    }\n}",
+      "Python3": "import sys\n\ndef detectCycle(head):\n    if not head or not head.next:\n        return None\n    slow = fast = head\n    while fast and fast.next:\n        slow = slow.next\n        fast = fast.next.next\n        if slow is fast:\n            slow = head\n            while slow is not fast:\n                slow = slow.next\n                fast = fast.next\n            return slow\n    return None\n\nclass Node:\n    __slots__ = ('data', 'next')\n    def __init__(self, x):\n        self.data = x\n        self.next = None\n\ninput_data = sys.stdin.read().strip().splitlines()\nidx = 0\nT = int(input_data[idx]); idx += 1\nout_lines = []\nfor _ in range(T):\n    N = int(input_data[idx]); idx += 1\n    values = list(map(int, input_data[idx].split())); idx += 1\n    head = None\n    cur = None\n    nodes = [None]*N\n    for i, v in enumerate(values):\n        nd = Node(v)\n        if head is None:\n            head = nd\n        else:\n            cur.next = nd\n        cur = nd\n        nodes[i] = nd\n    pos = int(input_data[idx]); idx += 1\n    if pos != -1:\n        cur.next = nodes[pos]\n    start = detectCycle(head)\n    out_lines.append(str(start.data) if start else \"NULL\")\nprint('\\n'.join(out_lines))",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nfunction nextLine() { return lines[idx++]; }\n\nclass Node {\n    constructor(x) { this.data = x; this.next = null; }\n}\n\nfunction detectCycle(head) {\n    if (!head || !head.next) return null;\n    let slow = head, fast = head;\n    while (fast && fast.next) {\n        slow = slow.next;\n        fast = fast.next.next;\n        if (slow === fast) {\n            slow = head;\n            while (slow !== fast) {\n                slow = slow.next;\n                fast = fast.next;\n            }\n            return slow;\n        }\n    }\n    return null;\n}\n\nconst T = parseInt(nextLine());\nlet outputs = [];\nfor (let t = 0; t < T; ++t) {\n    const N = parseInt(nextLine());\n    const vals = nextLine().trim().split(/\\s+/).map(Number);\n    const nodes = new Array(N);\n    let head = null, cur = null;\n    for (let i = 0; i < N; ++i) {\n        const nd = new Node(vals[i]);\n        if (!head) head = nd; else cur.next = nd;\n        cur = nd;\n        nodes[i] = nd;\n    }\n    const pos = parseInt(nextLine());\n    if (pos !== -1) cur.next = nodes[pos];\n    const start = detectCycle(head);\n    outputs.push(start ? String(start.data) : 'NULL');\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

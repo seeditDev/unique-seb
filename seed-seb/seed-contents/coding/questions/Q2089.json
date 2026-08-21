@@ -1,0 +1,128 @@
+{
+  "questionId": "Q2089",
+  "title": "Divisible Number Finder",
+  "slug": "divisible-number-finder",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Easy",
+    "isPremium": false,
+    "tags": [
+      "Math",
+      "Number Theory",
+      "List Comprehension",
+      "Modulo"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Comprehensions & Generators"
+    ]
+  },
+  "content": {
+    "problemStatement": "In this task, you will use List comprehensions to create a function that finds all numbers divisible by a given divisor within a specified range.\n\nList comprehensions provide a concise way to create lists in Python. They can be used to apply an expression to each element in a sequence, often replacing loops and map() functions with more readable and compact code.\n\nYour task is to implement the function find_divisibles(start, end, divisor) that takes three parameters:\n\n\nstart: the beginning of the range (inclusive)\nend: the end of the range (inclusive)\ndivisor: the number to check divisibility against\nThe function should return a list of all numbers within the given range that are divisible by the specified divisor.\n\nFor example, if the input is start=1, end=10, and divisor=3, the output should be [3, 6, 9].",
+    "constraints": [
+      "1 \u2264 T \u2264 100",
+      "-10^9 \u2264 start, end \u2264 10^9",
+      "1 \u2264 |divisor| \u2264 10^9"
+    ],
+    "inputFormat": "The first line contains an integer T (1 \u2264 T \u2264 100), the number of test cases. Each of the next T lines contains three space\u2011separated integers: start, end and divisor. start and end define an inclusive range (start may be greater than end, in which case the range is empty). divisor \u2260 0.",
+    "outputFormat": "For each test case output a Python\u2011style list (square brackets, elements separated by a comma and a space) containing all integers x such that start \u2264 x \u2264 end and x % divisor == 0, in increasing order. Print each list on its own line.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\\n1 10 3",
+        "output": "[3, 6, 9]",
+        "explanation": "The range 1..10 contains the numbers 3, 6 and 9 that are divisible by 3."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\\n5 5 5",
+        "output": "[5]",
+        "explanation": "The range consists of a single number 5, which is divisible by 5."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\\n10 1 2",
+        "output": "[]",
+        "explanation": "start > end, so the interval is empty and no numbers satisfy the condition."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\\n0 0 1",
+        "expectedOutput": "[0]",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\\n-1000000000 1000000000 1000000000",
+        "expectedOutput": "[-1000000000, 0, 1000000000]",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\\n5 4 2",
+        "expectedOutput": "[]",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\\n7 30 5",
+        "expectedOutput": "[10, 15, 20, 25, 30]",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\\n-7 7 3",
+        "expectedOutput": "[-6, -3, 0, 3, 6]",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each test case we need the numbers in [start, end] that are divisible by divisor. We first work with the absolute value of divisor because divisibility does not depend on sign. If start > end the answer is empty. Otherwise we find the smallest multiple of divisor that is \u2265 start. Using the remainder r = start % d (where d = |divisor|) we can compute the first multiple: if r == 0 then first = start; else if start >= 0 then first = start + (d - r); else first = start - r. After obtaining the first multiple we iterate x = first; x \u2264 end; x += d, appending each x to the result. This visits only the numbers that satisfy the condition, so the running time is proportional to the size of the output.",
+    "timeComplexity": "O(k) per test case, where k is the number of divisible integers in the given range (the length of the output).",
+    "spaceComplexity": "O(k) for storing the result of each test case (output list).",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        long long start, end, d;\n        if (scanf(\"%lld %lld %lld\", &start, &end, &d) != 3) break;\n        if (d < 0) d = -d; // use positive divisor\n        printf(\"[\");\n        int firstPrinted = 1;\n        if (start <= end) {\n            long long mod = start % d;\n            long long firstMul;\n            if (mod == 0) {\n                firstMul = start;\n            } else if (start >= 0) {\n                firstMul = start + (d - mod);\n            } else {\n                firstMul = start - mod; // start negative\n            }\n            for (long long x = firstMul; x <= end; x += d) {\n                if (firstPrinted) {\n                    printf(\"%lld\", x);\n                    firstPrinted = 0;\n                } else {\n                    printf(\", %lld\", x);\n                }\n            }\n        }\n        printf(\"]\\n\");\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T;\n    if (!(cin >> T)) return 0;\n    while (T--) {\n        long long start, end, d;\n        cin >> start >> end >> d;\n        d = llabs(d);\n        cout << '[';\n        bool first = true;\n        if (start <= end) {\n            long long mod = start % d;\n            long long firstMul;\n            if (mod == 0) firstMul = start;\n            else if (start >= 0) firstMul = start + (d - mod);\n            else firstMul = start - mod;\n            for (long long x = firstMul; x <= end; x += d) {\n                if (!first) cout << \", \";\n                cout << x;\n                first = false;\n            }\n        }\n        cout << \"]\\n\";\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        String line = br.readLine();\n        if (line == null || line.isEmpty()) return;\n        int T = Integer.parseInt(line.trim());\n        StringBuilder out = new StringBuilder();\n        for (int tc = 0; tc < T; tc++) {\n            StringTokenizer st = new StringTokenizer(br.readLine());\n            long start = Long.parseLong(st.nextToken());\n            long end = Long.parseLong(st.nextToken());\n            long d = Long.parseLong(st.nextToken());\n            d = Math.abs(d);\n            out.append('[');\n            boolean first = true;\n            if (start <= end) {\n                long mod = start % d;\n                long firstMul = (mod == 0) ? start : (start >= 0 ? start + (d - mod) : start - mod);\n                for (long x = firstMul; x <= end; x += d) {\n                    if (!first) out.append(\", \");\n                    out.append(x);\n                    first = false;\n                }\n            }\n            out.append(']');\n            if (tc + 1 < T) out.append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        start = int(next(it))\n        end = int(next(it))\n        d = int(next(it))\n        d = abs(d)\n        res = []\n        if start <= end:\n            mod = start % d\n            if mod == 0:\n                first = start\n            else:\n                first = start + (d - mod) if start >= 0 else start - mod\n            x = first\n            while x <= end:\n                res.append(x)\n                x += d\n        out_lines.append(str(res))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nif (input.length === 0) process.exit(0);\nconst T = Number(input[idx++]);\nlet outputs = [];\nfor (let t = 0; t < T; t++) {\n  let start = Number(input[idx++]);\n  let end = Number(input[idx++]);\n  let d = Number(input[idx++]);\n  d = Math.abs(d);\n  let arr = [];\n  if (start <= end) {\n    let mod = start % d;\n    let first;\n    if (mod === 0) first = start;\n    else if (start >= 0) first = start + (d - mod);\n    else first = start - mod;\n    for (let x = first; x <= end; x += d) {\n      arr.push(x);\n    }\n  }\n  outputs.push('[' + arr.join(', ') + ']');\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  }
+}

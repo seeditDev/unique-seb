@@ -1,0 +1,116 @@
+{
+  "questionId": "Q2717",
+  "title": "Fibonacci Number",
+  "slug": "fibonacci-number",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Discrete Logarithm",
+      "Math",
+      "Tonelli\u2011Shanks",
+      "Prime Modulus",
+      "Fibonacci",
+      "Baby\u2011Step Giant\u2011Step",
+      "Modular Square Root"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Mathematics"
+    ]
+  },
+  "content": {
+    "problemStatement": "Problem Statement\nAs we know, Fibonacci Number is defined as \n\n\n\n\n\n**Fn=n if n  \u2264 1 **\n\n**Fn=Fn-1+Fn-2, otherwise**\n\nNow this problem is quite simple: you are given one  prime number  **P** and one non-negative integer **C**\r\n\n\nYou are expected to find the smallest non-negative integer  **n**, such that\n\n**Fn\u2261C(mod P)**\n\n\nhere\n\n&nbsp;",
+    "constraints": [
+      "1 \u2264 T \u2264 100",
+      "11 \u2264 P \u2264 2\u00b710^9, P is prime",
+      "P mod 10 \u2208 {0,1,4,5,6,9}",
+      "0 \u2264 C \u2264 P\u20111"
+    ],
+    "inputFormat": "The first line contains an integer T (1 \u2264 T \u2264 100), the number of test cases. Each of the next T lines contains two integers C and P separated by a space, where P is a prime (11 \u2264 P \u2264 2\u00b710^9) such that P mod 10 is a square (i.e., 0,1,4,5,6 or 9) and 0 \u2264 C \u2264 P\u20111.",
+    "outputFormat": "For each test case output a single line containing the smallest non\u2011negative integer n such that the n\u2011th Fibonacci number F\u2099 satisfies F\u2099 \u2261 C (mod P). If no such n exists output -1.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4\n0 11\n16 19\n18 19\n4 19",
+        "output": "0\n14\n16\n-1",
+        "explanation": "For the first test case, the smallest n such that F_n \u2261 0 (mod 11) is 0. For the second test case, the smallest n such that F_n \u2261 16 (mod 19) is 14. For the third test case, the smallest n such that F_n \u2261 18 (mod 19) is 16. For the fourth test case, there is no n such that F_n \u2261 4 (mod 19)."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Because P is prime and P mod 10 is a square, 5 is a quadratic residue modulo P. Hence we can work in the field GF(P) and use the closed form of Fibonacci numbers (Binet's formula). Let sqrt5 be a square root of 5 modulo P, inv2 = (P+1)/2, and \u03c6 = (1+sqrt5)*inv2 (mod P). Then \u03c8 = (1\u2011sqrt5)*inv2 = -\u03c6\u207b\u00b9 (mod P) and\n    F\u2099 = (\u03c6\u207f \u2013 \u03c8\u207f) * inv_sqrt5 (mod P).\nMultiplying by sqrt5 gives A = C\u00b7sqrt5 (mod P) and the equation\n    \u03c6\u207f \u2013 (\u20111)\u207f\u00b7\u03c6\u207b\u207f \u2261 A (mod P).\nSetting y = \u03c6\u207f we obtain a quadratic depending on the parity of n:\n    even n:  y\u00b2 \u2013 A\u00b7y \u2013 1 \u2261 0\n    odd  n:  y\u00b2 \u2013 A\u00b7y + 1 \u2261 0.\nFor each parity we compute the discriminant D (A\u00b2\u00b14) and, if D is a quadratic residue, its square roots s. Each root yields a candidate y = (A + s)\u00b7inv2 (mod P). The required n is a discrete logarithm: \u03c6\u207f \u2261 y (mod P). The multiplicative group of GF(P) has order P\u20111, so we can find n with the Baby\u2011Step Giant\u2011Step (BSGS) algorithm in O(\u221aP) time. We test all candidates, keep those whose parity matches the case, and finally output the smallest n (n=0 is handled separately because F\u2080=0). If no candidate works we output -1.\nThe algorithm per test case:\n1. If C==0 \u2192 answer 0.\n2. Compute sqrt5 using Tonelli\u2011Shanks.\n3. Compute \u03c6, inv2, and A = C\u00b7sqrt5 mod P.\n4. For parity = 0 (even) and 1 (odd):\n   a. D = (A*A \u00b1 4) mod P (plus for even, minus for odd).\n   b. If D is a quadratic residue, obtain its two square roots s.\n   c. For each s compute y = (A + s)\u00b7inv2 mod P.\n   d. n = discrete_log(\u03c6, y, P) via BSGS.\n   e. If n!=-1 and n%2 matches the parity, keep the minimum.\n5. Output the minimum found or -1.\nAll operations are performed modulo P using 64\u2011bit integers to avoid overflow.",
+    "timeComplexity": "For each test case O(\u221aP) due to the BSGS discrete logarithm (at most four BSGS runs). All other steps are O(log\u202fP).",
+    "spaceComplexity": "O(\u221aP) for the hash table used in BSGS.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <inttypes.h>\n#include <string.h>\n#include <math.h>\n\n"
+    }
+  }
+}

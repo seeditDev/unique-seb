@@ -1,0 +1,142 @@
+{
+  "questionId": "Q4833",
+  "title": "Group Anagram",
+  "slug": "group-anagram",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings | Sorting",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Anagrams",
+      "Hash Map",
+      "Sorting",
+      "Grouping"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Hashing"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given NNN strings consisting of lowercase English letters.\n\nTwo strings are called anagrams if they contain the same characters\nwith the same frequency, possibly in a different order.\n\nYour task is to group all anagrams together.\n\n\nInput Format\n\nThe input consists of multiple lines.\n\nThe first line contains a single integer NNN , the number of strings.\nThe next NNN lines each contain one string consisting of lowercase English letters.\n\n\n\n\nOutput Format\n\nPrint the grouped anagrams.\n\nPrint each group on a new line in order of first occurrence.\nPrint words of a group in their original order, separated by a single space.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 100000",
+      "1 <= length of each string <= 100",
+      "All strings contain only lowercase English letters"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, the first line contains an integer N, the number of strings. The next N lines each contain one string consisting only of lowercase English letters.",
+    "outputFormat": "For each test case, print the groups of anagrams. Each group is printed on its own line. Words inside a group appear in the same order as in the input, separated by a single space. Groups are ordered by the first occurrence of any of their members in the input. Separate consecutive test cases by a blank line.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\\n6\\neat\\ntea\\ntan\\nate\\nnat\\nbat",
+        "output": "eat tea ate\\\\ntan nat\\\\nbat",
+        "explanation": "The strings \"eat\", \"tea\" and \"ate\" share the sorted key \"aet\" and form the first group. \"tan\" and \"nat\" share key \"ant\" forming the second group. \"bat\" has a unique key, so it appears alone."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\\n3\\nabc\\nbca\\ndef",
+        "output": "abc bca\\ndef",
+        "explanation": "\"abc\" and \"bca\" are anagrams (key \"abc\"). \"def\" stands alone."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\\n4\\napple\\nbanana\\ncarrot\\ndate",
+        "output": "apple\\nbanana\\ncarrot\\ndate",
+        "explanation": "No two strings are anagrams, so each appears in its own group preserving the input order."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\\n1\\na",
+        "expectedOutput": "a",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "1\\n1\\na",
+        "expectedOutput": "a",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "1\\n1\\na",
+        "expectedOutput": "a",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "1\\n1\\na",
+        "expectedOutput": "a",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "1\\n1\\na",
+        "expectedOutput": "a",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each string compute a canonical key by sorting its characters. Strings with the same key are anagrams. Use a hash map (or unordered_map) that maps the key to a vector storing the strings in their original order. To preserve the order of groups, also keep a list (or vector) of keys in the order they first appear. After reading all strings of a test case, iterate over the stored keys and output the corresponding vectors. The algorithm runs in O(N * L log L) time where L is the maximum string length (sorting each string) and uses O(N * L) memory for storing the strings and the map.",
+    "timeComplexity": "O(N * L log L) per test case, where L ≤ 100.",
+    "spaceComplexity": "O(N * L) to store all strings and the grouping map.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n#define MAXN 100000\n#define MAXL 101\n#define HASH_SIZE 200003\n\ntypedef struct Node {\n    char key[MAXL];\n    int group;\n    struct Node* next;\n} Node;\n\nNode* table[HASH_SIZE];\nchar words[MAXN][MAXL];\nint group_head[MAXN];\nint group_tail[MAXN];\nint next_in_group[MAXN];\nint group_cnt = 0;\n\nunsigned long long fnv1a(const char *s){\n    unsigned long long h = 1469598103934665603ULL;\n    while(*s){\n        h ^= (unsigned long long)(unsigned char)*s++;\n        h *= 1099511628211ULL;\n    }\n    return h;\n}\n\nint cmp_char(const void *a, const void *b){\n    return *(const char*)a - *(const char*)b;\n}\n\nint find_or_create(const char *key){\n    unsigned long long h = fnv1a(key) % HASH_SIZE;\n    Node *cur = table[h];\n    while(cur){\n        if(strcmp(cur->key, key) == 0) return cur->group;\n        cur = cur->next;\n    }\n    Node *node = (Node*)malloc(sizeof(Node));\n    strcpy(node->key, key);\n    node->group = group_cnt;\n    node->next = table[h];\n    table[h] = node;\n    group_head[group_cnt] = -1;\n    group_tail[group_cnt] = -1;\n    return group_cnt++;\n}\n\nvoid add_to_group(int gid, int idx){\n    if(group_head[gid] == -1){\n        group_head[gid] = group_tail[gid] = idx;\n    } else {\n        next_in_group[group_tail[gid]] = idx;\n        group_tail[gid] = idx;\n    }\n    next_in_group[idx] = -1;\n}\n\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    for(int tc=0; tc<T; ++tc){\n        int N; scanf(\"%d\", &N);\n        for(int i=0;i<HASH_SIZE;++i) table[i]=NULL;\n        group_cnt = 0;\n        for(int i=0;i<N;++i){\n            scanf(\"%s\", words[i]);\n            char key[MAXL];\n            strcpy(key, words[i]);\n            qsort(key, strlen(key), sizeof(char), cmp_char);\n            int gid = find_or_create(key);\n            add_to_group(gid, i);\n        }\n        for(int g=0; g<group_cnt; ++g){\n            int idx = group_head[g];\n            int first = 1;\n            while(idx != -1){\n                if(!first) printf(\" \");\n                printf(\"%s\", words[idx]);\n                first = 0;\n                idx = next_in_group[idx];\n            }\n            printf(\"\\n\");\n        }\n        if(tc != T-1) printf(\"\\n\");\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    for(int tc=0; tc<T; ++tc){\n        int N; cin>>N;\n        unordered_map<string, vector<string>> mp;\n        vector<string> order; // keys in first‑appearance order\n        for(int i=0;i<N;++i){\n            string s; cin>>s;\n            string key=s; sort(key.begin(), key.end());\n            if(!mp.count(key)) order.push_back(key);\n            mp[key].push_back(s);\n        }\n        for(const string &k: order){\n            const auto &vec = mp[k];\n            for(size_t i=0;i<vec.size();++i){\n                if(i) cout<<' ';\n                cout<<vec[i];\n            }\n            cout<<'\\n';\n        }\n        if(tc!=T-1) cout<<'\\n';\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        String line = br.readLine();\n        if(line==null) return;\n        int T = Integer.parseInt(line.trim());\n        StringBuilder out = new StringBuilder();\n        for(int tc=0; tc<T; ++tc){\n            int N = Integer.parseInt(br.readLine().trim());\n            LinkedHashMap<String, ArrayList<String>> map = new LinkedHashMap<>();\n            for(int i=0;i<N;++i){\n                String s = br.readLine().trim();\n                char[] arr = s.toCharArray();\n                Arrays.sort(arr);\n                String key = new String(arr);\n                map.computeIfAbsent(key, k -> new ArrayList<>()).add(s);\n            }\n            for(ArrayList<String> group : map.values()){\n                for(int i=0;i<group.size();++i){\n                    if(i>0) out.append(' ');\n                    out.append(group.get(i));\n                }\n                out.append('\\n');\n            }\n            if(tc!=T-1) out.append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}\n",
+      "Python3": "import sys\n\ndef main():\n    data = sys.stdin.read().splitlines()\n    if not data:\n        return\n    t = int(data[0].strip())\n    idx = 1\n    out_lines = []\n    for tc in range(t):\n        n = int(data[idx].strip()); idx += 1\n        mp = {}\n        order = []\n        for _ in range(n):\n            s = data[idx].strip(); idx += 1\n            key = ''.join(sorted(s))\n            if key not in mp:\n                mp[key] = []\n                order.append(key)\n            mp[key].append(s)\n        for k in order:\n            out_lines.append(' '.join(mp[k]))\n        if tc != t-1:\n            out_lines.append('')\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    main()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet ptr = 0;\nconst T = parseInt(input[ptr++], 10);\nlet output = [];\nfor (let tc = 0; tc < T; ++tc) {\n  const N = parseInt(input[ptr++], 10);\n  const map = new Map(); // key -> array of words\n  const order = [];\n  for (let i = 0; i < N; ++i) {\n    const s = input[ptr++];\n    const key = s.split('').sort().join('');\n    if (!map.has(key)) {\n      map.set(key, []);\n      order.push(key);\n    }\n    map.get(key).push(s);\n  }\n  for (const k of order) {\n    output.push(map.get(k).join(' '));\n  }\n  if (tc !== T - 1) output.push('');\n}\nconsole.log(output.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

@@ -1,0 +1,105 @@
+{
+  "questionId": "Q4286",
+  "title": "Auto-Complete",
+  "slug": "auto-complete",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-12",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Trie",
+      "Prefix Search",
+      "DFS",
+      "Lexicographical Order"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Trees"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Complete the function autocomplete to print all the words in the trie that start with a string SSS. The string SSS is passed as an argument in the function",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 1000",
+      "1 <= length of each word <= 100",
+      "1 <= length of S <= 100",
+      "All words contain only lowercase letters 'a'-'z'"
+    ],
+    "inputFormat": "First line contains an integer T, the number of test cases. For each test case: first line contains an integer N, the number of words. Second line contains the prefix string S. The next N lines each contain one word consisting of lowercase English letters.",
+    "outputFormat": "For each test case, print all words that start with the given prefix S, one word per line, in lexicographical order. If no word matches, print nothing for that test case. Separate outputs of consecutive test cases by a blank line.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n6\nsa\nsa\nsafari\nsafe\nsafer\nsave\nsaved",
+        "output": "sa\\nsafari\\nsafe\\nsafer\\nsave\\nsaved",
+        "explanation": ""
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n4\nab\nabc\nabcd\nabce\nabcf",
+        "output": "abc\\nabcd\\nabce\\nabcf",
+        "explanation": ""
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 1
+      }
+    ],
+    "totalTestCases": 1,
+    "totalWeight": 1
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      1
+    ],
+    "maxScore": 1
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Insert all given words into a Trie. To answer a query, walk the Trie following the characters of the prefix S. If the walk fails, no word matches. Otherwise, from the node representing the last character of S perform a depth‑first search visiting children from 'a' to 'z'. Whenever a node marked as end of a word is visited, output the current accumulated string. This yields all matching words in lexicographical order. The total work per test case is proportional to the sum of lengths of all words plus the number of characters visited during the DFS.",
+    "timeComplexity": "O(total number of characters in all words + total characters printed) per test case.",
+    "spaceComplexity": "O(total number of characters in all words) for the Trie.",
+    "code": {
+      "C": "",
+      "C++": "",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    static class Node {\n        Node[] child = new Node[26];\n        boolean end;\n    }\n\n    static void insert(Node root, String s) {\n        Node cur = root;\n        for (char c : s.toCharArray()) {\n            int idx = c - 'a';\n            if (cur.child[idx] == null) cur.child[idx] = new Node();\n            cur = cur.child[idx];\n        }\n        cur.end = true;\n    }\n\n    static void collect(Node node, StringBuilder sb, List<String> out) {\n        if (node.end) out.add(sb.toString());\n        for (int i = 0; i < 26; i++) {\n            if (node.child[i] != null) {\n                sb.append((char) ('a' + i));\n                collect(node.child[i], sb, out);\n                sb.setLength(sb.length() - 1);\n            }\n        }\n    }\n\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        String firstLine = br.readLine();\n        if (firstLine == null) return; // no input\n        firstLine = firstLine.trim();\n        if (firstLine.isEmpty()) return;\n        int T = Integer.parseInt(firstLine);\n        StringBuilder finalOutput = new StringBuilder();\n        for (int t = 0; t < T; t++) {\n            // read N\n            String line;\n            do { line = br.readLine(); } while (line != null && line.trim().isEmpty());\n            if (line == null) break;\n            int N = Integer.parseInt(line.trim());\n            // read prefix S\n            String S = br.readLine();\n            if (S == null) S = \"\"; else S = S.trim();\n            Node root = new Node();\n            for (int i = 0; i < N; i++) {\n                String w = br.readLine();\n                if (w == null) w = \"\";\n                w = w.trim();\n                insert(root, w);\n            }\n            // navigate to node of prefix\n            Node cur = root;\n            boolean ok = true;\n            for (char c : S.toCharArray()) {\n                int idx = c - 'a';\n                if (cur.child[idx] == null) { ok = false; break; }\n                cur = cur.child[idx];\n            }\n            List<String> matches = new ArrayList<>();\n            if (ok) {\n                StringBuilder sb = new StringBuilder(S);\n                collect(cur, sb, matches);\n            }\n            // build output with literal \"\\\\n\"\n            StringBuilder caseOut = new StringBuilder();\n            for (int i = 0; i < matches.size(); i++) {\n                caseOut.append(matches.get(i));\n                if (i + 1 < matches.size()) caseOut.append(\"\\\\n\");\n            }\n            finalOutput.append(caseOut);\n            if (t != T - 1) finalOutput.append('\\n'); // separate test cases with real newline\n        }\n        System.out.print(finalOutput.toString());\n    }\n}",
+      "Python3": "",
+      "JavaScript": ""
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

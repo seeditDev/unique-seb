@@ -1,0 +1,129 @@
+{
+  "questionId": "Q1226",
+  "title": "Binary Substituition",
+  "slug": "binary-substituition",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "DP",
+      "Strings",
+      "String Partition",
+      "Fibonacci"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ]
+  },
+  "content": {
+    "problemStatement": "Chef has a binary string SSS. He can replace any occurrence of -\n\n\n010101 with aaa\n101010 with bbb\n010010010 with ababab\n101101101 with bababa\nWhile doing these operations, Chef noticed that he can end up with different strings depending upon the order of application of the operations. Given the final string containing only aaa and bbb, Chef wants to know the number of possible strings he might have began with.\n\nAs the number of initial strings can be large, print the result modulo 998244353998244353998244353.\n\n\nInput Format\n\nThe first line of input will contain a single integer TTT, denoting the number of test cases.\nEach test case consists of a single line of input denoting SSS, the final string obtained after applying the operations.\n\n\nOutput Format\nFor each test case, output the number of original strings that can result in the final string mod 998244353998244353998244353.",
+    "constraints": [
+      "1 <= T <= 50000",
+      "1 <= |S| <= 100000",
+      "Sum of |S| over all test cases does not exceed 500000",
+      "S contains only characters 'a' and 'b'"
+    ],
+    "inputFormat": "First line contains an integer T, the number of test cases. Each of the next T lines contains a non\u2011empty string S consisting only of characters 'a' and 'b', representing the final string after all substitutions.",
+    "outputFormat": "For each test case, output a single line containing the number of possible original binary strings that can produce S, modulo 998244353.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\\nab\\naa\\nabb",
+        "output": "2\\n1\\n2",
+        "explanation": "For \\\"ab\\\": partitions (a)(b) and (ab) \u2192 2 ways. For \\\"aa\\\": only (a)(a) \u2192 1 way. For \\\"abb\\\": partitions (a)(b)(b) and (ab)(b) \u2192 2 ways."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\\na",
+        "output": "1",
+        "explanation": "Single character can only be taken as a separate block, so exactly one original string."
+      },
+      {
+        "id": "sample_3",
+        "input": "2\\nba\\nbaba",
+        "output": "2\\n6",
+        "explanation": "For \\\"ba\\\": (b)(a) and (ba) \u2192 2 ways. For \\\"baba\\\": DP yields 6 possible partitions."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\\nb",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary (alternating length 15)",
+        "input": "1\\nabababababababa",
+        "expectedOutput": "987",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform characters",
+        "input": "1\\naaaaaa",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "mixed equal and different",
+        "input": "1\\naabbaa",
+        "expectedOutput": "4",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general multiple cases",
+        "input": "3\\nababa\\nbbab\\naaabbb",
+        "expectedOutput": "8\\n3\\n2",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Each character in the final string originates from a block of length 3 in the original binary string. Two consecutive characters can be merged into a single block of length 9 only when they are different (patterns 010101\u21a6aaa and 101010\u21a6bbb can be merged into 010010010\u21a6ababab and 101101101\u21a6bababa). Hence, while reconstructing we may either keep a character as a separate block or, if it differs from the previous character, merge the pair into one block. This leads to a simple DP: dp[i]=dp[i-1] if S[i-2]==S[i-1], else dp[i]=dp[i-1]+dp[i-2]. Initialise dp[0]=dp[1]=1. The answer is dp[|S|] modulo 998244353. The algorithm runs in O(|S|) time per test case with O(1) extra memory.",
+    "timeComplexity": "O(N) per test case, where N = |S|. Total O(sum of |S|) over all test cases.",
+    "spaceComplexity": "O(1) auxiliary space.",
+    "code": {
+      "C": "#include <stdio.h>\\n#include <string.h>\\n#define MOD 998244353\\nint main(){\\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\\n    while(T--){\\n        char S[100005];\\n        scanf(\"%s\", S);\\n        int n = strlen(S);\\n        long long dp0 = 1, dp1 = 1, dp2;\\n        for(int i=2;i<=n;i++){\\n            if(S[i-2]!=S[i-1]) dp2 = (dp1 + dp0) % MOD;\\n            else dp2 = dp1;\\n            dp0 = dp1;\\n            dp1 = dp2;\\n        }\\n        printf(\"%lld\\\\n\", dp1 % MOD);\\n    }\\n    return 0;\\n}",
+      "C++": "#include <bits/stdc++.h>\\nusing namespace std;\\nconst long long MOD = 998244353LL;\\nint main(){\\n    ios::sync_with_stdio(false);\\n    cin.tie(nullptr);\\n    int T; if(!(cin>>T)) return 0;\\n    while(T--){\\n        string S; cin>>S;\\n        long long dp0 = 1, dp1 = 1, dp2;\\n        int n = S.size();\\n        for(int i=2;i<=n;i++){\\n            if(S[i-2]!=S[i-1]) dp2 = (dp1 + dp0) % MOD;\\n            else dp2 = dp1;\\n            dp0 = dp1;\\n            dp1 = dp2;\\n        }\\n        cout << dp1 % MOD << '\\\\n';\\n    }\\n    return 0;\\n}",
+      "Java": "import java.io.*;\\npublic class Main {\\n    static final long MOD = 998244353L;\\n    public static void main(String[] args) throws Exception {\\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\\n        int T = Integer.parseInt(br.readLine().trim());\\n        StringBuilder sb = new StringBuilder();\\n        for(int tc=0; tc<T; tc++){\\n            String S = br.readLine().trim();\\n            long dp0 = 1, dp1 = 1, dp2;\\n            int n = S.length();\\n            for(int i=2;i<=n;i++){\\n                if(S.charAt(i-2)!=S.charAt(i-1)) dp2 = (dp1 + dp0) % MOD;\\n                else dp2 = dp1;\\n                dp0 = dp1;\\n                dp1 = dp2;\\n            }\\n            sb.append(dp1 % MOD).append('\\\\n');\\n        }\\n        System.out.print(sb.toString());\\n    }\\n}",
+      "Python3": "import sys\\nMOD = 998244353\\n\\ndef solve():\\n    data = sys.stdin.read().strip().split()\\n    if not data:\\n        return\\n    t = int(data[0])\\n    out = []\\n    idx = 1\\n    for _ in range(t):\\n        s = data[idx]; idx += 1\\n        dp0, dp1 = 1, 1\\n        n = len(s)\\n        for i in range(2, n+1):\\n            if s[i-2] != s[i-1]:\\n                dp2 = (dp1 + dp0) % MOD\\n            else:\\n                dp2 = dp1\\n            dp0, dp1 = dp1, dp2\\n        out.append(str(dp1 % MOD))\\n    sys.stdout.write('\\\\n'.join(out))\\n\\nif __name__ == \"__main__\":\\n    solve()",
+      "JavaScript": "const fs = require('fs');\\nconst MOD = 998244353n;\\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\\\s+/);\\nlet ptr = 0;\\nconst T = Number(input[ptr++]);\\nlet results = [];\\nfor(let tc = 0; tc < T; tc++){\\n  const S = input[ptr++];\\n  let dp0 = 1n, dp1 = 1n, dp2;\\n  const n = S.length;\\n  for(let i = 2; i <= n; i++){\\n    if(S[i-2] !== S[i-1]) dp2 = (dp1 + dp0) % MOD;\\n    else dp2 = dp1;\\n    dp0 = dp1;\\n    dp1 = dp2;\\n  }\\n  results.push((dp1 % MOD).toString());\\n}\\nconsole.log(results.join('\\\\n'));"
+    }
+  }
+}

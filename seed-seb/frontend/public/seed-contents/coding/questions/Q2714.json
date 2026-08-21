@@ -1,0 +1,130 @@
+{
+  "questionId": "Q2714",
+  "title": "Chef and The String of Digits",
+  "slug": "chef-and-the-string-of-digits",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Sliding Window",
+      "Substring Search",
+      "Strings",
+      "Brute Force with Pruning",
+      "Number Generation"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Strings"
+    ]
+  },
+  "content": {
+    "problemStatement": "The Chef has written all the numbers from **1** to **109** consecutively on a board. Let **P** be the long string \nobtained by concatenating the numbers written on the board consecutively. Given below are the first few digits of the long string **P**.\n\n\n\n`123456789101112131415161718192**02122**232425262728293031323334353637383940....`\n\n\n\nGiven another string **Q**, he is wondering whether **Q** is a substring of the string **P**. \nFor example, **Q**=\"02122\" is a substring of **P**, and has been marked in bold above.\n\n\n\n\n&nbsp;",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= |Q| <= 100000",
+      "Q contains only characters '0'\u2011'9'",
+      "The numbers in P go up to 10^9 (the statement guarantees that checking up to this bound is sufficient)."
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains a non\u2011empty string Q consisting only of digits (0\u20119).",
+    "outputFormat": "For each test case output a single line containing \"YES\" if Q appears as a contiguous substring of the infinite string P = \"123456789101112...\" (the concatenation of all positive integers), otherwise output \"NO\".",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\\n23456789101\\n3216546546546546545\\n02122",
+        "output": "YES\nNO\nYES",
+        "explanation": "The first query appears as \"...23456789101...\" in P, so YES. The second query never occurs, so NO. The third query \"02122\" spans the boundary between 20 and 21, thus YES."
+      },
+      {
+        "id": "sample_2",
+        "input": "2\\n1\\n9999999999",
+        "output": "YES\nNO",
+        "explanation": "'1' is the very first digit of P, therefore YES. '9999999999' would require ten consecutive 9's which never appear in the concatenation up to 10^9, so NO."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n9101112",
+        "output": "YES",
+        "explanation": "The substring starts at number 9 and continues through 10, 11, 12, thus it is present."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n0",
+        "expectedOutput": "NO",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n9\".repeat(100000)",
+        "expectedOutput": "YES",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n10",
+        "expectedOutput": "YES",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n12345678910111213",
+        "expectedOutput": "YES",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n9876543210",
+        "expectedOutput": "NO",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "A substring of P of length L can span at most L+1 consecutive integers because each integer contributes at most 9 digits (the maximum length of a number \u226410^9). Therefore the answer can be found by trying a small set of possible starting numbers. Let pref be the integer formed by the first up to 9 digits of Q (or the whole Q if it is shorter). The true starting number must be close to pref \u2013 at most 9 positions before it \u2013 because the first digit of Q may begin anywhere inside that first number. For every candidate start in [max(1, pref\u20119), pref+9] we build a temporary string S by concatenating start, start+1, \u2026 until |S| \u2265 |Q|+10 (the extra 10 characters guarantee that any overlap crossing the boundary is covered). If Q is a substring of S we answer YES. If none of the candidates succeed we answer NO. The total work per test case is O( (range) * (|Q|) ) where range \u2264 19, so it easily fits the limits.\n\nKey steps:\n1. Read Q and store its length L.\n2. Extract the first min(9, L) characters, convert to integer pref.\n3. For start = max(1, pref\u20119) \u2026 pref+9:\n   a. Build S by appending successive numbers until S.length >= L+10.\n   b. Use the language\u2019s substring search (e.g., find, indexOf, in) to test if Q occurs in S.\n   c. If found, output YES and stop the loop.\n4. If the loop finishes without a match, output NO.\n\nThis method avoids constructing the massive string P (\u224810^9 characters) and works for the maximum query length.",
+    "timeComplexity": "O(19 * (|Q| + 9)) \u2248 O(|Q|) per test case, because the candidate range is constant (\u226419) and each candidate builds at most |Q|+10 characters.",
+    "spaceComplexity": "O(|Q|) for the temporary string S (at most |Q|+10 characters).",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n#include <stdlib.h>\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        char Q[100005];\n        scanf(\"%s\", Q);\n        int L = strlen(Q);\n        int prefLen = L < 9 ? L : 9;\n        char prefStr[10];\n        memcpy(prefStr, Q, prefLen);\n        prefStr[prefLen] = '\\0';\n        long long pref = atoll(prefStr);\n        int found = 0;\n        long long startLow = pref > 9 ? pref - 9 : 1;\n        for (long long start = startLow; start <= pref + 9 && !found; ++start) {\n            // build temporary string S\n            int needed = L + 10;\n            char *S = (char *)malloc(needed + 1);\n            S[0] = '\\0';\n            int curLen = 0;\n            long long cur = start;\n            while (curLen < needed) {\n                char buf[12];\n                int len = sprintf(buf, \"%lld\", cur);\n                if (curLen + len > needed) {\n                    // truncate if exceeds needed (still safe for strstr)\n                    buf[needed - curLen] = '\\0';\n                    len = needed - curLen;\n                }\n                strcat(S, buf);\n                curLen += len;\n                ++cur;\n            }\n            if (strstr(S, Q) != NULL) found = 1;\n            free(S);\n        }\n        printf(found ? \"YES\\n\" : \"NO\\n\");\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--) {\n        string Q; cin>>Q;\n        int L = Q.size();\n        int prefLen = min(9, L);\n        long long pref = stoll(Q.substr(0, prefLen));\n        bool ok = false;\n        long long startLow = pref > 9 ? pref - 9 : 1;\n        for(long long start = startLow; start <= pref + 9 && !ok; ++start) {\n            string S;\n            S.reserve(L + 10);\n            long long cur = start;\n            while((int)S.size() < L + 10) {\n                S += to_string(cur);\n                ++cur;\n            }\n            if(S.find(Q) != string::npos) ok = true;\n        }\n        cout << (ok ? \"YES\" : \"NO\") << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder out = new StringBuilder();\n        for (int tc = 0; tc < T; ++tc) {\n            String Q = br.readLine().trim();\n            int L = Q.length();\n            int prefLen = Math.min(9, L);\n            long pref = Long.parseLong(Q.substring(0, prefLen));\n            boolean ok = false;\n            long startLow = pref > 9 ? pref - 9 : 1;\n            for (long start = startLow; start <= pref + 9 && !ok; ++start) {\n                StringBuilder sb = new StringBuilder(L + 10);\n                long cur = start;\n                while (sb.length() < L + 10) {\n                    sb.append(cur);\n                    ++cur;\n                }\n                if (sb.indexOf(Q) != -1) ok = true;\n            }\n            out.append(ok ? \"YES\" : \"NO\").append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef solve():\n    data = sys.stdin.read().splitlines()\n    if not data: return\n    t = int(data[0])\n    out = []\n    idx = 1\n    for _ in range(t):\n        Q = data[idx].strip()\n        idx += 1\n        L = len(Q)\n        pref_len = min(9, L)\n        pref = int(Q[:pref_len])\n        ok = False\n        start_low = pref - 9 if pref > 9 else 1\n        for start in range(start_low, pref + 10):\n            s_parts = []\n            cur = start\n            cur_len = 0\n            while cur_len < L + 10:\n                part = str(cur)\n                s_parts.append(part)\n                cur_len += len(part)\n                cur += 1\n            S = ''.join(s_parts)\n            if Q in S:\n                ok = True\n                break\n        out.append('YES' if ok else 'NO')\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet ptr = 0;\nconst T = parseInt(lines[ptr++], 10);\nlet results = [];\nfor (let tc = 0; tc < T; ++tc) {\n  const Q = lines[ptr++].trim();\n  const L = Q.length;\n  const prefLen = Math.min(9, L);\n  const pref = Number(Q.slice(0, prefLen));\n  let ok = false;\n  const startLow = pref > 9 ? pref - 9 : 1;\n  for (let start = startLow; start <= pref + 9 && !ok; ++start) {\n    let S = '';\n    let cur = start;\n    while (S.length < L + 10) {\n      S += cur.toString();\n      ++cur;\n    }\n    if (S.includes(Q)) ok = true;\n  }\n  results.push(ok ? 'YES' : 'NO');\n}\nconsole.log(results.join('\\n'));\n"
+    }
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "questionId": "Q3132",
+  "title": "Churu and Balls",
+  "slug": "churu-and-balls",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Greedy",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "GCD",
+      "Minimum extra balls",
+      "Non-decreasing order",
+      "Greedy"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Mathematics"
+    ]
+  },
+  "content": {
+    "problemStatement": "Little Churu is a naughty child, who likes to play with balls. He has **N** buckets. Each bucket contains one or more balls. He has numbered his buckets **1** to **N** (both inclusive). He has an infinite supply of extra balls, apart from the ones already in the buckets. He wants to add zero or more number of balls to each of the buckets in such a way, that number of balls in the buckets are in a non-decreasing order, and their GCD is strictly greater than 1.\n\n\n \nHe wants to do it using the minimum number of extra balls. As he is too young to solve the problem, please help him with the solution.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 10000",
+      "1 <= number of balls in a bucket <= 10000"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, the first line contains an integer N, the number of buckets. The second line contains N space-separated integers, where the ith integer denotes the number of balls in the ith bucket.",
+    "outputFormat": "The minimum number of extra balls needed to make the number of balls in the buckets in non-decreasing order and their GCD strictly greater than 1.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n3\n11 13 15",
+        "output": "3",
+        "explanation": "Add one ball to each of the buckets."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n2\n10 15",
+        "output": "5",
+        "explanation": "Add 5 balls to the first bucket to make it 15."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n1\n7",
+        "output": "1",
+        "explanation": "Add 1 ball to the bucket to make it 8, which has a GCD greater than 1."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n10000\n10000",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n2\n2 2",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n3\n10 15 20",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n4\n7 11 13 17",
+        "expectedOutput": "7",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we first need to find the GCD of all the numbers in the buckets. If the GCD is already greater than 1, we can simply make the numbers in non-decreasing order by adding the minimum number of extra balls. If the GCD is 1, we need to find the smallest prime number that can divide all the numbers in the buckets and add the minimum number of extra balls to make the numbers in non-decreasing order and their GCD greater than 1.",
+    "timeComplexity": "O(T * N * log(max_number)) \u2014 where max_number is the maximum number of balls in a bucket. The reason is that we are using the Euclidean algorithm to find the GCD of two numbers, which takes O(log(min(a, b))) time. We are also using a loop to find the smallest prime number that can divide all the numbers in the buckets, which takes O(N * log(max_number)) time.",
+    "spaceComplexity": "O(N) \u2014 where N is the number of buckets. The reason is that we need to store the numbers in the buckets in an array.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <math.h>\n\nint gcd(int a, int b) {\n    if (b == 0) return a;\n    return gcd(b, a % b);\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int N;\n        scanf(\"%d\", &N);\n        int* arr = (int*)malloc(N * sizeof(int));\n        for (int i = 0; i < N; i++) {\n            scanf(\"%d\", &arr[i]);\n        }\n        int g = arr[0];\n        for (int i = 1; i < N; i++) {\n            g = gcd(g, arr[i]);\n        }\n        if (g > 1) {\n            int ans = 0;\n            for (int i = 1; i < N; i++) {\n                if (arr[i] < arr[i - 1]) {\n                    ans += arr[i - 1] - arr[i];\n                    arr[i] = arr[i - 1];\n                }\n            }\n            printf(\"%d\\n\", ans);\n        } else {\n            int ans = INT_MAX;\n            for (int i = 2; i <= 10000; i++) {\n                int temp = 0;\n                for (int j = 0; j < N; j++) {\n                    temp += (i - arr[j] % i) % i;\n                }\n                ans = (ans < temp) ? ans : temp;\n            }\n            printf(\"%d\\n\", ans);\n        }\n        free(arr);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\n#include <algorithm>\nusing namespace std;\n\nint gcd(int a, int b) {\n    if (b == 0) return a;\n    return gcd(b, a % b);\n}\n\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        int N;\n        cin >> N;\n        vector<int> arr(N);\n        for (int i = 0; i < N; i++) {\n            cin >> arr[i];\n        }\n        int g = arr[0];\n        for (int i = 1; i < N; i++) {\n            g = gcd(g, arr[i]);\n        }\n        if (g > 1) {\n            int ans = 0;\n            for (int i = 1; i < N; i++) {\n                if (arr[i] < arr[i - 1]) {\n                    ans += arr[i - 1] - arr[i];\n                    arr[i] = arr[i - 1];\n                }\n            }\n            cout << ans << endl;\n        } else {\n            int ans = INT_MAX;\n            for (int i = 2; i <= 10000; i++) {\n                int temp = 0;\n                for (int j = 0; j < N; j++) {\n                    temp += (i - arr[j] % i) % i;\n                }\n                ans = (ans < temp) ? ans : temp;\n            }\n            cout << ans << endl;\n        }\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n        while (T-- > 0) {\n            int N = sc.nextInt();\n            int[] arr = new int[N];\n            for (int i = 0; i < N; i++) {\n                arr[i] = sc.nextInt();\n            }\n            int g = arr[0];\n            for (int i = 1; i < N; i++) {\n                g = gcd(g, arr[i]);\n            }\n            if (g > 1) {\n                int ans = 0;\n                for (int i = 1; i < N; i++) {\n                    if (arr[i] < arr[i - 1]) {\n                        ans += arr[i - 1] - arr[i];\n                        arr[i] = arr[i - 1];\n                    }\n                }\n                System.out.println(ans);\n            } else {\n                int ans = Integer.MAX_VALUE;\n                for (int i = 2; i <= 10000; i++) {\n                    int temp = 0;\n                    for (int j = 0; j < N; j++) {\n                        temp += (i - arr[j] % i) % i;\n                    }\n                    ans = (ans < temp) ? ans : temp;\n                }\n                System.out.println(ans);\n            }\n        }\n    }\n    public static int gcd(int a, int b) {\n        if (b == 0) return a;\n        return gcd(b, a % b);\n    }\n}",
+      "Python3": "import sys\ninput = sys.stdin.readline\n\ndef gcd(a, b):\n    if b == 0: return a\n    return gcd(b, a % b)\n\ndef main():\n    T = int(input())\n    for _ in range(T):\n        N = int(input())\n        arr = list(map(int, input().split()))\n        g = arr[0]\n        for i in range(1, N):\n            g = gcd(g, arr[i])\n        if g > 1:\n            ans = 0\n            for i in range(1, N):\n                if arr[i] < arr[i - 1]:\n                    ans += arr[i - 1] - arr[i]\n                    arr[i] = arr[i - 1]\n            print(ans)\n        else:\n            ans = float('inf')\n            for i in range(2, 10001):\n                temp = 0\n                for j in range(N):\n                    temp += (i - arr[j] % i) % i\n                ans = min(ans, temp)\n            print(ans)\nmain()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nfunction gcd(a, b) {\n    if (b == 0) return a;\n    return gcd(b, a % b);\n}\nfunction main() {\n    let T = parseInt(input[idx++]);\n    while (T-- > 0) {\n        let N = parseInt(input[idx++]);\n        let arr = input[idx++].split(' ').map(x => parseInt(x));\n        let g = arr[0];\n        for (let i = 1; i < N; i++) {\n            g = gcd(g, arr[i]);\n        }\n        if (g > 1) {\n            let ans = 0;\n            for (let i = 1; i < N; i++) {\n                if (arr[i] < arr[i - 1]) {\n                    ans += arr[i - 1] - arr[i];\n                    arr[i] = arr[i - 1];\n                }\n            }\n            console.log(ans);\n        } else {\n            let ans = Infinity;\n            for (let i = 2; i <= 10000; i++) {\n                let temp = 0;\n                for (let j = 0; j < N; j++) {\n                    temp += (i - arr[j] % i) % i;\n                }\n                ans = Math.min(ans, temp);\n            }\n            console.log(ans);\n        }\n    }\n}\nmain();"
+    }
+  }
+}

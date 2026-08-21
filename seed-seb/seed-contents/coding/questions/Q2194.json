@@ -1,0 +1,127 @@
+{
+  "questionId": "Q2194",
+  "title": "The LCS Problem Revisited",
+  "slug": "the-lcs-problem-revisited",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "DP",
+      "Counting distinct subsequences",
+      "Strings",
+      "Modulo arithmetic",
+      "LCS"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ]
+  },
+  "content": {
+    "problemStatement": "The Longest Common Subsequence (LCS) problem is a well known problem in Computer Science.\nEvery computer science students in Byteland knows this problem. Johnny does, too.\n\nRecall that a subsequence of a string S is obtained by deleting some characters from S. \nGiven two strings S and T, the LCS problem is the find the longest sequence that is a subsequence of both S and T.\n\nJohnny has the habit of deriving harder problems from a familiar problem. This time, based on the LCS problem, he has thought up the following problem:\n\n\nGiven two strings S and T, how many distinct LCS of S and T are there?\n\nWrite a program to help Johnny solve this problem. Since the result may be very large, you only need to print the remainder of the result when dividing by 23102009.",
+    "constraints": [
+      "1 \u2264 T \u2264 10",
+      "1 \u2264 |S|, |T| \u2264 1000",
+      "All characters are in 'a'\u2011'z'"
+    ],
+    "inputFormat": "The first line contains an integer T (1 \u2264 T \u2264 10), the number of test cases. Each test case consists of two lines: the first line contains the string S, the second line contains the string T. Both strings contain only lowercase English letters and have length between 1 and 1000 inclusive.",
+    "outputFormat": "For each test case output a single line with two integers separated by a space: the length of the longest common subsequence of S and T, and the number of distinct LCS strings modulo 23102009.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\nacbd\nacbd\nvnvn\nvn",
+        "output": "4 1\n2 1",
+        "explanation": "The only LCS in the first case is \"acbd\" and in the second case is \"vn\"."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\nabc\nabc",
+        "output": "3 1",
+        "explanation": "The only LCS is \"abc\"."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\nabcd\nefgh",
+        "output": "0 1",
+        "explanation": "There is no common subsequence."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "We compute two DP tables on the suffixes of the two strings. Let dpLen[i][j] be the length of the LCS of S[i\u2026] and T[j\u2026] (0\u2011based indices, i = |S| or j = |T| means empty suffix). Let cnt[i][j] be the number of *different* LCS strings of that maximal length for the same suffixes (empty string counts as one LCS of length 0). The tables are filled bottom\u2011up:\n\n- Base: for every i, dpLen[i][m] = 0 and cnt[i][m] = 1; similarly dpLen[n][j] = 0 and cnt[n][j] = 1.\n- Transition:\n  * If S[i] == T[j] then the optimal LCS must use this character: dpLen[i][j] = 1 + dpLen[i+1][j+1]; cnt[i][j] = cnt[i+1][j+1].\n  * Otherwise the optimal length is the larger of dpLen[i+1][j] and dpLen[i][j+1].\n    - If dpLen[i+1][j] > dpLen[i][j+1] then dpLen[i][j] = dpLen[i+1][j]; cnt[i][j] = cnt[i+1][j].\n    - If dpLen[i+1][j] < dpLen[i][j+1] then dpLen[i][j] = dpLen[i][j+1]; cnt[i][j] = cnt[i][j+1].\n    - If they are equal, dpLen[i][j] = dpLen[i+1][j]; cnt[i][j] = (cnt[i+1][j] + cnt[i][j+1]) mod MOD. However, subsequences counted in both sub\u2011problems are duplicated when the length of the LCS of the diagonal cell (i+1,j+1) is also equal to dpLen[i][j]; in that case we subtract cnt[i+1][j+1] to keep only distinct strings: cnt[i][j] = (cnt[i][j] - cnt[i+1][j+1] + MOD) % MOD.\n\nThe answer for a test case is dpLen[0][0] and cnt[0][0] (modulo 23102009). The algorithm runs in O(|S|\u00b7|T|) time and uses O(|S|\u00b7|T|) memory, which fits the limits (1000\u00b71000 = 10\u2076).",
+    "timeComplexity": "O(|S|\u00b7|T|) per test case, at most 10\u2076 operations.",
+    "spaceComplexity": "O(|S|\u00b7|T|) integers (two tables of size (n+1)*(m+1)).",
+    "code": {
+      "C": "// COMPLETE, COMPILABLE C code\n#include <stdio.h>\n#include <string.h>\n#define MOD 23102009\n\nint dpLen[1002][1002];\nint cnt[1002][1002];\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        char s[1002], t[1002];\n        scanf(\"%s %s\", s, t);\n        int n = strlen(s);\n        int m = strlen(t);\n        // base cases\n        for (int i = 0; i <= n; ++i) {\n            dpLen[i][m] = 0;\n            cnt[i][m] = 1;\n        }\n        for (int j = 0; j <= m; ++j) {\n            dpLen[n][j] = 0;\n            cnt[n][j] = 1;\n        }\n        // fill DP bottom\u2011up\n        for (int i = n - 1; i >= 0; --i) {\n            for (int j = m - 1; j >= 0; --j) {\n                if (s[i] == t[j]) {\n                    dpLen[i][j] = 1 + dpLen[i + 1][j + 1];\n                    cnt[i][j] = cnt[i + 1][j + 1];\n                } else {\n                    if (dpLen[i + 1][j] > dpLen[i][j + 1]) {\n                        dpLen[i][j] = dpLen[i + 1][j];\n                        cnt[i][j] = cnt[i + 1][j];\n                    } else if (dpLen[i + 1][j] < dpLen[i][j + 1]) {\n                        dpLen[i][j] = dpLen[i][j + 1];\n                        cnt[i][j] = cnt[i][j + 1];\n                    } else { // equal length\n                        dpLen[i][j] = dpLen[i + 1][j];\n                        int val = cnt[i + 1][j] + cnt[i][j + 1];\n                        if (val >= MOD) val -= MOD;\n                        if (dpLen[i + 1][j + 1] == dpLen[i][j]) {\n                            val -= cnt[i + 1][j + 1];\n                            if (val < 0) val += MOD;\n                        }\n                        cnt[i][j] = val;\n                    }\n                }\n            }\n        }\n        printf(\"%d %d\\n\", dpLen[0][0], cnt[0][0] % MOD);\n    }\n    return 0;\n}",
+      "C++": "// COMPLETE, COMPILABLE C++ code\n#include <bits/stdc++.h>\nusing namespace std;\nconst int MOD = 23102009;\nint dpLen[1002][1002];\nint cnt[1002][1002];\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--) {\n        string s,t; cin>>s>>t;\n        int n=s.size(), m=t.size();\n        for(int i=0;i<=n;++i){dpLen[i][m]=0; cnt[i][m]=1;}\n        for(int j=0;j<=m;++j){dpLen[n][j]=0; cnt[n][j]=1;}\n        for(int i=n-1;i>=0;--i){\n            for(int j=m-1;j>=0;--j){\n                if(s[i]==t[j]){\n                    dpLen[i][j]=1+dpLen[i+1][j+1];\n                    cnt[i][j]=cnt[i+1][j+1];\n                }else{\n                    if(dpLen[i+1][j]>dpLen[i][j+1]){\n                        dpLen[i][j]=dpLen[i+1][j];\n                        cnt[i][j]=cnt[i+1][j];\n                    }else if(dpLen[i+1][j]<dpLen[i][j+1]){\n                        dpLen[i][j]=dpLen[i][j+1];\n                        cnt[i][j]=cnt[i][j+1];\n                    }else{\n                        dpLen[i][j]=dpLen[i+1][j];\n                        long long val=cnt[i+1][j]+cnt[i][j+1];\n                        if(val>=MOD) val-=MOD;\n                        if(dpLen[i+1][j+1]==dpLen[i][j]){\n                            val-=cnt[i+1][j+1];\n                            if(val<0) val+=MOD;\n                        }\n                        cnt[i][j]= (int)val;\n                    }\n                }\n            }\n        }\n        cout<<dpLen[0][0]<<' '<<cnt[0][0]%MOD<<\"\\n\";\n    }\n    return 0;\n}",
+      "Java": ""
+    }
+  }
+}

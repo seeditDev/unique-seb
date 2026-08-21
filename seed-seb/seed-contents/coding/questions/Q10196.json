@@ -1,0 +1,130 @@
+{
+  "questionId": "Q10196",
+  "title": "Make Equal",
+  "slug": "make-equal",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Arrays | Greedy",
+    "difficulty": "Easy",
+    "isPremium": true,
+    "tags": [
+      "Array manipulation",
+      "Greedy",
+      "Simulation",
+      "Local maximum reduction"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Constructive Algorithms"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given an array AAA of length NNN. You can perform the following operation on it:\n\n\nChoose any index iii such that 1&lt;i&lt;N1 \\lt i \\lt N1&lt;i&lt;N and AiA_iAi​ is not smaller than either of its neighbors, i.e, both Ai≥Ai−1A_i \\geq A_{i-1}Ai​≥Ai−1​ and Ai≥Ai+1A_i \\geq A_{i+1}Ai​≥Ai+1​ are true.\n\nThen, decrease AiA_iAi​ by 111.\nIs it possible to make all the elements of AAA equal by performing this operation several (possibly, zero) times?\n\n\nInput Format\n\nThe first line of input will contain a single integer TTT, denoting the number of test cases.\nEach test case consists of two lines of input.\n\nThe first line of each test case contains NNN — the number of elements in AAA.\nThe second line of each test case contains NNN space-separated integers A1,A2,…,ANA_1, A_2, \\ldots, A_NA1​,A2​,…,AN​, denoting the array AAA.\n\n\n\n\nOutput Format\nFor each test case, output on a new line the answer: `\"Yes\"` if it is possible to make all the elements of AAA equal, and `\"No\"` otherwise (without quotes).\n\n\nEach letter of the output may be printed in either uppercase or lowercase, i.e, the strings `NO`, `no`, `No`, and `nO` will all be treated as equivalent.",
+    "constraints": [
+      "1 <= T <= 10^4",
+      "1 <= N <= 2*10^5",
+      "1 <= Ai <= 10^9",
+      "Sum of N over all test cases does not exceed 2*10^5"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case consists of two lines: the first line contains an integer N, the length of the array. The second line contains N space‑separated integers A1 … AN.",
+    "outputFormat": "For each test case output a single line containing \"YES\" if it is possible to make all elements equal using the allowed operations, otherwise output \"NO\".",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n1\n1\n4\n1 3 2 1\n7\n2 4 5 1 4 5 3",
+        "output": "YES\nYES\nNO",
+        "explanation": "Test case 1: single element, already equal. Test case 2: edges are 1 and all elements are >=1, so YES. Test case 3: first element 2 != last element 3, so NO."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n5",
+        "expectedOutput": "YES",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n15\n100 1000 999 500 400 300 200 150 120 110 105 104 103 102 100",
+        "expectedOutput": "YES",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n4\n7 7 5 7",
+        "expectedOutput": "NO",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n5\n5 6 5 6 5",
+        "expectedOutput": "YES",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n6\n3 3 4 3 5 3",
+        "expectedOutput": "YES",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The operation can only decrease a element that is not smaller than both of its neighbours. The first and last elements can never be chosen, therefore they never change. Consequently, in any successful sequence all elements must become equal to the original value of A1 (which must also equal AN). Hence a necessary condition is A1 == AN. Moreover, because we can only decrease values, every interior element must be at least A1; otherwise it could never be increased to match the edges. These two conditions are also sufficient: while there exists an interior index i with Ai > A1 and Ai >= Ai‑1 and Ai >= Ai+1, we can repeatedly decrease Ai. Since the edges stay at A1, this process eventually makes every element equal to A1. Thus the answer is \"YES\" iff A1 == AN and for every i, Ai >= A1.",
+    "timeComplexity": "O(N) per test case – a single pass to check the two conditions.",
+    "spaceComplexity": "O(1) besides the input array.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdbool.h>\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    while(T--){\n        int N; scanf(\"%d\", &N);\n        long long first, last, x; bool ok=true;\n        for(int i=0;i<N;i++){\n            scanf(\"%lld\", &x);\n            if(i==0) first=x;\n            if(i==N-1) last=x;\n            if(x<first) ok=false; // will be corrected after reading first\n        }\n        // after reading we need to re‑check interior condition because first was set at i=0\n        // Re‑read is not possible, so we store values. Simpler: read into array.\n        // Revised implementation:\n        return 0;\n    }\n    return 0;\n}\n/* The above stub is replaced by a correct implementation below */\n#include <stdio.h>\n#include <stdbool.h>\nint main(){\n    int T; scanf(\"%d\", &T);\n    while(T--){\n        int N; scanf(\"%d\", &N);\n        long long a;\n        long long first=0, last=0;\n        bool ok=true;\n        for(int i=0;i<N;i++){\n            scanf(\"%lld\", &a);\n            if(i==0) first=a;\n            if(i==N-1) last=a;\n            if(a<first) ok=false; // will be corrected after first is known\n        }\n        // The previous loop cannot correctly test a<first before first is known for i>0.\n        // Use an array for clarity.\n        return 0;\n    }\n    return 0;\n}\n/* Final correct version */\n#include <stdio.h>\n#include <stdbool.h>\nint main(){\n    int T; scanf(\"%d\", &T);\n    while(T--){\n        int N; scanf(\"%d\", &N);\n        long long arr[200005];\n        for(int i=0;i<N;i++) scanf(\"%lld\", &arr[i]);\n        bool ok = (arr[0]==arr[N-1]);\n        if(ok){\n            for(int i=0;i<N;i++) if(arr[i] < arr[0]){ ok=false; break; }\n        }\n        printf(ok?\"YES\\n\":\"NO\\n\");\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N; cin>>N;\n        vector<long long> a(N);\n        for(int i=0;i<N;i++) cin>>a[i];\n        bool ok = (a.front()==a.back());\n        if(ok){\n            for(long long v: a) if(v < a.front()){ ok=false; break; }\n        }\n        cout<<(ok?\"YES\":\"NO\")<<'\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner(System.in);\n        int T = fs.nextInt();\n        StringBuilder sb = new StringBuilder();\n        while (T-- > 0) {\n            int N = fs.nextInt();\n            long[] a = new long[N];\n            for (int i = 0; i < N; i++) a[i] = fs.nextLong();\n            boolean ok = a[0] == a[N-1];\n            if (ok) {\n                for (long v : a) if (v < a[0]) { ok = false; break; }\n            }\n            sb.append(ok ? \"YES\" : \"NO\").append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n    static class FastScanner {\n        private final BufferedInputStream in;\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        FastScanner(InputStream is) { in = new BufferedInputStream(is); }\n        private int readByte() throws IOException {\n            if (ptr >= len) {\n                len = in.read(buffer);\n                ptr = 0;\n                if (len <= 0) return -1;\n            }\n            return buffer[ptr++];\n        }\n        long nextLong() throws IOException { int c; do { c = readByte(); } while (c <= ' ');\n            boolean neg = false; if (c == '-') { neg = true; c = readByte(); }\n            long val = 0; while (c > ' ') { val = val * 10 + (c - '0'); c = readByte(); }\n            return neg ? -val : val; }\n        int nextInt() throws IOException { return (int) nextLong(); }\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys\ndef solve():\n    data = sys.stdin.buffer.read().split()\n    it = iter(data)\n    t = int(next(it))\n    out = []\n    for _ in range(t):\n        n = int(next(it))\n        arr = [int(next(it)) for _ in range(n)]\n        ok = arr[0] == arr[-1] and all(v >= arr[0] for v in arr)\n        out.append('YES' if ok else 'NO')\n    sys.stdout.write('\\n'.join(out))\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/).map(Number);\nlet idx = 0;\nconst T = input[idx++];\nlet out = [];\nfor (let tc = 0; tc < T; tc++) {\n  const N = input[idx++];\n  const arr = input.slice(idx, idx + N);\n  idx += N;\n  let ok = arr[0] === arr[N - 1];\n  if (ok) {\n    for (let v of arr) {\n      if (v < arr[0]) { ok = false; break; }\n    }\n  }\n  out.push(ok ? 'YES' : 'NO');\n}\nconsole.log(out.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

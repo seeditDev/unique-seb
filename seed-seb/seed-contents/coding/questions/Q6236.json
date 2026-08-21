@@ -1,0 +1,141 @@
+{
+  "questionId": "Q6236",
+  "title": "Tournament",
+  "slug": "tournament",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Arrays | Sorting | Prefix Sum",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Sorting",
+      "Two Pointers",
+      "Prefix Sum",
+      "Pairwise Difference"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Sorting"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Zonal Computing Olympiad 2013, 10 Nov 2012N teams participate in a league cricket tournament on Mars, where each pair of distinct teams plays each other exactly once. Thus, there are a total of (N × (N-1))/2 matches. An expert has assigned a strength to each team, a positive integer. Strangely, the Martian crowds love one-sided matches and the advertising revenue earned from a match is the absolute value of the difference between the strengths of the two matches. Given the strengths of the N teams, find the total advertising revenue earned from all the matches.\n\n\nFor example, suppose N is 4 and the team strengths for teams 1, 2, 3, and 4 are 3, 10, 3, and 5 respectively. Then the advertising revenues from the 6 matches are as follows:\n\n\n\n\n\nMatchTeam ATeam BAd revenue112721303142423752456342\n\n\nThus the total advertising revenue is 23.",
+    "constraints": [
+      "1 <= T <= 10",
+      "2 <= N <= 200000",
+      "1 <= strength <= 1000"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, the first line contains an integer N (the number of teams). The second line contains N space‑separated positive integers, the strengths of the teams.",
+    "outputFormat": "For each test case output a single line containing the total advertising revenue, i.e., the sum of absolute differences of strengths over all unordered pairs of teams.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n4\n3 10 3 5",
+        "output": "23",
+        "explanation": "Sorted strengths: 3 3 5 10. Pairwise differences sum to 23 as shown in the statement."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n2\n1 2",
+        "output": "1",
+        "explanation": "Only one match, |1-2| = 1."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n3\n1 1 1",
+        "output": "0",
+        "explanation": "All strengths equal, every difference is 0."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n2\n1 1",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary (15 elements)",
+        "input": "1\n15\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15",
+        "expectedOutput": "560",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case – all equal strengths",
+        "input": "1\n5\n1000 1000 1000 1000 1000",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n6\n5 1 9 3 7 2",
+        "expectedOutput": "57",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n7\n10 20 30 40 50 60 70",
+        "expectedOutput": "560",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each test case sort the strengths. In a sorted array a[0..n-1] the contribution of a[i] to the total sum of absolute differences is a[i]*i - (sum of elements before i). By scanning the array once while maintaining a running prefix sum we can compute the answer in O(N) after sorting. Overall complexity per test case is O(N log N) due to sorting, and O(N) extra memory for the array.",
+    "timeComplexity": "O(N log N) per test case (sorting dominates).",
+    "spaceComplexity": "O(N) per test case for storing the strengths.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\nint cmp(const void *a, const void *b) { return *(int*)a - *(int*)b; }\nint main() {\n    int T; if (scanf(\"%d\", &T)!=1) return 0;\n    while (T--) {\n        int N; scanf(\"%d\", &N);\n        int *a = (int*)malloc(N * sizeof(int));\n        for (int i = 0; i < N; ++i) scanf(\"%d\", &a[i]);\n        qsort(a, N, sizeof(int), cmp);\n        long long prefix = 0, ans = 0;\n        for (int i = 0; i < N; ++i) {\n            ans += (long long)a[i] * i - prefix;\n            prefix += a[i];\n        }\n        printf(\"%lld\\n\", ans);\n        free(a);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--) {\n        int N; cin>>N;\n        vector<int> a(N);\n        for(int &x: a) cin>>x;\n        sort(a.begin(), a.end());\n        long long prefix = 0, ans = 0;\n        for(int i=0;i<N;++i){\n            ans += 1LL*a[i]*i - prefix;\n            prefix += a[i];\n        }\n        cout<<ans<<\"\\n\";\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st;\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder sb = new StringBuilder();\n        while (T-- > 0) {\n            int N = Integer.parseInt(br.readLine().trim());\n            int[] a = new int[N];\n            st = new StringTokenizer(br.readLine());\n            for (int i = 0; i < N; i++) a[i] = Integer.parseInt(st.nextToken());\n            Arrays.sort(a);\n            long prefix = 0, ans = 0;\n            for (int i = 0; i < N; i++) {\n                ans += (long)a[i] * i - prefix;\n                prefix += a[i];\n            }\n            sb.append(ans).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it))\n        a = [int(next(it)) for _ in range(N)]\n        a.sort()\n        prefix = 0\n        ans = 0\n        for i, val in enumerate(a):\n            ans += val * i - prefix\n            prefix += val\n        out_lines.append(str(ans))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()",
+      "JavaScript": "const fs = require('fs');\nconst data = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nif (data.length === 0) process.exit(0);\nconst T = Number(data[idx++]);\nlet outputs = [];\nfor (let t = 0; t < T; ++t) {\n  const N = Number(data[idx++]);\n  let arr = new Array(N);\n  for (let i = 0; i < N; ++i) arr[i] = Number(data[idx++]);\n  arr.sort((a, b) => a - b);\n  let prefix = 0n;\n  let ans = 0n;\n  for (let i = 0; i < N; ++i) {\n    const val = BigInt(arr[i]);\n    ans += val * BigInt(i) - prefix;\n    prefix += val;\n  }\n  outputs.push(ans.toString());\n}\nconsole.log(outputs.join('\\n'));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

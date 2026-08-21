@@ -1,0 +1,142 @@
+{
+  "questionId": "Q8065",
+  "title": "Bench Press",
+  "slug": "bench-press",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Greedy",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Frequency Counting",
+      "Greedy",
+      "Sorting"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Greedy Algorithms"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "In the gym, Chef prefers to lift at least WWW grams during a bench press and if that's impossible, Chef considers his workout to be incomplete and feels bad.\n\nThe rod weighs WrW_rWr​ grams and there are NNN other weights lying on the floor that weigh w1,w2,...,wNw_1, w_2, ..., w_Nw1​,w2​,...,wN​ grams. To maintain balance and to ensure that there is no unnecessary load due to torque, it's important that the weights added to the left side are symmetric to the weights added to the right side. It is not required to use all of the weights. It is also not required to use any weights at all, if Chef feels satisfied lifting only the rod.\n\nFor example:\n\n\n\n111 222 222 111 ∣|∣Rod Center∣|∣ 111 111 111 333 is a wrong configuration, but\n\n\n\n\n111 222 333 111 ∣|∣Rod Center∣|∣ 111 333 222 111 is a right configuration.\n\n\n\nFind whether Chef will be able to collect the required weights to feel satisfied.",
+    "constraints": [
+      "1 ≤ T ≤ 10",
+      "1 ≤ N ≤ 10^5",
+      "1 ≤ W ≤ 2·10^5",
+      "1 ≤ wi ≤ 10^5",
+      "1 ≤ Wr ≤ 2·10^4"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case consists of two lines. The first line contains three space‑separated integers N, W, Wr — the number of available weights, the minimum total weight Chef wants to lift, and the weight of the rod. The second line contains N space‑separated integers w1 … wN, the weights of the individual plates.",
+    "outputFormat": "For each test case output a single line containing \"YES\" if Chef can achieve a total lifted weight of at least W grams using a symmetric arrangement of plates, otherwise output \"NO\".",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n2 5 10\n2 2\n7 100 50\n100 10 10 10 10 10 90\n6 100 40\n10 10 10 10 10 10",
+        "output": "YES\nNO\nYES",
+        "explanation": "Test case 1: Rod weight 10 ≥ required 5 → satisfied.\nTest case 2: Only two plates of weight 10 can be paired, giving added weight 40. Total = 50 + 40 = 90 < 100 → not satisfied.\nTest case 3: Six plates of weight 10 form three pairs, added weight 60. Total = 40 + 60 = 100 ≥ 100 → satisfied."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n5 30 8\n4 4 4 7 7",
+        "output": "YES",
+        "explanation": "Pairs: two 4's and two 7's → added = (1*2*4)+(1*2*7)=8+14=22. Total = 8+22=30 meets requirement."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n4 25 10\n5 5 5 5",
+        "output": "YES",
+        "explanation": "Four plates of weight 5 give two pairs → added = 2*2*5 = 20. Total = 10+20=30 ≥ 25."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1 1\n1",
+        "expectedOutput": "YES",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n5 200000 20000\n100000 100000 100000 100000 100000",
+        "expectedOutput": "YES",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case no pairs",
+        "input": "1\n3 50 20\n5 7 9",
+        "expectedOutput": "NO",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n6 80 30\n10 20 20 10 30 30",
+        "expectedOutput": "YES",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n8 150 40\n25 25 25 25 10 10 10 10",
+        "expectedOutput": "YES",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For a symmetric configuration the plates on the left side must be mirrored on the right side, therefore each used weight value must appear an even number of times. For every distinct weight value we can use floor(cnt/2) pairs, each pair contributes 2·value grams to the total lifted weight. The maximal possible added weight is:\n    added = Σ floor(cnt[value]/2) * 2 * value\nThe total weight Chef can lift is Wr + added. If this total is at least W, the answer is YES, otherwise NO. The algorithm:\n1. If Wr ≥ W → YES.\n2. Count frequencies of the N weights (using a hash map or by sorting).\n3. Compute added as described.\n4. Compare Wr + added with W.\nThe counting step is O(N) average (or O(N log N) if sorting) and uses O(N) extra memory.\nThis yields the optimal answer because using any weight less than the maximum possible only reduces the total weight.",
+    "timeComplexity": "O(N) per test case on average (hash map) or O(N log N) if sorting is used.",
+    "spaceComplexity": "O(N) for the frequency map.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\ntypedef struct Node {\n    int val;\n    int cnt;\n    struct Node *next;\n} Node;\n\n#define TABLE_SIZE 200003\n\nstatic Node *table[TABLE_SIZE];\n\nstatic unsigned int hash_int(int x) {\n    return ((unsigned int)x * 2654435761u) % TABLE_SIZE;\n}\n\nstatic void add(int x) {\n    unsigned int h = hash_int(x);\n    Node *p = table[h];\n    while (p) {\n        if (p->val == x) { p->cnt++; return; }\n        p = p->next;\n    }\n    Node *newNode = (Node*)malloc(sizeof(Node));\n    newNode->val = x; newNode->cnt = 1; newNode->next = table[h];\n    table[h] = newNode;\n}\n\nstatic void clear_table() {\n    for (int i = 0; i < TABLE_SIZE; ++i) {\n        Node *p = table[i];\n        while (p) {\n            Node *tmp = p; p = p->next; free(tmp);\n        }\n        table[i] = NULL;\n    }\n}\n\nint main() {\n    int T; if (scanf(\"%d\", &T)!=1) return 0;\n    while (T--) {\n        int N; long long W, Wr; scanf(\"%d %lld %lld\", &N, &W, &Wr);\n        if (Wr >= W) {\n            // consume the line of weights\n            for (int i = 0; i < N; ++i) { int tmp; scanf(\"%d\", &tmp); }\n            printf(\"YES\\n\");\n            continue;\n        }\n        for (int i = 0; i < N; ++i) {\n            int w; scanf(\"%d\", &w);\n            add(w);\n        }\n        long long added = 0;\n        for (int i = 0; i < TABLE_SIZE; ++i) {\n            for (Node *p = table[i]; p; p = p->next) {\n                long long pairs = p->cnt / 2;\n                added += pairs * 2LL * p->val;\n            }\n        }\n        clear_table();\n        if (Wr + added >= W) printf(\"YES\\n\"); else printf(\"NO\\n\");\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--) {\n        int N; long long W, Wr; cin>>N>>W>>Wr;\n        vector<int> a(N);\n        for(int &x: a) cin>>x;\n        if(Wr>=W) { cout<<\"YES\\n\"; continue; }\n        unordered_map<int,int> freq;\n        freq.reserve(N*2);\n        for(int x: a) ++freq[x];\n        long long added=0;\n        for(auto &kv: freq){\n            long long pairs = kv.second/2;\n            added += pairs*2LL*kv.first;\n        }\n        cout << (Wr+added>=W?\"YES\":\"NO\") << '\\n';\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner(System.in);\n        int T = fs.nextInt();\n        StringBuilder sb = new StringBuilder();\n        while (T-- > 0) {\n            int N = fs.nextInt();\n            long W = fs.nextLong();\n            long Wr = fs.nextLong();\n            int[] arr = new int[N];\n            for (int i = 0; i < N; i++) arr[i] = fs.nextInt();\n            if (Wr >= W) {\n                sb.append(\"YES\\n\");\n                continue;\n            }\n            HashMap<Integer, Integer> map = new HashMap<>(N * 2);\n            for (int v : arr) map.put(v, map.getOrDefault(v, 0) + 1);\n            long added = 0;\n            for (Map.Entry<Integer, Integer> e : map.entrySet()) {\n                long pairs = e.getValue() / 2;\n                added += pairs * 2L * e.getKey();\n            }\n            sb.append(Wr + added >= W ? \"YES\" : \"NO\").append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n\n    // Fast scanner for large input\n    static class FastScanner {\n        private final InputStream in;\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        FastScanner(InputStream in) { this.in = in; }\n        private int readByte() throws IOException {\n            if (ptr >= len) {\n                len = in.read(buffer);\n                ptr = 0;\n                if (len <= 0) return -1;\n            }\n            return buffer[ptr++];\n        }\n        int nextInt() throws IOException { return (int) nextLong(); }\n        long nextLong() throws IOException {\n            int c; do { c = readByte(); } while (c <= ' ');\n            boolean neg = false;\n            if (c == '-') { neg = true; c = readByte(); }\n            long val = 0;\n            while (c > ' ') {\n                val = val * 10 + (c - '0');\n                c = readByte();\n            }\n            return neg ? -val : val;\n        }\n    }\n}\n",
+      "Python3": "#!/usr/bin/env python3\nimport sys\nfrom collections import Counter\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it)); W = int(next(it)); Wr = int(next(it))\n        weights = [int(next(it)) for _ in range(N)]\n        if Wr >= W:\n            out_lines.append(\"YES\")\n            continue\n        freq = Counter(weights)\n        added = 0\n        for val, cnt in freq.items():\n            pairs = cnt // 2\n            added += pairs * 2 * val\n        out_lines.append(\"YES\" if Wr + added >= W else \"NO\")\n    sys.stdout.write(\"\\n\".join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet out = [];\nfor (let t = 0; t < T; ++t) {\n  const N = Number(input[idx++]);\n  const W = Number(input[idx++]);\n  const Wr = Number(input[idx++]);\n  const freq = new Map();\n  for (let i = 0; i < N; ++i) {\n    const w = Number(input[idx++]);\n    freq.set(w, (freq.get(w) || 0) + 1);\n  }\n  if (Wr >= W) { out.push('YES'); continue; }\n  let added = 0;\n  for (const [val, cnt] of freq.entries()) {\n    const pairs = Math.floor(cnt / 2);\n    added += pairs * 2 * val;\n  }\n  out.push(Wr + added >= W ? 'YES' : 'NO');\n}\nconsole.log(out.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

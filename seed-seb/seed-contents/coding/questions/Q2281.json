@@ -1,0 +1,128 @@
+{
+  "questionId": "Q2281",
+  "title": "The Morning Commute",
+  "slug": "the-morning-commute",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Greedy",
+    "difficulty": "Easy",
+    "isPremium": false,
+    "tags": [
+      "Scheduling",
+      "Simulation",
+      "Greedy"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Ad-hoc & Implementation"
+    ]
+  },
+  "content": {
+    "problemStatement": "The Chef commutes to work every day using the city's underground metro. The schedule for the trains has recently been changed and he wants to know how long it will take to travel from the station nearest to his house and the station nearest to his restaurant.\n\n\n\nThe Chef doesn't want to change the route he took before, so he simply has to find out how long it will take to reach his restaurant along his usual route. This route is given by a sequence of stations s0, s1, ..., sn where s0 is the station where the Chef enters the metro and sn is the station where the Chef exits the metro.\n\n\n\nTrains are scheduled to run between every two consecutive stations si-1 and si. Such a schedule is specified by three integers xi, li, and fi. This means that the first train on this line starts operating at time xi. The time it takes this train to travel from si-1 and si is exactly li units. Finally, a train departs from station si-1 every fi minutes following the previous train. That is, a train departs at time xi, xi+fi, xi+2fi, and so on.\n\n\n\nThe Chef is very experienced at navigating the metro so the time it takes him to transfer between trains at a given station  is essentially zero. Thus, if the Chef arrives at a station, say si, the moment that the train from si to si+1 is scheduled to depart, he skillfully hops on this next train. However, if the Chef arrives when no train to si+1 is scheduled to depart, he must wait until the scheduled departure time.\n\n\n\nHelp the Chef figure out how long it will take him to travel from station s0 to station sn. You may assume that the Chef is already at station s0 at time 0.",
+    "constraints": [
+      "1 \u2264 T \u2264 50",
+      "1 \u2264 n \u2264 1000",
+      "0 \u2264 xi \u2264 1000",
+      "1 \u2264 li, fi \u2264 1000"
+    ],
+    "inputFormat": "The first line contains an integer T (1 \u2264 T \u2264 50), the number of test cases. Each test case starts with an integer n (1 \u2264 n \u2264 1000) \u2013 the number of train lines (there are n+1 stations s0 \u2026 sn). Then n lines follow, each containing three integers xi, li, fi (0 \u2264 xi \u2264 1000, 1 \u2264 li, fi \u2264 1000) describing the schedule between si\u20111 and si.",
+    "outputFormat": "For each test case output a single line with one integer \u2013 the earliest time the Chef can reach station sn starting from s0 at time 0.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n2\n0 4 7\n0 6 5\n2\n0 1 2\n6 2 10\n2\n1 2 3\n0 2 3\n",
+        "output": "11\n8\n5",
+        "explanation": "First test case: wait 0, travel 4, wait 1, travel 6 \u2192 11. Second: wait 0, travel 1, wait 5, travel 2 \u2192 8. Third: wait 1, travel 2, wait 0, travel 2 \u2192 5."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n3\n2 3 4\n5 2 3\n0 5 10\n",
+        "output": "15",
+        "explanation": "Line 1 departs at 2 (first train), arrival at 5. Line 2 departs immediately at 5, arrival at 7. Line 3 next departure after 7 is at 10, arrival at 15."
+      },
+      {
+        "id": "sample_3",
+        "input": "2\n1\n0 10 5\n2\n3 2 3\n4 1 2\n",
+        "output": "10\n7",
+        "explanation": "Test case 1: only one line, train at time 0, travel 10 \u2192 10. Test case 2: first line departs at 3, arrival 5; second line next departure after 5 is at 6, arrival 7."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n0 1 1\n",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n5\n1000 1000 1000\n1000 1000 1000\n1000 1000 1000\n1000 1000 1000\n1000 1000 1000\n",
+        "expectedOutput": "6000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n2\n5 2 7\n3 4 5\n",
+        "expectedOutput": "12",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n4\n0 3 4\n2 5 6\n10 1 3\n5 2 2\n",
+        "expectedOutput": "17",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n3\n1 4 2\n0 3 5\n6 2 4\n",
+        "expectedOutput": "12",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "We simulate the journey line by line. Let cur be the time when Chef arrives at the current station. For the next line (xi, li, fi) the earliest possible departure time is the smallest time \u2265 cur that belongs to the arithmetic progression xi + k\u00b7fi (k \u2265 0). This can be computed directly:\n- If cur \u2264 xi, the next train departs at xi.\n- Otherwise, let diff = cur - xi. If diff % fi == 0, Chef can catch the train at cur.\n- Else the next departure is xi + ceil(diff / fi) * fi.\nAfter boarding, Chef spends li time units on the train, so cur becomes departure + li. Repeating this for all n lines yields the answer.\nThe algorithm is O(n) per test case and uses O(1) extra memory.",
+    "timeComplexity": "O(T \u00b7 n) \u2013 each line is processed once.",
+    "spaceComplexity": "O(1) \u2013 only a few integer variables are stored.",
+    "code": {
+      "C": "#include <stdio.h>\n\nint main() {\n    int T; if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        int n; scanf(\"%d\", &n);\n        long long cur = 0;\n        for (int i = 0; i < n; ++i) {\n            long long x, l, f; scanf(\"%lld %lld %lld\", &x, &l, &f);\n            long long depart;\n            if (cur <= x) depart = x;\n            else if ((cur - x) % f == 0) depart = cur;\n            else depart = x + ((cur - x + f - 1) / f) * f;\n            cur = depart + l;\n        }\n        printf(\"%lld\\n\", cur);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin >> T)) return 0;\n    while (T--) {\n        int n; cin >> n;\n        long long cur = 0;\n        for (int i = 0; i < n; ++i) {\n            long long x, l, f; cin >> x >> l >> f;\n            long long depart;\n            if (cur <= x) depart = x;\n            else if ((cur - x) % f == 0) depart = cur;\n            else depart = x + ((cur - x + f - 1) / f) * f;\n            cur = depart + l;\n        }\n        cout << cur << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st = new StringTokenizer(br.readLine());\n        int T = Integer.parseInt(st.nextToken());\n        StringBuilder sb = new StringBuilder();\n        while (T-- > 0) {\n            int n = Integer.parseInt(br.readLine().trim());\n            long cur = 0;\n            for (int i = 0; i < n; i++) {\n                st = new StringTokenizer(br.readLine());\n                long x = Long.parseLong(st.nextToken());\n                long l = Long.parseLong(st.nextToken());\n                long f = Long.parseLong(st.nextToken());\n                long depart;\n                if (cur <= x) depart = x;\n                else if ((cur - x) % f == 0) depart = cur;\n                else depart = x + ((cur - x + f - 1) / f) * f;\n                cur = depart + l;\n            }\n            sb.append(cur).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys\n\ndef solve():\n    data = list(map(int, sys.stdin.read().strip().split()))\n    if not data:\n        return\n    it = iter(data)\n    T = next(it)\n    out = []\n    for _ in range(T):\n        n = next(it)\n        cur = 0\n        for _ in range(n):\n            x = next(it); l = next(it); f = next(it)\n            if cur <= x:\n                depart = x\n            elif (cur - x) % f == 0:\n                depart = cur\n            else:\n                depart = x + ((cur - x + f - 1) // f) * f\n            cur = depart + l\n        out.append(str(cur))\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/).map(Number);\nlet idx = 0;\nconst T = input[idx++];\nlet results = [];\nfor (let t = 0; t < T; t++) {\n  const n = input[idx++];\n  let cur = 0;\n  for (let i = 0; i < n; i++) {\n    const x = input[idx++];\n    const l = input[idx++];\n    const f = input[idx++];\n    let depart;\n    if (cur <= x) depart = x;\n    else if ((cur - x) % f === 0) depart = cur;\n    else depart = x + Math.floor((cur - x + f - 1) / f) * f;\n    cur = depart + l;\n  }\n  results.push(String(cur));\n}\nconsole.log(results.join('\\n'));\n"
+    }
+  }
+}

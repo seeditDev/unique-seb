@@ -1,0 +1,113 @@
+{
+  "questionId": "Q2331",
+  "title": "Coloring in Hypercube",
+  "slug": "coloring-in-hypercube",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Dynamic Programming",
+      "Lucas Theorem",
+      "Inclusion\u2011Exclusion",
+      "Multinomial Coefficients",
+      "Binary DP"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ]
+  },
+  "content": {
+    "problemStatement": "In an N-dimensional grid the co-ordinates of a cell are denoted as X1, X2, ..., XN. Any cell with negative co-ordinate are colored white. The origin cell (the one with all zero co-ordinates) is colored as black. The color of a cell in (X1, X2, ..., XN) depends on the N cells with co-ordinates (X1-1, X2, ..., XN), (X1, X2-1, ..., XN), ....,  (X1, X2, ..., XN-1). The cell is colored white if and only if the number of black colored cells among these N co-ordinates are even, otherwise the cell is colored black.\n\nYou are given the starting and ending co-ordinate of sub-hypercube. You need to compute how many hyper cells in this sub hypercube are colored black.",
+    "constraints": [
+      "1 \u2264 T \u2264 50",
+      "1 \u2264 N \u2264 8",
+      "0 \u2264 Si \u2264 Ei \u2264 10^15"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case:\n- A line with an integer N (1 \u2264 N \u2264 8), the dimension of the hyper\u2011cube.\n- A line with N space\u2011separated non\u2011negative integers S1 \u2026 SN, the coordinates of the starting cell.\n- A line with N space\u2011separated non\u2011negative integers E1 \u2026 EN, the coordinates of the ending cell (Si \u2264 Ei for every i).",
+    "outputFormat": "For each test case output a single line containing the number of black coloured cells inside the inclusive hyper\u2011rectangle defined by the start and end coordinates, modulo 1000000009.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n3\n4 0 4\n7 9 8\n2\n0 3\n10 9\n4\n0 3 0 2\n6 8 1 5",
+        "output": "9\n32\n22",
+        "explanation": "The first test case has a 3D hypercube with start coordinates (4, 0, 4) and end coordinates (7, 9, 8). The number of black cells in this hypercube is 9. The second test case has a 2D hypercube with start coordinates (0, 3) and end coordinates (10, 9). The number of black cells in this hypercube is 32. The third test case has a 4D hypercube with start coordinates (0, 3, 0, 2) and end coordinates (6, 8, 1, 5). The number of black cells in this hypercube is 22."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For a cell with non\u2011negative coordinates (x1,\u2026,xN) the colour satisfies over GF(2)\\n    C(x) = ( \u03a3_{i=1..N} C(x\u2011e_i) ) mod 2,\\nwith C(0,\u2026,0)=1 and any cell having a negative coordinate is white (0).\\nThe solution of this linear recurrence is the multinomial coefficient\\n    C(x) = ( (x1+\u2026+xN)! / (x1!\u00b7\u2026\u00b7xN!) ) mod 2.\\nBy Lucas theorem a multinomial coefficient is odd (i.e. the cell is black) iff when the N numbers are added in binary no carry occurs. Equivalently, for every bit position at most one of the xi has a 1. This can be written as\\n    (x1 | x2 | \u2026 | xN) == (x1 + x2 + \u2026 + xN).\\nThus the problem reduces to counting vectors inside a given axis\u2011aligned hyper\u2011rectangle that satisfy the \u201cno\u2011carry\u201d condition.\\n\\nCounting vectors \u2264 a bound B (0 \u2264 vi \u2264 Bi) can be done with a digit DP on the binary representation (most significant bit down to 0). The DP state is a bitmask of size N indicating for each dimension whether the already processed prefix is exactly equal to the prefix of Bi (tight) or already smaller. For each bit we may set either all zeros or a single 1 in one dimension (otherwise a carry would appear). The transition checks whether the chosen bit respects the current tightness and updates the mask accordingly. The DP runs in O( bits \u00b7 2^N \u00b7 N ) time (bits \u2264 60, N \u2264 8).\\n\\nTo obtain the answer for an arbitrary rectangle [S,E] we use inclusion\u2011exclusion over its 2^N corners: for each mask M (0\u20262^N\u20111) we build a corner vector C where Ci = Si\u20111 if the i\u2011th bit of M is 1, otherwise Ci = Ei. The contribution of this corner is (-1)^{popcount(M)}\u00b7F(C), where F(C) is the DP count for the prefix defined by C (if any Ci < 0 the contribution is 0). Summing all contributions yields the required number of black cells. All operations are performed modulo 1\u202f000\u202f000\u202f009.",
+    "timeComplexity": "O(T \u00b7 2^N \u00b7 N \u00b7 B) where B \u2264 60 is the number of binary digits of the largest coordinate (\u2248 60). With N \u2264 8 this is well below 10^6 operations per test case.",
+    "spaceComplexity": "O(2^N) for the DP arrays (at most 256 entries).",
+    "code": {
+      "C": ""
+    }
+  }
+}

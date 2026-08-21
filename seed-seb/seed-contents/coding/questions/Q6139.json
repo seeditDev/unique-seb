@@ -1,0 +1,127 @@
+{
+  "questionId": "Q6139",
+  "title": "Chef and Two Strings",
+  "slug": "chef-and-two-strings",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Easy",
+    "isPremium": true,
+    "tags": [
+      "Greedy",
+      "String Manipulation"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Ad-hoc & Implementation"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef has found two very old sheets of paper, each of which originally contained a string of lowercase Latin letters. The strings on both the sheets have equal lengths. However, since the sheets are very old, some letters have become unreadable.\n\nChef would like to estimate the difference between these strings. Let's assume that the first string is named **S1**, and the second **S2**. The unreadable symbols are specified with the question mark symbol '?'. The difference between the strings equals to the number of positions **i**, such that **S1i** is not equal to **S2i**, where **S1i** and **S2i** denote the symbol at the **i** the position in **S1** and **S2**, respectively.\n\nChef would like to know the minimal and the maximal difference between the two strings, if he changes all unreadable symbols to lowercase Latin letters. Now that you're fully aware of Chef's programming expertise, you might have guessed that he needs you help solving this problem as well. Go on, help him!",
+    "constraints": [
+      "1 ≤ T ≤ 100",
+      "1 ≤ |S1| = |S2| ≤ 100",
+      "S1 and S2 contain only 'a'-'z' and '?'"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, two lines follow: the first line is string S1, the second line is string S2. Both strings have the same length and consist of lowercase Latin letters and the character '?'.",
+    "outputFormat": "For each test case output two integers separated by a space: the minimal possible difference and the maximal possible difference between the two strings after replacing all '?' with lowercase letters.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\na?c\n??b\n???a\n???a\n?abac\naba?w",
+        "output": "1 3\n0 3\n3 5",
+        "explanation": "First test: minimal difference 1 (choose 'abc' and 'abb'), maximal 3 (choose 'abc' and 'bab'). Second test: strings can be made identical, so minimal 0, maximal 3 by making each '?' pair different. Third test: minimal 3 (choose 'aabac' and 'abaaw'), maximal 5 (choose 'xabac' and 'abayw')."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\na\na",
+        "expectedOutput": "0 0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary (all '?')",
+        "input": "1\n??????????\n??????????",
+        "expectedOutput": "0 10",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "one side all '?'",
+        "input": "1\nabcde\n?????",
+        "expectedOutput": "0 5",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "mixed known and '?'",
+        "input": "1\na?c?e\nab?de",
+        "expectedOutput": "0 3",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "known differences with '?'",
+        "input": "1\nab?cd\nabxyz",
+        "expectedOutput": "2 3",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Traverse both strings position by position. For each index i:\n- If both characters are known (not '?') and different, the difference is unavoidable, so increase both minimal and maximal counters.\n- If at least one character is '?', we can choose them equal to avoid a difference (so minimal does not increase) but we can also choose them different to create a difference (so maximal always increases).\n- If both characters are known and equal, nothing changes.\nThe minimal difference is the count of positions where both are known and different. The maximal difference is the count of positions where the characters are not both known and equal, i.e., all positions except those where both are known and equal.",
+    "timeComplexity": "O(N) per test case, where N is the length of the strings. Overall O(T·N).",
+    "spaceComplexity": "O(1) additional space.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        char S1[101], S2[101];\n        scanf(\"%s %s\", S1, S2);\n        int len = strlen(S1);\n        int minDiff = 0, maxDiff = 0;\n        for (int i = 0; i < len; ++i) {\n            if (S1[i] != S2[i]) {\n                if (S1[i] != '?' && S2[i] != '?') {\n                    minDiff++;\n                }\n                maxDiff++;\n            } else {\n                // characters are equal; only case where max does NOT increase is when both are known and equal\n                // when both are '?' they are equal now but we can make them different\n                if (S1[i] == '?' && S2[i] == '?') {\n                    maxDiff++;\n                }\n            }\n        }\n        printf(\"%d %d\\n\", minDiff, maxDiff);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--) {\n        string S1, S2; cin >> S1 >> S2;\n        int n = S1.size();\n        int minDiff = 0, maxDiff = 0;\n        for(int i=0;i<n;++i){\n            if(S1[i]!=S2[i]){\n                if(S1[i]!='?' && S2[i]!='?') minDiff++;\n                maxDiff++;\n            } else {\n                if(S1[i]=='?' && S2[i]=='?') maxDiff++;\n            }\n        }\n        cout << minDiff << ' ' << maxDiff << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder out = new StringBuilder();\n        for (int t = 0; t < T; t++) {\n            String S1 = br.readLine();\n            String S2 = br.readLine();\n            int n = S1.length();\n            int minDiff = 0, maxDiff = 0;\n            for (int i = 0; i < n; i++) {\n                char c1 = S1.charAt(i);\n                char c2 = S2.charAt(i);\n                if (c1 != c2) {\n                    if (c1 != '?' && c2 != '?') minDiff++;\n                    maxDiff++;\n                } else {\n                    if (c1 == '?' && c2 == '?') maxDiff++;\n                }\n            }\n            out.append(minDiff).append(' ').append(maxDiff).append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef solve():\n    data = sys.stdin.read().splitlines()\n    if not data:\n        return\n    t = int(data[0])\n    idx = 1\n    out_lines = []\n    for _ in range(t):\n        s1 = data[idx].strip(); idx += 1\n        s2 = data[idx].strip(); idx += 1\n        min_diff = 0\n        max_diff = 0\n        for ch1, ch2 in zip(s1, s2):\n            if ch1 != ch2:\n                if ch1 != '?' and ch2 != '?':\n                    min_diff += 1\n                max_diff += 1\n            else:\n                if ch1 == '?' and ch2 == '?':\n                    max_diff += 1\n        out_lines.append(f\"{min_diff} {max_diff}\")\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst T = parseInt(lines[idx++]);\nlet output = [];\nfor (let tc = 0; tc < T; tc++) {\n  const S1 = lines[idx++];\n  const S2 = lines[idx++];\n  let minDiff = 0, maxDiff = 0;\n  for (let i = 0; i < S1.length; i++) {\n    const c1 = S1[i];\n    const c2 = S2[i];\n    if (c1 !== c2) {\n      if (c1 !== '?' && c2 !== '?') minDiff++;\n      maxDiff++;\n    } else {\n      if (c1 === '?' && c2 === '?') maxDiff++;\n    }\n  }\n  output.push(minDiff + ' ' + maxDiff);\n}\nconsole.log(output.join('\\n'));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

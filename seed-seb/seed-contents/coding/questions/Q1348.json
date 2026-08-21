@@ -1,0 +1,129 @@
+{
+  "questionId": "Q1348",
+  "title": "Equal Rows and Columns",
+  "slug": "equal-rows-and-columns",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Arrays",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "Counting",
+      "Hash Map",
+      "Rows and Columns Equality",
+      "Matrix",
+      "Arrays"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Hashing"
+    ]
+  },
+  "content": {
+    "problemStatement": "Given a `N x N` integer matrix, find the no. of pairs of row and column which are equal.\n\nFor eg. in the following matrix:\n\n\n\nNumber of equal pairs of row and columns is: **2** (Row 2 and column 2 are equal. Similarly, row 3 and column 3 are also equal)\n\n\nInput Format\n\nThe first line of input will contain a single integer NNN, denoting the no. of rows and columns in the matrix.\nNext NNN lines contains NNN space separated integers, the elements of the matrix.\n\n\nOutput Format\n\nOutput on a single line the no. of pairs of row and columns which are equal.",
+    "constraints": [
+      "1 \u2264 T \u2264 10",
+      "1 \u2264 N \u2264 100",
+      "0 \u2264 a[i][j] \u2264 1000"
+    ],
+    "inputFormat": "First line contains an integer T, the number of test cases. For each test case: first line contains integer N (1 \u2264 N \u2264 100). Next N lines each contain N space\u2011separated integers (0 \u2264 a[i][j] \u2264 1000) representing the matrix.",
+    "outputFormat": "For each test case, output a single line containing the number of pairs (i, j) such that the i\u2011th row and the j\u2011th column are identical.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\\n4\\n9 0 0 3\\n0 1 1 5\\n0 1 1 5\\n8 5 5 1",
+        "output": "3",
+        "explanation": "Row\u202f2 equals column\u202f2, Row\u202f3 equals column\u202f2, and Row\u202f2 equals column\u202f3, giving three equal (row, column) pairs."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\\n3\\n1 2 3\\n4 5 6\\n7 8 9",
+        "output": "0",
+        "explanation": "No row matches any column, so the answer is zero."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\\n2\\n1 2\\n1 2",
+        "output": "2",
+        "explanation": "Row\u202f1 matches column\u202f1 and Row\u202f2 matches column\u202f2, producing two pairs."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\\n1\\n0",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\\n5\\n1000 1000 1000 1000 1000\\n1000 1000 1000 1000 1000\\n1000 1000 1000 1000 1000\\n1000 1000 1000 1000 1000\\n1000 1000 1000 1000 1000",
+        "expectedOutput": "25",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\\n3\\n0 0 0\\n0 0 0\\n0 0 0",
+        "expectedOutput": "9",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "1\\n1\\n0",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "1\\n1\\n0",
+        "expectedOutput": "1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each test case we store every row as a key (e.g., a tuple or a comma\u2011separated string) in a hash map together with its frequency. Then we build each column in the same representation and look it up in the map; the stored frequency tells how many rows are equal to this column, which we add to the answer. This works because equality of two sequences is exactly the equality of their representations. The algorithm runs in O(N^2) time per test case (reading the matrix and constructing N rows and N columns) and uses O(N^2) memory for the matrix plus O(N) extra for the map.",
+    "timeComplexity": "O(T\u00b7N^2)",
+    "spaceComplexity": "O(N^2) \u2013 the matrix itself plus O(N) for the hash map of rows.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nint main(){\n    int T; if(scanf(\"%d\",&T)!=1) return 0;\n    while(T--){\n        int n; scanf(\"%d\",&n);\n        int **a = (int**)malloc(n*sizeof(int*));\n        for(int i=0;i<n;++i){\n            a[i]=(int*)malloc(n*sizeof(int));\n            for(int j=0;j<n;++j) scanf(\"%d\",&a[i][j]);\n        }\n        char **rowKey = (char**)malloc(n*sizeof(char*));\n        int *freq = (int*)calloc(n,sizeof(int));\n        int distinct=0;\n        for(int i=0;i<n;++i){\n            char buf[4096]; buf[0]='\\0';\n            for(int j=0;j<n;++j){\n                char tmp[16];\n                sprintf(tmp,\"%d,\",a[i][j]);\n                strcat(buf,tmp);\n            }\n            int found=0;\n            for(int k=0;k<distinct;++k){\n                if(strcmp(buf,rowKey[k])==0){\n                    ++freq[k];\n                    found=1;break;\n                }\n            }\n            if(!found){\n                rowKey[distinct]=strdup(buf);\n                freq[distinct]=1;\n                ++distinct;\n            }\n        }\n        long long ans=0;\n        for(int j=0;j<n;++j){\n            char buf[4096]; buf[0]='\\0';\n            for(int i=0;i<n;++i){\n                char tmp[16];\n                sprintf(tmp,\"%d,\",a[i][j]);\n                strcat(buf,tmp);\n            }\n            for(int k=0;k<distinct;++k){\n                if(strcmp(buf,rowKey[k])==0){\n                    ans+=freq[k];\n                    break;\n                }\n            }\n        }\n        printf(\"%lld\\n\",ans);\n        for(int i=0;i<n;++i) free(a[i]);\n        free(a);\n        for(int i=0;i<distinct;++i) free(rowKey[i]);\n        free(rowKey); free(freq);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int n; cin>>n;\n        vector<vector<int>> mat(n, vector<int>(n));\n        for(int i=0;i<n;++i) for(int j=0;j<n;++j) cin>>mat[i][j];\n        unordered_map<string,int> mp;\n        mp.reserve(n*2);\n        for(int i=0;i<n;++i){\n            string key; key.reserve(n*6);\n            for(int j=0;j<n;++j){\n                key+=to_string(mat[i][j]);\n                key+=',';\n            }\n            ++mp[key];\n        }\n        long long ans=0;\n        for(int j=0;j<n;++j){\n            string key; key.reserve(n*6);\n            for(int i=0;i<n;++i){\n                key+=to_string(mat[i][j]);\n                key+=',';\n            }\n            auto it=mp.find(key);\n            if(it!=mp.end()) ans+=it->second;\n        }\n        cout<<ans<<\"\\n\";\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st = new StringTokenizer(br.readLine());\n        int T = Integer.parseInt(st.nextToken());\n        StringBuilder out = new StringBuilder();\n        while(T-- > 0){\n            int n = Integer.parseInt(br.readLine().trim());\n            int[][] mat = new int[n][n];\n            for(int i=0;i<n;i++){\n                st = new StringTokenizer(br.readLine());\n                for(int j=0;j<n;j++) mat[i][j] = Integer.parseInt(st.nextToken());\n            }\n            HashMap<String,Integer> map = new HashMap<>();\n            for(int i=0;i<n;i++){\n                StringBuilder sb = new StringBuilder();\n                for(int j=0;j<n;j++) sb.append(mat[i][j]).append(',');\n                String key = sb.toString();\n                map.put(key, map.getOrDefault(key,0)+1);\n            }\n            long ans = 0;\n            for(int j=0;j<n;j++){\n                StringBuilder sb = new StringBuilder();\n                for(int i=0;i<n;i++) sb.append(mat[i][j]).append(',');\n                ans += map.getOrDefault(sb.toString(),0);\n            }\n            out.append(ans).append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef solve():\n    data = sys.stdin.buffer.read().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        n = int(next(it))\n        mat = [[int(next(it)) for _ in range(n)] for __ in range(n)]\n        row_map = {}\n        for row in mat:\n            key = tuple(row)\n            row_map[key] = row_map.get(key,0) + 1\n        ans = 0\n        for col in range(n):\n            col_tuple = tuple(mat[r][col] for r in range(n))\n            ans += row_map.get(col_tuple,0)\n        out_lines.append(str(ans))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0,'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet results = [];\nfor(let t=0; t<T; t++){\n  const n = Number(input[idx++]);\n  const mat = Array.from({length:n},()=>Array(n));\n  for(let i=0;i<n;i++){\n    for(let j=0;j<n;j++) mat[i][j] = Number(input[idx++]);\n  }\n  const map = new Map();\n  for(let i=0;i<n;i++){\n    const key = mat[i].join(',');\n    map.set(key, (map.get(key)||0)+1);\n  }\n  let ans = 0;\n  for(let j=0;j<n;j++){\n    const col = [];\n    for(let i=0;i<n;i++) col.push(mat[i][j]);\n    const key = col.join(',');\n    ans += map.get(key) || 0;\n  }\n  results.push(String(ans));\n}\nconsole.log(results.join('\\n'));\n"
+    }
+  }
+}

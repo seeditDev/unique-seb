@@ -1,0 +1,129 @@
+{
+  "questionId": "Q2182",
+  "title": "The Siruseri Sports Stadium",
+  "slug": "the-siruseri-sports-stadium",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Greedy",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Sorting",
+      "Interval Scheduling",
+      "Greedy Algorithm",
+      "Greedy"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Greedy Algorithms"
+    ]
+  },
+  "content": {
+    "problemStatement": "The bustling town of Siruseri has just one sports stadium. There are a number of schools, colleges, sports associations, etc. that use this stadium as the venue for their sports events.\n\nAnyone interested in using the stadium has to apply to the Manager of the stadium indicating both the starting date (a positive integer SSS) and the length of the sporting event in days (a positive integer DDD) they plan to organise. Since these requests could overlap it may not be possible to satisfy everyone. Also, there should be at least one gap day between any two approved events, so that the stadium can be cleaned.\n\nIt is the job of the Manager to decide who gets to use the stadium and who does not. The Manager, being a genial man, would like to keep as many organisations happy as possible and hence would like to allocate the stadium so that maximum number of events are held.\n\nSuppose, for example, the Manager receives the following 4 requests:\n\n \n\n`      Event No.   Starting Date        Length \n       \n       1                   2                    5\n       2                   9                    7\n       3                  15                    6\n       4                   9                    3\n` \n\nHe would allot the stadium to events 111, 444 and 333. Event 111 begins on day 222 and ends on day 666, event 444 begins on day 999 and ends on day 111111 and event 333 begins on day 151515 and ends on day 202020. You can verify that it is not possible to schedule all the 444 events (since events 222 and 333 overlap and only one of them can get to use the stadium).\n\nYour task is to help the manager find the best possible allotment (i.e., the maximum number of events that can use the stadium).\n\nInput:The first line of the input will contain a single integer NNN indicating the number of events for which the Manager has received a request. Lines 2,3,...,N+12,3,...,N+12,3,...,N+1 describe the requirements of the NNN events. Line i+1i+1i+1 contains two integer SiS_iSi\u200b and DiD_iDi\u200b indicating the starting date and the duration of event iii.\n\nOutput:Your output must consist of a single line containing a single integer MMM, indicating the maximum possible number of events that can use the stadium.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 100000",
+      "1 <= Si <= 1000000",
+      "1 <= Di <= 1000"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, the first line contains an integer N, the number of event requests. The next N lines each contain two integers Si and Di, the starting day and the length (in days) of the i\u2011th event.",
+    "outputFormat": "For each test case output a single line containing one integer \u2013 the maximum number of events that can be scheduled while keeping at least one free day between any two accepted events.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\\n4\\n2 5\\n9 7\\n15 6\\n9 3",
+        "output": "3",
+        "explanation": "After sorting by finishing day we get events (2,5)->ends6, (9,3)->ends11, (9,7)->ends15, (15,6)->ends20. Greedy picks first (ends6), then second (start9 >=8) picks, then fourth (start15 >=13) picks. Total 3."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\\n5\\n1 1\\n3 1\\n5 1\\n7 1\\n9 1",
+        "output": "5",
+        "explanation": "Each event occupies a single day and there is exactly one free day between consecutive events, so all 5 can be scheduled."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\\n3\\n1 5\\n2 3\\n6 2",
+        "output": "2",
+        "explanation": "Choosing events (2,3) which ends on day4 and (6,2) which starts on day6 satisfies the required gap, giving 2 events. No schedule can contain more than 2."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\\n1\\n1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary with large durations",
+        "input": "1\\n3\\n1 1000\\n1002 1\\n2000 5",
+        "expectedOutput": "3",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "same finishing day",
+        "input": "1\\n2\\n1 3\\n2 2",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\\n5\\n1 2\\n4 3\\n7 2\\n9 1\\n10 2",
+        "expectedOutput": "3",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2 with required gap",
+        "input": "1\\n3\\n1 1\\n2 1\\n3 1",
+        "expectedOutput": "2",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Each event occupies the days [S, S+D-1]. After an event finishes, the next accepted event must start at least two days later, i.e., start >= previous_end + 2. This is a classic interval\u2011scheduling problem with a modified compatibility condition. Sort all events by their finishing day (S+D-1) ascending; if two events finish on the same day, sort by start ascending. Scan the sorted list, keep the end day of the last chosen event (initially a very small number). Choose the current event if its start day is >= last_end + 2, then update last_end to its end day. This greedy choice is optimal because picking the earliest finishing compatible event leaves the maximum room for the remaining events.",
+    "timeComplexity": "O(N log N) per test case for sorting, O(N) for the scan.",
+    "spaceComplexity": "O(N) to store the events.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\ntypedef struct {int start; int end;} Interval;\nint cmp(const void *a, const void *b) {\n    const Interval *ia = (const Interval *)a;\n    const Interval *ib = (const Interval *)b;\n    if (ia->end != ib->end) return ia->end - ib->end;\n    return ia->start - ib->start;\n}\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    while(T--){\n        int N; scanf(\"%d\", &N);\n        Interval *arr = (Interval*)malloc(N * sizeof(Interval));\n        for(int i=0;i<N;i++){\n            int S,D; scanf(\"%d %d\", &S, &D);\n            arr[i].start = S;\n            arr[i].end = S + D - 1;\n        }\n        qsort(arr, N, sizeof(Interval), cmp);\n        int cnt = 0;\n        long long last_end = -1000000000LL; // sufficiently small\n        for(int i=0;i<N;i++){\n            if(arr[i].start >= last_end + 2){\n                cnt++;\n                last_end = arr[i].end;\n            }\n        }\n        printf(\"%d\\n\", cnt);\n        free(arr);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nstruct Event{int start, end;};\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N; cin>>N;\n        vector<Event> ev(N);\n        for(int i=0;i<N;i++){\n            int S,D; cin>>S>>D;\n            ev[i].start = S;\n            ev[i].end = S + D - 1;\n        }\n        sort(ev.begin(), ev.end(), [](const Event& a, const Event& b){\n            if(a.end!=b.end) return a.end<b.end;\n            return a.start<b.start;\n        });\n        int cnt=0; long long last_end = -4e18;\n        for(const auto &e: ev){\n            if(e.start >= last_end + 2){\n                ++cnt;\n                last_end = e.end;\n            }\n        }\n        cout<<cnt<<\"\\n\";\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    static class Event{int start, end; Event(int s,int e){start=s; end=e;}}\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner(System.in);\n        int T = fs.nextInt();\n        StringBuilder sb = new StringBuilder();\n        while(T-- > 0){\n            int N = fs.nextInt();\n            Event[] ev = new Event[N];\n            for(int i=0;i<N;i++){\n                int S = fs.nextInt();\n                int D = fs.nextInt();\n                ev[i] = new Event(S, S + D - 1);\n            }\n            Arrays.sort(ev, (a,b) -> a.end != b.end ? a.end - b.end : a.start - b.start);\n            int cnt = 0;\n            long lastEnd = Long.MIN_VALUE/4;\n            for(Event e: ev){\n                if(e.start >= lastEnd + 2){\n                    cnt++;\n                    lastEnd = e.end;\n                }\n            }\n            sb.append(cnt).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n    // Fast scanner for large input\n    static class FastScanner {\n        private final InputStream in;\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        FastScanner(InputStream in){ this.in = in; }\n        private int readByte() throws IOException {\n            if(ptr >= len){\n                len = in.read(buffer);\n                ptr = 0;\n                if(len <= 0) return -1;\n            }\n            return buffer[ptr++];\n        }\n        int nextInt() throws IOException {\n            int c, sign = 1, val = 0;\n            do { c = readByte(); } while(c <= ' ' && c != -1);\n            if(c == '-') { sign = -1; c = readByte(); }\n            while(c > ' ') {\n                val = val * 10 + (c - '0');\n                c = readByte();\n            }\n            return val * sign;\n        }\n    }\n}",
+      "Python3": "import sys\n\ndef solve():\n    data = sys.stdin.buffer.read().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out = []\n    for _ in range(T):\n        N = int(next(it))\n        events = []\n        for _ in range(N):\n            S = int(next(it)); D = int(next(it))\n            events.append((S + D - 1, S))  # (end, start)\n        events.sort()\n        cnt = 0\n        last_end = -10**18\n        for end, start in events:\n            if start >= last_end + 2:\n                cnt += 1\n                last_end = end\n        out.append(str(cnt))\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    solve()",
+      "JavaScript": "const fs = require('fs');\nconst data = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/).map(Number);\nlet idx = 0;\nif (data.length === 0) process.exit(0);\nconst T = data[idx++];\nlet results = [];\nfor (let t = 0; t < T; t++) {\n  const N = data[idx++];\n  let events = new Array(N);\n  for (let i = 0; i < N; i++) {\n    const S = data[idx++];\n    const D = data[idx++];\n    events[i] = { start: S, end: S + D - 1 };\n  }\n  events.sort((a, b) => a.end !== b.end ? a.end - b.end : a.start - b.start);\n  let cnt = 0;\n  let lastEnd = -1e18;\n  for (const e of events) {\n    if (e.start >= lastEnd + 2) {\n      cnt++;\n      lastEnd = e.end;\n    }\n  }\n  results.push(String(cnt));\n}\nconsole.log(results.join('\\n'));"
+    }
+  }
+}

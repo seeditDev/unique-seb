@@ -1,0 +1,120 @@
+{
+  "questionId": "Q11646",
+  "title": "The Fair Nut and Rectangles",
+  "slug": "E",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Geometry",
+    "difficulty": "$undefined",
+    "isPremium": true,
+    "tags": [
+      "Geometry",
+      "Rectangles",
+      "Painting"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Write a program for the coding challenge \"The Fair Nut and Rectangles\". Refer to SEED-IT description: https://codeforces.com/contest/1083/problem/E",
+    "constraints": [
+      "1 <= n <= 10^5",
+      "-10^9 <= x1, y1, x2, y2 <= 10^9",
+      "x1 < x2",
+      "y1 < y2"
+    ],
+    "inputFormat": "The first line contains an integer n, the number of rectangles. Then n lines follow, each containing four integers: x1, y1, x2, y2, representing the coordinates of the rectangle's bottom-left and top-right corners.",
+    "outputFormat": "The output should be a single integer, the maximum number of rectangles that can be painted.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "1\n0 0 1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "5\n-1000000000 -1000000000 1000000000 1000000000\n-1000000000 -1000000000 1000000000 1000000000\n-1000000000 -1000000000 1000000000 1000000000\n-1000000000 -1000000000 1000000000 1000000000\n-1000000000 -1000000000 1000000000 1000000000",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": "3\n0 0 1 1\n1 1 2 2\n2 2 3 3",
+        "expectedOutput": "3",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case/empty-like/negative if allowed",
+        "input": "2\n-1 -1 0 0\n0 0 1 1",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": "4\n0 0 2 2\n1 1 3 3\n2 2 4 4\n0 0 4 4",
+        "expectedOutput": "2",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Sweep Line Algorithm",
+    "timeComplexity": "O(n log n)",
+    "spaceComplexity": "O(n)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <math.h>\n#include <time.h>\n#include <stdint.h>\n#include <stdbool.h>\ntypedef struct { int x1, y1, x2, y2; } rect;\nint compare(const void *a, const void *b) {\n    rect *r1 = (rect *)a;\n    rect *r2 = (rect *)b;\n    if (r1->x2 != r2->x2) return r1->x2 - r2->x2;\n    return r1->y2 - r2->y2;\n}\nint maxPaintedRectangles(rect *rectangles, int n) {\n    qsort(rectangles, n, sizeof(rect), compare);\n    int maxPainted = 0, currY = -1000000001;\n    for (int i = 0; i < n; i++) {\n        if (rectangles[i].y1 > currY) {\n            maxPainted++;\n            currY = rectangles[i].y2;\n        }\n    }\n    return maxPainted;\n}\nint main() {\n    int n;\n    scanf(\"%d\", &n);\n    rect *rectangles = (rect *)malloc(n * sizeof(rect));\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d %d %d %d\", &rectangles[i].x1, &rectangles[i].y1, &rectangles[i].x2, &rectangles[i].y2);\n    }\n    printf(\"%d\\n\", maxPaintedRectangles(rectangles, n));\n    free(rectangles);\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\ntypedef struct { int x1, y1, x2, y2; } rect;\nbool compare(rect a, rect b) {\n    if (a.x2 != b.x2) return a.x2 < b.x2;\n    return a.y2 < b.y2;\n}\nint maxPaintedRectangles(rect rectangles[], int n) {\n    sort(rectangles, rectangles + n, compare);\n    int maxPainted = 0, currY = -1000000001;\n    for (int i = 0; i < n; i++) {\n        if (rectangles[i].y1 > currY) {\n            maxPainted++;\n            currY = rectangles[i].y2;\n        }\n    }\n    return maxPainted;\n}\nint main() {\n    int n;\n    cin >> n;\n    rect *rectangles = new rect[n];\n    for (int i = 0; i < n; i++) {\n        cin >> rectangles[i].x1 >> rectangles[i].y1 >> rectangles[i].x2 >> rectangles[i].y2;\n    }\n    cout << maxPaintedRectangles(rectangles, n) << endl;\n    delete[] rectangles;\n    return 0;\n}",
+      "Java": "import java.util.Arrays;\nimport java.util.Scanner;\nclass rect implements Comparable<rect> {\n    int x1, y1, x2, y2;\n    rect(int x1, int y1, int x2, int y2) {\n        this.x1 = x1;\n        this.y1 = y1;\n        this.x2 = x2;\n        this.y2 = y2;\n    }\n    public int compareTo(rect other) {\n        if (this.x2 != other.x2) return Integer.compare(this.x2, other.x2);\n        return Integer.compare(this.y2, other.y2);\n    }\n}\npublic class Main {\n    public static int maxPaintedRectangles(rect[] rectangles) {\n        Arrays.sort(rectangles);\n        int maxPainted = 0, currY = -1000000001;\n        for (rect r : rectangles) {\n            if (r.y1 > currY) {\n                maxPainted++;\n                currY = r.y2;\n            }\n        }\n        return maxPainted;\n    }\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int n = scanner.nextInt();\n        rect[] rectangles = new rect[n];\n        for (int i = 0; i < n; i++) {\n            int x1 = scanner.nextInt(), y1 = scanner.nextInt(), x2 = scanner.nextInt(), y2 = scanner.nextInt();\n            rectangles[i] = new rect(x1, y1, x2, y2);\n        }\n        System.out.println(maxPaintedRectangles(rectangles));\n    }\n}",
+      "Python3": "class rect:\n    def __init__(self, x1, y1, x2, y2):\n        self.x1 = x1\n        self.y1 = y1\n        self.x2 = x2\n        self.y2 = y2\n\ndef max_painted_rectangles(rectangles):\n    rectangles.sort(key=lambda r: (r.x2, r.y2))\n    max_painted = 0\n    curr_y = -1000000001\n    for r in rectangles:\n        if r.y1 > curr_y:\n            max_painted += 1\n            curr_y = r.y2\n    return max_painted\n\ndef main():\n    n = int(input())\n    rectangles = []\n    for _ in range(n):\n        x1, y1, x2, y2 = map(int, input().split())\n        rectangles.append(rect(x1, y1, x2, y2))\n    print(max_painted_rectangles(rectangles))\n\ndef test():\n    assert max_painted_rectangles([rect(0, 0, 1, 1), rect(1, 1, 2, 2)]) == 2\n    assert max_painted_rectangles([rect(0, 0, 2, 2), rect(1, 1, 3, 3)]) == 2\n    assert max_painted_rectangles([rect(-1, -1, 0, 0), rect(0, 0, 1, 1)]) == 2\nif __name__ == '__main__':\n    main()",
+      "JavaScript": "class rect {\n    constructor(x1, y1, x2, y2) {\n        this.x1 = x1;\n        this.y1 = y1;\n        this.x2 = x2;\n        this.y2 = y2;\n    }\n}\nfunction maxPaintedRectangles(rectangles) {\n    rectangles.sort((a, b) => a.x2 - b.x2 || a.y2 - b.y2);\n    let maxPainted = 0, currY = -1000000001;\n    for (let r of rectangles) {\n        if (r.y1 > currY) {\n            maxPainted++;\n            currY = r.y2;\n        }\n    }\n    return maxPainted;\n}\nfunction main() {\n    const readline = require('readline');\n    const rl = readline.createInterface({\n        input: process.stdin,\n        output: process.stdout\n    });\n    let n;\n    let rectangles = [];\n    rl.on('line', (input) => {\n        if (!n) {\n            n = parseInt(input);\n        } else {\n            let [x1, y1, x2, y2] = input.split(' ').map(Number);\n            rectangles.push(new rect(x1, y1, x2, y2));\n            if (rectangles.length === n) {\n                console.log(maxPaintedRectangles(rectangles));\n                rl.close();\n            }\n        }\n    });\n}\nmain();"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

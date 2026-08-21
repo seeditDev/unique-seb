@@ -1,0 +1,134 @@
+{
+  "questionId": "Q6359",
+  "title": "Power Sums",
+  "slug": "power-sums",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Polynomial Interpolation",
+      "Modular Arithmetic"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Mathematics"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef has **n** non-negative integers **a1, a2, ..., an**. He defined the following function \n**f(k) = (a1k + a2k + ... + ank) mod (109 + 7)** over them.\n\n\n\nChef knows the values **f(1), f(2), ..., f(n)**, but he has forgotten the values **a1, a2, ..., an**.\n\n\n\nNow Chef wants to evaluate the function **f** over some integers (total **Q**  of them), can you please help him in this?",
+    "constraints": [
+      "1 ≤ n ≤ 300",
+      "1 ≤ Q ≤ 30",
+      "0 ≤ f(i) < 10^9 + 7",
+      "n < xi ≤ 10^18"
+    ],
+    "inputFormat": "The first line of the input contains an integer T denoting the number of test cases. Each test case consists of three lines. The first line contains two space-separated integers n and Q. The second line contains n space-separated integers - the values of f(1), f(2), ..., f(n). The third line contains Q space-separated integers x1, x2, ..., xq, where xi denotes the number in the i-th query.",
+    "outputFormat": "For each test case, print a single line containing Q space-separated integers denoting the values of f(x1), f(x2), ..., f(xq).",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n2 1\n4 6\n5",
+        "output": "34",
+        "explanation": "The polynomial f(x) = 2*x + 1 satisfies the given conditions. Therefore, f(5) = 2*5 + 1 = 11."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n3 1\n4 6 10\n6",
+        "output": "66",
+        "explanation": "The polynomial f(x) = 2*x^2 + 1 satisfies the given conditions. Therefore, f(6) = 2*6^2 + 1 = 73."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1\n1\n2",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n300 30\n",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n2 1\n0 0\n1",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n5 5\n1 2 3 4 5\n1 2 3 4 5",
+        "expectedOutput": "1 2 3 4 5",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n10 10\n1 2 3 4 5 6 7 8 9 10\n1 2 3 4 5 6 7 8 9 10",
+        "expectedOutput": "1 2 3 4 5 6 7 8 9 10",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use polynomial interpolation to find the coefficients of the polynomial f(x) = a1*x + a2*x^2 + ... + an*x^n. We can then use these coefficients to evaluate f(x) for any given x. We will use the concept of modular arithmetic to ensure that all calculations are performed modulo 10^9 + 7.",
+    "timeComplexity": "O(T * (n^3 + Q * n)) - The time complexity is dominated by the polynomial interpolation step, which takes O(n^3) time. We also need to evaluate the polynomial for each query, which takes O(Q * n) time.",
+    "spaceComplexity": "O(n) - We need to store the coefficients of the polynomial, which requires O(n) space.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#define MOD 1000000007\n\n// Function to calculate the modular inverse\nlong long modInverse(long long a, long long m) {\n    long long m0 = m;\n    long long y = 0, x = 1;\n    if (m == 1)\n        return 0;\n    while (a > 1) {\n        long long q = a / m;\n        long long t = m;\n        m = a % m, a = t;\n        t = y;\n        y = x - q * y;\n        x = t;\n    }\n    if (x < 0)\n        x += m0;\n    return x;\n}\n\n// Function to calculate the polynomial interpolation\nlong long* interpolate(long long* f, int n) {\n    long long* a = (long long*)malloc(n * sizeof(long long));\n    for (int i = 0; i < n; i++) {\n        long long numerator = f[i];\n        long long denominator = 1;\n        for (int j = 0; j < n; j++) {\n            if (i != j) {\n                numerator = (numerator * (j + 1)) % MOD;\n                denominator = (denominator * (i - j)) % MOD;\n            }\n        }\n        a[i] = (numerator * modInverse(denominator, MOD)) % MOD;\n    }\n    return a;\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int n, Q;\n        scanf(\"%d %d\", &n, &Q);\n        long long* f = (long long*)malloc(n * sizeof(long long));\n        for (int i = 0; i < n; i++) {\n            scanf(\"%lld\", &f[i]);\n        }\n        long long* a = interpolate(f, n);\n        for (int i = 0; i < Q; i++) {\n            long long x;\n            scanf(\"%lld\", &x);\n            long long result = 0;\n            for (int j = 0; j < n; j++) {\n                result = (result + a[j] * (x % MOD)) % MOD;\n            }\n            printf(\"%lld \", result);\n        }\n        printf(\"\\n\");\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\n#define MOD 1000000007\n\n// Function to calculate the modular inverse\nlong long modInverse(long long a, long long m) {\n    long long m0 = m;\n    long long y = 0, x = 1;\n    if (m == 1)\n        return 0;\n    while (a > 1) {\n        long long q = a / m;\n        long long t = m;\n        m = a % m, a = t;\n        t = y;\n        y = x - q * y;\n        x = t;\n    }\n    if (x < 0)\n        x += m0;\n    return x;\n}\n\n// Function to calculate the polynomial interpolation\nstd::vector<long long> interpolate(std::vector<long long>& f, int n) {\n    std::vector<long long> a(n);\n    for (int i = 0; i < n; i++) {\n        long long numerator = f[i];\n        long long denominator = 1;\n        for (int j = 0; j < n; j++) {\n            if (i != j) {\n                numerator = (numerator * (j + 1)) % MOD;\n                denominator = (denominator * (i - j)) % MOD;\n            }\n        }\n        a[i] = (numerator * modInverse(denominator, MOD)) % MOD;\n    }\n    return a;\n}\n\nint main() {\n    int T;\n    std::cin >> T;\n    while (T--) {\n        int n, Q;\n        std::cin >> n >> Q;\n        std::vector<long long> f(n);\n        for (int i = 0; i < n; i++) {\n            std::cin >> f[i];\n        }\n        std::vector<long long> a = interpolate(f, n);\n        for (int i = 0; i < Q; i++) {\n            long long x;\n            std::cin >> x;\n            long long result = 0;\n            for (int j = 0; j < n; j++) {\n                result = (result + a[j] * (x % MOD)) % MOD;\n            }\n            std::cout << result << \" \";\n        }\n        std::cout << \"\\n\";\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\n\npublic class Main {\n    static final long MOD = 1000000007;\n\n    // Function to calculate the modular inverse\n    static long modInverse(long a, long m) {\n        long m0 = m;\n        long y = 0, x = 1;\n        if (m == 1)\n            return 0;\n        while (a > 1) {\n            long q = a / m;\n            long t = m;\n            m = a % m;\n            a = t;\n            t = y;\n            y = x - q * y;\n            x = t;\n        }\n        if (x < 0)\n            x += m0;\n        return x;\n    }\n\n    // Function to calculate the polynomial interpolation\n    static long[] interpolate(long[] f, int n) {\n        long[] a = new long[n];\n        for (int i = 0; i < n; i++) {\n            long numerator = f[i];\n            long denominator = 1;\n            for (int j = 0; j < n; j++) {\n                if (i != j) {\n                    numerator = (numerator * (j + 1)) % MOD;\n                    denominator = (denominator * (i - j)) % MOD;\n                }\n            }\n            a[i] = (numerator * modInverse(denominator, MOD)) % MOD;\n        }\n        return a;\n    }\n\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int T = scanner.nextInt();\n        while (T-- > 0) {\n            int n = scanner.nextInt();\n            int Q = scanner.nextInt();\n            long[] f = new long[n];\n            for (int i = 0; i < n; i++) {\n                f[i] = scanner.nextLong();\n            }\n            long[] a = interpolate(f, n);\n            for (int i = 0; i < Q; i++) {\n                long x = scanner.nextLong();\n                long result = 0;\n                for (int j = 0; j < n; j++) {\n                    result = (result + a[j] * (x % MOD)) % MOD;\n                }\n                System.out.print(result + \" \");\n            }\n            System.out.println();\n        }\n    }\n}",
+      "Python3": "MOD = 1000000007\n\n# Function to calculate the modular inverse\ndef mod_inverse(a, m):\n    m0 = m\n    y = 0\n    x = 1\n    if m == 1:\n        return 0\n    while a > 1:\n        q = a // m\n        t = m\n        m = a % m\n        a = t\n        t = y\n        y = x - q * y\n        x = t\n    if x < 0:\n        x += m0\n    return x\n\n# Function to calculate the polynomial interpolation\ndef interpolate(f, n):\n    a = [0] * n\n    for i in range(n):\n        numerator = f[i]\n        denominator = 1\n        for j in range(n):\n            if i != j:\n                numerator = (numerator * (j + 1)) % MOD\n                denominator = (denominator * (i - j)) % MOD\n        a[i] = (numerator * mod_inverse(denominator, MOD)) % MOD\n    return a\n\nT = int(input())\nwhile T > 0:\n    n, Q = map(int, input().split())\n    f = list(map(int, input().split()))\n    a = interpolate(f, n)\n    for x in map(int, input().split()):\n        result = 0\n        for j in range(n):\n            result = (result + a[j] * (x % MOD)) % MOD\n        print(result, end=' ')\n    print()\n    T -= 1",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst MOD = 1000000007;\n\n// Function to calculate the modular inverse\nfunction modInverse(a, m) {\n    let m0 = m;\n    let y = 0;\n    let x = 1;\n    if (m == 1)\n        return 0;\n    while (a > 1) {\n        let q = Math.floor(a / m);\n        let t = m;\n        m = a % m;\n        a = t;\n        t = y;\n        y = x - q * y;\n        x = t;\n    }\n    if (x < 0)\n        x += m0;\n    return x;\n}\n\n// Function to calculate the polynomial interpolation\nfunction interpolate(f, n) {\n    let a = new Array(n).fill(0);\n    for (let i = 0; i < n; i++) {\n        let numerator = f[i];\n        let denominator = 1;\n        for (let j = 0; j < n; j++) {\n            if (i != j) {\n                numerator = (numerator * (j + 1)) % MOD;\n                denominator = (denominator * (i - j)) % MOD;\n            }\n        }\n        a[i] = (numerator * modInverse(denominator, MOD)) % MOD;\n    }\n    return a;\n}\n\nlet T = parseInt(input[idx++]);\nwhile (T-- > 0) {\n    let [n, Q] = input[idx++].split(' ').map(Number);\n    let f = input[idx++].split(' ').map(Number);\n    let a = interpolate(f, n);\n    let queries = input[idx++].split(' ').map(Number);\n    for (let x of queries) {\n        let result = 0;\n        for (let j = 0; j < n; j++) {\n            result = (result + a[j] * (x % MOD)) % MOD;\n        }\n        process.stdout.write(result + ' ');\n    }\n    process.stdout.write('\\n');\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

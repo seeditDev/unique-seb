@@ -1,0 +1,135 @@
+{
+  "questionId": "Q7896",
+  "title": "Graph Construction",
+  "slug": "graph-construction",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Construction",
+      "Diameter",
+      "Star Graph",
+      "Greedy"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Constructive Algorithms"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given integers NNN and KKK. Construct a connected undirected unweighted graph with NNN nodes (numbered 111 through NNN) such that there are exactly KKK unordered pairs of nodes which have distance equal to the diameter of the graph (the largest distance between two nodes), or determine that no such graph exists.",
+    "constraints": [
+      "1 <= T <= 100",
+      "2 <= N <= 100",
+      "1 <= K <= N*(N-1)/2"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains two integers N and K separated by a space.",
+    "outputFormat": "For each test case:\n- If no graph satisfying the conditions exists, output a single line with -1.\n- Otherwise, output an integer M (the number of edges) on a line, followed by M lines each containing two integers u and v (1 ≤ u, v ≤ N, u ≠ v) describing an undirected edge. The graph must be connected, have diameter 2, and exactly K unordered node pairs must be at distance equal to the diameter.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n6 4",
+        "output": "11\n1 2\n1 3\n1 4\n1 5\n1 6\n2 3\n2 4\n2 5\n2 6\n3 4\n3 5",
+        "explanation": "C(5,2)=10. Need 10-4=6 leaf‑leaf edges. After adding those 6 edges the remaining leaf pairs are (3,6),(4,5),(4,6),(5,6) – exactly 4 pairs at distance 2, which equals the diameter."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n4 3",
+        "output": "3\n1 2\n1 3\n1 4",
+        "explanation": "C(3,2)=3 and K equals the maximum, so we output a pure star. All three leaf pairs are at distance 2, matching K."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The diameter 2 is the smallest possible for a connected graph with N ≥ 3. In a star centered at node 1, every leaf‑leaf pair is at distance 2, giving C(N‑1,2) such pairs. Adding an edge between two leaves shortens their distance to 1, decreasing the count of distance‑2 pairs by exactly one while keeping the diameter 2. Therefore we can obtain any K such that 0 ≤ K ≤ C(N‑1,2). The construction is:\n1. If K > C(N‑1,2) output -1.\n2. Start with the star edges (1,i) for i = 2..N.\n3. Let need = C(N‑1,2) - K. Add ‘need’ arbitrary edges among the leaves (2..N) in lexicographic order. The resulting graph is connected, its diameter stays 2, and exactly K leaf‑leaf pairs remain at distance 2.\nThe algorithm runs in O(N^2) per test case, which is trivial for N ≤ 100.",
+    "timeComplexity": "O(N^2) per test case (worst‑case when we enumerate leaf pairs).",
+    "spaceComplexity": "O(N^2) for storing the edge list (at most N*(N-1)/2 edges).",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    while(T--){\n        int N; long long K; scanf(\"%d %lld\", &N, &K);\n        long long maxPairs = (long long)(N-1)*(N-2)/2; // C(N-1,2)\n        if(K > maxPairs){\n            printf(\"-1\\n\");\n            continue;\n        }\n        long long need = maxPairs - K; // number of leaf‑leaf edges to add\n        int M = (N-1) + need;\n        printf(\"%d\\n\", M);\n        // star edges\n        for(int i=2;i<=N;i++) printf(\"1 %d\\n\", i);\n        // add leaf edges\n        for(int i=2;i<=N && need>0;i++){\n            for(int j=i+1;j<=N && need>0;j++){\n                printf(\"%d %d\\n\", i, j);\n                need--;\n            }\n        }\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N; long long K; cin>>N>>K;\n        long long maxPairs = 1LL*(N-1)*(N-2)/2; // C(N-1,2)\n        if(K>maxPairs){\n            cout<<-1<<\"\\n\";\n            continue;\n        }\n        long long need = maxPairs - K; // leaf‑leaf edges to add\n        int M = (N-1) + need;\n        cout<<M<<\"\\n\";\n        // star\n        for(int i=2;i<=N;i++) cout<<1<<' '<<i<<\"\\n\";\n        // leaf edges\n        for(int i=2;i<=N && need>0;i++){\n            for(int j=i+1;j<=N && need>0;j++){\n                cout<<i<<' '<<j<<\"\\n\";\n                --need;\n            }\n        }\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner(System.in);\n        int T = fs.nextInt();\n        StringBuilder out = new StringBuilder();\n        while (T-- > 0) {\n            int N = fs.nextInt();\n            long K = fs.nextLong();\n            long maxPairs = 1L * (N - 1) * (N - 2) / 2; // C(N-1,2)\n            if (K > maxPairs) {\n                out.append(\"-1\\n\");\n                continue;\n            }\n            long need = maxPairs - K; // leaf‑leaf edges to add\n            int M = (N - 1) + (int) need;\n            out.append(M).append('\\n');\n            // star edges\n            for (int i = 2; i <= N; i++) {\n                out.append(1).append(' ').append(i).append('\\n');\n            }\n            // leaf edges\n            outer:\n            for (int i = 2; i <= N; i++) {\n                for (int j = i + 1; j <= N; j++) {\n                    if (need == 0) break outer;\n                    out.append(i).append(' ').append(j).append('\\n');\n                    need--;\n                }\n            }\n        }\n        System.out.print(out.toString());\n    }\n    // fast scanner\n    static class FastScanner {\n        private final InputStream in;\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        FastScanner(InputStream in) { this.in = in; }\n        private int readByte() throws IOException {\n            if (ptr >= len) {\n                len = in.read(buffer);\n                ptr = 0;\n                if (len <= 0) return -1;\n            }\n            return buffer[ptr++];\n        }\n        long nextLong() throws IOException { return Long.parseLong(next()); }\n        int nextInt() throws IOException { return Integer.parseInt(next()); }\n        String next() throws IOException {\n            StringBuilder sb = new StringBuilder();\n            int c;\n            while ((c = readByte()) != -1 && c <= ' ') {}\n            if (c == -1) return \"\";\n            do { sb.append((char) c); } while ((c = readByte()) != -1 && c > ' ');\n            return sb.toString();\n        }\n    }\n}\n",
+      "Python3": "#!/usr/bin/env python3\nimport sys\n\ndef solve():\n    it = iter(sys.stdin.read().strip().split())\n    try:\n        T = int(next(it))\n    except StopIteration:\n        return\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it)); K = int(next(it))\n        max_pairs = (N-1)*(N-2)//2  # C(N-1,2)\n        if K > max_pairs:\n            out_lines.append('-1')\n            continue\n        need = max_pairs - K  # leaf‑leaf edges to add\n        M = (N-1) + need\n        out_lines.append(str(M))\n        # star edges\n        for i in range(2, N+1):\n            out_lines.append(f'1 {i}')\n        # leaf edges\n        for i in range(2, N+1):\n            if need == 0:\n                break\n            for j in range(i+1, N+1):\n                if need == 0:\n                    break\n                out_lines.append(f'{i} {j}')\n                need -= 1\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst data = fs.readFileSync(0, 'utf8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(data[idx++]);\nlet out = [];\nfor (let t = 0; t < T; t++) {\n  const N = Number(data[idx++]);\n  const K = Number(data[idx++]);\n  const maxPairs = (N - 1) * (N - 2) / 2; // C(N-1,2)\n  if (K > maxPairs) {\n    out.push('-1');\n    continue;\n  }\n  let need = maxPairs - K; // leaf‑leaf edges to add\n  const M = (N - 1) + need;\n  out.push(String(M));\n  // star edges\n  for (let i = 2; i <= N; i++) out.push(`1 ${i}`);\n  // leaf edges\n  outer: for (let i = 2; i <= N; i++) {\n    for (let j = i + 1; j <= N; j++) {\n      if (need === 0) break outer;\n      out.push(`${i} ${j}`);\n      need--;\n    }\n  }\n}\nconsole.log(out.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

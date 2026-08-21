@@ -1,0 +1,140 @@
+{
+  "questionId": "Q5402",
+  "title": "Lucky Sum",
+  "slug": "lucky-sum",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Lucky Numbers",
+      "Subsequences",
+      "Bit Manipulation"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef loves lucky numbers. Everybody knows that lucky numbers are positive integers whose decimal representation contains only the lucky digits **4** and **7**. For example, numbers **47**, **744**, **4** are lucky and **5**, **17**, **467** are not.\n\n\n Chef also use term **\"lucky sum\"**. Lucky sum is an operation between two integers. Let the first integer is **A**, **A[i]** equals **i-th** digit of **A** (0-base numeration, from right to left) and the second integer is **B**, **B[i]** equals to **i-th** digit of **B**. Then the lucky sum of **A** and **B** is equal to **C**, **C[i] = max(A[i], B[i])**. If **i** is greater than or equal to size of integer, the **i-th** digit is equal to **0**. For example, the lucky sum of **47** and **729** equals **749**, the lucky sum of **74** and **92** and **477** equals **497**.\n\n\n Chef has an array **W** of integers. Find a number of non-empty subsequences of **W** such that the lucky sum of integers in that subsequences is a lucky number.\n\n\n Subsequence of **W** is created by erasing some number (probably zero) elements from **W**.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 50",
+      "1 <= Wi < 10^9"
+    ],
+    "inputFormat": "First line contains T, the number of test cases. Each test case contains a single integer N, followed by N integers.",
+    "outputFormat": "For each test case, print the number of non-empty subsequences of the given array such that the lucky sum of integers in that subsequence is a lucky number.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n2\n4 7\n3\n43 87 44",
+        "output": "3\n2",
+        "explanation": "For the first test case, the lucky subsequences are [4], [7], and [4, 7]. For the second test case, the lucky subsequences are [43] and [87]."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n1\n4",
+        "output": "1",
+        "explanation": "The only lucky subsequence is [4]."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n2\n7 4",
+        "output": "3",
+        "explanation": "The lucky subsequences are [7], [4], and [7, 4]."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n4",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n50\n4 7 4 7 4 7 4 7 4 7 4 7 4 7 4 7 4 7 4 7 4 7 4 7 4 7 4 7 4 7 4 7 4 7 4 7 4 7 4 7 4 7 4 7 4 7 4 7 4 7",
+        "expectedOutput": "2^50 - 1",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n5\n4 4 4 4 4",
+        "expectedOutput": "5",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n3\n7 4 7",
+        "expectedOutput": "7",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "5\n2\n4 7\n3\n43 87 44\n1\n4\n2\n7 4\n1\n7",
+        "expectedOutput": "3\n2\n1\n3\n1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The key insight is to use bit manipulation to generate all possible subsequences of the given array. Then, for each subsequence, calculate the lucky sum by taking the maximum digit at each position. Finally, check if the lucky sum is a lucky number by verifying that all its digits are either 4 or 7.",
+    "timeComplexity": "O(T * 2^N * max(Wi)) per test case, where max(Wi) is the maximum number of digits in any number in the array. The total time complexity is O(T * 2^N * max(Wi)).",
+    "spaceComplexity": "O(1) as we only use a constant amount of space to store the input and the intermediate results.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nint isLucky(int num) {\n    while (num > 0) {\n        int digit = num % 10;\n        if (digit != 4 && digit != 7) return 0;\n        num /= 10;\n    }\n    return 1;\n}\n\nint luckySum(int a, int b) {\n    int maxLen = strlen(getMax(a, b));\n    int sum = 0;\n    for (int i = 0; i < maxLen; i++) {\n        int digitA = getDigit(a, i);\n        int digitB = getDigit(b, i);\n        sum = sum * 10 + (digitA > digitB ? digitA : digitB);\n    }\n    return sum;\n}\n\nint getDigit(int num, int pos) {\n    int digit = 0;\n    for (int i = 0; i < pos; i++) num /= 10;\n    digit = num % 10;\n    return digit;\n}\n\nint getMax(int a, int b) {\n    return a > b ? a : b;\n}\n\nint countLuckySubsequences(int* arr, int n) {\n    int count = 0;\n    for (int i = 1; i < (1 << n); i++) {\n        int sum = 0;\n        for (int j = 0; j < n; j++) {\n            if ((i & (1 << j)) != 0) {\n                if (sum == 0) sum = arr[j];\n                else sum = luckySum(sum, arr[j]);\n            }\n        }\n        if (isLucky(sum)) count++;\n    }\n    return count;\n}\n\nint main() {\n    int t;\n    scanf(\"%d\", &t);\n    while (t--) {\n        int n;\n        scanf(\"%d\", &n);\n        int* arr = (int*)malloc(n * sizeof(int));\n        for (int i = 0; i < n; i++) scanf(\"%d\", &arr[i]);\n        printf(\"%d\\n\", countLuckySubsequences(arr, n));\n        free(arr);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\nusing namespace std;\n\nbool isLucky(int num) {\n    while (num > 0) {\n        int digit = num % 10;\n        if (digit != 4 && digit != 7) return false;\n        num /= 10;\n    }\n    return true;\n}\n\nint luckySum(int a, int b) {\n    int maxLen = to_string(max(a, b)).length();\n    int sum = 0;\n    for (int i = 0; i < maxLen; i++) {\n        int digitA = (a / (int)pow(10, i)) % 10;\n        int digitB = (b / (int)pow(10, i)) % 10;\n        sum = sum * 10 + (digitA > digitB ? digitA : digitB);\n    }\n    return sum;\n}\n\nint countLuckySubsequences(vector<int>& arr) {\n    int count = 0;\n    int n = arr.size();\n    for (int i = 1; i < (1 << n); i++) {\n        int sum = 0;\n        for (int j = 0; j < n; j++) {\n            if ((i & (1 << j)) != 0) {\n                if (sum == 0) sum = arr[j];\n                else sum = luckySum(sum, arr[j]);\n            }\n        }\n        if (isLucky(sum)) count++;\n    }\n    return count;\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(NULL);\n    int t;\n    cin >> t;\n    while (t--) {\n        int n;\n        cin >> n;\n        vector<int> arr(n);\n        for (int i = 0; i < n; i++) cin >> arr[i];\n        cout << countLuckySubsequences(arr) << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    public static boolean isLucky(int num) {\n        while (num > 0) {\n            int digit = num % 10;\n            if (digit != 4 && digit != 7) return false;\n            num /= 10;\n        }\n        return true;\n    }\n\n    public static int luckySum(int a, int b) {\n        int maxLen = String.valueOf(Math.max(a, b)).length();\n        int sum = 0;\n        for (int i = 0; i < maxLen; i++) {\n            int digitA = (a / (int)Math.pow(10, i)) % 10;\n            int digitB = (b / (int)Math.pow(10, i)) % 10;\n            sum = sum * 10 + (digitA > digitB ? digitA : digitB);\n        }\n        return sum;\n    }\n\n    public static int countLuckySubsequences(int[] arr) {\n        int count = 0;\n        int n = arr.length;\n        for (int i = 1; i < (1 << n); i++) {\n            int sum = 0;\n            for (int j = 0; j < n; j++) {\n                if ((i & (1 << j)) != 0) {\n                    if (sum == 0) sum = arr[j];\n                    else sum = luckySum(sum, arr[j]);\n                }\n            }\n            if (isLucky(sum)) count++;\n        }\n        return count;\n    }\n\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int t = scanner.nextInt();\n        while (t-- > 0) {\n            int n = scanner.nextInt();\n            int[] arr = new int[n];\n            for (int i = 0; i < n; i++) arr[i] = scanner.nextInt();\n            System.out.println(countLuckySubsequences(arr));\n        }\n    }\n}",
+      "Python3": "def is_lucky(num):\n    while num > 0:\n        digit = num % 10\n        if digit != 4 and digit != 7:\n            return False\n        num //= 10\n    return True\n\n\ndef lucky_sum(a, b):\n    max_len = max(len(str(a)), len(str(b)))\n    sum = 0\n    for i in range(max_len):\n        digit_a = (a // (10 ** i)) % 10\n        digit_b = (b // (10 ** i)) % 10\n        sum = sum * 10 + (digit_a if digit_a > digit_b else digit_b)\n    return sum\n\n\ndef count_lucky_subsequences(arr):\n    count = 0\n    n = len(arr)\n    for i in range(1, 1 << n):\n        sum = 0\n        for j in range(n):\n            if (i & (1 << j)):\n                if sum == 0:\n                    sum = arr[j]\n                else:\n                    sum = lucky_sum(sum, arr[j])\n        if is_lucky(sum):\n            count += 1\n    return count\n\nimport sys\nfor _ in range(int(sys.stdin.readline())):\n    n = int(sys.stdin.readline())\n    arr = list(map(int, sys.stdin.readline().split()))\n    print(count_lucky_subsequences(arr))",
+      "JavaScript": "const lines = require('fs').readFileSync(0, 'utf-8').trim().split('\\n');\nlet i = 0;\n\nfunction isLucky(num) {\n    while (num > 0) {\n        let digit = num % 10;\n        if (digit !== 4 && digit !== 7) return false;\n        num = Math.floor(num / 10);\n    }\n    return true;\n}\n\nfunction luckySum(a, b) {\n    let maxLen = Math.max(a.toString().length, b.toString().length);\n    let sum = 0;\n    for (let i = 0; i < maxLen; i++) {\n        let digitA = Math.floor(a / (10 ** i)) % 10;\n        let digitB = Math.floor(b / (10 ** i)) % 10;\n        sum = sum * 10 + (digitA > digitB ? digitA : digitB);\n    }\n    return sum;\n}\n\nfunction countLuckySubsequences(arr) {\n    let count = 0;\n    let n = arr.length;\n    for (let i = 1; i < (1 << n); i++) {\n        let sum = 0;\n        for (let j = 0; j < n; j++) {\n            if ((i & (1 << j)) !== 0) {\n                if (sum === 0) sum = arr[j];\n                else sum = luckySum(sum, arr[j]);\n            }\n        }\n        if (isLucky(sum)) count++;\n    }\n    return count;\n}\n\nlet t = parseInt(lines[i++]);\nwhile (t-- > 0) {\n    let n = parseInt(lines[i++]);\n    let arr = lines[i++].split(' ').map(x => parseInt(x));\n    console.log(countLuckySubsequences(arr));\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

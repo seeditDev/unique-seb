@@ -1,0 +1,128 @@
+{
+  "questionId": "Q4553",
+  "title": "Hamiltonian Circuit",
+  "slug": "hamiltonian-circuit",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Easy",
+    "isPremium": true,
+    "tags": [
+      "Backtracking",
+      "Hamiltonian Circuit"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Recursion & Backtracking"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given a undirected and connected graph, with NNN vertices and MMM edges. \n\nYour tasks is to find all the Hamiltonian Circuits for the given graph.\n\nHamiltonian Circuit in a graph is a cycle that visits every vertex of the graph exactly once and returns to the starting vertex.\n\n\nInput Format\n\nThe first line of input will contain a two integers NNN and MMM, denoting the number of vertices and edges\nNext MMM lines describes the edges. i−thi-thi−th of these MMM lines contains two space-separated integers uiu_iui​, viv_ivi​ denoting there exists an edge between uiu_iui​ and viv_ivi​.\n\n\nOutput Format\nFor each test case, return all the list of vertices that form a Hamiltonian Circuit.",
+    "constraints": [
+      "1 <= N <= 10",
+      "2 <= M <= min(20, N*(N-1)/2)",
+      "1 <= u_i, v_i <= N",
+      "It is guaranteed that the input contains a simple graph with no self-edges."
+    ],
+    "inputFormat": "The first line of input will contain two integers N and M, denoting the number of vertices and edges. The next M lines describe the edges. The i-th of these M lines contains two space-separated integers u_i and v_i, denoting that there exists an edge between u_i and v_i.",
+    "outputFormat": "For each test case, return all lists of vertices that form a Hamiltonian Circuit.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "5 6\n1 3\n3 2\n3 4\n2 5 \n5 4\n4 1",
+        "output": "1 3 2 5 4 1 \n1 4 5 2 3 1 \n2 3 1 4 5 2 \n2 5 4 1 3 2 \n3 1 4 5 2 3 \n3 2 5 4 1 3 \n4 1 3 2 5 4 \n4 5 2 3 1 4 \n5 2 3 1 4 5 \n5 4 1 3 2 5",
+        "explanation": "The given graph has 5 vertices and 6 edges. The output shows all possible Hamiltonian Circuits in the graph."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved using a backtracking approach. We start at each vertex and try to visit all other vertices exactly once, then return to the starting vertex. If we can do this, we have found a Hamiltonian Circuit.",
+    "timeComplexity": "O(N!) per test case, O(T*N!) total. The time complexity is high due to the backtracking approach.",
+    "spaceComplexity": "O(N) — the dominant structure is the recursion stack.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdbool.h>\n#define MAX_N 20\n\n// Check if 'next' vertex can be added after vertex 'v'\nbool check(int v, int next, int* circuit, int circuitSize, bool mat[MAX_N][MAX_N]) {\n    if (!mat[v][next]) // To check if v is adjacent to next\n        return false;\n\n    for (int i = 0; i < circuitSize; i++) { // To check if next is already visited\n        if (circuit[i] == next)\n            return false;\n    }\n\n    return true;\n}\n\nvoid backtrack(int v, int n, int* circuit, int circuitSize, int ans[MAX_N][MAX_N], int* ansSize, bool mat[MAX_N][MAX_N]) {\n    if (circuitSize == n) { // Circuit is completed\n        if (mat[circuit[0]][v]) { // Check if cycle is completed, starting should be adjacent to ending\n            for (int i = 0; i < circuitSize; i++) {\n                ans[*ansSize][i] = circuit[i];\n            }\n            ans[*ansSize][circuitSize] = circuit[0]; // Complete the circuit\n            (*ansSize)++;\n        }\n        return;\n    }\n\n    for (int i = 1; i <= n; i++) {\n        // Calling the check function\n        if (!check(v, i, circuit, circuitSize, mat))\n            continue;\n\n        // If not visited and is adjacent, add it to our candidate solution\n        circuit[circuitSize] = i;\n        backtrack(i, n, circuit, circuitSize + 1, ans, ansSize, mat);\n    }\n}\n\n// Number of vertices and adjacency matrix\nvoid hamiltonian_circuit(int n, bool mat[MAX_N][MAX_N], int ans[MAX_N][MAX_N], int* ansSize) {\n    int circuit[MAX_N]; // Initially empty circuit\n\n    for (int i = 1; i <= n; i++) { // Fix the starting vertex\n        circuit[0] = i; // Add i to circuit\n        backtrack(i, n, circuit, 1, ans, ansSize, mat);\n    }\n}\n\n// Function to compare two arrays for qsort\nint compare(const void* a, const void* b) {\n    const int* arr1 = (const int*)a;\n    const int* arr2 = (const int*)b;\n    for (int i = 0; i <= MAX_N; i++) {\n        if (arr1[i] != arr2[i])\n            return arr1[i] - arr2[i];\n    }\n    return 0;\n}\n\n// Function to print the solutions\nvoid printSolutions(int ans[MAX_N][MAX_N], int ansSize, int n) {\n    for (int i = 0; i < ansSize; i++) {\n        for (int j = 0; j <= n; j++) { // Print the circuit with return to start\n            printf(\"%d \", ans[i][j]);\n        }\n        printf(\"\\n\");\n    }\n}\n\nint main() {\n    int t;\n    scanf(\"%d\", &t);\n    while(t--) {\n        int n, m;\n        scanf(\"%d %d\", &n, &m);\n\n        // Adjacency matrix\n        bool mat[MAX_N][MAX_N] = {false};\n        while (m--) {\n            int a, b;\n            scanf(\"%d %d\", &a, &b);\n            mat[a][b] = true;\n            mat[b][a] = true;\n        }\n        int ans[MAX_N][MAX_N] = {0};\n        int ansSize = 0;\n\n        hamiltonian_circuit(n, mat, ans, &ansSize);\n\n        // Sort the solutions\n        qsort(ans, ansSize, sizeof(ans[0]), compare);\n\n        // Print the solutions\n        printSolutions(ans, ansSize, n);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\n// Check if 'next' vertex can be added after vertex 'v'\nbool check(int v, int next, vector<int> &circuit, vector<vector<bool>> &mat) {\n    if (mat[v][next] == 0) // To check if v is adjacent to next\n        return false;\n\n    for (int i = 0; i < circuit.size(); i++) { // To check if next is already visited\n        if (circuit[i] == next) \n            return false;\n    }\n\n    return true;\n}\n\nvoid backtrack(int v, int n, vector<int> &circuit, vector<vector<int>> &ans, vector<vector<bool>> &mat) {\n    if (circuit.size() == n) { // Circuit is completed\n        if (mat[circuit[0]][v] == 1) { // Check if cycle is completed, starting should be adjacent to ending\n            circuit.push_back(circuit[0]);\n            ans.push_back(circuit);\n            circuit.pop_back();\n        }\n        return;\n    }\n\n    for (int i = 1; i <= n; i++) {\n        // Calling the check function\n        if (check(v, i, circuit, mat) == 0) \n            continue;\n\n        // If not visit and is adjacent, add it to our candidate solution\n        circuit.push_back(i);\n        backtrack(i, n, circuit, ans, mat);\n        circuit.pop_back();\n    }\n}   \n\n\n// Number of vertices and adjacency matrix\nvector<vector<int>> hamiltonian_circuit(int n, vector<vector<bool>> &mat) {\n    vector<int> circuit; // Initially empty circuit\n    vector<vector<int>> ans; // To store all the circuits\n\n    for (int i = 1; i <= n; i++) { // Fix the starting vertex\n        circuit.push_back(i); // Add i to circuit\n        backtrack(i, n, circuit, ans, mat);\n        circuit.pop_back(); // Remove i from circuit\n    }\n\n    return ans;\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(NULL);\n    int t;\n    cin >> t;\n    while(t--) {\n        int n; cin >> n;\n        int m; cin >> m;\n\n        // Adjacency matrix\n        vector<vector<bool>> mat(n + 1, vector<bool> (n + 1, false));\n        while (m--) {\n            int a, b;\n            cin >> a >> b;\n            mat[a][b] = 1;\n            mat[b][a] = 1;\n        }\n        vector<vector<int>> cycles = hamiltonian_circuit(n, mat);\n        sort(cycles.begin(), cycles.end());\n\n        for (auto &x: cycles) {\n            for (auto &y: x) {\n                cout << y << \" \";\n            }\n            cout << \"\\n\";\n        }\n    }\n    return 0;\n}",
+      "Java": "import java.util.*;\n\nclass Main {\n\n    // Check if 'next' vertex can be added after vertex 'v'\n    static boolean check(int v, int next, ArrayList<Integer> circuit, boolean[][] mat) {\n        if (mat[v][next] == false) // To check if v is adjacent to next\n            return false;\n\n        for (int i = 0; i < circuit.size(); i++) { // To check if next is already visited\n            if (circuit.get(i) == next)\n                return false;\n        }\n\n        return true;\n    }\n\n    static void backtrack(int v, int n, ArrayList<Integer> circuit, ArrayList<ArrayList<Integer>> ans, boolean[][] mat) {\n        if (circuit.size() == n) { // Circuit is completed\n            if (mat[circuit.get(0)][v]) { // Check if cycle is completed, starting should be adjacent to ending\n                circuit.add(circuit.get(0));\n                ans.add(new ArrayList<>(circuit));\n                circuit.remove(circuit.size() - 1);\n            }\n            return;\n        }\n\n        for (int i = 1; i <= n; i++) {\n            // Calling the check function\n            if (!check(v, i, circuit, mat))\n                continue;\n\n            // If not visit and is adjacent, add it to our candidate solution\n            circuit.add(i);\n            backtrack(i, n, circuit, ans, mat);\n            circuit.remove(circuit.size() - 1);\n        }\n    }\n\n    // Number of vertices and adjacency matrix\n    static ArrayList<ArrayList<Integer>> hamiltonianCircuit(int n, boolean[][] mat) {\n        ArrayList<Integer> circuit = new ArrayList<>(); // Initially empty circuit\n        ArrayList<ArrayList<Integer>> ans = new ArrayList<>(); // To store all the circuits\n\n        for (int i = 1; i <= n; i++) { // Fix the starting vertex\n            circuit.add(i); // Add i to circuit\n            backtrack(i, n, circuit, ans, mat);\n            circuit.remove(circuit.size() - 1); // Remove i from circuit\n        }\n\n        return ans;\n    }\n\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int t = scanner.nextInt();\n        while(t-- > 0) {\n            int n = scanner.nextInt();\n            int m = scanner.nextInt();\n\n            // Adjacency matrix\n            boolean[][] mat = new boolean[n + 1][n + 1];\n            while (m-- > 0) {\n                int a = scanner.nextInt();\n                int b = scanner.nextInt();\n                mat[a][b] = true;\n                mat[b][a] = true;\n            }\n            ArrayList<ArrayList<Integer>> cycles = hamiltonianCircuit(n, mat);\n            cycles.sort((x, y) -> {\n                return x.toString().compareTo(y.toString());\n            });\n\n            for (ArrayList<Integer> x : cycles) {\n                for (int y : x) {\n                    System.out.print(y + \" \");\n                }\n                System.out.println();\n            }\n        }\n    }\n}",
+      "Python3": "# Check if 'next' vertex can be added after vertex 'v'\ndef check(v, next, circuit, mat):\n    if mat[v][next] == 0:  # To check if v is adjacent to next\n        return False\n\n    for i in range(len(circuit)):  # To check if next is already visited\n        if circuit[i] == next:\n            return False\n\n    return True\n\ndef backtrack(v, n, circuit, ans, mat):\n    if len(circuit) == n:  # Circuit is completed\n        if mat[circuit[0]][v] == 1:  # Check if cycle is completed, starting should be adjacent to ending\n            circuit.append(circuit[0])\n            ans.append(circuit[:])\n            circuit.pop()\n        return\n\n    for i in range(1, n + 1):\n        # Calling the check function\n        if not check(v, i, circuit, mat):\n            continue\n\n        # If not visit and is adjacent, add it to our candidate solution\n        circuit.append(i)\n        backtrack(i, n, circuit, ans, mat)\n        circuit.pop()\n\n# Number of vertices and adjacency matrix\ndef hamiltonian_circuit(n, mat):\n    circuit = []  # Initially empty circuit\n    ans = []  # To store all the circuits\n\n    for i in range(1, n + 1):  # Fix the starting vertex\n        circuit.append(i)  # Add i to circuit\n        backtrack(i, n, circuit, ans, mat)\n        circuit.pop()  # Remove i from circuit\n\n    return ans\n\nimport sys\ninput = sys.stdin.readline\nfor _ in range(int(input())):\n    n, m = map(int, input().split())\n\n    # Adjacency matrix\n    mat = [[False] * (n + 1) for _ in range(n + 1)]\n    for _ in range(m):\n        a, b = map(int, input().split())\n        mat[a][b] = 1\n        mat[b][a] = 1\n\n    cycles = hamiltonian_circuit(n, mat)\n    cycles.sort()\n\n    for x in cycles:\n        print(*x)\n",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\n\nfunction check(v, next, circuit, mat) {\n    if (mat[v][next] === 0) // To check if v is adjacent to next\n        return false;\n\n    for (let i = 0; i < circuit.length; i++) { // To check if next is already visited\n        if (circuit[i] === next)\n            return false;\n    }\n\n    return true;\n}\n\nfunction backtrack(v, n, circuit, ans, mat) {\n    if (circuit.length === n) { // Circuit is completed\n        if (mat[circuit[0]][v]) { // Check if cycle is completed, starting should be adjacent to ending\n            circuit.push(circuit[0]);\n            ans.push([...circuit]);\n            circuit.pop();\n        }\n        return;\n    }\n\n    for (let i = 1; i <= n; i++) {\n        // Calling the check function\n        if (!check(v, i, circuit, mat))\n            continue;\n\n        // If not visit and is adjacent, add it to our candidate solution\n        circuit.push(i);\n        backtrack(i, n, circuit, ans, mat);\n        circuit.pop();\n    }\n}\n\n// Number of vertices and adjacency matrix\nfunction hamiltonianCircuit(n, mat) {\n    let circuit = []; // Initially empty circuit\n    let ans = []; // To store all the circuits\n\n    for (let i = 1; i <= n; i++) { // Fix the starting vertex\n        circuit.push(i); // Add i to circuit\n        backtrack(i, n, circuit, ans, mat);\n        circuit.pop(); // Remove i from circuit\n    }\n\n    return ans;\n}\n\nlet t = +lines[idx++];\nwhile(t--) {\n    let [n, m] = lines[idx++].split(' ').map(Number);\n\n    // Adjacency matrix\n    let mat = Array(n + 1).fill(0).map(() => Array(n + 1).fill(0));\n    for (let i = 0; i < m; i++) {\n        let [a, b] = lines[idx++].split(' ').map(Number);\n        mat[a][b] = 1;\n        mat[b][a] = 1;\n    }\n    let cycles = hamiltonianCircuit(n, mat);\ncycles.sort((a, b) => a.join('') - b.join(''));\n\n    for (let x of cycles) {\n        console.log(x.join(' '));\n    }\n}\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

@@ -1,0 +1,117 @@
+{
+  "questionId": "Q7046",
+  "title": "Awkward Pairs",
+  "slug": "awkward-pairs",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-03",
+  "metadata": {
+    "category": "Number Theory",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Digit DP",
+      "GCD",
+      "Counting",
+      "Combinatorics"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Aayush has recently started teaching Latin Dance. Today, he will be teaching Salsa. For this, he needs to divide the people attending his dance class into pairs. Usually in Salsa, the dance pairs consist of one girl and one boy. But Aayush doesn't find this convention very interesting. He is rather more concerned about the IQ of people who are members of the same pair. Precisely, if the sums of digits of the IQ score of the two people forming a pair are co-prime, then the pair will be awkward\\text{awkward}awkward according to Aayush. For example IQ scores 12 (1+2=3) and 22 (2+2=4) form an awkward pair.\n\nThe IQ scores of all the people attending the Salsa class are pairwise distinct. The lowest IQ is L\\text{L}L and the largest IQ is R\\text{R}R. Moreover, there are exactly R-L+1\\text{R-L+1}R-L+1 people attending the Salsa class. Aayush wants to know the number of ways in which an awkward pair can be formed modulo 109+710^9+7109+7. Two ways are different if at least one of the members in the pairs formed is different.\n\n###Input\r\nThe first line contains a single interger T\\text{T}T - the number of testcases.\n\nEach of the following T\\text{T}T lines contains two space separated integers L\\text{L}L and R\\text{R}R, as described in the problem.\n\n###Output\r\nFor every test case, print an integer answer modulo 109+710^9+7109+7.\n\n###Constraints\r\n1≤T≤101 \\leq \\text{T} \\leq 101≤T≤10\n\n1≤L,&nbsp;R≤10181 \\leq \\text{L, R} \\leq 10^{18}1≤L,&nbsp;R≤1018\n\n###Sample Input\r\n2\r\n5 8\r\n7 10\n\n###Sample Output\r\n5\r\n6",
+    "constraints": [
+      "1 ≤ T ≤ 10",
+      "1 ≤ L ≤ R ≤ 10^18"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains two space‑separated integers L and R (1 ≤ L ≤ R ≤ 10^18).",
+    "outputFormat": "For each test case output a single line containing the number of unordered pairs (i, j) with L ≤ i < j ≤ R such that gcd(sumDigits(i), sumDigits(j)) = 1, modulo 1000000007.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For every integer x we need the sum of its decimal digits, denoted s(x). The answer for a range [L, R] can be expressed using the frequencies of each possible digit‑sum. Let cnt[d] be the amount of numbers in the range whose digit‑sum equals d (0 ≤ d ≤ 162 because 9·18 = 162). Then the required number of unordered pairs is:\n\n    answer = C(cnt[1], 2)                                 // pairs where both sums are 1 (gcd(1,1)=1)\n           + Σ_{1 ≤ a < b ≤ 162, gcd(a,b)=1} cnt[a]·cnt[b]\n\nAll other self‑pairs (a = b > 1) are not counted because gcd(a,a)=a>1.\n\nThus the problem reduces to obtaining cnt[d] for every d. This is done with a classic digit DP that counts how many numbers ≤ X have a given digit‑sum. The DP state is (position, tight, currentSum) and runs over at most 19 positions (since R ≤ 10^18). The transition tries all possible digits (0‑9) respecting the tight flag. The DP returns an array of size 163 with the frequencies for each sum.\n\nFor a test case we compute cntR = frequencies for numbers ≤ R and cntL‑1 = frequencies for numbers ≤ L‑1, then cnt = cntR – cntL‑1 (element‑wise). With these frequencies we evaluate the formula above, performing all multiplications modulo MOD = 1 000 000 007 (using 128‑bit intermediate to avoid overflow). The overall complexity per test case is O(19·163·10) ≈ 3·10^4 operations, easily fast for T ≤ 10.\n\nThe algorithm steps are:\n1. Implement a function `freqUpTo(X)` that returns a vector<long long> freq[0..162] for numbers 0…X.\n2. For each test case compute `freqR = freqUpTo(R)` and `freqL = freqUpTo(L-1)`; obtain `cnt[d] = freqR[d] - freqL[d]`.\n3. Initialise answer = C(cnt[1],2) mod MOD.\n4. For every 1 ≤ a < b ≤ 162, if gcd(a,b)==1 add (cnt[a] * cnt[b]) % MOD to answer.\n5. Output answer.\n\nThe DP uses memoisation for (pos, tight, sum) where `tight` is 0/1. Because the sum dimension is small, the memory consumption is negligible.",
+    "timeComplexity": "O(T · 19 · 163 · 10) ≈ O(T·3·10^4), essentially linear in the number of test cases.",
+    "spaceComplexity": "O(19 · 2 · 163) ≈ O(6000) for the DP tables, plus O(163) for the frequency arrays.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n#include <stdint.h>\n#define MOD 1000000007ULL\n\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

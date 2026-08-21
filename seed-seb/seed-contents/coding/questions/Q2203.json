@@ -1,0 +1,130 @@
+{
+  "questionId": "Q2203",
+  "title": "Wildcard Matching",
+  "slug": "wildcard-matching",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Wildcard Matching",
+      "String Matching",
+      "Strings"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Strings"
+    ]
+  },
+  "content": {
+    "problemStatement": "Johnny is the author of the famous open source software ByteDict (Bytelandian electronic dictionary).\n\nBeing a fan of the word game Scrabble, Johnny would like to make ByteDict useful for Scrabble training. Therefore, he has decided to implement the \"Wildcard Matching\" feature.\n\nWildcard matching allows ByteDict's users to search for words matching a given wildcard pattern. A wildcard pattern may include the characters '*' or '?' in addition to the characters of the alphabet. A '*' matches any sequence of characters (including the empty sequence) and a '?' matches any single character.\n\nTo be more precise, a wildcard pattern is matched with a word if we can replace each '?' with an alphabet character and each '*' with a sequence of alphabet characters so that after replacement, the pattern becomes identical to the word.\n\nNow, as usual, please help Johnny implement the feature!",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 55000",
+      "1 <= Q <= 300",
+      "Word length <= 25",
+      "Pattern length <= 25",
+      "Alphabet: 'a'-'z', 'A'-'Z', '0'-'9'"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case starts with a line containing two integers N and Q, where N is the number of words and Q is the number of queries. The next N lines contain the words, and the next Q lines contain the wildcard patterns.",
+    "outputFormat": "For each query, print the query itself, a single space, and the number of dictionary words that match the query. After all queries of a test case, output a blank line.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n1 7\nabc\nabc\ncba\na??\n??a\n*?a\n***\n**a\n7 4\nspoj\ncodechef\nuva\ntju\nonlinejudge\nAcmicpc\nWorldcup2010\na\nsp?*\nc\nuvc",
+        "output": "abc 1\ncba 0\na?? 1\n??a 0\n*?a 0\n*** 1\n**a 0\na 1\nsp?* 1\nc 3\nuvc 0",
+        "explanation": "The first test case has 1 word and 7 queries. The second test case has 7 words and 4 queries."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n3 3\nabc\ndef\nghi\nabc\ndef\nghi",
+        "output": "abc 1\ndef 1\nghi 1",
+        "explanation": "The test case has 3 words and 3 queries. Each query matches one word."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n2 2\nab\ncd\nab\ncd",
+        "output": "ab 1\ncd 1",
+        "explanation": "The test case has 2 words and 2 queries. Each query matches one word."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1\na\na",
+        "expectedOutput": "a 1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n55000 300\na\na\n...\n...\n",
+        "expectedOutput": "...",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n5 5\naaaa\naaaa\naaaa\naaaa\naaaa\na\na\na\na\na",
+        "expectedOutput": "a 5\na 5\na 5\na 5\na 5",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n5 5\nabc\ndef\nghi\njkl\nmno\nabc\ndef\nghi\njkl\nmno",
+        "expectedOutput": "abc 1\ndef 1\nghi 1\njkl 1\nmno 1",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "2\n3 3\nabc\ndef\nghi\nabc\ndef\nghi\n3 3\njkl\nmno\npqr\njkl\nmno\npqr",
+        "expectedOutput": "abc 1\ndef 1\nghi 1\njkl 1\nmno 1\npqr 1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved using a simple string matching algorithm. For each query, iterate over all words and check if the word matches the query pattern. A word matches a pattern if all characters in the pattern are either '?' (which matches any single character), '*' (which matches any sequence of characters), or the same as the corresponding character in the word.",
+    "timeComplexity": "O(T * N * Q * max_word_length * max_pattern_length) per test case, where max_word_length is the maximum length of a word and max_pattern_length is the maximum length of a pattern.",
+    "spaceComplexity": "O(N * max_word_length) for storing the words, where N is the number of words and max_word_length is the maximum length of a word.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n#include <stdbool.h>\n\nbool match(const char *s, const char *p) {\n    int i = 0, j = 0;\n    int star = -1, ss = 0;\n    int n = strlen(s), m = strlen(p);\n    while (i < n) {\n        if (j < m && (p[j] == '?' || p[j] == s[i])) {\n            i++; j++;\n        } else if (j < m && p[j] == '*') {\n            star = j;\n            ss = i;\n            j++;\n        } else if (star != -1) {\n            j = star + 1;\n            ss++;\n            i = ss;\n        } else {\n            return false;\n        }\n    }\n    while (j < m && p[j] == '*') j++;\n    return j == m;\n}\n\nint main() {\n    int t; if (scanf(\"%d\", &t)!=1) return 0;\n    while (t--) {\n        int N, Q; scanf(\"%d %d\", &N, &Q);\n        char words[55000][26];\n        for (int i = 0; i < N; ++i) scanf(\"%s\", words[i]);\n        char pattern[26];\n        for (int qi = 0; qi < Q; ++qi) {\n            scanf(\"%s\", pattern);\n            int cnt = 0;\n            for (int i = 0; i < N; ++i) if (match(words[i], pattern)) cnt++;\n            printf(\"%s %d\\n\", pattern, cnt);\n        }\n        if (t) printf(\"\\n\");\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nbool match(const string &s, const string &p) {\n    int i = 0, j = 0;\n    int star = -1, ss = 0;\n    int n = s.size(), m = p.size();\n    while (i < n) {\n        if (j < m && (p[j] == '?' || p[j] == s[i])) {\n            ++i; ++j;\n        } else if (j < m && p[j] == '*') {\n            star = j;\n            ss = i;\n            ++j;\n        } else if (star != -1) {\n            j = star + 1;\n            ++ss;\n            i = ss;\n        } else {\n            return false;\n        }\n    }\n    while (j < m && p[j] == '*') ++j;\n    return j == m;\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while (T--) {\n        int N, Q; cin >> N >> Q;\n        vector<string> dict(N);\n        for (int i = 0; i < N; ++i) cin >> dict[i];\n        string pat;\n        for (int q = 0; q < Q; ++q) {\n            cin >> pat;\n            int cnt = 0;\n            for (const auto &w : dict) if (match(w, pat)) ++cnt;\n            cout << pat << ' ' << cnt << '\\n';\n        }\n        if (T) cout << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    private static boolean match(String s, String p) {\n        int i = 0, j = 0;\n        int star = -1, ss = 0;\n        int n = s.length(), m = p.length();\n        while (i < n) {\n            if (j < m && (p.charAt(j) == '?' || p.charAt(j) == s.charAt(i))) {\n                i++; j++;\n            } else if (j < m && p.charAt(j) == '*') {\n                star = j;\n                ss = i;\n                j++;\n            } else if (star != -1) {\n                j = star + 1;\n                ss++;\n                i = ss;\n            } else {\n                return false;\n            }\n        }\n        while (j < m && p.charAt(j) == '*') j++;\n        return j == m;\n    }\n\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st;\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder out = new StringBuilder();\n        for (int tc = 0; tc < T; ++tc) {\n            String line;\n            // skip possible blank lines\n            while ((line = br.readLine()) != null && line.trim().isEmpty()) {}\n            st = new StringTokenizer(line);\n            int N = Integer.parseInt(st.nextToken());\n            int Q = Integer.parseInt(st.nextToken());\n            String[] dict = new String[N];\n            for (int i = 0; i < N; ++i) dict[i] = br.readLine().trim();\n            for (int q = 0; q < Q; ++q) {\n                String pat = br.readLine().trim();\n                int cnt = 0;\n                for (String w : dict) if (match(w, pat)) cnt++;\n                out.append(pat).append(' ').append(cnt).append('\\n');\n            }\n            if (tc != T-1) out.append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys\n\ndef match(s: str, p: str) -> bool:\n    i = j = 0\n    star = -1\n    ss = 0\n    n, m = len(s), len(p)\n    while i < n:\n        if j < m and (p[j] == '?' or p[j] == s[i]):\n            i += 1\n            j += 1\n        elif j < m and p[j] == '*':\n            star = j\n            ss = i\n            j += 1\n        elif star != -1:\n            j = star + 1\n            ss += 1\n            i = ss\n        else:\n            return False\n    while j < m and p[j] == '*':\n        j += 1\n    return j == m\n\ndef solve():\n    data = sys.stdin.read().splitlines()\n    idx = 0\n    t = int(data[idx].strip()); idx += 1\n    out_lines = []\n    for _ in range(t):\n        # skip blank lines\n        while idx < len(data) and data[idx].strip() == '':\n            idx += 1\n        N, Q = map(int, data[idx].split()); idx += 1\n        words = [data[idx + i].strip() for i in range(N)]\n        idx += N\n        for _ in range(Q):\n            pat = data[idx].strip(); idx += 1\n            cnt = sum(1 for w in words if match(w, pat))\n            out_lines.append(f\"{pat} {cnt}\")\n        if _ != t-1:\n            out_lines.append('')\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').split(/\\r?\\n/);\nlet idx = 0;\nfunction nextNonEmpty() {\n  while (idx < lines.length && lines[idx].trim() === '') idx++;\n  return lines[idx++];\n}\nfunction match(s, p) {\n  let i = 0, j = 0;\n  let star = -1, ss = 0;\n  const n = s.length, m = p.length;\n  while (i < n) {\n    if (j < m && (p[j] === '?' || p[j] === s[i])) {\n      i++; j++;\n    } else if (j < m && p[j] === '*') {\n      star = j; ss = i; j++;\n    } else if (star !== -1) {\n      j = star + 1; ss++; i = ss;\n    } else {\n      return false;\n    }\n  }\n  while (j < m && p[j] === '*') j++;\n  return j === m;\n}\nconst T = parseInt(nextNonEmpty().trim(), 10);\nlet output = [];\nfor (let tc = 0; tc < T; ++tc) {\n  const header = nextNonEmpty().trim().split(/\\s+/);\n  const N = parseInt(header[0], 10);\n  const Q = parseInt(header[1], 10);\n  const dict = [];\n  for (let i = 0; i < N; ++i) dict.push(lines[idx++].trim());\n  for (let q = 0; q < Q; ++q) {\n    const pat = lines[idx++].trim();\n    let cnt = 0;\n    for (const w of dict) if (match(w, pat)) cnt++;\n    output.push(pat + ' ' + cnt);\n  }\n  if (tc !== T - 1) output.push('');\n}\nconsole.log(output.join('\\n'));\n"
+    }
+  }
+}

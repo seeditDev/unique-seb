@@ -1,0 +1,141 @@
+{
+  "questionId": "Q5523",
+  "title": "Peaceful Calculator",
+  "slug": "peaceful-calculator",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "32-bit operations",
+      "Zenfix notation",
+      "Expression evaluation"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Mathematics"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "In the 1920's a mad scientist by the name Exor invented a notation for evaluating complex mathematical expressions. This notation popularly goes by the name **\"Zenfix\"** notation. In more formal terms, **Zenfix** expression is an expression which consists of **tokens**. Each **token** is either an operation from the list **{ ! , ^ , / , * , + , - }** or an integer.\n\nAll arithmetic operation here are **32-bit operations**. They are defined through auxiliary unary operation **32-bit residue** as follows (please read this carefully, some definitions are non-standard):\n\n\n**32-bit residue of A** is defined as the unique integer **X** in the range **[-231, 231)** for which the usual difference of **A** and **X** is divisible by **232**.\n**32-bit difference A - B** is defined as a 32-bit residue of the usual difference of **A** and **B**.\n**32-bit sum A + B** is defined as a 32-bit residue of the usual sum of **A** and **B**.\n**32-bit product A * B** is defined as a 32-bit residue of the usual product of **A** and **B**.\n**32-bit quotient A / B** is defined as the smallest integer **C** in the range **[-231, 231)** such that **B * C = A** (note the **B * C** here is a 32-bit product of **B** and **C**). If no such integer **C** exists then result of division is undefined, which means that error occurs during the calculation.\n**32-bit power A ^ B** is defined as follows. For **B &gt; 0** we define **A ^ B = A * A * ... * A**, where **A** repeats **B** times (here * is a 32-bit multiplication). For **B = 0** we define **A ^ 0 = 1**. Finally, for **B &lt; 0** we define **A ^ B = 1 / (A ^ (-B))**, where **A ^ (-B)** is defined above (**-B** is the usual negation of **B**) and / is a 32-bit division operation. If result of division here is undefined it means that error occurs during the calculation.\n**32-bit factorial A!** is defined as follows. For **A &gt; 0** we define **A! = 1 * 2 * 3 * ... * A** (here * is a 32-bit multiplication). For **A = 0** we define **0! = 1**. Finally, for **A &lt; 0** we define **A! = (-1) * (-2) * (-3) * ... * A** (here again * is a 32-bit multiplication and **-X** for **X = 1, 2, 3, ...** means usual negation).\n\n\nEach operation has its own priority defined by its index in this list: the smaller the index the higher the priority. Therefore,\n\n\nthe most priority operation is **factorial** (**!**),\nthe second most priority operation is **exponentiation** (**^**),\nthe third most priority operation is **division** (**/**),\nthe fourth most priority operation is **multiplication** (*****),\nthe fifth most priority operation is **addition** (**+**),\nand, finally, the less priority operation is **subtraction** (**-**).\n\n\nWe could abbreviate the list of operations sorted by priority as **FEDMAS** (the first letter of the title of each operation was chosen).\n\nThe evaluation of a **Zenfix** expression goes as follows:\n\n\nIf expression contains a factorial sign (**!**) followed by an integer then we choose the leftmost such occurrence and perform the factorial operation which will be defined below. Namely, we replace the integer that follows the factorial sign by its factorial value and delete the factorial sign from the expression.\nOtherwise, if there exists an operation followed by at least 3 integers we at first choose the first operation in **EDMAS** with this property (that is, among operations followed by at least three integers we choose the operation with the highest priority). Then we choose the leftmost occurrence of such a case with this operation and perform calculation. Namely, we replace the operation and two following integers by the result of this operation applied to these integers. If error occurs during this calculation then you should stop evaluation of expression.\nOtherwise, if there exists an operation followed by exactly 2 integers we proceed exactly as in the previous rule.\nWe repeat the first three steps until we can no longer repeat them or error occurs during some calculation.\nAt the end of this evaluation, if we are left with a single integer, the expression is called correct, otherwise it is called incorrect. In particular, if error occurs during some calculation, the expression is incorrect.\n\n\n\nYour task is for the given Zenfix expression check whether it is correct or not by modeling process of its evaluation and output each intermediate calculation that occurs.",
+    "constraints": [
+      "1 ≤ T ≤ 10000",
+      "1 ≤ N ≤ 1000",
+      "Each token is either an integer in the range [-2^31, 2^31) or a character in the set { ! , ^ , / , * , + , - }",
+      "The sum of N over the input does not exceed 10000"
+    ],
+    "inputFormat": "The first line contains T, the number of test cases. Each test case contains two lines. The first line contains an integer N, the number of tokens in the expression. The second line contains the expression as a list of N space-separated tokens.",
+    "outputFormat": "For each test case, output the process of evaluation of the expression. At each step when a successful calculation is performed, output on a separate line I O A B C. Here I is the index of the operation in the list of tokens of the current expression (tokens are numbered starting from 1). O is the operation itself (one of the characters in the set { ! , ^ , / , * , + , - }). A and B are the operands. In the case of a factorial operation (!), output B as -1. C is the result of operation O applied to numbers A and B (or only to A in the case of a factorial operation). After all possible calculations are performed, output OK if the expression is correct, and NOT OK otherwise.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4\n5\n- 5 * 6 7\n15\n- * / 15 - 7 + 1 1 3 + 2 + 1 1\n16\n+ 2 3 4 * 1 2 3 4 ^ 6 7 * 5 6 7\n21\n! -3 + * 167 164 - 257 + 190 ! 6 - / 272 0 ^ 341 12 18 !",
+        "output": "3 * 6 7 42\n1 - 5 42 -37\nOK\n7 + 1 1 2\n5 - 7 2 5\n3 / 15 5 3\n2 * 3 3 9\n5 + 1 1 2\n3 + 2 2 4\n1 - 9 4 5\nOK\n5 * 1 2 2\n11 * 5 6 30\n8 ^ 6 7 279936\n1 + 2 3 5\nNOT OK\n1 ! -3 -1 -6\n10 ! 6 -1 720\n15 ^ 341 12 2062435601\nNOT OK",
+        "explanation": "The given test cases demonstrate the evaluation of different Zenfix expressions."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n3\n1 + 2 3",
+        "output": "1 + 2 3 5\nOK",
+        "explanation": "The expression is evaluated as 1 + 2 + 3 = 6."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n3\n1 * 2 3",
+        "output": "1 * 2 3 6\nOK",
+        "explanation": "The expression is evaluated as 1 * 2 * 3 = 6."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n1",
+        "expectedOutput": "OK",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n10\n2147483647 + 2147483647 + 2147483647 + 2147483647 + 2147483647 + 2147483647 + 2147483647 + 2147483647 + 2147483647 + 2147483647",
+        "expectedOutput": "NOT OK",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n5\n0 + 0 + 0 + 0 + 0",
+        "expectedOutput": "OK",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n5\n1 / 0 + 1 + 1 + 1",
+        "expectedOutput": "NOT OK",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "5\n5\n1 + 2 + 3 + 4 + 5\n5\n1 * 2 * 3 * 4 * 5\n5\n1 ^ 2 ^ 3 ^ 4 ^ 5\n5\n1 - 2 - 3 - 4 - 5\n5\n1 ! -1 ! -2 ! -3 ! -4",
+        "expectedOutput": "OK\nOK\nOK\nOK\nOK",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem requires evaluating a mathematical expression in Zenfix notation, which involves 32-bit operations. The expression is evaluated step by step, following the order of operations (FEDMAS). At each step, the operation with the highest priority is performed, and the result is output. If an error occurs during the calculation, the expression is considered incorrect.",
+    "timeComplexity": "O(T * N^2) per test case, O(T * N^2) total",
+    "spaceComplexity": "O(N) — the dominant structure is the array of tokens",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <math.h>\n\n#define MAX_N 1000\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int N;\n        scanf(\"%d\", &N);\n        char tokens[N][20];\n        for (int i = 0; i < N; i++) {\n            scanf(\"%s\", tokens[i]);\n        }\n        // Evaluate the expression\n        int result = evaluateExpression(tokens, N);\n        if (result != -1) {\n            printf(\"OK\\n\");\n        } else {\n            printf(\"NOT OK\\n\");\n        }\n    }\n    return 0;\n}\n\nint evaluateExpression(char *tokens[], int N) {\n    // Implement the evaluation logic here\n    // ...",
+      "C++": "#include <iostream>\n#include <vector>\n#include <string>\n#include <cmath>\n\nusing namespace std;\n\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        int N;\n        cin >> N;\n        vector<string> tokens(N);\n        for (int i = 0; i < N; i++) {\n            cin >> tokens[i];\n        }\n        // Evaluate the expression\n        int result = evaluateExpression(tokens);\n        if (result != -1) {\n            cout << \"OK\" << endl;\n        } else {\n            cout << \"NOT OK\" << endl;\n        }\n    }\n    return 0;\n}\n\nint evaluateExpression(vector<string> &tokens) {\n    // Implement the evaluation logic here\n    // ...",
+      "Java": "import java.util.Scanner;\nimport java.util.ArrayList;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int T = scanner.nextInt();\n        while (T-- > 0) {\n            int N = scanner.nextInt();\n            String[] tokens = new String[N];\n            for (int i = 0; i < N; i++) {\n                tokens[i] = scanner.next();\n            }\n            // Evaluate the expression\n            int result = evaluateExpression(tokens);\n            if (result != -1) {\n                System.out.println(\"OK\");\n            } else {\n                System.out.println(\"NOT OK\");\n            }\n        }\n    }\n\n    public static int evaluateExpression(String[] tokens) {\n        // Implement the evaluation logic here\n        // ...",
+      "Python3": "import sys\n\nT = int(input())\nwhile T > 0:\n    N = int(input())\n    tokens = input().split()\n    # Evaluate the expression\n    result = evaluateExpression(tokens)\n    if result != -1:\n        print(\"OK\")\n    else:\n        print(\"NOT OK\")\n    T -= 1\n\ndef evaluateExpression(tokens):\n    # Implement the evaluation logic here\n    # ...",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\n\nfunction nextInt() {\n    return parseInt(input[idx++]);\n}\n\nfunction nextString() {\n    return input[idx++];\n}\n\nlet T = nextInt();\nwhile (T-- > 0) {\n    let N = nextInt();\n    let tokens = nextString().split(' ');\n    // Evaluate the expression\n    let result = evaluateExpression(tokens);\n    if (result != -1) {\n        console.log(\"OK\");\n    } else {\n        console.log(\"NOT OK\");\n    }\n}\n\nfunction evaluateExpression(tokens) {\n    // Implement the evaluation logic here\n    // ..."
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

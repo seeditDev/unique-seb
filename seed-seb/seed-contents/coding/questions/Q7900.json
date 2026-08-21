@@ -1,0 +1,128 @@
+{
+  "questionId": "Q7900",
+  "title": "Xor Compare",
+  "slug": "xor-compare",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Bit Manipulation",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "XOR",
+      "Bitwise Comparison",
+      "Counting",
+      "Prefix"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given three non-negative integers XXX, YYY and NNN. Find the number of integers ZZZ such that 0≤Z≤N0 \\le Z \\le N0≤Z≤N and (X⊕Z)&lt;(Y⊕Z)(X \\oplus Z) \\lt (Y \\oplus Z)(X⊕Z)&lt;(Y⊕Z), where ⊕\\oplus⊕ denotes the bitwise XOR operation.",
+    "constraints": [
+      "1 ≤ T ≤ 1000",
+      "0 ≤ X, Y, N ≤ 2^30‑1"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains three space‑separated non‑negative integers X, Y and N.",
+    "outputFormat": "For each test case output a single line with the number of integers Z (0 ≤ Z ≤ N) such that (X ⊕ Z) < (Y ⊕ Z).",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n1 2 10\n2 1 10\n0 0 7",
+        "output": "6\n5\n0",
+        "explanation": ""
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "If X equals Y, the two XOR values are always equal, so the answer is 0. Otherwise let k be the most significant bit where X and Y differ (k = floor(log2(X xor Y))). At this bit the comparison of (X⊕Z) and (Y⊕Z) is decided solely by Z_k: • If X_k = 0 and Y_k = 1 we need Z_k = 0. • If X_k = 1 and Y_k = 0 we need Z_k = 1. All lower bits are free. Hence the problem reduces to counting numbers Z in [0, N] whose k‑th bit equals a required value v. The count of numbers ≤ N with bit k = 1 can be computed by the standard periodic‑pattern formula: let total = N + 1, cycle = 1 << (k + 1), full = total / cycle, rem = total % cycle, ones = full * (1 << k) + max(0, rem - (1 << k)). Then zeros = total - ones. The answer is ones if v = 1 else zeros. This runs in O(1) per test case.",
+    "timeComplexity": "O(T) – constant work per test case.",
+    "spaceComplexity": "O(1) – only a few integer variables.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdint.h>\n\nstatic inline int64_t countOnes(int64_t N, int k){\n    int64_t total = N + 1;\n    int64_t cycle = 1LL << (k + 1);\n    int64_t full = total / cycle;\n    int64_t rem = total % cycle;\n    int64_t ones = full * (1LL << k) + (rem > (1LL << k) ? rem - (1LL << k) : 0);\n    return ones;\n}\n\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    while(T--){\n        uint32_t X, Y, N; scanf(\"%u %u %u\", &X, &Y, &N);\n        if (X == Y){\n            printf(\"0\\n\");\n            continue;\n        }\n        uint32_t diff = X ^ Y;\n        int k = 31 - __builtin_clz(diff); // highest differing bit\n        int needOne = ((X >> k) & 1) ? 0 : 1; // need Z_k = 1 when X_k=0,Y_k=1 else 0\n        int64_t ones = countOnes(N, k);\n        int64_t total = (int64_t)N + 1;\n        int64_t ans = needOne ? ones : (total - ones);\n        printf(\"%lld\\n\", ans);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nlong long countOnes(long long N, int k){\n    long long total = N + 1;\n    long long cycle = 1LL << (k + 1);\n    long long full = total / cycle;\n    long long rem = total % cycle;\n    long long ones = full * (1LL << k) + max(0LL, rem - (1LL << k));\n    return ones;\n}\n\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        unsigned int X,Y,N; cin>>X>>Y>>N;\n        if(X==Y){ cout<<0<<\"\\n\"; continue; }\n        unsigned int diff = X ^ Y;\n        int k = 31 - __builtin_clz(diff);\n        int needOne = ((X>>k)&1) ? 0 : 1; // need Z_k = 1 when X_k=0\n        long long ones = countOnes(N, k);\n        long long total = (long long)N + 1;\n        long long ans = needOne ? ones : (total - ones);\n        cout<<ans<<\"\\n\";\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    private static long countOnes(long N, int k){\n        long total = N + 1;\n        long cycle = 1L << (k + 1);\n        long full = total / cycle;\n        long rem = total % cycle;\n        long ones = full * (1L << k) + Math.max(0L, rem - (1L << k));\n        return ones;\n    }\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder sb = new StringBuilder();\n        int T = Integer.parseInt(br.readLine().trim());\n        while (T-- > 0) {\n            StringTokenizer st = new StringTokenizer(br.readLine());\n            long X = Long.parseLong(st.nextToken());\n            long Y = Long.parseLong(st.nextToken());\n            long N = Long.parseLong(st.nextToken());\n            if (X == Y) {\n                sb.append(0).append('\\n');\n                continue;\n            }\n            long diff = X ^ Y;\n            int k = 63 - Long.numberOfLeadingZeros(diff);\n            int needOne = ((X >> k) & 1L) == 1L ? 0 : 1; // need Z_k = 1 when X_k=0\n            long ones = countOnes(N, k);\n            long total = N + 1;\n            long ans = needOne == 1 ? ones : (total - ones);\n            sb.append(ans).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef count_ones(N, k):\n    total = N + 1\n    cycle = 1 << (k + 1)\n    full = total // cycle\n    rem = total % cycle\n    ones = full * (1 << k) + max(0, rem - (1 << k))\n    return ones\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out = []\n    for _ in range(T):\n        X = int(next(it)); Y = int(next(it)); N = int(next(it))\n        if X == Y:\n            out.append('0')\n            continue\n        diff = X ^ Y\n        k = diff.bit_length() - 1  # highest differing bit\n        need_one = 0 if (X >> k) & 1 else 1\n        ones = count_ones(N, k)\n        total = N + 1\n        ans = ones if need_one else total - ones\n        out.append(str(ans))\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    solve()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet out = [];\nfunction countOnes(N, k){\n  const total = N + 1n;\n  const cycle = 1n << BigInt(k + 1);\n  const full = total / cycle;\n  const rem = total % cycle;\n  const ones = full * (1n << BigInt(k)) + (rem > (1n << BigInt(k)) ? rem - (1n << BigInt(k)) : 0n);\n  return ones;\n}\nfor(let t=0; t<T; ++t){\n  const X = BigInt(input[idx++]);\n  const Y = BigInt(input[idx++]);\n  const N = BigInt(input[idx++]);\n  if (X === Y){ out.push('0'); continue; }\n  const diff = X ^ Y;\n  const k = diff.toString(2).length - 1; // highest set bit index\n  const needOne = ((X >> BigInt(k)) & 1n) === 0n ? 1 : 0; // need Z_k = 1 when X_k=0\n  const ones = countOnes(N, k);\n  const total = N + 1n;\n  const ans = needOne ? ones : total - ones;\n  out.push(ans.toString());\n}\nconsole.log(out.join('\\n'));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

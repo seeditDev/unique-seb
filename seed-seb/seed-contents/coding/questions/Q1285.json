@@ -1,0 +1,124 @@
+{
+  "questionId": "Q1285",
+  "title": "Optimized Implementation of DSU",
+  "slug": "optimized-implementation-of-dsu",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Data Structures",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "Union Find",
+      "Disjoint Set Union",
+      "Path Compression",
+      "Data Structures",
+      "Union by Size"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Disjoint Set Union"
+    ]
+  },
+  "content": {
+    "problemStatement": "Fill in the blanks to implement the optimizations in the previous lessons in the code editor.",
+    "constraints": [
+      "1 \u2264 T \u2264 10",
+      "1 \u2264 n \u2264 10^6",
+      "1 \u2264 m \u2264 10^6",
+      "0 \u2264 a, b < n"
+    ],
+    "inputFormat": "First line contains an integer T, the number of test cases. Each test case starts with two integers n and m (1 \u2264 n \u2264 10^6, 1 \u2264 m \u2264 10^6) \u2013 the number of elements and the number of operations. Then m lines follow, each describing an operation. An operation is either \"union a b\" (merge the sets containing a and b) or \"find a\" (output the representative of the set containing a). Elements are numbered from 0 to n\u20111.",
+    "outputFormat": "For every \"find\" operation, print the leader (representative) of the set containing the queried element on a separate line.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\\n5 7\\nunion 1 0\\nunion 2 1\\nfind 0\\nfind 1\\nfind 2\\nfind 3\\nfind 4",
+        "output": "1\\n1\\n1\\n3\\n4",
+        "explanation": "The two union operations connect elements 0,1,2 into one set whose leader becomes 1 (the root after union by size). Subsequent finds return 1 for 0,1,2 and each element remains its own leader for 3 and 4."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\\n10 5\\nfind 0\\nfind 1\\nfind 2\\nfind 3\\nfind 4",
+        "output": "0\\n1\\n2\\n3\\n4",
+        "explanation": "No union operations are performed, so each element is its own set and find returns the element itself."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "We maintain a parent array and a size array. The function find(x) returns the root of x using path compression (while recursing, we set parent[x] to the root). The function union(a,b) first finds the roots ra and rb. If they are different, we attach the smaller tree to the larger one (union by size) and update the size of the new root. Both operations run in almost constant amortised time, O(\u03b1(n)), where \u03b1 is the inverse Ackermann function. For each test case we initialise the structures, process the m operations sequentially and output the answer for every find query.",
+    "timeComplexity": "O((n + m) \u00b7 \u03b1(n)) per test case, where \u03b1(n) is the inverse Ackermann function (practically \u2264 5).",
+    "spaceComplexity": "O(n) for the parent and size arrays per test case.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n#include <stdlib.h>\n\nint *parent;\nint *setSize;\n\nint dsuFind(int a) {\n    if (parent[a] == a) return a;\n    return parent[a] = dsuFind(parent[a]);\n}\n\nvoid dsuUnion(int a, int b) {\n    int ra = dsuFind(a);\n    int rb = dsuFind(b);\n    if (ra == rb) return;\n    if (setSize[ra] < setSize[rb]) {\n        int tmp = ra; ra = rb; rb = tmp;\n    }\n    parent[rb] = ra;\n    setSize[ra] += setSize[rb];\n}\n\nint main() {\n    int T; if (scanf(\"%d\", &T)!=1) return 0;\n    while (T--) {\n        int n, m; scanf(\"%d %d\", &n, &m);\n        parent = (int*)malloc(n * sizeof(int));\n        setSize = (int*)malloc(n * sizeof(int));\n        for (int i = 0; i < n; ++i) { parent[i] = i; setSize[i] = 1; }\n        for (int i = 0; i < m; ++i) {\n            char cmd[10]; scanf(\"%s\", cmd);\n            if (strcmp(cmd, \"union\") == 0) {\n                int a, b; scanf(\"%d %d\", &a, &b);\n                dsuUnion(a, b);\n            } else { // find\n                int a; scanf(\"%d\", &a);\n                printf(\"%d\\n\", dsuFind(a));\n            }\n        }\n        free(parent);\n        free(setSize);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while (T--) {\n        int n, m; cin >> n >> m;\n        vector<int> parent(n), sz(n,1);\n        iota(parent.begin(), parent.end(), 0);\n        function<int(int)> find = [&](int x){\n            return parent[x]==x ? x : parent[x]=find(parent[x]);\n        };\n        auto unite = [&](int a,int b){\n            int ra=find(a), rb=find(b);\n            if(ra==rb) return;\n            if(sz[ra] < sz[rb]) swap(ra,rb);\n            parent[rb]=ra; sz[ra]+=sz[rb];\n        };\n        for(int i=0;i<m;++i){\n            string cmd; cin>>cmd;\n            if(cmd==\"union\"){\n                int a,b; cin>>a>>b; unite(a,b);\n            }else{ // find\n                int a; cin>>a; cout<<find(a) << '\\n';\n            }\n        }\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    static int[] parent;\n    static int[] size;\n\n    static int find(int x) {\n        if (parent[x] == x) return x;\n        parent[x] = find(parent[x]);\n        return parent[x];\n    }\n\n    static void union(int a, int b) {\n        int ra = find(a);\n        int rb = find(b);\n        if (ra == rb) return;\n        if (size[ra] < size[rb]) {\n            int tmp = ra; ra = rb; rb = tmp;\n        }\n        parent[rb] = ra;\n        size[ra] += size[rb];\n    }\n\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st = new StringTokenizer(br.readLine());\n        int T = Integer.parseInt(st.nextToken());\n        while (T-- > 0) {\n            st = new StringTokenizer(br.readLine());\n            int n = Integer.parseInt(st.nextToken());\n            int m = Integer.parseInt(st.nextToken());\n            parent = new int[n];\n            size = new int[n];\n            for (int i = 0; i < n; i++) { parent[i] = i; size[i] = 1; }\n            for (int i = 0; i < m; i++) {\n                st = new StringTokenizer(br.readLine());\n                String cmd = st.nextToken();\n                if (cmd.equals(\"union\")) {\n                    int a = Integer.parseInt(st.nextToken());\n                    int b = Integer.parseInt(st.nextToken());\n                    union(a, b);\n                } else { // find\n                    int a = Integer.parseInt(st.nextToken());\n                    System.out.println(find(a));\n                }\n            }\n        }\n    }\n}",
+      "Python3": "import sys\n\ndef solve():\n    data = sys.stdin.buffer.read().splitlines()\n    if not data:\n        return\n    idx = 0\n    T = int(data[idx]); idx += 1\n    out = []\n    for _ in range(T):\n        n, m = map(int, data[idx].split()); idx += 1\n        parent = list(range(n))\n        size = [1]*n\n        def find(x):\n            while parent[x] != x:\n                parent[x] = parent[parent[x]]\n                x = parent[x]\n            return x\n        def union(a,b):\n            ra, rb = find(a), find(b)\n            if ra == rb:\n                return\n            if size[ra] < size[rb]:\n                ra, rb = rb, ra\n            parent[rb] = ra\n            size[ra] += size[rb]\n        for _ in range(m):\n            parts = data[idx].split(); idx += 1\n            if parts[0] == b'union':\n                union(int(parts[1]), int(parts[2]))\n            else:  # find\n                out.append(str(find(int(parts[1]))))\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst T = parseInt(lines[idx++]);\nlet output = [];\nfor (let tc = 0; tc < T; ++tc) {\n  const [nStr, mStr] = lines[idx++].trim().split(/\\s+/);\n  const n = Number(nStr), m = Number(mStr);\n  const parent = new Array(n);\n  const size = new Array(n).fill(1);\n  for (let i = 0; i < n; ++i) parent[i] = i;\n  const find = (x) => {\n    if (parent[x] === x) return x;\n    parent[x] = find(parent[x]);\n    return parent[x];\n  };\n  const unite = (a, b) => {\n    let ra = find(a), rb = find(b);\n    if (ra === rb) return;\n    if (size[ra] < size[rb]) { const tmp = ra; ra = rb; rb = tmp; }\n    parent[rb] = ra;\n    size[ra] += size[rb];\n  };\n  for (let i = 0; i < m; ++i) {\n    const parts = lines[idx++].trim().split(/\\s+/);\n    if (parts[0] === 'union') {\n      unite(Number(parts[1]), Number(parts[2]));\n    } else { // find\n      output.push(String(find(Number(parts[1]))));\n    }\n  }\n}\nconsole.log(output.join('\\n'));\n"
+    }
+  }
+}

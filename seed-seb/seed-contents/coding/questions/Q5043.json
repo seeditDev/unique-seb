@@ -1,0 +1,140 @@
+{
+  "questionId": "Q5043",
+  "title": "Auto-Correct Your Sentence",
+  "slug": "auto-correct-your-sentence",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Easy",
+    "isPremium": true,
+    "tags": [
+      "String manipulation",
+      "Trim spaces",
+      "Substring replacement"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Strings in Python"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "In this task, we will create a program that automatically cleans and corrects a sentence by removing extra spaces and replacing \"cats\" with \"cars\" for proper formatting.",
+    "constraints": [
+      "1 <= T <= 100",
+      "Each sentence length after trimming ≤ 100 characters",
+      "Only ASCII characters are used"
+    ],
+    "inputFormat": "The first line contains an integer T (1 ≤ T ≤ 100), the number of sentences. Each of the next T lines contains a sentence that may have leading or trailing spaces. Length of each line ≤ 100 characters (after trimming).",
+    "outputFormat": "For each sentence output two lines:\nOriginal sentence: <sentence after removing leading and trailing spaces>\nAuto-Corrected sentence: <sentence after trimming and replacing every occurrence of \"cats\" with \"cars\">",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\nI love cats so much!\nI would like to have 2 cats",
+        "output": "Original sentence: I love cats so much!\nAuto-Corrected sentence: I love cars so much!\nOriginal sentence: I would like to have 2 cats\nAuto-Corrected sentence: I would like to have 2 cars",
+        "explanation": "Both sentences are trimmed (no extra spaces) and every occurrence of \"cats\" is replaced by \"cars\"."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n   cats and cats   ",
+        "output": "Original sentence: cats and cats\nAuto-Corrected sentence: cars and cars",
+        "explanation": "Leading and trailing spaces are removed, then each \"cats\" becomes \"cars\"."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\nconcatsation",
+        "output": "Original sentence: concatsation\nAuto-Corrected sentence: concarsation",
+        "explanation": "The substring \"cats\" inside a larger word is also replaced."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n   ",
+        "expectedOutput": "Original sentence: \nAuto-Corrected sentence: ",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n   cats cats cats cats cats cats cats cats cats cats cats cats cats cats cats cats cats cats cats cats   ",
+        "expectedOutput": "Original sentence: cats cats cats cats cats cats cats cats cats cats cats cats cats cats cats cats cats cats cats cats\nAuto-Corrected sentence: cars cars cars cars cars cars cars cars cars cars cars cars cars cars cars cars cars cars cars cars",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case overlapping",
+        "input": "1\ncatcats",
+        "expectedOutput": "Original sentence: catcats\nAuto-Corrected sentence: catcars",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n  Cats are not cats  ",
+        "expectedOutput": "Original sentence: Cats are not cats\nAuto-Corrected sentence: Cats are not cars",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\nHello world",
+        "expectedOutput": "Original sentence: Hello world\nAuto-Corrected sentence: Hello world",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each test case read the whole line, trim leading and trailing whitespace, then scan the trimmed string from left to right. Whenever the next four characters equal \"cats\", append \"cars\" to the result and skip four positions; otherwise copy the current character. This works in O(L) time where L is the length of the sentence. The algorithm handles substrings inside larger words and overlapping occurrences correctly because we always move forward after a replacement.",
+    "timeComplexity": "O(total number of characters in all sentences) – each character is examined at most once.",
+    "spaceComplexity": "O(max length of a single sentence) for the output buffer.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n#include <ctype.h>\n\nvoid trim(char *s) {\n    int start = 0, end = strlen(s) - 1;\n    while (start <= end && isspace((unsigned char)s[start])) start++;\n    while (end >= start && isspace((unsigned char)s[end])) end--;\n    int i, j = 0;\n    for (i = start; i <= end; ++i) s[j++] = s[i];\n    s[j] = '\\0';\n}\n\nvoid replaceCats(const char *src, char *dst) {\n    while (*src) {\n        if (strncmp(src, \"cats\", 4) == 0) {\n            strcpy(dst, \"cars\");\n            dst += 4;\n            src += 4;\n        } else {\n            *dst++ = *src++;\n        }\n    }\n    *dst = '\\0';\n}\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    getchar(); // consume newline after T\n    char line[256];\n    for (int tc = 0; tc < T; ++tc) {\n        if (!fgets(line, sizeof(line), stdin)) break;\n        line[strcspn(line, \"\\n\")] = '\\0'; // remove newline\n        trim(line);\n        char corrected[256];\n        replaceCats(line, corrected);\n        printf(\"Original sentence: %s\\n\", line);\n        printf(\"Auto-Corrected sentence: %s\\n\", corrected);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nstring trim(const string &s) {\n    size_t start = 0;\n    while (start < s.size() && isspace(static_cast<unsigned char>(s[start]))) ++start;\n    size_t end = s.size();\n    while (end > start && isspace(static_cast<unsigned char>(s[end-1]))) --end;\n    return s.substr(start, end - start);\n}\n\nstring replaceCats(const string &s) {\n    string res;\n    for (size_t i = 0; i < s.size(); ) {\n        if (i + 4 <= s.size() && s.substr(i, 4) == \"cats\") {\n            res += \"cars\";\n            i += 4;\n        } else {\n            res += s[i++];\n        }\n    }\n    return res;\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T;\n    if (!(cin >> T)) return 0;\n    string dummy; getline(cin, dummy); // consume endline after T\n    for (int tc = 0; tc < T; ++tc) {\n        string line;\n        getline(cin, line);\n        string original = trim(line);\n        string corrected = replaceCats(original);\n        cout << \"Original sentence: \" << original << '\\n';\n        cout << \"Auto-Corrected sentence: \" << corrected << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    private static String trim(String s) {\n        int start = 0, end = s.length();\n        while (start < end && Character.isWhitespace(s.charAt(start))) start++;\n        while (end > start && Character.isWhitespace(s.charAt(end - 1))) end--;\n        return s.substring(start, end);\n    }\n\n    private static String replaceCats(String s) {\n        StringBuilder sb = new StringBuilder();\n        for (int i = 0; i < s.length(); ) {\n            if (i + 4 <= s.length() && s.substring(i, i + 4).equals(\"cats\")) {\n                sb.append(\"cars\");\n                i += 4;\n            } else {\n                sb.append(s.charAt(i++));\n            }\n        }\n        return sb.toString();\n    }\n\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        String first = br.readLine();\n        if (first == null) return;\n        int T = Integer.parseInt(first.trim());\n        for (int tc = 0; tc < T; ++tc) {\n            String line = br.readLine();\n            if (line == null) line = \"\";\n            String original = trim(line);\n            String corrected = replaceCats(original);\n            System.out.println(\"Original sentence: \" + original);\n            System.out.println(\"Auto-Corrected sentence: \" + corrected);\n        }\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys\n\ndef main():\n    data = sys.stdin.read().splitlines()\n    if not data:\n        return\n    T = int(data[0].strip())\n    lines = data[1:1+T]\n    for line in lines:\n        original = line.strip()\n        corrected = original.replace('cats', 'cars')\n        print(f\"Original sentence: {original}\")\n        print(f\"Auto-Corrected sentence: {corrected}\")\n\nif __name__ == \"__main__\":\n    main()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').split('\\n');\nlet idx = 0;\nconst T = parseInt(input[idx].trim(), 10);\nidx++;\nfunction trim(str) {\n  return str.replace(/^\\s+|\\s+$/g, '');\n}\nfunction replaceCats(str) {\n  return str.split('cats').join('cars');\n}\nlet out = [];\nfor (let t = 0; t < T; ++t) {\n  const line = idx < input.length ? input[idx] : '';\n  idx++;\n  const original = trim(line);\n  const corrected = replaceCats(original);\n  out.push(`Original sentence: ${original}`);\n  out.push(`Auto-Corrected sentence: ${corrected}`);\n}\nconsole.log(out.join('\\n'));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

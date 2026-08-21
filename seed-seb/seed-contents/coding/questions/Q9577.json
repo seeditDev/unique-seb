@@ -1,0 +1,129 @@
+{
+  "questionId": "Q9577",
+  "title": "Spreading Charges",
+  "slug": "spreading-charges",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Two Pointers",
+      "Greedy",
+      "Simulation"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Ad-hoc & Implementation"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef has a string SSS of length NNN, consisting of `+, -,` and `0`, where `+` denotes a source of positive charge, `-` denotes a source of negative charge, and `0` denotes a neutral object.\n\nEach second, the charge sources emit their respective charge to their immediate neighbours. The charge emissions cannot affect other charge sources but can convert a neutral object into a charge source as following:\n\n\nIf an object was initially neutral, and had exactly one charged source as neighbour, it becomes a charged source as received by its neighbour.\nIf an object was initially neutral, and had no charged source as neighbour, it remains a neutral object.\nIf an object was initially neutral, and had both charged sources as neighbours, it becomes a charged source as received by its neighbours. Note that in case of neighbours with opposite charges, the object remains neutral.\nFor example, after one second, `+0+` becomes `+++`, `00-` becomes `0--`, `000` remains `000` and `+0-` remains `+0-`. Refer to samples for further explanation.\n\nFind out the number of neutral objects in the string after infinite time.\n\n\nInput Format\n\nThe first line of input will contain a single integer TTT, denoting the number of test cases.\nEach test case consists of multiple lines of input.\n\nThe first line of each test case contains an integer NNN — the number of objects.\nThe next line contains a string SSS of length NNN, consisting of `+, -,` and `0`, where `+` denotes a source of positive charge, `-` denotes a source of negative charge, and `0` denotes a neutral object.\n\n\n\n\nOutput Format\nFor each test case, output on a new line, the number of neutral objects in the string after infinite time.",
+    "constraints": [
+      "1 <= T <= 2000",
+      "1 <= N <= 100000",
+      "The sum of N over all test cases does not exceed 200000",
+      "S contains only '+', '-', '0'"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case consists of two lines. The first line contains an integer N, the length of the string. The second line contains a string S of length N, consisting only of characters '+', '-', and '0'.",
+    "outputFormat": "For each test case output a single line containing the number of neutral objects ('0') that remain after the process stabilises (i.e., after infinite time).",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4\n2\n00\n3\n-+0\n6\n00+-00\n8\n0-0+000-",
+        "output": "2\n0\n0\n2",
+        "explanation": "Test case 1: no charged source, both objects stay neutral → 2.\nTest case 2: only a trailing neutral after a '+' becomes '+', no neutral left → 0.\nTest case 3: all zeros are eventually converted by the surrounding charges → 0.\nTest case 4: there are two zero blocks between opposite charges of odd length, each leaves one neutral → 2."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n0",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary (no zeros)",
+        "input": "1\n15\n+++++-----+++++",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "opposite signs even distance",
+        "input": "1\n4\n+00-",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "opposite signs odd distance",
+        "input": "1\n3\n+0-",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "single charge with leading and trailing zeros",
+        "input": "1\n7\n00+0000",
+        "expectedOutput": "0",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each test case scan the string once and record the positions and signs of all charged sources ('+' or '-'). If there is no charged source, every character stays neutral, so answer = N. Otherwise, consider each maximal block of consecutive '0's:\n* Leading zeros (before the first charged source) and trailing zeros (after the last charged source) are always converted because they have exactly one charged neighbour.\n* For a block between two charged sources at positions L and R (L<R) with signs cL and cR, let d = R‑L‑1 be the length of the block.\n    - If cL == cR, the whole block becomes that sign → contributes 0 neutral.\n    - If cL != cR, the two charges spread towards each other. After floor(d/2) seconds the left part is filled with cL and the right part with cR. If d is odd, one middle cell has opposite neighbours simultaneously and stays neutral forever. Hence the block contributes 1 neutral when d is odd, otherwise 0.\nSumming contributions of all blocks yields the answer. The scan is O(N) per test case and uses O(1) extra memory.\n",
+    "timeComplexity": "O(N) per test case, where N is the length of the string (overall O(total N) ≤ 2·10^5).",
+    "spaceComplexity": "O(1) besides the input string.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n\nint main(){\n    int T; if(scanf(\"%d\",&T)!=1) return 0;\n    while(T--){\n        int N; scanf(\"%d\",&N);\n        char s[100005]; scanf(\"%s\",s);\n        int first=-1,last=-1; // positions of first and last charge\n        for(int i=0;i<N;i++) if(s[i]!='0'){first=i; break;}\n        for(int i=N-1;i>=0;i--) if(s[i]!='0'){last=i; break;}\n        if(first==-1){ // no charge at all\n            printf(\"%d\\n\",N);\n            continue;\n        }\n        long long ans=0;\n        // process blocks between charges\n        int prev=first; char prevc=s[first];\n        for(int i=first+1;i<=last;i++){\n            if(s[i]!='0'){\n                int dist=i-prev-1;\n                if(dist>0){\n                    if(prevc!=s[i]){\n                        if(dist%2==1) ans+=1; // odd distance leaves one neutral\n                    }\n                    // same sign or even distance adds nothing\n                }\n                prev=i; prevc=s[i];\n            }\n        }\n        // leading and trailing zeros never add neutrals\n        printf(\"%lld\\n\",ans);\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N; cin>>N; string s; cin>>s;\n        int first=-1,last=-1;\n        for(int i=0;i<N;i++) if(s[i]!='0'){first=i; break;}\n        for(int i=N-1;i>=0;i--) if(s[i]!='0'){last=i; break;}\n        if(first==-1){\n            cout<<N<<\"\\n\";\n            continue;\n        }\n        long long ans=0;\n        int prev=first; char prevc=s[first];\n        for(int i=first+1;i<=last;i++){\n            if(s[i]!='0'){\n                int dist=i-prev-1;\n                if(dist>0 && prevc!=s[i] && (dist%2==1)) ans+=1;\n                prev=i; prevc=s[i];\n            }\n        }\n        cout<<ans<<\"\\n\";\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder out = new StringBuilder();\n        int T = Integer.parseInt(br.readLine().trim());\n        while (T-- > 0) {\n            int N = Integer.parseInt(br.readLine().trim());\n            String s = br.readLine().trim();\n            int first = -1, last = -1;\n            for (int i = 0; i < N; i++) if (s.charAt(i) != '0') { first = i; break; }\n            for (int i = N - 1; i >= 0; i--) if (s.charAt(i) != '0') { last = i; break; }\n            if (first == -1) {\n                out.append(N).append('\\n');\n                continue;\n            }\n            long ans = 0;\n            int prev = first; char prevc = s.charAt(first);\n            for (int i = first + 1; i <= last; i++) {\n                if (s.charAt(i) != '0') {\n                    int dist = i - prev - 1;\n                    if (dist > 0 && prevc != s.charAt(i) && (dist % 2 == 1)) ans++;\n                    prev = i; prevc = s.charAt(i);\n                }\n            }\n            out.append(ans).append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}\n",
+      "Python3": "import sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out = []\n    for _ in range(T):\n        N = int(next(it))\n        s = next(it)\n        first = -1\n        last = -1\n        for i,ch in enumerate(s):\n            if ch!='0':\n                first=i\n                break\n        for i in range(N-1,-1,-1):\n            if s[i]!='0':\n                last=i\n                break\n        if first==-1:\n            out.append(str(N))\n            continue\n        ans=0\n        prev=first\n        prevc=s[first]\n        for i in range(first+1,last+1):\n            if s[i]!='0':\n                dist=i-prev-1\n                if dist>0 and prevc!=s[i] and dist%2==1:\n                    ans+=1\n                prev=i\n                prevc=s[i]\n        out.append(str(ans))\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0,'utf-8').trim().split(/\\s+/);\nlet idx=0;\nconst T = Number(input[idx++]);\nlet out=[];\nfor(let t=0;t<T;t++){\n  const N = Number(input[idx++]);\n  const s = input[idx++];\n  let first=-1, last=-1;\n  for(let i=0;i<N;i++) if(s[i]!=='0'){first=i;break;}\n  for(let i=N-1;i>=0;i--) if(s[i]!=='0'){last=i;break;}\n  if(first===-1){out.push(String(N));continue;}\n  let ans=0;\n  let prev=first; let prevc=s[first];\n  for(let i=first+1;i<=last;i++){\n    if(s[i]!=='0'){\n      const dist=i-prev-1;\n      if(dist>0 && prevc!==s[i] && (dist%2===1)) ans+=1;\n      prev=i; prevc=s[i];\n    }\n  }\n  out.push(String(ans));\n}\nconsole.log(out.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

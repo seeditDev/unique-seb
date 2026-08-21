@@ -1,0 +1,132 @@
+{
+  "questionId": "Q3161",
+  "title": "Receipt Recovery",
+  "slug": "receipt-recovery",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graphs",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Graphs",
+      "Directed Acyclic Graph",
+      "Maximum Bipartite Matching",
+      "Kuhn Algorithm",
+      "DFS",
+      "Minimum Path Cover"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Flow & Matching"
+    ]
+  },
+  "content": {
+    "problemStatement": "While vacationing in Egypt, Chef found a recipe of an ancient dish. The receipt is a sequence of hieroglyphs written on a magic paper - it survived for thousands of years! The sequence is written on a long scroll. Unfortunately, the scroll is split into pieces, and possibly, some pieces of the scroll are missing. Chef has a total of **N** pieces, numbered for convenience from **1** to **N**. He gave the pieces of a tape to his friend who studies hieroglyphs for analysis. Chef was happy to hear that there are some relations between the pieces. Some of the pieces may follow other pieces.\n\nThe informations about these relations is given as a list of **M** pairs (**Ai**, **Bi**). Such a pair means that the **Ai**th piece can be immediately followed by the **Bi**th one.\n\nChef is working on recovering the recipe to prepare this dish for his Egyptian friends. He wants to place all the pieces into lines such that any pair of consecutive pieces (**L**, **R**) in a line must be explicitly allowed by one of the **M** rules described above. In other words, for some **i** (1 \u2264 **i** \u2264 **M**), (**Ai**, **Bi**) = (**L**, **R**). It appears that in general, not all the pieces can be placed in a single line while following the rules. So, please help Chef find what is the minimum number of lines required for all the pieces to be placed acoording to the rules.",
+    "constraints": [
+      "1 <= T <= 20",
+      "1 <= N <= 100",
+      "0 <= M <= N^2",
+      "1 <= A, B <= N",
+      "The directed graph is acyclic."
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case starts with a line containing two integers N and M \u2013 the number of pieces and the number of allowed consecutive relations. Then M lines follow, each containing two integers A and B (1\u2011based) meaning piece A can be immediately followed by piece B. It is guaranteed that the directed graph formed by the M pairs has no directed cycle.",
+    "outputFormat": "For each test case output a single line with one integer \u2013 the minimum number of lines required to place all N pieces respecting the given relations.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n3 3\n1 2\n2 3\n1 3\n3 2\n1 2\n1 3\n5 4\n1 3\n2 3\n3 4\n2 5",
+        "output": "1\n2\n2",
+        "explanation": "Test case 1: edges form a chain 1\u21922\u21923, so one line suffices.\\nTest case 2: piece 1 can go to 2 and also to 3, but 2 and 3 cannot be connected, thus we need two lines: 1\u21922 and 1\u21923.\\nTest case 3: optimal cover is 1\u21923\u21924 and 2\u21923\u21924\u21925, requiring two lines."
+      },
+      {
+        "id": "sample_2",
+        "input": "2\n4 3\n1 2\n2 3\n3 4\n4 2\n1 2\n3 4",
+        "output": "1\n2",
+        "explanation": "First test case: edges form a total order 1\u21922\u21923\u21924, so a single line covers all pieces.\\nSecond test case: we have two independent edges 1\u21922 and 3\u21924, therefore two separate lines are needed."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n5 4\n1 2\n2 3\n4 5\n2 5",
+        "output": "2",
+        "explanation": "Maximum matching size is 3 (1\u21922,2\u21923,4\u21925). Hence answer = 5\u20113 = 2 lines."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 0",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "1\n1 0",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "1\n1 0",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "1\n1 0",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "1\n1 0",
+        "expectedOutput": "1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem asks for the minimum number of vertex\u2011disjoint directed paths that together cover all vertices of a DAG. For a DAG this value equals N minus the size of a maximum matching in the bipartite graph constructed from the DAG: split each vertex v into a left copy v_L and a right copy v_R; for every directed edge u\u2192v in the original graph add an edge from u_L to v_R. A matching chooses at most one outgoing edge for each vertex and at most one incoming edge for each vertex, exactly what a path cover needs. Hence answer = N \u2013 maxMatching. We compute the maximum matching with the classic Kuhn (DFS augmenting path) algorithm, which runs in O(N\u00b7M) \u2013 easily fast for N \u2264 100. Steps per test case: 1) build adjacency list from left side to right side; 2) run Kuhn to obtain maximum matching size; 3) output N \u2013 matchingSize.",
+    "timeComplexity": "O(N * M) per test case (Kuhn algorithm). With N \u2264 100 this is well within limits.",
+    "spaceComplexity": "O(N + M) for adjacency lists and matching arrays.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nint N, M;\nint **adj; // adjacency list stored as array of dynamic arrays\nint *adjSize;\nint *matchR; // match for right side, -1 if free\nint *vis;\n\nint dfs(int u) {\n    for (int i = 0; i < adjSize[u]; ++i) {\n        int v = adj[u][i];\n        if (vis[v]) continue;\n        vis[v] = 1;\n        if (matchR[v] == -1 || dfs(matchR[v])) {\n            matchR[v] = u;\n            return 1;\n        }\n    }\n    return 0;\n}\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        scanf(\"%d %d\", &N, &M);\n        adj = (int **)malloc(N * sizeof(int *));\n        adjSize = (int *)calloc(N, sizeof(int));\n        // temporary storage for edges before we know each vertex degree\n        int *tmpFrom = (int *)malloc(M * sizeof(int));\n        int *tmpTo   = (int *)malloc(M * sizeof(int));\n        for (int i = 0; i < M; ++i) {\n            int A, B;\n            scanf(\"%d %d\", &A, &B);\n            --A; --B;\n            tmpFrom[i] = A;\n            tmpTo[i] = B;\n            adjSize[A]++;\n        }\n        for (int i = 0; i < N; ++i) {\n            adj[i] = (int *)malloc(adjSize[i] * sizeof(int));\n            adjSize[i] = 0; // will reuse as current fill index\n        }\n        for (int i = 0; i < M; ++i) {\n            int u = tmpFrom[i];\n            int v = tmpTo[i];\n            adj[u][adjSize[u]++] = v;\n        }\n        free(tmpFrom);\n        free(tmpTo);\n        matchR = (int *)malloc(N * sizeof(int));\n        for (int i = 0; i < N; ++i) matchR[i] = -1;\n        int matching = 0;\n        vis = (int *)malloc(N * sizeof(int));\n        for (int u = 0; u < N; ++u) {\n            memset(vis, 0, N * sizeof(int));\n            if (dfs(u)) matching++;\n        }\n        printf(\"%d\\n\", N - matching);\n        for (int i = 0; i < N; ++i) free(adj[i]);\n        free(adj);\n        free(adjSize);\n        free(matchR);\n        free(vis);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; cin >> T;\n    while (T--) {\n        int N, M; cin >> N >> M;\n        vector<vector<int>> g(N);\n        for (int i = 0; i < M; ++i) {\n            int A, B; cin >> A >> B; --A; --B;\n            g[A].push_back(B);\n        }\n        vector<int> matchR(N, -1);\n        auto dfs = [&](auto&& self, int u, vector<int>& seen) -> bool {\n            for (int v : g[u]) {\n                if (seen[v]) continue;\n                seen[v] = 1;\n                if (matchR[v] == -1 || self(self, matchR[v], seen)) {\n                    matchR[v] = u;\n                    return true;\n                }\n            }\n            return false;\n        };\n        int matching = 0;\n        for (int u = 0; u < N; ++u) {\n            vector<int> seen(N, 0);\n            if (dfs(dfs, u, seen)) matching++;\n        }\n        cout << N - matching << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    static List<Integer>[] g;\n    static int[] matchR;\n    static boolean[] seen;\n\n    static boolean dfs(int u) {\n        for (int v : g[u]) {\n            if (seen[v]) continue;\n            seen[v] = true;\n            if (matchR[v] == -1 || dfs(matchR[v])) {\n                matchR[v] = u;\n                return true;\n            }\n        }\n        return false;\n    }\n\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st = new StringTokenizer(br.readLine());\n        int T = Integer.parseInt(st.nextToken());\n        StringBuilder out = new StringBuilder();\n        while (T-- > 0) {\n            st = new StringTokenizer(br.readLine());\n            int N = Integer.parseInt(st.nextToken());\n            int M = Integer.parseInt(st.nextToken());\n            g = new ArrayList[N];\n            for (int i = 0; i < N; i++) g[i] = new ArrayList<>();\n            for (int i = 0; i < M; i++) {\n                st = new StringTokenizer(br.readLine());\n                int A = Integer.parseInt(st.nextToken()) - 1;\n                int B = Integer.parseInt(st.nextToken()) - 1;\n                g[A].add(B);\n            }\n            matchR = new int[N];\n            Arrays.fill(matchR, -1);\n            int matching = 0;\n            for (int u = 0; u < N; u++) {\n                seen = new boolean[N];\n                if (dfs(u)) matching++;\n            }\n            out.append(N - matching).append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "import sys\nsys.setrecursionlimit(1000000)\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it)); M = int(next(it))\n        g = [[] for _ in range(N)]\n        for _ in range(M):\n            A = int(next(it)) - 1\n            B = int(next(it)) - 1\n            g[A].append(B)\n        matchR = [-1] * N\n        def dfs(u, seen):\n            for v in g[u]:\n                if seen[v]:\n                    continue\n                seen[v] = True\n                if matchR[v] == -1 or dfs(matchR[v], seen):\n                    matchR[v] = u\n                    return True\n            return False\n        matching = 0\n        for u in range(N):\n            seen = [False] * N\n            if dfs(u, seen):\n                matching += 1\n        out_lines.append(str(N - matching))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet outputs = [];\nfor (let t = 0; t < T; ++t) {\n  const N = Number(input[idx++]);\n  const M = Number(input[idx++]);\n  const g = Array.from({ length: N }, () => []);\n  for (let i = 0; i < M; ++i) {\n    const A = Number(input[idx++]) - 1;\n    const B = Number(input[idx++]) - 1;\n    g[A].push(B);\n  }\n  const matchR = Array(N).fill(-1);\n  function dfs(u, seen) {\n    for (const v of g[u]) {\n      if (seen[v]) continue;\n      seen[v] = true;\n      if (matchR[v] === -1 || dfs(matchR[v], seen)) {\n        matchR[v] = u;\n        return true;\n      }\n    }\n    return false;\n  }\n  let matching = 0;\n  for (let u = 0; u < N; ++u) {\n    const seen = Array(N).fill(false);\n    if (dfs(u, seen)) matching++;\n  }\n  outputs.push(String(N - matching));\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  }
+}

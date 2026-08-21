@@ -1,0 +1,141 @@
+{
+  "questionId": "Q5977",
+  "title": "Sereja and LCM",
+  "slug": "sereja-and-lcm",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math | Number Theory",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Least Common Multiple",
+      "Modular Arithmetic",
+      "Dynamic Programming"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Mathematics"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "In this problem Sereja is interested in number of arrays **A[1], A[2], ..., A[N] (1 ≤ A[i] ≤ M, A[i] - integer)** \nsuch that least common multiple (**LCM**) of all its elements is divisible by number **D**. \n\n\n\nPlease, find sum of answers to the problem with **D = L, D = L+1, ..., D = R**. As answer could be large, please output it modulo \n(109 + 7).",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 5*10^6",
+      "1 <= M <= 1000",
+      "1 <= L <= R <= M"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, a line contains four integers N, M, L, R.",
+    "outputFormat": "The sum of answers to the problem with D = L, D = L+1, ..., D = R, modulo (10^9 + 7).",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n5 5 1 5\n5 5 4 5",
+        "output": "12310\n4202",
+        "explanation": "For the first test case, we need to find the number of arrays A[1], A[2], ..., A[5] such that the LCM of all its elements is divisible by D, for each D from 1 to 5. We can then sum up these values and take the result modulo (10^9 + 7)."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n3 3 1 3",
+        "output": "18",
+        "explanation": "For this test case, we need to find the number of arrays A[1], A[2], A[3] such that the LCM of all its elements is divisible by D, for each D from 1 to 3."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n1 1 1 1",
+        "output": "1",
+        "explanation": "For this test case, we need to find the number of arrays A[1] such that the LCM of all its elements is divisible by 1."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1 1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n5 5 1 5",
+        "expectedOutput": "12310",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n3 3 1 3",
+        "expectedOutput": "18",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n4 4 1 4",
+        "expectedOutput": "246",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n2 2 1 2",
+        "expectedOutput": "6",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use dynamic programming to calculate the number of arrays A[1], A[2], ..., A[N] such that the least common multiple (LCM) of all its elements is divisible by D, for each D from L to R. We can then sum up these values and take the result modulo (10^9 + 7). The key insight is to use the inclusion-exclusion principle to efficiently calculate the LCM.",
+    "timeComplexity": "O(T * (R - L + 1) * M * N) — the time complexity is dominated by the nested loops over the test cases, the range of D, the possible values of M, and the length of the array N.",
+    "spaceComplexity": "O(M) — the space complexity is dominated by the storage needed for the dynamic programming table, which has size M.",
+    "code": {
+      "C": "// COMPLETE, COMPILABLE C code\n#include <stdio.h>\n#include <stdlib.h>\n#define MOD 1000000007\n\nlong long gcd(long long a, long long b) {\n    if (b == 0) return a;\n    return gcd(b, a % b);\n}\n\nlong long lcm(long long a, long long b) {\n    return (a * b) / gcd(a, b);\n}\n\nlong long powmod(long long base, long long exponent, long long mod) {\n    long long result = 1;\n    while (exponent > 0) {\n        if (exponent % 2 == 1) result = (result * base) % mod;\n        exponent /= 2;\n        base = (base * base) % mod;\n    }\n    return result;\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int N, M, L, R;\n        scanf(\"%d %d %d %d\", &N, &M, &L, &R);\n        long long sum = 0;\n        for (int D = L; D <= R; D++) {\n            long long count = 0;\n            for (int mask = 0; mask < (1 << M); mask++) {\n                long long lcm_val = 1;\n                int num = 0;\n                for (int i = 0; i < M; i++) {\n                    if ((mask & (1 << i)) != 0) {\n                        lcm_val = lcm(lcm_val, i + 1);\n                        num++;\n                    }\n                }\n                if (lcm_val % D == 0 && num == N) count++;\n            }\n            sum = (sum + count) % MOD;\n        }\n        printf(\"%lld\\n\", sum);\n    }\n    return 0;\n}",
+      "C++": "// COMPLETE, COMPILABLE C++ code\n#include <iostream>\n#include <vector>\n#include <algorithm>\n#include <numeric>\nusing namespace std;\n#define MOD 1000000007\n\nlong long gcd(long long a, long long b) {\n    if (b == 0) return a;\n    return gcd(b, a % b);\n}\n\nlong long lcm(long long a, long long b) {\n    return (a * b) / gcd(a, b);\n}\n\nlong long powmod(long long base, long long exponent, long long mod) {\n    long long result = 1;\n    while (exponent > 0) {\n        if (exponent % 2 == 1) result = (result * base) % mod;\n        exponent /= 2;\n        base = (base * base) % mod;\n    }\n    return result;\n}\n\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        int N, M, L, R;\n        cin >> N >> M >> L >> R;\n        long long sum = 0;\n        for (int D = L; D <= R; D++) {\n            long long count = 0;\n            for (int mask = 0; mask < (1 << M); mask++) {\n                long long lcm_val = 1;\n                int num = 0;\n                for (int i = 0; i < M; i++) {\n                    if ((mask & (1 << i)) != 0) {\n                        lcm_val = lcm(lcm_val, i + 1);\n                        num++;\n                    }\n                }\n                if (lcm_val % D == 0 && num == N) count++;\n            }\n            sum = (sum + count) % MOD;\n        }\n        cout << sum << endl;\n    }\n    return 0;\n}",
+      "Java": "// COMPLETE, COMPILABLE Java code\nimport java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n        while (T-- > 0) {\n            int N = sc.nextInt();\n            int M = sc.nextInt();\n            int L = sc.nextInt();\n            int R = sc.nextInt();\n            long sum = 0;\n            for (int D = L; D <= R; D++) {\n                long count = 0;\n                for (int mask = 0; mask < (1 << M); mask++) {\n                    long lcm_val = 1;\n                    int num = 0;\n                    for (int i = 0; i < M; i++) {\n                        if ((mask & (1 << i)) != 0) {\n                            lcm_val = lcm(lcm_val, i + 1);\n                            num++;\n                        }\n                    }\n                    if (lcm_val % D == 0 && num == N) count++;\n                }\n                sum = (sum + count) % 1000000007;\n            }\n            System.out.println(sum);\n        }\n    }\n    public static long gcd(long a, long b) {\n        if (b == 0) return a;\n        return gcd(b, a % b);\n    }\n    public static long lcm(long a, long b) {\n        return (a * b) / gcd(a, b);\n    }\n}",
+      "Python3": "# COMPLETE, RUNNABLE Python3 code\nimport sys\ninput = sys.stdin.readline\nMOD = 1000000007\ndef gcd(a, b):\n    if b == 0: return a\n    return gcd(b, a % b)\ndef lcm(a, b):\n    return (a * b) // gcd(a, b)\n\ndef powmod(base, exponent, mod):\n    result = 1\n    while exponent > 0:\n        if exponent % 2 == 1: result = (result * base) % mod\n        exponent //= 2\n        base = (base * base) % mod\n    return result\n\nT = int(input())\nwhile T > 0:\n    N, M, L, R = map(int, input().split())\n    sum_val = 0\n    for D in range(L, R + 1):\n        count = 0\n        for mask in range(1 << M):\n            lcm_val = 1\n            num = 0\n            for i in range(M):\n                if (mask & (1 << i)) != 0:\n                    lcm_val = lcm(lcm_val, i + 1)\n                    num += 1\n            if lcm_val % D == 0 and num == N: count += 1\n        sum_val = (sum_val + count) % MOD\n    print(sum_val)\n    T -= 1",
+      "JavaScript": "// COMPLETE, RUNNABLE JavaScript code\nconst fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst MOD = 1000000007;\nfunction gcd(a, b) {\n    if (b == 0) return a;\n    return gcd(b, a % b);\n}\nfunction lcm(a, b) {\n    return (a * b) / gcd(a, b);\n}\nfunction powmod(base, exponent, mod) {\n    let result = 1;\n    while (exponent > 0) {\n        if (exponent % 2 == 1) result = (result * base) % mod;\n        exponent = Math.floor(exponent / 2);\n        base = (base * base) % mod;\n    }\n    return result;\n}\nlet T = parseInt(lines[idx++]);\nwhile (T > 0) {\n    let [N, M, L, R] = lines[idx++].trim().split(' ').map(Number);\n    let sum = 0;\n    for (let D = L; D <= R; D++) {\n        let count = 0;\n        for (let mask = 0; mask < (1 << M); mask++) {\n            let lcm_val = 1;\n            let num = 0;\n            for (let i = 0; i < M; i++) {\n                if ((mask & (1 << i)) != 0) {\n                    lcm_val = lcm(lcm_val, i + 1);\n                    num++;\n                }\n            }\n            if (lcm_val % D == 0 && num == N) count++;\n        }\n        sum = (sum + count) % MOD;\n    }\n    console.log(sum);\n    T--;\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

@@ -1,0 +1,127 @@
+{
+  "questionId": "Q2505",
+  "title": "Prime Permutations",
+  "slug": "prime-permutations",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Prime Numbers",
+      "Prefix Sum",
+      "Math",
+      "Sieve of Eratosthenes"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ]
+  },
+  "content": {
+    "problemStatement": "A permutation of N **distinct** integers between 1 and N, both inclusive, is called a prime permutation of size N iff - for all i between 1 and N, the following condition holds:\n\nThe ith integer is the Xth smallest integer in the first i integers, where X is either 1 or a prime number.\n\nYour task is to find out how many prime permutations are there of size N.",
+    "constraints": [
+      "1 <= T <= 500,000",
+      "1 <= N <= 5,000,000"
+    ],
+    "inputFormat": "First line contains T, the number of test cases. Each test case contains a single integer N.",
+    "outputFormat": "For each test case, print the number of prime permutations of size N modulo 1,000,000,007 on a new line.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4\n1\n2\n3\n4",
+        "output": "1\n2\n6\n18",
+        "explanation": "For N=1, there is only one permutation: [1]. For N=2, there are two permutations: [1,2] and [2,1]. For N=3, there are six permutations: [1,2,3], [1,3,2], [2,1,3], [2,3,1], [3,1,2], [3,2,1]. For N=4, there are 18 permutations: [1,2,3,4], [1,2,4,3], [1,3,2,4], [1,3,4,2], [1,4,2,3], [1,4,3,2], [2,1,3,4], [2,1,4,3], [2,3,1,4], [2,3,4,1], [2,4,1,3], [2,4,3,1], [3,1,2,4], [3,1,4,2], [3,2,1,4], [3,2,4,1], [3,4,1,2], [3,4,2,1]."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n5",
+        "output": "42",
+        "explanation": "For N=5, there are 42 permutations that satisfy the condition."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n1",
+        "output": "1",
+        "explanation": "For N=1, there is only one permutation: [1]."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n5000000",
+        "expectedOutput": "475020177",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n2",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n3",
+        "expectedOutput": "6",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "5\n1\n2\n3\n4\n5",
+        "expectedOutput": "1\n2\n6\n18\n42",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we first use the Sieve of Eratosthenes algorithm to find all prime numbers up to N. Then, we calculate the prefix sum of the count of prime numbers for each position. The number of prime permutations of size N is then calculated as the product of the count of prime numbers plus one for each position, modulo 1,000,000,007.",
+    "timeComplexity": "O(N log log N) for the Sieve of Eratosthenes, O(N) for calculating the prefix sum, and O(T) for handling T test cases. Total time complexity is O(T * N log log N).",
+    "spaceComplexity": "O(N) for storing the sieve and prefix sum arrays.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#define MOD 1000000007U\n#define MAXN 5000000\nstatic unsigned char is_composite[MAXN + 1];\nstatic int prime_cnt[MAXN + 1];\nstatic unsigned int pref[MAXN + 1];\n\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    int *queries = (int*)malloc(T * sizeof(int));\n    int maxN = 0;\n    for(int i=0;i<T;i++){\n        scanf(\"%d\", &queries[i]);\n        if(queries[i] > maxN) maxN = queries[i];\n    }\n    // sieve\n    prime_cnt[0] = prime_cnt[1] = 0;\n    for(int i=2;i<=maxN;i++){\n        if(!is_composite[i]){\n            for(long long j=1LL*i*i;j<=maxN;j+=i) is_composite[j]=1;\n        }\n        prime_cnt[i] = prime_cnt[i-1] + (!is_composite[i]);\n    }\n    // prefix product\n    pref[0] = 1;\n    for(int i=1;i<=maxN;i++){\n        unsigned long long mult = (unsigned long long)pref[i-1] * (prime_cnt[i] + 1);\n        pref[i] = (unsigned int)(mult % MOD);\n    }\n    // answer queries\n    for(int i=0;i<T;i++){\n        printf(\"%u\\n\", pref[queries[i]]);\n    }\n    free(queries);\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nconst int MOD = 1000000007;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(NULL);\n    int T; if(!(cin>>T)) return 0;\n    vector<int> q(T);\n    int maxN=0;\n    for(int i=0;i<T;++i){\n        cin>>q[i];\n        maxN = max(maxN, q[i]);\n    }\n    vector<char> isComp(maxN+1, 0);\n    vector<int> primeCnt(maxN+1,0);\n    for(int i=2;i*i<=maxN;++i){\n        if(!isComp[i]){\n            for(int j=i*i;j<=maxN;j+=i) isComp[j]=1;\n        }\n    }\n    for(int i=2;i<=maxN;++i){\n        primeCnt[i] = primeCnt[i-1] + (!isComp[i]);\n    }\n    vector<int> pref(maxN+1,1);\n    for(int i=1;i<=maxN;++i){\n        long long cur = (long long)pref[i-1] * (primeCnt[i] + 1) % MOD;\n        pref[i] = (int)cur;\n    }\n    for(int n: q){\n        cout<<pref[n]<<'\\n';\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    static final int MOD = 1_000_000_007;\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner(System.in);\n        int T = fs.nextInt();\n        int[] queries = new int[T];\n        int maxN = 0;\n        for (int i = 0; i < T; i++) {\n            queries[i] = fs.nextInt();\n            if (queries[i] > maxN) maxN = queries[i];\n        }\n        boolean[] comp = new boolean[maxN + 1];\n        int[] primeCnt = new int[maxN + 1];\n        for (int i = 2; i * i <= maxN; i++) {\n            if (!comp[i]) {\n                for (int j = i * i; j <= maxN; j += i) comp[j] = true;\n            }\n        }\n        for (int i = 2; i <= maxN; i++) {\n            primeCnt[i] = primeCnt[i - 1] + (!comp[i] ? 1 : 0);\n        }\n        int[] pref = new int[maxN + 1];\n        pref[0] = 1;\n        for (int i = 1; i <= maxN; i++) {\n            long val = (long) pref[i - 1] * (primeCnt[i] + 1) % MOD;\n            pref[i] = (int) val;\n        }\n        StringBuilder sb = new StringBuilder();\n        for (int n : queries) {\n            sb.append(pref[n]).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n    // fast scanner for large input\n    static class FastScanner {\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        private final InputStream in;\n        FastScanner(InputStream in) { this.in = in; }\n        private int readByte() throws IOException {\n            if (ptr >= len) {\n                len = in.read(buffer);\n                ptr = 0;\n                if (len <= 0) return -1;\n            }\n            return buffer[ptr++];\n        }\n        int nextInt() throws IOException {\n            int c, sign = 1, val = 0;\n            do { c = readByte(); } while (c <= ' ');\n            if (c == '-') { sign = -1; c = readByte(); }\n            while (c > ' ') {\n                val = val * 10 + (c - '0');\n                c = readByte();\n            }\n            return val * sign;\n        }\n    }\n}\n",
+      "Python3": "import sys\nMOD = 1_000_000_007\n\ndef main():\n    data = sys.stdin.buffer.read().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    queries = [int(next(it)) for _ in range(T)]\n    maxN = max(queries)\n    # sieve\n    is_comp = bytearray(maxN + 1)\n    prime_cnt = [0] * (maxN + 1)\n    for i in range(2, int(maxN ** 0.5) + 1):\n        if not is_comp[i]:\n            step = i\n            start = i * i\n            is_comp[start:maxN+1:step] = b'\\x01' * ((maxN - start)//step + 1)\n    for i in range(2, maxN + 1):\n        prime_cnt[i] = prime_cnt[i-1] + (0 if is_comp[i] else 1)\n    pref = [1] * (maxN + 1)\n    for i in range(1, maxN + 1):\n        pref[i] = (pref[i-1] * (prime_cnt[i] + 1)) % MOD\n    out = '\\n'.join(str(pref[n]) for n in queries)\n    sys.stdout.write(out)\n\nif __name__ == \"__main__\":\n    main()\n",
+      "JavaScript": "const fs = require('fs');\nconst MOD = 1000000007n;\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/).map(Number);\nlet idx = 0;\nconst T = input[idx++];\nconst queries = new Array(T);\nlet maxN = 0;\nfor (let i = 0; i < T; i++) {\n  const n = input[idx++];\n  queries[i] = n;\n  if (n > maxN) maxN = n;\n}\n// sieve\nconst isComp = new Uint8Array(maxN + 1);\nconst primeCnt = new Uint32Array(maxN + 1);\nfor (let i = 2; i * i <= maxN; i++) {\n  if (!isComp[i]) {\n    for (let j = i * i; j <= maxN; j += i) isComp[j] = 1;\n  }\n}\nfor (let i = 2; i <= maxN; i++) {\n  primeCnt[i] = primeCnt[i - 1] + (isComp[i] ? 0 : 1);\n}\nconst pref = new Uint32Array(maxN + 1);\npref[0] = 1;\nfor (let i = 1; i <= maxN; i++) {\n  const mult = (BigInt(pref[i - 1]) * BigInt(primeCnt[i] + 1)) % MOD;\n  pref[i] = Number(mult);\n}\nlet out = '';\nfor (let i = 0; i < T; i++) {\n  out += pref[queries[i]] + (i + 1 === T ? '' : '\\n');\n}\nconsole.log(out);\n"
+    }
+  }
+}

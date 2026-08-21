@@ -1,0 +1,117 @@
+{
+  "questionId": "Q3209",
+  "title": "Oracle Devu and Longest Common Subsequence",
+  "slug": "oracle-devu-and-longest-common-subsequence",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "String Comparison",
+      "Longest Common Subsequence",
+      "Strings",
+      "Brute Force"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Strings"
+    ]
+  },
+  "content": {
+    "problemStatement": "Devu is a disastrous oracle: his predictions about various events of your life are horrifying. Instead of providing good luck, he \"blesses\" you with bad luck. The secret behind his wickedness is a hidden omen which is a string of length **m**. On your visit to him, you can ask a lot of questions about your future, each of which should be a string of length **m**. In total you asked him **n** such questions, denoted by strings **s1**, **s2**, ... , **sn** of length **m** each. Each of the question strings is composed of the characters 'a' and 'b' only.\n\n\n\nAmount of bad luck this visit will bring you is equal to the length of longest common subsequence (LCS) of all the question strings and the hidden omen string. Of course, as the omen string is hidden, you are wondering what could be the least value of bad luck you can get.\n\n\n\nCan you find out what could be the least bad luck you can get? Find it fast, before Devu tells you any bad omens.",
+    "constraints": [
+      "1 <= T <= 100",
+      "1 <= n, m <= 14 for Subtask #1",
+      "1 <= n, m <= 100 for Subtask #2",
+      "All strings contain only 'a' and 'b'"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case starts with a line containing an integer n, the number of strings. Then, n lines follow, each containing a string of length m composed of 'a' and 'b' only.",
+    "outputFormat": "For each test case, output the minimum possible length of the longest common subsequence (LCS) of all the strings and the hidden omen string.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n2\nab\nba\n2\naa\nbb\n3\naabb\nabab\nbaab",
+        "output": "1\n0\n2",
+        "explanation": "Explanation:\nIn the first example, the minimum value of LCS of all the strings is 1, the string by oracle can be one of these {aa, ab, ba, bb}. \n\nIn the second example, whatever string oracle has does not matter, LCS will always be zero."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\na",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n14\naaaaaaaaaaaaaa",
+        "expectedOutput": "14",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n2\nab\nba",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n3\nabc\nbca\ncab",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n4\naaaa\nbbbb\ncccc\ndddd",
+        "expectedOutput": "0",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To find the minimum possible length of the LCS, we can generate all possible strings of length m (the hidden omen) and calculate the LCS of each generated string with all the given strings. The minimum LCS length found across all generated strings is the answer. This approach involves brute force and dynamic programming for LCS calculation.",
+    "timeComplexity": "O(T * 2^m * n * m^2) \u2014 because for each test case, we generate 2^m possible strings, compare each with n given strings, and the LCS calculation itself takes O(m^2) time.",
+    "spaceComplexity": "O(m) \u2014 for storing the current string being generated and the LCS table.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n#define MAX 15\n\nint min(int a, int b) { return a < b ? a : b; }\n\nint lcs(char *s1, char *s2, int m) {\n    int dp[m + 1][m + 1];\n    for (int i = 0; i <= m; i++) {\n        for (int j = 0; j <= m; j++) {\n            if (i == 0 || j == 0)\n                dp[i][j] = 0;\n            else if (s1[i - 1] == s2[j - 1])\n                dp[i][j] = dp[i - 1][j - 1] + 1;\n            else\n                dp[i][j] = max(dp[i - 1][j], dp[i][j - 1]);\n        }\n    }\n    return dp[m][m];\n}\n\nint main() {\n    int T, n, m;\n    scanf(\"%d\", &T);\n    while (T--) {\n        scanf(\"%d\", &n);\n        char s[n][MAX], omen[MAX];\n        for (int i = 0; i < n; i++)\n            scanf(\"%s\", s[i]);\n        scanf(\"%d\", &m);\n        int min_lcs = n * m;\n        for (int mask = 0; mask < (1 << m); mask++) {\n            for (int i = 0; i < m; i++)\n                omen[i] = (mask & (1 << i)) ? 'b' : 'a';\n            omen[m] = '\\0';\n            int max_lcs_for_omen = 0;\n            for (int i = 0; i < n; i++)\n                max_lcs_for_omen = max(max_lcs_for_omen, lcs(s[i], omen, m));\n            min_lcs = min(min_lcs, max_lcs_for_omen);\n        }\n        printf(\"%d\\n\", min_lcs);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <string>\nusing namespace std;\n\nint lcs(string &s1, string &s2) {\n    int m = s1.size();\n    int dp[m + 1][m + 1];\n    for (int i = 0; i <= m; i++) {\n        for (int j = 0; j <= m; j++) {\n            if (i == 0 || j == 0)\n                dp[i][j] = 0;\n            else if (s1[i - 1] == s2[j - 1])\n                dp[i][j] = dp[i - 1][j - 1] + 1;\n            else\n                dp[i][j] = max(dp[i - 1][j], dp[i][j - 1]);\n        }\n    }\n    return dp[m][m];\n}\n\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        int n;\n        cin >> n;\n        string s[n];\n        for (int i = 0; i < n; i++)\n            cin >> s[i];\n        int m = s[0].size();\n        int min_lcs = n * m;\n        for (int mask = 0; mask < (1 << m); mask++) {\n            string omen;\n            for (int i = 0; i < m; i++)\n                omen += (mask & (1 << i)) ? 'b' : 'a';\n            int max_lcs_for_omen = 0;\n            for (int i = 0; i < n; i++)\n                max_lcs_for_omen = max(max_lcs_for_omen, lcs(s[i], omen));\n            min_lcs = min(min_lcs, max_lcs_for_omen);\n        }\n        cout << min_lcs << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n        while (T-- > 0) {\n            int n = sc.nextInt();\n            String[] s = new String[n];\n            for (int i = 0; i < n; i++)\n                s[i] = sc.next();\n            int m = s[0].length();\n            int min_lcs = n * m;\n            for (int mask = 0; mask < (1 << m); mask++) {\n                StringBuilder omen = new StringBuilder();\n                for (int i = 0; i < m; i++)\n                    omen.append((mask & (1 << i)) == 0 ? 'a' : 'b');\n                int max_lcs_for_omen = 0;\n                for (int i = 0; i < n; i++)\n                    max_lcs_for_omen = Math.max(max_lcs_for_omen, lcs(s[i], omen.toString()));\n                min_lcs = Math.min(min_lcs, max_lcs_for_omen);\n            }\n            System.out.println(min_lcs);\n        }\n    }\n\n    public static int lcs(String s1, String s2) {\n        int m = s1.length();\n        int[][] dp = new int[m + 1][m + 1];\n        for (int i = 0; i <= m; i++) {\n            for (int j = 0; j <= m; j++) {\n                if (i == 0 || j == 0)\n                    dp[i][j] = 0;\n                else if (s1.charAt(i - 1) == s2.charAt(j - 1))\n                    dp[i][j] = dp[i - 1][j - 1] + 1;\n                else\n                    dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);\n            }\n        }\n        return dp[m][m];\n    }\n}",
+      "Python3": "import sys\ninput = sys.stdin.readline\n\ndef lcs(s1, s2):\n    m = len(s1)\n    dp = [[0] * (m + 1) for _ in range(m + 1)]\n    for i in range(1, m + 1):\n        for j in range(1, m + 1):\n            if s1[i - 1] == s2[j - 1]:\n                dp[i][j] = dp[i - 1][j - 1] + 1\n            else:\n                dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])\n    return dp[m][m]\n\nT = int(input())\nfor _ in range(T):\n    n = int(input())\n    s = [input().strip() for _ in range(n)]\n    m = len(s[0])\n    min_lcs = n * m\n    for mask in range(1 << m):\n        omen = ''.join('b' if (mask & (1 << i)) else 'a' for i in range(m))\n        max_lcs_for_omen = 0\n        for i in range(n):\n            max_lcs_for_omen = max(max_lcs_for_omen, lcs(s[i], omen))\n        min_lcs = min(min_lcs, max_lcs_for_omen)\n    print(min_lcs)",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\n\nfunction lcs(s1, s2) {\n    let m = s1.length;\n    let dp = Array(m + 1).fill(0).map(() => Array(m + 1).fill(0));\n    for (let i = 1; i <= m; i++) {\n        for (let j = 1; j <= m; j++) {\n            if (s1[i - 1] === s2[j - 1])\n                dp[i][j] = dp[i - 1][j - 1] + 1;\n            else\n                dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);\n        }\n    }\n    return dp[m][m];\n}\n\nlet T = parseInt(input[idx++]);\nwhile (T-- > 0) {\n    let n = parseInt(input[idx++]);\n    let s = [];\n    for (let i = 0; i < n; i++)\n        s.push(input[idx++]);\n    let m = s[0].length;\n    let min_lcs = n * m;\n    for (let mask = 0; mask < (1 << m); mask++) {\n        let omen = '';\n        for (let i = 0; i < m; i++)\n            omen += (mask & (1 << i)) ? 'b' : 'a';\n        let max_lcs_for_omen = 0;\n        for (let i = 0; i < n; i++)\n            max_lcs_for_omen = Math.max(max_lcs_for_omen, lcs(s[i], omen));\n        min_lcs = Math.min(min_lcs, max_lcs_for_omen);\n    }\n    console.log(min_lcs);\n}"
+    }
+  }
+}

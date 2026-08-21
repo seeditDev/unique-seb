@@ -1,0 +1,128 @@
+{
+  "questionId": "Q1368",
+  "title": "Mountain Peak",
+  "slug": "mountain-peak",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Arrays",
+    "difficulty": "Easy",
+    "isPremium": false,
+    "tags": [
+      "Monotonic Stack",
+      "Next Greater Element",
+      "Stack",
+      "Arrays"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Arrays"
+    ]
+  },
+  "content": {
+    "problemStatement": "You are given a list of integers heightsheightsheights representing the heights of NNN mountain peaks. For each peak, you need to find the height of the next higher peak that comes after it in the list. If there is no higher peak after a given peak, return \u22121-1\u22121 for that peak.\n\n\nInput Format\n\nThe first line contains one integer nnn, the size of the list of integers.                                                                                                               - Next line contains nnn integers heights[0],heights[1]...heights[n]heights[0],heights[1]...heights[n]heights[0],heights[1]...heights[n], representing the peaks .\n\n\nOutput Format\n\nFor each peak, print the next higher peak that comes after it in the list. If there is no higher peak for a peak than print \u22121-1\u22121.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= n <= 100000",
+      "0 <= heights[i] <= 1000000"
+    ],
+    "inputFormat": "First line contains an integer T, the number of test cases. For each test case, the first line contains an integer n, the number of mountain peaks. The second line contains n space-separated integers heights[0], heights[1], ..., heights[n-1] representing the heights of the peaks.",
+    "outputFormat": "For each test case output a single line containing n space-separated integers. The i-th integer is the height of the next higher peak that appears after position i in the same test case, or -1 if no such peak exists.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\\n2\\n1 2",
+        "output": "2 -1",
+        "explanation": "There is one test case. For the first peak (1) the next higher peak is 2. For the second peak (2) there is no higher peak, so -1."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\\n4\\n6 5 3 6",
+        "output": "-1 6 6 -1",
+        "explanation": "Only one test case. The first 6 has no higher peak after it. 5's next higher is the last 6. 3's next higher is also the last 6. The final 6 has none."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\\n5\\n1 2 3 4 5",
+        "output": "2 3 4 5 -1",
+        "explanation": "Strictly increasing heights, so each element's next higher is the immediate next one, and the last element gets -1."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\\n1\\n0",
+        "expectedOutput": "-1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary (near-max values, 15 elements)",
+        "input": "1\\n15\\n1000000 999999 999998 999997 999996 999995 999994 999993 999992 999991 999990 999989 999988 999987 999986",
+        "expectedOutput": "-1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform input (all same values)",
+        "input": "1\\n5\\n7 7 7 7 7",
+        "expectedOutput": "-1 -1 -1 -1 -1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky pattern",
+        "input": "1\\n5\\n2 1 2 1 2",
+        "expectedOutput": "-1 2 -1 2 -1",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general multiple test cases",
+        "input": "3\\n4\\n4 5 2 25\\n3\\n3 2 1\\n6\\n1 3 2 4 2 5",
+        "expectedOutput": "5 25 25 -1\\n-1 -1 -1\\n3 4 4 5 5 -1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Traverse the array from left to right while maintaining a stack of indices whose next greater element has not been found yet. For each new height h[i], pop indices from the stack while h[i] is greater than the height at those indices; for each popped index, h[i] is the answer. Then push i onto the stack. After the scan, any index left in the stack has no greater element to its right, so its answer stays -1. This monotonic-stack technique runs in O(n) time per test case.",
+    "timeComplexity": "O(n) per test case, O(total N) for the whole input.",
+    "spaceComplexity": "O(n) auxiliary space for the answer array and the stack.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        int n;\n        scanf(\"%d\", &n);\n        int *h = (int*)malloc(n * sizeof(int));\n        for (int i = 0; i < n; ++i) scanf(\"%d\", &h[i]);\n        int *ans = (int*)malloc(n * sizeof(int));\n        for (int i = 0; i < n; ++i) ans[i] = -1;\n        int *stack = (int*)malloc(n * sizeof(int));\n        int top = -1;\n        for (int i = 0; i < n; ++i) {\n            while (top != -1 && h[i] > h[stack[top]]) {\n                ans[stack[top--]] = h[i];\n            }\n            stack[++top] = i;\n        }\n        for (int i = 0; i < n; ++i) {\n            printf(\"%d\", ans[i]);\n            if (i + 1 < n) printf(\" \");\n        }\n        printf(\"\\n\");\n        free(h);\n        free(ans);\n        free(stack);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T;\n    if (!(cin >> T)) return 0;\n    while (T--) {\n        int n; cin >> n;\n        vector<int> h(n);\n        for (int &x : h) cin >> x;\n        vector<int> ans(n, -1);\n        vector<int> st; // stack of indices\n        for (int i = 0; i < n; ++i) {\n            while (!st.empty() && h[i] > h[st.back()]) {\n                ans[st.back()] = h[i];\n                st.pop_back();\n            }\n            st.push_back(i);\n        }\n        for (int i = 0; i < n; ++i) {\n            if (i) cout << ' ';\n            cout << ans[i];\n        }\n        cout << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st = new StringTokenizer(br.readLine());\n        int T = Integer.parseInt(st.nextToken());\n        StringBuilder out = new StringBuilder();\n        while (T-- > 0) {\n            int n = Integer.parseInt(br.readLine().trim());\n            int[] h = new int[n];\n            st = new StringTokenizer(br.readLine());\n            for (int i = 0; i < n; i++) {\n                h[i] = Integer.parseInt(st.nextToken());\n            }\n            int[] ans = new int[n];\n            Arrays.fill(ans, -1);\n            Deque<Integer> stack = new ArrayDeque<>(); // store indices\n            for (int i = 0; i < n; i++) {\n                while (!stack.isEmpty() && h[i] > h[stack.peek()]) {\n                    ans[stack.pop()] = h[i];\n                }\n                stack.push(i);\n            }\n            for (int i = 0; i < n; i++) {\n                if (i > 0) out.append(' ');\n                out.append(ans[i]);\n            }\n            out.append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        n = int(next(it))\n        h = [int(next(it)) for _ in range(n)]\n        ans = [-1] * n\n        stack = []  # store indices\n        for i, val in enumerate(h):\n            while stack and val > h[stack[-1]]:\n                idx = stack.pop()\n                ans[idx] = val\n            stack.append(i)\n        out_lines.append(' '.join(map(str, ans)))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst data = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet pos = 0;\nif (data.length === 0) process.exit(0);\nconst T = parseInt(data[pos++], 10);\nlet outputs = [];\nfor (let tc = 0; tc < T; ++tc) {\n  const n = parseInt(data[pos++], 10);\n  const h = new Array(n);\n  for (let i = 0; i < n; ++i) h[i] = parseInt(data[pos++], 10);\n  const ans = new Array(n).fill(-1);\n  const stack = [];\n  for (let i = 0; i < n; ++i) {\n    while (stack.length && h[i] > h[stack[stack.length - 1]]) {\n      const idx = stack.pop();\n      ans[idx] = h[i];\n    }\n    stack.push(i);\n  }\n  outputs.push(ans.join(' '));\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  }
+}

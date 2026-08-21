@@ -1,0 +1,140 @@
+{
+  "questionId": "Q5423",
+  "title": "Authentication Failed",
+  "slug": "authentication-failed",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Combinatorics",
+      "Modular Arithmetic"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Several days ago Chef decided to register at one of the programming sites. For registering he was asked to choose a nickname and a password. There was no problem with choosing a nickname (\"Chef\" is his favorite nickname), but choosing a password in a secure way seemed to be a real problem for Chef. Therefore, he decided to write a program which would generate the password of length **N** consisting of small Latin letters a..z. Then Chef successfully registered at the site and saved the password in a file (as it was too hard to remember).\n\n\nToday Chef decided to visit the site once again. He entered his nickname, copied the password from the file... \"Authentication failed!\" was the answer. Trying to understand the reason of this, he noticed that the password in his file had length **N+K** instead of **N**! Sure enough of the source of the problem, Chef went straight to his young brother.\n\n\nAnd Chef was right, it was his brother who had inserted **K** random small Latin letters at some random positions (possibly at the beginning or at the end) of the password. Chef's brother didn't remember what exactly changes he had made at all, but he promised that he had done nothing besides inserting letters.\n\n\nAs there is no other way to recover the password, Chef is now starting to remove every possible combination of **K** letters from the password trying to enter (when Chef obtains the same password as one of the previously entered passwords, he doesn't try to enter using this password again). Now the question is: what is the number of times Chef will receive \"Authentication failed!\" as the answer before successful entering in the worst case? As the answer might be quite large, output its remainder of division by 1009419529.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 10000",
+      "1 <= K <= 100",
+      "The password consists of small Latin letters a..z"
+    ],
+    "inputFormat": "First line contains T, the number of test cases. Each test case contains two integers N and K, followed by a string of length N+K.",
+    "outputFormat": "For each test case, print the number of times Chef will receive 'Authentication failed!' as the answer before successful entering in the worst case, modulo 1009419529.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n2 1\naaa\n3 1\nabcd\n4 2\nababab",
+        "output": "0\n3\n10",
+        "explanation": "The first test case has only one possible combination of removing 1 character from 'aaa', which is 'aa'. The second test case has 3 possible combinations of removing 1 character from 'abcd', which are 'abc', 'abd', 'acd', and 'bcd'. The third test case has 10 possible combinations of removing 2 characters from 'ababab'."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n5 2\nabcde",
+        "output": "10",
+        "explanation": "There are 10 possible combinations of removing 2 characters from 'abcde'."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n1 1\na",
+        "output": "0",
+        "explanation": "There is only one possible combination of removing 1 character from 'a', which is an empty string."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1\na",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n100 100\nabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz",
+        "expectedOutput": "100",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n5 2\naaaaa",
+        "expectedOutput": "10",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n5 2\nabcde",
+        "expectedOutput": "10",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "5\n2 1\nab\n3 1\nabc\n4 2\nabab\n5 2\nabcde\n6 3\nabcdef",
+        "expectedOutput": "1\n3\n6\n10\n20",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved by generating all possible combinations of removing K characters from the password and counting the number of unique combinations. This can be achieved using combinatorial techniques and modular arithmetic to avoid overflow.",
+    "timeComplexity": "O(T * (N+K) choose K) per test case, O(T * (N+K) choose K) total.",
+    "spaceComplexity": "O(N+K) — for storing the password and the current combination.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n#include <stdlib.h>\n\n#define MOD 1009419529\n\nlong long comb(int n, int k) {\n    long long res = 1;\n    for (int i = 1; i <= k; i++) {\n        res = (res * (n - i + 1)) / i;\n    }\n    return res;\n}\n\nint main() {\n    int t;\n    scanf(\"%d\", &t);\n    while (t--) {\n        int n, k;\n        scanf(\"%d %d\", &n, &k);\n        char str[n + k + 1];\n        scanf(\"%s\", str);\n        long long count = comb(n + k, k) - 1;\n        printf(\"%lld\\n\", count % MOD);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <string>\nusing namespace std;\n\n#define MOD 1009419529\n\nlong long comb(int n, int k) {\n    long long res = 1;\n    for (int i = 1; i <= k; i++) {\n        res = (res * (n - i + 1)) / i;\n    }\n    return res;\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(NULL);\n    int t;\n    cin >> t;\n    while (t--) {\n        int n, k;\n        cin >> n >> k;\n        string str;\n        cin >> str;\n        long long count = comb(n + k, k) - 1;\n        cout << count % MOD << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int t = sc.nextInt();\n        while (t-- > 0) {\n            int n = sc.nextInt();\n            int k = sc.nextInt();\n            String str = sc.next();\n            long count = comb(n + k, k) - 1;\n            System.out.println(count % 1009419529);\n        }\n    }\n\n    public static long comb(int n, int k) {\n        long res = 1;\n        for (int i = 1; i <= k; i++) {\n            res = (res * (n - i + 1)) / i;\n        }\n        return res;\n    }\n}",
+      "Python3": "import sys\n\nMOD = 1009419529\n\ndef comb(n, k):\n    res = 1\n    for i in range(1, k + 1):\n        res = (res * (n - i + 1)) // i\n    return res\n\nfor _ in range(int(input())):\n    n, k = map(int, input().split())\n    str = input()\n    count = comb(n + k, k) - 1\n    print(count % MOD)",
+      "JavaScript": "const readline = require('readline');\nconst rl = readline.createInterface({\n    input: process.stdin,\n    output: process.stdout\n});\n\nconst lines = [];\nlet i = 0;\nrl.on('line', (input) => {\n    lines.push(input);\n});\nrl.on('close', () => {\n    let t = parseInt(lines[i++]);\n    while (t--) {\n        let [n, k] = lines[i++].split(' ').map(Number);\n        let str = lines[i++];\n        let count = comb(n + k, k) - 1;\n        console.log(count % 1009419529);\n    }\n});\n\nfunction comb(n, k) {\n    let res = 1;\n    for (let i = 1; i <= k; i++) {\n        res = (res * (n - i + 1)) / i;\n    }\n    return res;\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

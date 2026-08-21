@@ -1,0 +1,129 @@
+{
+  "questionId": "Q6257",
+  "title": "Sereja and Tree 2",
+  "slug": "sereja-and-tree-2",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming | Graph | Math",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Tree DP",
+      "Modular Arithmetic",
+      "Graph Traversal"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Sereja has a rooted tree of **N** nodes with node **1** being the root node. He wants to find the number of ways of assigning an integer in the range **[1, M]** to each node, such that value of each node should be a multiple of it's parent node's value (for vertex #1 there is no parent so any number fit condition). As the answer could be large, report it modulo **(109 + 7)**.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 500",
+      "1 <= M <= 20000",
+      "1 <= u, v <= N"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case starts with a line containing two integers N and M, where N is the number of nodes in the tree and M is the maximum value that can be assigned to a node. The next N-1 lines contain two integers u and v, representing an edge between nodes u and v in the tree.",
+    "outputFormat": "For each test case, output the number of ways to assign integers to the nodes in the tree such that the value of each node is a multiple of its parent's value, modulo 10^9 + 7.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n3 2\n1 2\n1 3\n1 100",
+        "output": "5\n100",
+        "explanation": "In the first test case, there are five possible assignments of numbers: [1, 1, 1], [1, 1, 2], [1, 2, 1], [1, 2, 2], [2, 2, 2]. In the second test case, there are 100 possible assignments: [1], [2], [3], ..., [100]."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n500 20000",
+        "expectedOutput": "20000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n2 2\n1 2",
+        "expectedOutput": "3",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n3 3\n1 2\n1 3",
+        "expectedOutput": "6",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n4 4\n1 2\n1 3\n2 4",
+        "expectedOutput": "10",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we will use dynamic programming to calculate the number of ways to assign integers to each node in the tree. We will start by initializing the DP table for the root node, then traverse the tree in a bottom-up manner, updating the DP table for each node based on the values of its children. We will use modular arithmetic to avoid overflow.",
+    "timeComplexity": "O(T * N * M) - The time complexity is dominated by the nested loops over the test cases, nodes, and possible values.",
+    "spaceComplexity": "O(N * M) - The space complexity is dominated by the DP table, which has a size proportional to the number of nodes and possible values.",
+    "code": {
+      "C": "// COMPLETE, COMPILABLE C code\n#include <stdio.h>\n#include <stdlib.h>\n#define MOD 1000000007\n\nint dp[501][20001];\nint n, m;\nint edges[501][501];\n\nvoid dfs(int node, int parent) {\n    for (int i = 1; i <= m; i++) {\n        dp[node][i] = 1;\n    }\n    for (int i = 1; i <= n; i++) {\n        if (edges[node][i] == 1 && i != parent) {\n            dfs(i, node);\n            for (int j = 1; j <= m; j++) {\n                for (int k = j; k <= m; k += j) {\n                    dp[node][j] = (dp[node][j] + dp[i][k]) % MOD;\n                }\n            }\n        }\n    }\n}\n\nint main() {\n    int t;\n    scanf(\"%d\", &t);\n    while (t--) {\n        scanf(\"%d %d\", &n, &m);\n        for (int i = 1; i <= n; i++) {\n            for (int j = 1; j <= n; j++) {\n                edges[i][j] = 0;\n            }\n        }\n        for (int i = 1; i < n; i++) {\n            int u, v;\n            scanf(\"%d %d\", &u, &v);\n            edges[u][v] = edges[v][u] = 1;\n        }\n        dfs(1, -1);\n        long long ans = 0;\n        for (int i = 1; i <= m; i++) {\n            ans = (ans + dp[1][i]) % MOD;\n        }\n        printf(\"%lld\\n\", ans);\n    }\n    return 0;\n}",
+      "C++": "// COMPLETE, COMPILABLE C++ code\n#include <iostream>\n#include <vector>\nusing namespace std;\n#define MOD 1000000007\n\nint dp[501][20001];\nint n, m;\nvector<int> edges[501];\n\nvoid dfs(int node, int parent) {\n    for (int i = 1; i <= m; i++) {\n        dp[node][i] = 1;\n    }\n    for (int i = 0; i < edges[node].size(); i++) {\n        int child = edges[node][i];\n        if (child != parent) {\n            dfs(child, node);\n            for (int j = 1; j <= m; j++) {\n                for (int k = j; k <= m; k += j) {\n                    dp[node][j] = (dp[node][j] + dp[child][k]) % MOD;\n                }\n            }\n        }\n    }\n}\n\nint main() {\n    int t;\n    cin >> t;\n    while (t--) {\n        cin >> n >> m;\n        for (int i = 1; i <= n; i++) {\n            edges[i].clear();\n        }\n        for (int i = 1; i < n; i++) {\n            int u, v;\n            cin >> u >> v;\n            edges[u].push_back(v);\n            edges[v].push_back(u);\n        }\n        dfs(1, -1);\n        long long ans = 0;\n        for (int i = 1; i <= m; i++) {\n            ans = (ans + dp[1][i]) % MOD;\n        }\n        cout << ans << endl;\n    }\n    return 0;\n}",
+      "Java": "// COMPLETE, COMPILABLE Java code\nimport java.util.Scanner;\npublic class Main {\n    static final int MOD = 1000000007;\n    static int[][] dp = new int[501][20001];\n    static int n, m;\n    static int[][] edges = new int[501][501];\n\n    public static void dfs(int node, int parent) {\n        for (int i = 1; i <= m; i++) {\n            dp[node][i] = 1;\n        }\n        for (int i = 1; i <= n; i++) {\n            if (edges[node][i] == 1 && i != parent) {\n                dfs(i, node);\n                for (int j = 1; j <= m; j++) {\n                    for (int k = j; k <= m; k += j) {\n                        dp[node][j] = (dp[node][j] + dp[i][k]) % MOD;\n                    }\n                }\n            }\n        }\n    }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int t = sc.nextInt();\n        while (t-- > 0) {\n            n = sc.nextInt();\n            m = sc.nextInt();\n            for (int i = 1; i <= n; i++) {\n                for (int j = 1; j <= n; j++) {\n                    edges[i][j] = 0;\n                }\n            }\n            for (int i = 1; i < n; i++) {\n                int u = sc.nextInt();\n                int v = sc.nextInt();\n                edges[u][v] = edges[v][u] = 1;\n            }\n            dfs(1, -1);\n            long ans = 0;\n            for (int i = 1; i <= m; i++) {\n                ans = (ans + dp[1][i]) % MOD;\n            }\n            System.out.println(ans);\n        }\n    }\n}",
+      "Python3": "# COMPLETE, RUNNABLE Python3 code\nimport sys\nMOD = 1000000007\n\ndef dfs(node, parent):\n    global dp, n, m, edges\n    for i in range(1, m + 1):\n        dp[node][i] = 1\n    for i in range(1, n + 1):\n        if edges[node][i] == 1 and i != parent:\n            dfs(i, node)\n            for j in range(1, m + 1):\n                for k in range(j, m + 1, j):\n                    dp[node][j] = (dp[node][j] + dp[i][k]) % MOD\n\nT = int(input())\nn, m = 0, 0\ndp = [[0] * 20001 for _ in range(501)]\nedges = [[0] * 501 for _ in range(501)]\n\nfor _ in range(T):\n    n, m = map(int, input().split())\n    for i in range(1, n + 1):\n        for j in range(1, n + 1):\n            edges[i][j] = 0\n    for _ in range(n - 1):\n        u, v = map(int, input().split())\n        edges[u][v] = edges[v][u] = 1\n    dfs(1, -1)\n    ans = 0\n    for i in range(1, m + 1):\n        ans = (ans + dp[1][i]) % MOD\n    print(ans)",
+      "JavaScript": "// COMPLETE, RUNNABLE JavaScript code\nconst fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst MOD = 1000000007;\nlet n, m;\nlet dp = new Array(501).fill(0).map(() => new Array(20001).fill(0));\nlet edges = new Array(501).fill(0).map(() => new Array(501).fill(0));\n\nfunction dfs(node, parent) {\n    for (let i = 1; i <= m; i++) {\n        dp[node][i] = 1;\n    }\n    for (let i = 1; i <= n; i++) {\n        if (edges[node][i] == 1 && i != parent) {\n            dfs(i, node);\n            for (let j = 1; j <= m; j++) {\n                for (let k = j; k <= m; k += j) {\n                    dp[node][j] = (dp[node][j] + dp[i][k]) % MOD;\n                }\n            }\n        }\n    }\n}\n\nlet T = parseInt(input[idx++]);\nwhile (T-- > 0) {\n    [n, m] = input[idx++].split(' ').map(Number);\n    for (let i = 1; i <= n; i++) {\n        for (let j = 1; j <= n; j++) {\n            edges[i][j] = 0;\n        }\n    }\n    for (let i = 1; i < n; i++) {\n        let [u, v] = input[idx++].split(' ').map(Number);\n        edges[u][v] = edges[v][u] = 1;\n    }\n    dfs(1, -1);\n    let ans = 0;\n    for (let i = 1; i <= m; i++) {\n        ans = (ans + dp[1][i]) % MOD;\n    }\n    console.log(ans);\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

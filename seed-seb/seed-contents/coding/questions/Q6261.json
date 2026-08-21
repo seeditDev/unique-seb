@@ -1,0 +1,126 @@
+{
+  "questionId": "Q6261",
+  "title": "Chef and Sub Array",
+  "slug": "chef-and-sub-array",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Arrays | Sliding Window",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Sliding Window",
+      "Array Rotation"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Data Structures"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef has a binary array **A** of length **N**. He also has a frame that can focus on at max **K** consecutive elements of the array. \n\nChef has a lovely dog which likes to do following two things.  \n\n\n\nShifting the array **A** to the right by one element (**N**-th element becomes 1st, 1st becomes 2nd and so on) \nAsking Chef what is the maximal number of elements equal to 1, that can be captured by a frame (frame can capture **not more** than **K** consecutive elements of array).\n\n\nHelp Chef entertain his Dog!",
+    "constraints": [
+      "1 ≤ N, K, P ≤ 10^5",
+      "0 ≤ Ai ≤ 1"
+    ],
+    "inputFormat": "The first line of each test case contains three integers N, K, and P denoting the number of elements in array A, size of a frame, and the number of Dog's requests. The second line contains N space-separated integers A1, A2, ..., AN denoting the elements of array. The third line contains a string consisting of P characters, i-th character stands for dog's i-th question and equals '!' if Dog shifts the array and '?' if dog asks what is the maximal number of ones captured by the frame.",
+    "outputFormat": "For each Dog's question output a single line containing an integer corresponding to the answer of the question.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "5 3 4\n1 0 0 1 1\n?!!?",
+        "output": "2\n3",
+        "explanation": "For the first question, Chef can pick last 3 elements (or last two, no matter) for his frame, and will have 2 elements equal 1. After first shift (exclamation mark) array will become: 1 1 0 0 1. After second shift (exclamation mark) array will become: 1 1 1 0 0. Now for the second question Chef can pick first 3 elements for his frame, and will have 3 elements equal 1."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1 1 1\n1\n?",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "100000 100000 100000\n",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "5 3 4\n1 0 0 1 1\n?!!?",
+        "expectedOutput": "2\n3",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "10 5 10\n1 1 1 1 1 0 0 0 0 0\n??????",
+        "expectedOutput": "5\n5\n5\n5\n5\n5",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "10 5 10\n0 0 0 0 0 1 1 1 1 1\n??????",
+        "expectedOutput": "0\n0\n0\n0\n0\n5",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a sliding window approach to find the maximum number of ones in the array that can be captured by the frame. We also need to handle the rotation of the array when the dog shifts it. We can use a queue data structure to efficiently rotate the array.",
+    "timeComplexity": "O(P * K) — explain: per query is O(K), total is O(P * K)",
+    "spaceComplexity": "O(N) — explain: we need to store the array of size N",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nint maxOnes(int* arr, int n, int k) {\n    int maxOnes = 0;\n    int windowOnes = 0;\n    for (int i = 0; i < k; i++) {\n        windowOnes += arr[i];\n    }\n    maxOnes = windowOnes;\n    for (int i = k; i < n; i++) {\n        windowOnes = windowOnes - arr[i - k] + arr[i];\n        maxOnes = (maxOnes > windowOnes) ? maxOnes : windowOnes;\n    }\n    return maxOnes;\n}\n\nint main() {\n    int t = 1;\n    while (t--) {\n        int n, k, p;\n        scanf(\"%d %d %d\", &n, &k, &p);\n        int* arr = (int*) malloc(n * sizeof(int));\n        for (int i = 0; i < n; i++) {\n            scanf(\"%d\", &arr[i]);\n        }\n        char* queries = (char*) malloc((p + 1) * sizeof(char));\n        scanf(\"%s\", queries);\n        for (int i = 0; i < p; i++) {\n            if (queries[i] == '!') {\n                int temp = arr[n - 1];\n                for (int j = n - 1; j > 0; j--) {\n                    arr[j] = arr[j - 1];\n                }\n                arr[0] = temp;\n            } else {\n                printf(\"%d\\n\", maxOnes(arr, n, k));\n            }\n        }\n        free(arr);\n        free(queries);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\n#include <string>\nusing namespace std;\n\nint maxOnes(vector<int>& arr, int k) {\n    int maxOnes = 0;\n    int windowOnes = 0;\n    for (int i = 0; i < k; i++) {\n        windowOnes += arr[i];\n    }\n    maxOnes = windowOnes;\n    for (int i = k; i < arr.size(); i++) {\n        windowOnes = windowOnes - arr[i - k] + arr[i];\n        maxOnes = (maxOnes > windowOnes) ? maxOnes : windowOnes;\n    }\n    return maxOnes;\n}\n\nint main() {\n    int t = 1;\n    while (t--) {\n        int n, k, p;\n        cin >> n >> k >> p;\n        vector<int> arr(n);\n        for (int i = 0; i < n; i++) {\n            cin >> arr[i];\n        }\n        string queries;\n        cin >> queries;\n        for (int i = 0; i < p; i++) {\n            if (queries[i] == '!') {\n                int temp = arr[n - 1];\n                for (int j = n - 1; j > 0; j--) {\n                    arr[j] = arr[j - 1];\n                }\n                arr[0] = temp;\n            } else {\n                cout << maxOnes(arr, k) << endl;\n            }\n        }\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    public static int maxOnes(int[] arr, int k) {\n        int maxOnes = 0;\n        int windowOnes = 0;\n        for (int i = 0; i < k; i++) {\n            windowOnes += arr[i];\n        }\n        maxOnes = windowOnes;\n        for (int i = k; i < arr.length; i++) {\n            windowOnes = windowOnes - arr[i - k] + arr[i];\n            maxOnes = (maxOnes > windowOnes) ? maxOnes : windowOnes;\n        }\n        return maxOnes;\n    }\n\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int t = 1;\n        while (t-- > 0) {\n            int n = scanner.nextInt();\n            int k = scanner.nextInt();\n            int p = scanner.nextInt();\n            int[] arr = new int[n];\n            for (int i = 0; i < n; i++) {\n                arr[i] = scanner.nextInt();\n            }\n            String queries = scanner.next();\n            for (int i = 0; i < p; i++) {\n                if (queries.charAt(i) == '!') {\n                    int temp = arr[n - 1];\n                    for (int j = n - 1; j > 0; j--) {\n                        arr[j] = arr[j - 1];\n                    }\n                    arr[0] = temp;\n                } else {\n                    System.out.println(maxOnes(arr, k));\n                }\n            }\n        }\n    }\n}",
+      "Python3": "def maxOnes(arr, k):\n    maxOnes = 0\n    windowOnes = 0\n    for i in range(k):\n        windowOnes += arr[i]\n    maxOnes = windowOnes\n    for i in range(k, len(arr)):\n        windowOnes = windowOnes - arr[i - k] + arr[i]\n        maxOnes = max(maxOnes, windowOnes)\n    return maxOnes\n\nfor _ in range(1):\n    n, k, p = map(int, input().split())\n    arr = list(map(int, input().split()))\n    queries = input()\n    for i in range(p):\n        if queries[i] == '!':\n            temp = arr[-1]\n            for j in range(n - 1, 0, -1):\n                arr[j] = arr[j - 1]\n            arr[0] = temp\n        else:\n            print(maxOnes(arr, k))",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\n\nfunction maxOnes(arr, k) {\n    let maxOnes = 0;\n    let windowOnes = 0;\n    for (let i = 0; i < k; i++) {\n        windowOnes += arr[i];\n    }\n    maxOnes = windowOnes;\n    for (let i = k; i < arr.length; i++) {\n        windowOnes = windowOnes - arr[i - k] + arr[i];\n        maxOnes = Math.max(maxOnes, windowOnes);\n    }\n    return maxOnes;\n}\n\nlet t = 1;\nwhile (t-- > 0) {\n    let [n, k, p] = lines[idx++].trim().split(' ').map(Number);\n    let arr = lines[idx++].trim().split(' ').map(Number);\n    let queries = lines[idx++].trim();\n    for (let i = 0; i < p; i++) {\n        if (queries[i] === '!') {\n            let temp = arr[n - 1];\n            for (let j = n - 1; j > 0; j--) {\n                arr[j] = arr[j - 1];\n            }\n            arr[0] = temp;\n        } else {\n            console.log(maxOnes(arr, k));\n        }\n    }\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

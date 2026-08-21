@@ -1,0 +1,139 @@
+{
+  "questionId": "Q5704",
+  "title": "Safe Routes",
+  "slug": "safe-routes",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Union-Find",
+      "Graph Connectivity"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Graphs"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Alice is the queen of ChefLand. She has initiated a road reform recently. The reform will last for **M** days.\n\nInitially, there are **N** towns and no roads in ChefLand. Every day one bidirectional road will be built. On the **i**-th day, the road connecting the towns **Ai** and **Bi** will be built.\n\nNevertheless, Alice worries that if there is a road that will occur in **every** route from the town **A** to the town **B** for some pair of towns **A** and **B**, criminals might attack everyone who is traveling from the town **A** to the town **B** (or vice versa) for sure. So she calls such an unordered pair (**A**, **B**) unsafe.\n\nYou are given a plan of the road reform. Please, output the number of unsafe unordered pairs of towns, after each of **M** days.",
+    "constraints": [
+      "1 <= N <= 1000",
+      "1 <= M <= 1000",
+      "1 <= X, Y <= N"
+    ],
+    "inputFormat": "The first line contains two integers N and M, the number of towns and the number of days. The following M lines will describe the road reform. The i-th line will contain two integers X Y, meaning that the bidirectional road, connecting the towns X and Y will be built during the i-th day.",
+    "outputFormat": "Output M lines. The i-th line should contain the number of unsafe pairs of towns after the i-th day.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "10 10\n6 7\n1 10\n8 4\n9 7\n10 4\n5 7\n1 3\n5 2\n6 1\n8 6",
+        "output": "1\n2\n3\n5\n9\n12\n16\n20\n45\n35",
+        "explanation": "The number of unsafe pairs of towns after each day."
+      },
+      {
+        "id": "sample_2",
+        "input": "5 5\n1 2\n2 3\n3 4\n4 5\n5 1",
+        "output": "6\n2\n0\n0\n0",
+        "explanation": "The number of unsafe pairs of towns after each day."
+      },
+      {
+        "id": "sample_3",
+        "input": "10 1\n1 2",
+        "output": "45",
+        "explanation": "The number of unsafe pairs of towns after the first day."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1 1\n1 1",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1000 1000\n1 2\n2 3\n3 4\n4 5\n5 1",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "10 10\n1 1\n1 1\n1 1\n1 1\n1 1\n1 1\n1 1\n1 1\n1 1\n1 1",
+        "expectedOutput": "45",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "10 10\n1 2\n2 3\n3 4\n4 5\n5 6\n6 7\n7 8\n8 9\n9 10\n10 1",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "100 100\n1 2\n2 3\n3 4\n4 5\n5 6\n6 7\n7 8\n8 9\n9 10\n10 1",
+        "expectedOutput": "0",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "We use a Union-Find data structure to keep track of the connected components in the graph. Initially, each town is in its own connected component. When a new road is built, we union the two towns it connects. We then count the number of pairs of towns that are not in the same connected component.",
+    "timeComplexity": "O(M * N^2) per test case, O(T * M * N^2) total. The Union-Find operations take O(log N) time, but we are doing them inside a loop that runs N^2 times.",
+    "spaceComplexity": "O(N) — we need to store the parent and rank arrays for the Union-Find data structure.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#define MAXN 1005\nint parent[MAXN], rank[MAXN];\nint find(int x) {\n    if (parent[x] != x) parent[x] = find(parent[x]);\n    return parent[x];\n}\nvoid unionSet(int x, int y) {\n    int rootx = find(x), rooty = find(y);\n    if (rootx != rooty) {\n        if (rank[rootx] > rank[rooty]) parent[rooty] = rootx;\n        else if (rank[rootx] < rank[rooty]) parent[rootx] = rooty;\n        else {\n            parent[rooty] = rootx;\n            rank[rootx]++;\n        }\n    }\n}\nint main() {\n    int N, M;\n    scanf(\"%d %d\", &N, &M);\n    for (int i = 1; i <= N; i++) {\n        parent[i] = i;\n        rank[i] = 0;\n    }\n    for (int i = 0; i < M; i++) {\n        int X, Y;\n        scanf(\"%d %d\", &X, &Y);\n        unionSet(X, Y);\n        int count = 0;\n        for (int j = 1; j <= N; j++) {\n            for (int k = j + 1; k <= N; k++) {\n                if (find(j) != find(k)) count++;\n            }\n        }\n        printf(\"%d\\n\", count);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\nusing namespace std;\nconst int MAXN = 1005;\nint parent[MAXN], rank[MAXN];\nint find(int x) {\n    if (parent[x] != x) parent[x] = find(parent[x]);\n    return parent[x];\n}\nvoid unionSet(int x, int y) {\n    int rootx = find(x), rooty = find(y);\n    if (rootx != rooty) {\n        if (rank[rootx] > rank[rooty]) parent[rooty] = rootx;\n        else if (rank[rootx] < rank[rooty]) parent[rootx] = rooty;\n        else {\n            parent[rooty] = rootx;\n            rank[rootx]++;\n        }\n    }\n}\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(NULL);\n    int N, M;\n    cin >> N >> M;\n    for (int i = 1; i <= N; i++) {\n        parent[i] = i;\n        rank[i] = 0;\n    }\n    for (int i = 0; i < M; i++) {\n        int X, Y;\n        cin >> X >> Y;\n        unionSet(X, Y);\n        int count = 0;\n        for (int j = 1; j <= N; j++) {\n            for (int k = j + 1; k <= N; k++) {\n                if (find(j) != find(k)) count++;\n            }\n        }\n        cout << count << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    static final int MAXN = 1005;\n    static int[] parent = new int[MAXN];\n    static int[] rank = new int[MAXN];\n    static int find(int x) {\n        if (parent[x] != x) parent[x] = find(parent[x]);\n        return parent[x];\n    }\n    static void unionSet(int x, int y) {\n        int rootx = find(x), rooty = find(y);\n        if (rootx != rooty) {\n            if (rank[rootx] > rank[rooty]) parent[rooty] = rootx;\n            else if (rank[rootx] < rank[rooty]) parent[rootx] = rooty;\n            else {\n                parent[rooty] = rootx;\n                rank[rootx]++;\n            }\n        }\n    }\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int N = sc.nextInt(), M = sc.nextInt();\n        for (int i = 1; i <= N; i++) {\n            parent[i] = i;\n            rank[i] = 0;\n        }\n        for (int i = 0; i < M; i++) {\n            int X = sc.nextInt(), Y = sc.nextInt();\n            unionSet(X, Y);\n            int count = 0;\n            for (int j = 1; j <= N; j++) {\n                for (int k = j + 1; k <= N; k++) {\n                    if (find(j) != find(k)) count++;\n                }\n            }\n            System.out.println(count);\n        }\n    }\n}",
+      "Python3": "import sys\nMAXN = 1005\nparent = [0] * MAXN\nrank = [0] * MAXN\ndef find(x):\n    if parent[x] != x: parent[x] = find(parent[x])\n    return parent[x]\ndef unionSet(x, y):\n    rootx = find(x)\n    rooty = find(y)\n    if rootx != rooty:\n        if rank[rootx] > rank[rooty]: parent[rooty] = rootx\n        elif rank[rootx] < rank[rooty]: parent[rootx] = rooty\n        else:\n            parent[rooty] = rootx\n            rank[rootx] += 1\nN, M = map(int, input().split())\nfor i in range(1, N + 1):\n    parent[i] = i\n    rank[i] = 0\nfor i in range(M):\n    X, Y = map(int, input().split())\n    unionSet(X, Y)\n    count = 0\n    for j in range(1, N + 1):\n        for k in range(j + 1, N + 1):\n            if find(j) != find(k): count += 1\n    print(count)",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst MAXN = 1005;\nlet parent = new Array(MAXN).fill(0);\nlet rank = new Array(MAXN).fill(0);\nfunction find(x) {\n    if (parent[x] !== x) parent[x] = find(parent[x]);\n    return parent[x];\n}\nfunction unionSet(x, y) {\n    let rootx = find(x), rooty = find(y);\n    if (rootx !== rooty) {\n        if (rank[rootx] > rank[rooty]) parent[rooty] = rootx;\n        else if (rank[rootx] < rank[rooty]) parent[rootx] = rooty;\n        else {\n            parent[rooty] = rootx;\n            rank[rootx]++;\n        }\n    }\n}\nlet [N, M] = input[idx++].split(' ').map(Number);\nfor (let i = 1; i <= N; i++) {\n    parent[i] = i;\n    rank[i] = 0;\n}\nfor (let i = 0; i < M; i++) {\n    let [X, Y] = input[idx++].split(' ').map(Number);\n    unionSet(X, Y);\n    let count = 0;\n    for (let j = 1; j <= N; j++) {\n        for (let k = j + 1; k <= N; k++) {\n            if (find(j) !== find(k)) count++;\n        }\n    }\n    console.log(count);\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

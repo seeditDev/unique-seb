@@ -1,0 +1,118 @@
+{
+  "questionId": "Q11364",
+  "title": "House robber",
+  "slug": "house-robber-ii",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "House Robber",
+      "Circular Array",
+      "Dynamic Programming"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "A thief needs to rob money in a street. The houses in the street are arranged in\n    a circular manner. Therefore the first and the last house are adjacent to each other. The security system in the\n    street is such that if adjacent houses are robbed, the police will get notified.",
+    "constraints": [
+      "1 <= n <= 10^5",
+      "1 <= arr[i] <= 10^5"
+    ],
+    "inputFormat": "The first line contains an integer 'n' representing the number of houses. The second line contains 'n' space-separated integers representing the amount of money in each house.",
+    "outputFormat": "The maximum amount of money that can be stolen.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "1\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "5\n100000 100000 100000 100000 100000",
+        "expectedOutput": "300000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform",
+        "input": "5\n1 1 1 1 1",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "2\n1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "mixed case",
+        "input": "6\n2 7 9 3 1 6",
+        "expectedOutput": "16",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use dynamic programming. We create two arrays, one excluding the first house and one excluding the last house. Then we find the maximum amount of money that can be stolen from each array and return the maximum of the two.",
+    "timeComplexity": "O(n)",
+    "spaceComplexity": "O(n)",
+    "code": {
+      "C": "#include <stdio.h>\nint max(int a, int b) { return (a > b) ? a : b; }\nint rob(int* nums, int numsSize) {\n    if (numsSize == 1) return nums[0];\n    int dp[numsSize];\n    dp[0] = nums[0];\n    dp[1] = max(nums[0], nums[1]);\n    for (int i = 2; i < numsSize; i++) {\n        dp[i] = max(dp[i-1], dp[i-2] + nums[i]);\n    }\n    return dp[numsSize-1];\n}\nint robStreet(int n, int* arr) {\n    if (n == 0) return 0;\n    if (n == 1) return arr[0];\n    int arr1[n-1], arr2[n-1];\n    for (int i = 0; i < n-1; i++) {\n        arr1[i] = arr[i+1];\n        arr2[i] = arr[i];\n    }\n    return max(rob(arr1, n-1), rob(arr2, n-1));\n}\nint main() {\n    int arr[] = {2, 7, 9, 3, 1, 6};\n    int n = sizeof(arr)/sizeof(arr[0]);\n    printf(\"%d\\n\", robStreet(n, arr));\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n// Function to solve the linear house robber problem\nlong long int solve(vector<int>& arr) {\n    // Get the size of the array\n    int n = arr.size();\n    \n    // If there's only one house, return its value\n    if (n == 1) return arr[0];\n\n    // prev stores the maximum sum till the previous index\n    long long int prev = arr[0];\n\n    // prev2 stores the maximum sum till the index before previous\n    long long int prev2 = 0;\n\n    // Loop through houses starting from index 1\n    for (int i = 1; i < n; i++) {\n        // Option 1: Pick the current house and add the value from prev2\n        long long int pick = arr[i];\n        if (i > 1) pick += prev2;\n\n        // Option 2: Skip the current house, take prev\n        long long int nonPick = prev;\n\n        // Choose the maximum of pick and nonPick\n        long long int cur_i = max(pick, nonPick);\n\n        // Update prev2 and prev for the next iteration\n        prev2 = prev;\n        prev = cur_i;\n    }\n    // prev will contain the maximum loot possible\n    return prev;\n}\n\n// Function to solve the circular house robber problem\nlong long int robStreet(int n, vector<int> &arr) {\n    // If there are no houses, return 0\n    if (n == 0) return 0;\n\n    // If there is only one house, return its value\n    if (n == 1) return arr[0];\n\n    // Create two arrays:\n    // arr1 excludes the first house\n    // arr2 excludes the last house\n    vector<int> arr1, arr2;\n    for (int i = 0; i < n; i++) {\n        if (i != 0) arr1.push_back(arr[i]);\n        if (i != n - 1) arr2.push_back(arr[i]);\n    }\n\n    // Compute maximum loot for both cases and return the maximum\n    long long int ans1 = solve(arr1);\n    long long int ans2 = solve(arr2);\n    return max(ans1, ans2);\n}\n\n// Driver code\nint main() {\n    // Example input\n    vector<int> arr{1, 5, 1, 2, 6};\n    int n = arr.size();\n\n    // Output the maximum loot possible\n    cout << robStreet(n, arr);\n    return 0;\n}",
+      "Java": "import java.util.*;\n\nclass Solution {\n    // Function to solve the linear house robber problem\n    public long solve(List<Integer> arr) {\n        int n = arr.size();\n        \n        // If there's only one house, return its value\n        if (n == 1) return arr.get(0);\n\n        // prev stores the maximum sum till the previous index\n        long prev = arr.get(0);\n\n        // prev2 stores the maximum sum till index before previous\n        long prev2 = 0;\n\n        // Iterate from the second house\n        for (int i = 1; i < n; i++) {\n            // Pick the current house and add value from prev2\n            long pick = arr.get(i);\n            if (i > 1) pick += prev2;\n\n            // Skip the current house\n            long nonPick = prev;\n\n            // Choose maximum\n            long cur_i = Math.max(pick, nonPick);\n\n            // Update prev2 and prev\n            prev2 = prev;\n            prev = cur_i;\n        }\n        return prev;\n    }\n\n    // Function to solve the circular house robber problem\n    public long robStreet(int n, int[] arr) {\n        // Handle edge cases\n        if (n == 0) return 0;\n        if (n == 1) return arr[0];\n\n        // arr1 excludes first house\n        List<Integer> arr1 = new ArrayList<>();\n        // arr2 excludes last house\n        List<Integer> arr2 = new ArrayList<>();\n        \n        for (int i = 0; i < n; i++) {\n            if (i != 0) arr1.add(arr[i]);\n            if (i != n - 1) arr2.add(arr[i]);\n        }\n\n        // Return maximum of both cases\n        return Math.max(solve(arr1), solve(arr2));\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        // Example input\n        int[] arr = {1, 5, 1, 2, 6};\n        int n = arr.length;\n\n        // Create Solution object\n        Solution sol = new Solution();\n\n        // Output result\n        System.out.println(sol.robStreet(n, arr));\n    }\n}",
+      "Python3": "class Solution:\n    # Function to solve the linear house robber problem\n    def solve(self, arr):\n        n = len(arr)\n        \n        # If there's only one house, return its value\n        if n == 1:\n            return arr[0]\n        \n        # prev stores the maximum sum till the previous index\n        prev = arr[0]\n        \n        # prev2 stores the maximum sum till index before previous\n        prev2 = 0\n        \n        # Iterate from the second house\n        for i in range(1, n):\n            # Pick the current house\n            pick = arr[i]\n            if i > 1:\n                pick += prev2\n            \n            # Skip the current house\n            nonPick = prev\n            \n            # Choose maximum\n            cur_i = max(pick, nonPick)\n            \n            # Update prev2 and prev\n            prev2 = prev\n            prev = cur_i\n        \n        return prev\n\n    # Function to solve the circular house robber problem\n    def robStreet(self, n, arr):\n        # Handle edge cases\n        if n == 0:\n            return 0\n        if n == 1:\n            return arr[0]\n        \n        # arr1 excludes first house\n        arr1 = arr[1:]\n        # arr2 excludes last house\n        arr2 = arr[:-1]\n        \n        return max(self.solve(arr1), self.solve(arr2))\n\n\n# Driver code\nif __name__ == \"__main__\":\n    # Example input\n    arr = [1, 5, 1, 2, 6]\n    n = len(arr)\n    \n    # Create Solution object\n    sol = Solution()\n    \n    # Output result\n    print(sol.robStreet(n, arr))",
+      "JavaScript": "class Solution {\n    // Function to solve the linear house robber problem\n    solve(arr) {\n        const n = arr.length;\n\n        // If there's only one house, return its value\n        if (n === 1) return arr[0];\n\n        // prev stores the maximum sum till the previous index\n        let prev = arr[0];\n\n        // prev2 stores the maximum sum till index before previous\n        let prev2 = 0;\n\n        // Iterate from the second house\n        for (let i = 1; i < n; i++) {\n            // Pick the current house\n            let pick = arr[i];\n            if (i > 1) pick += prev2;\n\n            // Skip the current house\n            let nonPick = prev;\n\n            // Choose maximum\n            let cur_i = Math.max(pick, nonPick);\n\n            // Update prev2 and prev\n            prev2 = prev;\n            prev = cur_i;\n        }\n        return prev;\n    }\n\n    // Function to solve the circular house robber problem\n    robStreet(n, arr) {\n        // Handle edge cases\n        if (n === 0) return 0;\n        if (n === 1) return arr[0];\n\n        // arr1 excludes first house\n        const arr1 = arr.slice(1);\n        // arr2 excludes last house\n        const arr2 = arr.slice(0, n - 1);\n\n        return Math.max(this.solve(arr1), this.solve(arr2));\n    }\n}\n\n// Driver code\n(function () {\n    // Example input\n    const arr = [1, 5, 1, 2, 6];\n    const n = arr.length;\n\n    // Create Solution object\n    const sol = new Solution();\n\n    // Output result\n    console.log(sol.robStreet(n, arr));\n})();"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

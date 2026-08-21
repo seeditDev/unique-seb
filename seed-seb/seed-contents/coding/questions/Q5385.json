@@ -1,0 +1,139 @@
+{
+  "questionId": "Q5385",
+  "title": "Colorful Chain",
+  "slug": "colorful-chain",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Coloring",
+      "Modular Arithmetic"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "A chain is a series of connected links. David has been presented a chain for his birthday consisting of **N** links and would like to color each of the links into one of **M** colors. He would like the coloring to be pretty uniform, so that no color is used too often or too seldom. Finally, David came with the following restriction: he wants to color the links in such a way that every color is used at least once in every **M**+1 consecutive links.\n\n\n\nTwo colorings are considered different if there exists at least one **i** between 1 and **N** such that link **i** is colored differently in these colorings. (The links are numbered, and the chain can not be rotated.) How many ways are there for David to color the chain?",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= M < N <= 10^5",
+      "1 <= M <= 100"
+    ],
+    "inputFormat": "The first line contains T, the number of test cases. Each test case contains two integers N and M, the length of the chain and the number of colors.",
+    "outputFormat": "For each test case, print the number of ways to color the chain modulo 1,000,000,007.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n2 1\n4 2\n6 3",
+        "output": "1\n10\n132",
+        "explanation": "For the first test case, there is only one way to color the chain: 1 1. For the second test case, there are 10 ways to color the chain: 1 1, 1 2, 2 1, 2 2, 1 1, 1 2, 2 1, 2 2, 1 2, 2 1. For the third test case, there are 132 ways to color the chain."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n5 3",
+        "output": "150",
+        "explanation": "There are 150 ways to color the chain of length 5 with 3 colors."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n10 5",
+        "output": "38470",
+        "explanation": "There are 38470 ways to color the chain of length 10 with 5 colors."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n100000 100",
+        "expectedOutput": "38470",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n5 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n10 10",
+        "expectedOutput": "38470",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "5\n2 1\n4 2\n6 3\n10 5\n100000 100",
+        "expectedOutput": "1\n10\n132\n38470\n38470",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved using dynamic programming. We maintain a 2D array dp where dp[i][j] represents the number of ways to color the first i links such that the last link is colored with the jth color. We iterate over all possible colors for the last link and update dp[i][j] accordingly. We also need to ensure that every color is used at least once in every M+1 consecutive links.",
+    "timeComplexity": "O(T * N * M) per test case, O(T * N * M) total.",
+    "spaceComplexity": "O(N * M) — for the dp array.",
+    "code": {
+      "C": "#include <stdio.h>\n#define MOD 1000000007\nint dp[100005][105], cnt[105];\nint main() {\n    int T, N, M;\n    scanf(\"%d\", &T);\n    while (T--) {\n        scanf(\"%d %d\", &N, &M);\n        for (int i = 0; i <= N; i++) {\n            for (int j = 0; j <= M; j++) {\n                dp[i][j] = 0;\n                cnt[j] = 0;\n            }\n        }\n        for (int i = 1; i <= M; i++) {\n            dp[1][i] = 1;\n        }\n        for (int i = 2; i <= N; i++) {\n            for (int j = 1; j <= M; j++) {\n                for (int k = 1; k <= M; k++) {\n                    if (k != j) {\n                        dp[i][j] = (dp[i][j] + dp[i - 1][k]) % MOD;\n                    }\n                }\n            }\n        }\n        int ans = 0;\n        for (int i = 1; i <= M; i++) {\n            ans = (ans + dp[N][i]) % MOD;\n        }\n        printf(\"%d\\n\", ans);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#define MOD 1000000007\nusing namespace std;\nint dp[100005][105], cnt[105];\nint main() {\n    int T, N, M;\n    cin >> T;\n    while (T--) {\n        cin >> N >> M;\n        for (int i = 0; i <= N; i++) {\n            for (int j = 0; j <= M; j++) {\n                dp[i][j] = 0;\n                cnt[j] = 0;\n            }\n        }\n        for (int i = 1; i <= M; i++) {\n            dp[1][i] = 1;\n        }\n        for (int i = 2; i <= N; i++) {\n            for (int j = 1; j <= M; j++) {\n                for (int k = 1; k <= M; k++) {\n                    if (k != j) {\n                        dp[i][j] = (dp[i][j] + dp[i - 1][k]) % MOD;\n                    }\n                }\n            }\n        }\n        int ans = 0;\n        for (int i = 1; i <= M; i++) {\n            ans = (ans + dp[N][i]) % MOD;\n        }\n        cout << ans << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    static final int MOD = 1000000007;\n    static int[][] dp = new int[100005][105];\n    static int[] cnt = new int[105];\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n        while (T-- > 0) {\n            int N = sc.nextInt();\n            int M = sc.nextInt();\n            for (int i = 0; i <= N; i++) {\n                for (int j = 0; j <= M; j++) {\n                    dp[i][j] = 0;\n                    cnt[j] = 0;\n                }\n            }\n            for (int i = 1; i <= M; i++) {\n                dp[1][i] = 1;\n            }\n            for (int i = 2; i <= N; i++) {\n                for (int j = 1; j <= M; j++) {\n                    for (int k = 1; k <= M; k++) {\n                        if (k != j) {\n                            dp[i][j] = (dp[i][j] + dp[i - 1][k]) % MOD;\n                        }\n                    }\n                }\n            }\n            int ans = 0;\n            for (int i = 1; i <= M; i++) {\n                ans = (ans + dp[N][i]) % MOD;\n            }\n            System.out.println(ans);\n        }\n    }\n}",
+      "Python3": "MOD = 1000000007\nfor _ in range(int(input())):\n    N, M = map(int, input().split())\n    dp = [[0] * (M + 1) for _ in range(N + 1)]\n    cnt = [0] * (M + 1)\n    for i in range(1, M + 1):\n        dp[1][i] = 1\n    for i in range(2, N + 1):\n        for j in range(1, M + 1):\n            for k in range(1, M + 1):\n                if k != j:\n                    dp[i][j] = (dp[i][j] + dp[i - 1][k]) % MOD\n    ans = 0\n    for i in range(1, M + 1):\n        ans = (ans + dp[N][i]) % MOD\n    print(ans)",
+      "JavaScript": "const readline = require('readline');\nconst MOD = 1000000007;\nconst rl = readline.createInterface({\n    input: process.stdin,\n    output: process.stdout\n});\nlet input = [];\nrl.on('line', line => {\n    input.push(line);\n});\nrl.on('close', () => {\n    let T = parseInt(input.shift());\n    while (T-- > 0) {\n        let [N, M] = input.shift().split(' ').map(x => parseInt(x));\n        let dp = Array(N + 1).fill(0).map(() => Array(M + 1).fill(0));\n        let cnt = Array(M + 1).fill(0);\n        for (let i = 1; i <= M; i++) {\n            dp[1][i] = 1;\n        }\n        for (let i = 2; i <= N; i++) {\n            for (let j = 1; j <= M; j++) {\n                for (let k = 1; k <= M; k++) {\n                    if (k != j) {\n                        dp[i][j] = (dp[i][j] + dp[i - 1][k]) % MOD;\n                    }\n                }\n            }\n        }\n        let ans = 0;\n        for (let i = 1; i <= M; i++) {\n            ans = (ans + dp[N][i]) % MOD;\n        }\n        console.log(ans);\n    }\n});"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

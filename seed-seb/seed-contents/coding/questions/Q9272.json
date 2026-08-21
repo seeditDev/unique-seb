@@ -1,0 +1,133 @@
+{
+  "questionId": "Q9272",
+  "title": "Maximize Colours",
+  "slug": "maximize-colours",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Greedy",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Greedy",
+      "Enumeration",
+      "Bitmask"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Greedy Algorithms"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "For the human eye, primary colours are red, green, and blue.\n\nCombining 111 drop each of **any two primary** colours produces a new type of secondary colour. For example, mixing red and green gives yellow, mixing green and blue gives cyan, and, mixing red and blue gives magenta.\n\nYou have X,Y,X, Y,X,Y, and ZZZ drops of red, green, and blue colours respectively. Find the **maximum** total number of **distinct** colours (both primary and secondary) you can have at any particular moment.\n\n**Note**: You **cannot** mix a secondary colour with a primary or another secondary colour to get a new type of colour.\n\n\nInput Format\n\nThe first line of input will contain a single integer TTT, denoting the number of test cases.\nEach test case consists of three space separated integers X,Y,X, Y, X,Y, and ZZZ, the number of drops of red, green, and blue colours respectively.\n\n\nOutput Format\nFor each test case, output on a new line the **maximum** total number of colours (both primary and secondary) you can have using the given primary colours.",
+    "constraints": [
+      "1 <= T <= 100000",
+      "0 <= X, Y, Z <= 1000"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains three space‑separated integers X, Y and Z — the numbers of drops of red, green and blue respectively.",
+    "outputFormat": "For each test case output a single integer on its own line — the maximum possible number of distinct colours (primary + secondary) that can exist simultaneously.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4\\n1 0 1\\n3 3 0\\n1 1 1\\n0 0 0",
+        "output": "2\\n3\\n3\\n0",
+        "explanation": "Test case 1: only red and blue are present. Mixing would give magenta but would lose both primaries, so keeping them yields 2 colours.\\nTest case 2: red and green each have 3 drops. Create yellow (use 1 of each) and keep remaining reds and greens, total 3 distinct colours.\\nTest case 3: one drop of each primary. Any mix would replace two colours by one, so keep all three primaries.\\nTest case 4: no drops, no colours."
+      },
+      {
+        "id": "sample_2",
+        "input": "2\\n2 2 2\\n1 2 0",
+        "output": "6\\n2",
+        "explanation": "First case: produce all three secondary colours (using one drop of each pair) and still have one drop of each primary left → 3 primaries + 3 secondaries = 6.\\nSecond case: best is to create yellow (red+green) leaving green, giving yellow and green → 2 colours."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\\n0 0 0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\\n1000 1000 1000",
+        "expectedOutput": "6",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case – one primary only",
+        "input": "1\\n5 0 0",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "edge case – two primaries, one of them single drop",
+        "input": "1\\n1 3 0",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case – mixed counts",
+        "input": "1\\n2 1 3",
+        "expectedOutput": "4",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "There are only three possible secondary colours: yellow (red+green), cyan (green+blue) and magenta (red+blue). For any subset of these three colours we can check whether we have enough drops to create them: each secondary consumes one drop of each of its two primary colours. After producing the chosen secondary colours, a primary colour is still present if at least one drop of it remains. The total distinct colours for that subset equals the number of remaining primary colours plus the number of secondary colours produced. Because there are only 2^3 = 8 subsets, we can simply enumerate all masks, verify feasibility, compute the distinct count and keep the maximum. This runs in O(8) per test case, i.e. O(T) overall.",
+    "timeComplexity": "O(T) – constant work (8 masks) for each test case.",
+    "spaceComplexity": "O(1) – only a few integer variables.",
+    "code": {
+      "C": "#include <stdio.h>\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        int x, y, z;\n        scanf(\"%d %d %d\", &x, &y, &z);\n        int best = 0;\n        for (int mask = 0; mask < 8; ++mask) {\n            int useR = ((mask & 1) != 0) + ((mask & 4) != 0); // RG and RB\n            int useG = ((mask & 1) != 0) + ((mask & 2) != 0); // RG and GB\n            int useB = ((mask & 2) != 0) + ((mask & 4) != 0); // GB and RB\n            if (useR <= x && useG <= y && useB <= z) {\n                int cnt = 0;\n                if (x - useR > 0) ++cnt;\n                if (y - useG > 0) ++cnt;\n                if (z - useB > 0) ++cnt;\n                // number of secondary colours produced = popcount(mask)\n                cnt += (mask & 1) + ((mask >> 1) & 1) + ((mask >> 2) & 1);\n                if (cnt > best) best = cnt;\n            }\n        }\n        printf(\"%d\\n\", best);\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--) {\n        int x,y,z; cin>>x>>y>>z;\n        int best=0;\n        for(int mask=0; mask<8; ++mask){\n            int useR = ((mask>>0)&1) + ((mask>>2)&1); // RG, RB\n            int useG = ((mask>>0)&1) + ((mask>>1)&1); // RG, GB\n            int useB = ((mask>>1)&1) + ((mask>>2)&1); // GB, RB\n            if(useR<=x && useG<=y && useB<=z){\n                int cnt = 0;\n                if(x-useR>0) ++cnt;\n                if(y-useG>0) ++cnt;\n                if(z-useB>0) ++cnt;\n                cnt += __builtin_popcount(mask);\n                best = max(best, cnt);\n            }\n        }\n        cout<<best<<\"\\n\";\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder sb = new StringBuilder();\n        int T = Integer.parseInt(br.readLine().trim());\n        for (int t = 0; t < T; t++) {\n            StringTokenizer st = new StringTokenizer(br.readLine());\n            int x = Integer.parseInt(st.nextToken());\n            int y = Integer.parseInt(st.nextToken());\n            int z = Integer.parseInt(st.nextToken());\n            int best = 0;\n            for (int mask = 0; mask < 8; mask++) {\n                int useR = ((mask >> 0) & 1) + ((mask >> 2) & 1);\n                int useG = ((mask >> 0) & 1) + ((mask >> 1) & 1);\n                int useB = ((mask >> 1) & 1) + ((mask >> 2) & 1);\n                if (useR <= x && useG <= y && useB <= z) {\n                    int cnt = 0;\n                    if (x - useR > 0) cnt++;\n                    if (y - useG > 0) cnt++;\n                    if (z - useB > 0) cnt++;\n                    cnt += Integer.bitCount(mask);\n                    best = Math.max(best, cnt);\n                }\n            }\n            sb.append(best).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}\n",
+      "Python3": "#!/usr/bin/env python3\nimport sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out = []\n    for _ in range(T):\n        x = int(next(it)); y = int(next(it)); z = int(next(it))\n        best = 0\n        for mask in range(8):\n            useR = ((mask>>0)&1) + ((mask>>2)&1)\n            useG = ((mask>>0)&1) + ((mask>>1)&1)\n            useB = ((mask>>1)&1) + ((mask>>2)&1)\n            if useR <= x and useG <= y and useB <= z:\n                cnt = (1 if x-useR>0 else 0) + (1 if y-useG>0 else 0) + (1 if z-useB>0 else 0)\n                cnt += bin(mask).count('1')\n                if cnt > best:\n                    best = cnt\n        out.append(str(best))\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nif (input.length === 0) process.exit(0);\nconst T = Number(input[idx++]);\nlet results = [];\nfor (let t = 0; t < T; t++) {\n  const x = Number(input[idx++]);\n  const y = Number(input[idx++]);\n  const z = Number(input[idx++]);\n  let best = 0;\n  for (let mask = 0; mask < 8; mask++) {\n    const useR = ((mask >> 0) & 1) + ((mask >> 2) & 1);\n    const useG = ((mask >> 0) & 1) + ((mask >> 1) & 1);\n    const useB = ((mask >> 1) & 1) + ((mask >> 2) & 1);\n    if (useR <= x && useG <= y && useB <= z) {\n      let cnt = 0;\n      if (x - useR > 0) cnt++;\n      if (y - useG > 0) cnt++;\n      if (z - useB > 0) cnt++;\n      cnt += ((mask & 1) + ((mask >> 1) & 1) + ((mask >> 2) & 1));\n      if (cnt > best) best = cnt;\n    }\n  }\n  results.push(String(best));\n}\nconsole.log(results.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

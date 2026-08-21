@@ -1,0 +1,128 @@
+{
+  "questionId": "Q6267",
+  "title": "Amazing Experiment",
+  "slug": "amazing-experiment",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Tree",
+      "Depth-First Search",
+      "Dynamic Programming"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Trees"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Dr.Zero lives in Treeland. Tree land consists of a tree with **N** nodes connected by **N-1** weighted undirected edges. The nodes of the tree are numbered from **1** to **N**. The tree is rooted at node **1**.\n\n\n\nDr. Zero wanted to create a super amazing experiment. Before starting the experiment, he has laid out few important definitions needed.\n\n\n\n\n\n\nA subtree rooted at node **x** is defined recursively. It contains node **x** and the nodes in the subtrees of its children nodes. \nThe strategic cost of a node in the subtree is defined as the distance to the farthest node from it **in the whole subtree**. \nThe strategic cost of a subtree is defined by the minimum of strategic cost of all the nodes in the subtree.\n\n\n\nIn the experiment, he found strategic cost of subtree of each node in the tree. Sadly, he has misplaced the paper containing those results and now seeks your help.",
+    "constraints": [
+      "1 <= T <= 50",
+      "1 <= N <= 10^5",
+      "1 <= w <= 10^4"
+    ],
+    "inputFormat": "The first line of input contains one integer T, the number of test cases. For each test case: the first line contains N, the number of nodes. In the next N-1 lines, each line contains 3 integers u, v, w which indicates an edge between node u and v with length w.",
+    "outputFormat": "For each test case, output N lines, i-th of those should contain an integer corresponding to the strategic cost of subtree rooted at vertex i.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n6\n1 2 5\n1 5 6\n2 3 2\n2 4 1\n3 6 1",
+        "output": "8\n3\n1\n0\n0\n0",
+        "explanation": "The cost of the tree rooted at vertex 1 is 8, because the vertex with the minimum strategic cost is 1 and the farthest vertex from it 6 with distance 8."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n100000\n1 2 10000\n1 3 10000\n2 4 10000\n3 5 10000",
+        "expectedOutput": "40000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n5\n1 2 1\n2 3 1\n3 4 1\n4 5 1",
+        "expectedOutput": "4\n3\n2\n1\n0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "1\n1",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "1\n1",
+        "expectedOutput": "0",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a depth-first search (DFS) approach to calculate the strategic cost of each subtree. We start by initializing the distance of each node to itself as 0. Then, for each node, we calculate the distance to all its descendants and update the strategic cost accordingly. We use a recursive DFS function to traverse the tree and calculate the distances and strategic costs.",
+    "timeComplexity": "O(T * N * (N + M)) — where T is the number of test cases, N is the number of nodes, and M is the number of edges. The reason is that in the worst case, we might need to traverse the entire tree for each test case.",
+    "spaceComplexity": "O(N + M) — for storing the tree and the distances.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#define MAXN 100005\n#define MAXM 200005\ntypedef struct Edge {\n    int v, w, next;\n} Edge;\nEdge edges[MAXM];\nint head[MAXN], tot = 0;\nvoid addEdge(int u, int v, int w) {\n    edges[tot].v = v;\n    edges[tot].w = w;\n    edges[tot].next = head[u];\n    head[u] = tot++;\n}\nint dist[MAXN], cost[MAXN];\nvoid dfs(int u, int fa) {\n    dist[u] = 0;\n    for (int i = head[u]; i != -1; i = edges[i].next) {\n        int v = edges[i].v;\n        if (v == fa) continue;\n        dfs(v, u);\n        dist[u] = (dist[u] > dist[v] + edges[i].w) ? dist[u] : dist[v] + edges[i].w;\n    }\n    cost[u] = dist[u];\n    for (int i = head[u]; i != -1; i = edges[i].next) {\n        int v = edges[i].v;\n        if (v == fa) continue;\n        cost[u] = (cost[u] < cost[v]) ? cost[u] : cost[v];\n    }\n}\nint main() {\n    int T, N, u, v, w;\n    scanf(\"%d\", &T);\n    while (T--) {\n        scanf(\"%d\", &N);\n        for (int i = 1; i <= N; i++) head[i] = -1;\n        tot = 0;\n        for (int i = 1; i < N; i++) {\n            scanf(\"%d %d %d\", &u, &v, &w);\n            addEdge(u, v, w);\n            addEdge(v, u, w);\n        }\n        dfs(1, 0);\n        for (int i = 1; i <= N; i++) printf(\"%d\\n\", cost[i]);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\nusing namespace std;\ntypedef pair<int, int> pii;\nconst int MAXN = 100005;\nvector<pii> edges[MAXN];\nint dist[MAXN], cost[MAXN];\nvoid dfs(int u, int fa) {\n    dist[u] = 0;\n    for (auto &e : edges[u]) {\n        int v = e.first;\n        if (v == fa) continue;\n        dfs(v, u);\n        dist[u] = max(dist[u], dist[v] + e.second);\n    }\n    cost[u] = dist[u];\n    for (auto &e : edges[u]) {\n        int v = e.first;\n        if (v == fa) continue;\n        cost[u] = min(cost[u], cost[v]);\n    }\n}\nint main() {\n    int T, N, u, v, w;\n    cin >> T;\n    while (T--) {\n        cin >> N;\n        for (int i = 1; i <= N; i++) edges[i].clear();\n        for (int i = 1; i < N; i++) {\n            cin >> u >> v >> w;\n            edges[u].push_back({v, w});\n            edges[v].push_back({u, w});\n        }\n        dfs(1, 0);\n        for (int i = 1; i <= N; i++) cout << cost[i] << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.ArrayList;\nimport java.util.List;\nimport java.util.Scanner;\npublic class Main {\n    static class Edge {\n        int v, w;\n        Edge(int v, int w) {\n            this.v = v;\n            this.w = w;\n        }\n    }\n    static List<Edge>[] edges;\n    static int[] dist, cost;\n    public static void dfs(int u, int fa) {\n        dist[u] = 0;\n        for (Edge e : edges[u]) {\n            int v = e.v;\n            if (v == fa) continue;\n            dfs(v, u);\n            dist[u] = Math.max(dist[u], dist[v] + e.w);\n        }\n        cost[u] = dist[u];\n        for (Edge e : edges[u]) {\n            int v = e.v;\n            if (v == fa) continue;\n            cost[u] = Math.min(cost[u], cost[v]);\n        }\n    }\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n        while (T-- > 0) {\n            int N = sc.nextInt();\n            edges = new List[N + 1];\n            dist = new int[N + 1];\n            cost = new int[N + 1];\n            for (int i = 1; i <= N; i++) {\n                edges[i] = new ArrayList<>();\n            }\n            for (int i = 1; i < N; i++) {\n                int u = sc.nextInt();\n                int v = sc.nextInt();\n                int w = sc.nextInt();\n                edges[u].add(new Edge(v, w));\n                edges[v].add(new Edge(u, w));\n            }\n            dfs(1, 0);\n            for (int i = 1; i <= N; i++) {\n                System.out.println(cost[i]);\n            }\n        }\n    }\n}",
+      "Python3": "import sys\ninput = sys.stdin.readline\nMAXN = 100005\ndef dfs(u, fa):\n    global dist, cost, edges\n    dist[u] = 0\n    for v, w in edges[u]:\n        if v == fa: continue\n        dfs(v, u)\n        dist[u] = max(dist[u], dist[v] + w)\n    cost[u] = dist[u]\n    for v, w in edges[u]:\n        if v == fa: continue\n        cost[u] = min(cost[u], cost[v])\nT = int(input())\nwhile T > 0:\n    N = int(input())\n    edges = [[] for _ in range(N + 1)]\n    dist = [0] * (N + 1)\n    cost = [0] * (N + 1)\n    for _ in range(N - 1):\n        u, v, w = map(int, input().split())\n        edges[u].append((v, w))\n        edges[v].append((u, w))\n    dfs(1, 0)\n    for i in range(1, N + 1):\n        print(cost[i])\n    T -= 1",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst readline = () => input[idx++];\nconst MAXN = 100005;\nlet edges, dist, cost;\nfunction dfs(u, fa) {\n    dist[u] = 0;\n    for (let [v, w] of edges[u]) {\n        if (v === fa) continue;\n        dfs(v, u);\n        dist[u] = Math.max(dist[u], dist[v] + w);\n    }\n    cost[u] = dist[u];\n    for (let [v, w] of edges[u]) {\n        if (v === fa) continue;\n        cost[u] = Math.min(cost[u], cost[v]);\n    }\n}\nlet T = parseInt(readline());\nwhile (T-- > 0) {\n    let N = parseInt(readline());\n    edges = Array.from({ length: N + 1 }, () => []);\n    dist = new Array(N + 1).fill(0);\n    cost = new Array(N + 1).fill(0);\n    for (let i = 1; i < N; i++) {\n        let [u, v, w] = readline().split(' ').map(Number);\n        edges[u].push([v, w]);\n        edges[v].push([u, w]);\n    }\n    dfs(1, 0);\n    for (let i = 1; i <= N; i++) {\n        console.log(cost[i]);\n    }\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

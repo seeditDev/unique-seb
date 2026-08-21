@@ -1,0 +1,117 @@
+{
+  "questionId": "Q2290",
+  "title": "Generalized Independent Sets",
+  "slug": "generalized-independent-sets",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graphs",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Graphs",
+      "Cycle Detection",
+      "Generalized Independent Set"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Graphs"
+    ]
+  },
+  "content": {
+    "problemStatement": "Given a graph G on nodes V with undirected edges E, an independent set X is a subset of V such that no edge in E has both endpoints in X. Finding the size of the largest independent set in a graph is currently a very difficult problem.\n\n\n\nConsider the following generalization of an independent set. A function f that maps each node v to a non-negative value f(v) is said to be a partially generalized independent set if, for any edge e = (u,v), we have f(u) + f(v) \u2264 1. Unfortunately, this doesn't provide a great generalization. Consider a graph G where every possible edge exists in E. The size of a maximum independent set is only 1 whereas assigning 1/2 to every value f(v) has the total fractional value of the f(v) values being |V|/2.\n\n\n\nSo, let's add one more constraint to strengthen the notion of a generalized independent set. A cycle in a graph is a sequence of k \u2265 2 distinct nodes v1, v2, ..., vk where there is an edge between vi and vi+1 for any 1 \u2264 i &lt; k as well as an edge between v1 and vk. Notice that cycles of length 2 (i.e. edges) are permitted by this definition.\n\n\n\nIf C is a cycle of G of length |C|, then no independent set can have more than floor(|C|/2) nodes from C. Given this, define a generalized independent set as a function f on nodes in V that satisfies the following conditions. For any cycle C = v1, v2, ..., v|C|, we have f(v1) + f(v2) + ... + f(v|C|) \u2264 floor(|C|/2). Finally, for each node v we must have 0 \u2264 f(v) \u2264 1.\n\n\n\nYour task will be to determine if a given function f on the nodes of a graph is indeed a generalized independent set. If not, you must produce a cycle that is violated.",
+    "constraints": [
+      "1 <= T <= 30",
+      "1 <= n <= 500",
+      "0 <= m <= 2000",
+      "0 <= f(vi) <= 1",
+      "f(vi) has at most three decimals of precision"
+    ],
+    "inputFormat": "First line contains T, the number of test cases. Each test case contains two integers n and m, where n is the number of nodes and m is the number of edges in the graph. Following this is a line containing n floating point values, the i'th such value is the value of f(vi). Finally, m lines follow, each containing two distinct integers i,j between 0 and n-1 that indicate that there is an edge between vi and vj in the graph.",
+    "outputFormat": "For each test case, if the input function is a generalized independent set, the output is 'Ok'. Otherwise, the output is 'Bad Cycle: ' followed by a sequence of distinct integers between 0 and n-1 that forms a cycle C for which the sum of the f(v) values for nodes in C exceeds floor(|C|/2), followed by -1.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "",
+        "output": "Input:\n3\n4 4\n0.5 0.5 0.5 0.5\n0 1\n1 2\n2 3\n3 0\n6 7\n0.5 0.5 0.334 0.5 0.333 0.334\n0 1\n0 2\n1 3\n2 3\n1 4\n2 5\n4 5\n5 5\n1.0 0.0 0.667 0.5 0.0\n0 1\n1 2\n2 3\n3 4\n4 1\n\nOutput:\nOk\nBad Cycle: 4 5 2 0 1 -1\nBad Cycle: 3 2 -1",
+        "explanation": ""
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a depth-first search (DFS) algorithm to detect cycles in the graph. For each cycle detected, we calculate the sum of the f(v) values for nodes in the cycle and check if it exceeds floor(|C|/2). If it does, we output the cycle as a 'Bad Cycle'. If no such cycle is found after checking all nodes, we output 'Ok'.",
+    "timeComplexity": "O(T * (n + m)) per test case, O(T * (n + m)) total. The DFS algorithm has a time complexity of O(n + m) in the worst case.",
+    "spaceComplexity": "O(n) \u2014 the dominant structure is the visited array and the recursion stack.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#define MAXN 500\n#define MAXM 2000\n\n// Structure to represent a graph\ntypedef struct {\n    int n, m;\n    int **edges;\n    double *f;\n} Graph;\n\n// Function to create a graph\nGraph *createGraph(int n, int m) {\n    Graph *graph = (Graph *)malloc(sizeof(Graph));\n    graph->n = n;\n    graph->m = m;\n    graph->edges = (int **)malloc(m * sizeof(int *));\n    for (int i = 0; i < m; i++) {\n        graph->edges[i] = (int *)malloc(2 * sizeof(int));\n    }\n    graph->f = (double *)malloc(n * sizeof(double));\n    return graph;\n}\n\n// Function to detect cycles and check if the input function is a generalized independent set\nvoid checkCycle(Graph *graph) {\n    int *visited = (int *)malloc(graph->n * sizeof(int));\n    for (int i = 0; i < graph->n; i++) {\n        visited[i] = 0;\n    }\n    for (int i = 0; i < graph->n; i++) {\n        if (!visited[i]) {\n            dfs(graph, i, visited, -1);\n        }\n    }\n    free(visited);\n}\n\n// Function to perform DFS and detect cycles\nvoid dfs(Graph *graph, int node, int *visited, int parent) {\n    visited[node] = 1;\n    for (int i = 0; i < graph->m; i++) {\n        if (graph->edges[i][0] == node) {\n            int neighbor = graph->edges[i][1];\n            if (!visited[neighbor]) {\n                dfs(graph, neighbor, visited, node);\n            } else if (neighbor != parent) {\n                // Cycle detected\n                double sum = 0;\n                int cycleSize = 0;\n                int *cycle = (int *)malloc(graph->n * sizeof(int));\n                int index = 0;\n                int currentNode = node;\n                while (currentNode != neighbor) {\n                    cycle[index++] = currentNode;\n                    currentNode = visited[currentNode];\n                }\n                cycle[index++] = neighbor;\n                cycleSize = index;\n                for (int j = 0; j < cycleSize; j++) {\n                    sum += graph->f[cycle[j]];\n                }\n                if (sum > (double)(cycleSize / 2)) {\n                    printf(\"Bad Cycle: \");\n                    for (int j = 0; j < cycleSize; j++) {\n                        printf(\"%d \", cycle[j]);\n                    }\n                    printf(\"-1\\n\");\n                    return;\n                }\n                free(cycle);\n            }\n        }\n    }\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    for (int t = 0; t < T; t++) {\n        int n, m;\n        scanf(\"%d %d\", &n, &m);\n        Graph *graph = createGraph(n, m);\n        for (int i = 0; i < n; i++) {\n            scanf(\"%lf\", &graph->f[i]);\n        }\n        for (int i = 0; i < m; i++) {\n            scanf(\"%d %d\", &graph->edges[i][0], &graph->edges[i][1]);\n        }\n        checkCycle(graph);\n        printf(\"Ok\\n\");\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\nusing namespace std;\n\n// Structure to represent a graph\nstruct Graph {\n    int n, m;\n    vector<vector<int>> edges;\n    vector<double> f;\n};\n\n// Function to create a graph\nGraph createGraph(int n, int m) {\n    Graph graph;\n    graph.n = n;\n    graph.m = m;\n    graph.edges.resize(m, vector<int>(2));\n    graph.f.resize(n);\n    return graph;\n}\n\n// Function to detect cycles and check if the input function is a generalized independent set\nvoid checkCycle(Graph &graph) {\n    vector<int> visited(graph.n, 0);\n    for (int i = 0; i < graph.n; i++) {\n        if (!visited[i]) {\n            dfs(graph, i, visited, -1);\n        }\n    }\n}\n\n// Function to perform DFS and detect cycles\nvoid dfs(Graph &graph, int node, vector<int> &visited, int parent) {\n    visited[node] = 1;\n    for (int i = 0; i < graph.m; i++) {\n        if (graph.edges[i][0] == node) {\n            int neighbor = graph.edges[i][1];\n            if (!visited[neighbor]) {\n                dfs(graph, neighbor, visited, node);\n            } else if (neighbor != parent) {\n                // Cycle detected\n                double sum = 0;\n                int cycleSize = 0;\n                vector<int> cycle;\n                int currentNode = node;\n                while (currentNode != neighbor) {\n                    cycle.push_back(currentNode);\n                    currentNode = visited[currentNode];\n                }\n                cycle.push_back(neighbor);\n                cycleSize = cycle.size();\n                for (int j = 0; j < cycleSize; j++) {\n                    sum += graph.f[cycle[j]];\n                }\n                if (sum > (double)(cycleSize / 2)) {\n                    cout << \"Bad Cycle: \";\n                    for (int j = 0; j < cycleSize; j++) {\n                        cout << cycle[j] << \" \";\n                    }\n                    cout << \"-1\" << endl;\n                    return;\n                }\n            }\n        }\n    }\n}\n\nint main() {\n    int T;\n    cin >> T;\n    for (int t = 0; t < T; t++) {\n        int n, m;\n        cin >> n >> m;\n        Graph graph = createGraph(n, m);\n        for (int i = 0; i < n; i++) {\n            cin >> graph.f[i];\n        }\n        for (int i = 0; i < m; i++) {\n            cin >> graph.edges[i][0] >> graph.edges[i][1];\n        }\n        checkCycle(graph);\n        cout << \"Ok\" << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    // Structure to represent a graph\n    static class Graph {\n        int n, m;\n        int[][] edges;\n        double[] f;\n    }\n\n    // Function to create a graph\n    static Graph createGraph(int n, int m) {\n        Graph graph = new Graph();\n        graph.n = n;\n        graph.m = m;\n        graph.edges = new int[m][2];\n        graph.f = new double[n];\n        return graph;\n    }\n\n    // Function to detect cycles and check if the input function is a generalized independent set\n    static void checkCycle(Graph graph) {\n        int[] visited = new int[graph.n];\n        for (int i = 0; i < graph.n; i++) {\n            if (visited[i] == 0) {\n                dfs(graph, i, visited, -1);\n            }\n        }\n    }\n\n    // Function to perform DFS and detect cycles\n    static void dfs(Graph graph, int node, int[] visited, int parent) {\n        visited[node] = 1;\n        for (int i = 0; i < graph.m; i++) {\n            if (graph.edges[i][0] == node) {\n                int neighbor = graph.edges[i][1];\n                if (visited[neighbor] == 0) {\n                    dfs(graph, neighbor, visited, node);\n                } else if (neighbor != parent) {\n                    // Cycle detected\n                    double sum = 0;\n                    int cycleSize = 0;\n                    int[] cycle = new int[graph.n];\n                    int index = 0;\n                    int currentNode = node;\n                    while (currentNode != neighbor) {\n                        cycle[index++] = currentNode;\n                        currentNode = visited[currentNode];\n                    }\n                    cycle[index++] = neighbor;\n                    cycleSize = index;\n                    for (int j = 0; j < cycleSize; j++) {\n                        sum += graph.f[cycle[j]];\n                    }\n                    if (sum > (double)(cycleSize / 2)) {\n                        System.out.print(\"Bad Cycle: \");\n                        for (int j = 0; j < cycleSize; j++) {\n                            System.out.print(cycle[j] + \" \");\n                        }\n                        System.out.println(\"-1\");\n                        return;\n                    }\n                }\n            }\n        }\n    }\n\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int T = scanner.nextInt();\n        for (int t = 0; t < T; t++) {\n            int n = scanner.nextInt();\n            int m = scanner.nextInt();\n            Graph graph = createGraph(n, m);\n            for (int i = 0; i < n; i++) {\n                graph.f[i] = scanner.nextDouble();\n            }\n            for (int i = 0; i < m; i++) {\n                graph.edges[i][0] = scanner.nextInt();\n                graph.edges[i][1] = scanner.nextInt();\n            }\n            checkCycle(graph);\n            System.out.println(\"Ok\");\n        }\n    }\n}",
+      "Python3": "import sys\n\n# Structure to represent a graph\nclass Graph:\n    def __init__(self, n, m):\n        self.n = n\n        self.m = m\n        self.edges = [[0, 0] for _ in range(m)]\n        self.f = [0.0] * n\n\n# Function to detect cycles and check if the input function is a generalized independent set\ndef checkCycle(graph):\n    visited = [0] * graph.n\n    for i in range(graph.n):\n        if visited[i] == 0:\n            dfs(graph, i, visited, -1)\n\n# Function to perform DFS and detect cycles\ndef dfs(graph, node, visited, parent):\n    visited[node] = 1\n    for i in range(graph.m):\n        if graph.edges[i][0] == node:\n            neighbor = graph.edges[i][1]\n            if visited[neighbor] == 0:\n                dfs(graph, neighbor, visited, node)\n            elif neighbor != parent:\n                # Cycle detected\n                sum = 0\n                cycleSize = 0\n                cycle = []\n                currentNode = node\n                while currentNode != neighbor:\n                    cycle.append(currentNode)\n                    currentNode = visited[currentNode]\n                cycle.append(neighbor)\n                cycleSize = len(cycle)\n                for j in range(cycleSize):\n                    sum += graph.f[cycle[j]]\n                if sum > (cycleSize / 2):\n                    print(\"Bad Cycle: \", end='')\n                    for j in range(cycleSize):\n                        print(cycle[j], end=' ')\n                    print(\"-1\")\n                    return\n\n# Read input\nT = int(input())\nfor t in range(T):\n    n, m = map(int, input().split())\n    graph = Graph(n, m)\n    graph.f = list(map(float, input().split()))\n    for i in range(m):\n        graph.edges[i][0], graph.edges[i][1] = map(int, input().split())\n    checkCycle(graph)\n    print(\"Ok\")",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\n\n// Structure to represent a graph\nclass Graph {\n    constructor(n, m) {\n        this.n = n;\n        this.m = m;\n        this.edges = Array(m).fill(0).map(() => Array(2).fill(0));\n        this.f = Array(n).fill(0.0);\n    }\n}\n\n// Function to detect cycles and check if the input function is a generalized independent set\nfunction checkCycle(graph) {\n    let visited = Array(graph.n).fill(0);\n    for (let i = 0; i < graph.n; i++) {\n        if (visited[i] === 0) {\n            dfs(graph, i, visited, -1);\n        }\n    }\n}\n\n// Function to perform DFS and detect cycles\nfunction dfs(graph, node, visited, parent) {\n    visited[node] = 1;\n    for (let i = 0; i < graph.m; i++) {\n        if (graph.edges[i][0] === node) {\n            let neighbor = graph.edges[i][1];\n            if (visited[neighbor] === 0) {\n                dfs(graph, neighbor, visited, node);\n            } else if (neighbor !== parent) {\n                // Cycle detected\n                let sum = 0;\n                let cycleSize = 0;\n                let cycle = [];\n                let currentNode = node;\n                while (currentNode !== neighbor) {\n                    cycle.push(currentNode);\n                    currentNode = visited[currentNode];\n                }\n                cycle.push(neighbor);\n                cycleSize = cycle.length;\n                for (let j = 0; j < cycleSize; j++) {\n                    sum += graph.f[cycle[j]];\n                }\n                if (sum > (cycleSize / 2)) {\n                    process.stdout.write('Bad Cycle: ');\n                    for (let j = 0; j < cycleSize; j++) {\n                        process.stdout.write(cycle[j] + ' ');\n                    }\n                    console.log('-1');\n                    return;\n                }\n            }\n        }\n    }\n}\n\n// Read input\nlet T = parseInt(input[idx++]);\nfor (let t = 0; t < T; t++) {\n    let [n, m] = input[idx++].split(' ').map(Number);\n    let graph = new Graph(n, m);\n    graph.f = input[idx++].split(' ').map(Number);\n    for (let i = 0; i < m; i++) {\n        let [u, v] = input[idx++].split(' ').map(Number);\n        graph.edges[i][0] = u;\n        graph.edges[i][1] = v;\n    }\n    checkCycle(graph);\n    console.log('Ok');\n}"
+    }
+  }
+}

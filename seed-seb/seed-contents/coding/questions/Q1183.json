@@ -1,0 +1,128 @@
+{
+  "questionId": "Q1183",
+  "title": "Chef And Special Dishes",
+  "slug": "chef-and-special-dishes",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-06",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "Double String",
+      "String Manipulation",
+      "Strings"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ]
+  },
+  "content": {
+    "problemStatement": "One day, Chef prepared **D** brand new dishes. He named the i-th dish by a string **Si**. After the cooking, he decided to categorize each of these **D** dishes as special or not.\n\n\n\nA dish **Si** is called special if its name (i.e. the string **Si**) can be represented in the form of a double string by removing at most one (possibly zero) character from it's name from any position. \n\n\n\nA string is called a double string if it can be represented as a concatenation of two identical, non-empty strings. \ne.g. \"abab\" is a double string as it can be represented as \"ab\" + \"ab\" where + operation denotes concatenation. \nSimilarly, \"aa\", \"abcabc\" are double strings whereas \"a\", \"abba\", \"abc\" are not.",
+    "constraints": [
+      "1 <= D <= 10^6",
+      "1 <= |Si| <= 10^6",
+      "Sum of lengths of all Si does not exceed 10^6",
+      "All characters are in 'a'-'z'"
+    ],
+    "inputFormat": "First line contains D, the number of dishes. Each of the next D lines contains a non-empty string Si consisting of lowercase English letters.",
+    "outputFormat": "For each dish, output a line containing 'YES' if the dish name can become a double string after removing at most one character, otherwise output 'NO'.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\naba\nabac\nabcd",
+        "output": "YES\nNO\nNO",
+        "explanation": "aba (length 3) -> delete the middle 'b' to obtain \"aa\", which is a double string. abac (length 4) is even but halves \"ab\" and \"ac\" differ, and removing any one character makes length odd, so NO. abcd cannot be turned into a double string with one deletion."
+      },
+      {
+        "id": "sample_2",
+        "input": "2\nabcabc\nabc",
+        "output": "YES\nNO",
+        "explanation": "abcabc is already a double string (\"abc\"+\"abc\"). abc (length 3) after any single deletion becomes length 2, but the two remaining characters are never identical, so NO."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\nabab",
+        "output": "YES",
+        "explanation": "abab is already a double string (\"ab\"+\"ab\"). No deletion is needed."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\na",
+        "expectedOutput": "NO",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\nabcdefghijklmnopqrstuvwxyz",
+        "expectedOutput": "NO",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\naaaaaaaaaa",
+        "expectedOutput": "YES",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\nabba",
+        "expectedOutput": "NO",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "5\nabcabc\nabc\nabab\naaaa\nabba",
+        "expectedOutput": "YES\nNO\nYES\nYES\nNO",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The key insight is to check if a string can be represented as a double string by removing at most one character. This can be done by checking if the string is already a double string, or if removing one character from the left or right side makes it a double string.",
+    "timeComplexity": "O(N) per test case, O(D*N) total, where N is the maximum length of a string.",
+    "spaceComplexity": "O(N) \u2014 the dominant structure is the string itself.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n\nint isDouble(const char *s,int len){int half=len/2;return memcmp(s,s+half,half)==0;}\nint canDeleteFromLeft(const char *s,int n){int half=(n-1)/2;int i=0,j=half+1,skipped=0;while(i<half+1 && j<n){if(s[i]==s[j]){i++;j++;}else if(!skipped){skipped=1;i++;}else return 0;}return 1;}\nint canDeleteFromRight(const char *s,int n){int half=(n-1)/2;int i=0,j=half,skipped=0;while(i<half && j<n){if(s[i]==s[j]){i++;j++;}else if(!skipped){skipped=1;j++;}else return 0;}return 1;}\nint isSpecial(const char *s,int n){if(n==1) return 0; if(n%2==0) return isDouble(s,n); return canDeleteFromLeft(s,n)||canDeleteFromRight(s,n);} \nint main(){int D; if(scanf(\"%d\",&D)!=1) return 0; char buf[1000005]; while(D--){scanf(\"%s\",buf); int len=strlen(buf); printf(isSpecial(buf,len)?\"YES\\n\":\"NO\\n\");} return 0; }",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nbool isDouble(const string &s){int n=s.size();int half=n/2;return s.compare(0,half,s,half,half)==0;}\nbool canDeleteFromLeft(const string &s){int n=s.size();int half=(n-1)/2;int i=0,j=half+1;bool skipped=false;while(i<half+1 && j<n){if(s[i]==s[j]){++i;++j;}else if(!skipped){skipped=true;++i;}else return false;}return true;}\nbool canDeleteFromRight(const string &s){int n=s.size();int half=(n-1)/2;int i=0,j=half;bool skipped=false;while(i<half && j<n){if(s[i]==s[j]){++i;++j;}else if(!skipped){skipped=true;++j;}else return false;}return true;}\nbool isSpecial(const string &s){int n=s.size();if(n==1) return false; if(n%2==0) return isDouble(s); return canDeleteFromLeft(s)||canDeleteFromRight(s);} \nint main(){ios::sync_with_stdio(false);cin.tie(nullptr);int D; if(!(cin>>D)) return 0; while(D--){string s;cin>>s;cout<<(isSpecial(s)?\"YES\":\"NO\")<<'\\n';} return 0; }",
+      "Java": "import java.io.*;\npublic class Main {\n    private static boolean isDouble(String s){int n=s.length();int half=n/2;return s.substring(0,half).equals(s.substring(half));}\n    private static boolean canDeleteFromLeft(String s){int n=s.length();int half=(n-1)/2;int i=0,j=half+1;boolean skipped=false;while(i<half+1 && j<n){if(s.charAt(i)==s.charAt(j)){i++;j++;}else if(!skipped){skipped=true;i++;}else return false;}return true;}\n    private static boolean canDeleteFromRight(String s){int n=s.length();int half=(n-1)/2;int i=0,j=half;boolean skipped=false;while(i<half && j<n){if(s.charAt(i)==s.charAt(j)){i++;j++;}else if(!skipped){skipped=true;j++;}else return false;}return true;}\n    private static boolean isSpecial(String s){int n=s.length();if(n==1) return false; if(n%2==0) return isDouble(s); return canDeleteFromLeft(s)||canDeleteFromRight(s);} \n    public static void main(String[] args) throws Exception{BufferedReader br=new BufferedReader(new InputStreamReader(System.in));int D=Integer.parseInt(br.readLine().trim());StringBuilder out=new StringBuilder();for(int t=0;t<D;++t){String s=br.readLine().trim();out.append(isSpecial(s)?\"YES\":\"NO\").append('\\n');}System.out.print(out.toString());}}\n",
+      "Python3": "import sys\ndef is_double(s):\n    half=len(s)//2\n    return s[:half]==s[half:]\n\ndef can_delete_left(s):\n    n=len(s)\n    half=(n-1)//2\n    i,j=0,half+1\n    skipped=False\n    while i<half+1 and j<n:\n        if s[i]==s[j]:\n            i+=1;j+=1\n        elif not skipped:\n            skipped=True;i+=1\n        else:\n            return False\n    return True\n\ndef can_delete_right(s):\n    n=len(s)\n    half=(n-1)//2\n    i,j=0,half\n    skipped=False\n    while i<half and j<n:\n        if s[i]==s[j]:\n            i+=1;j+=1\n        elif not skipped:\n            skipped=True;j+=1\n        else:\n            return False\n    return True\n\ndef is_special(s):\n    n=len(s)\n    if n==1:\n        return False\n    if n%2==0:\n        return is_double(s)\n    return can_delete_left(s) or can_delete_right(s)\n\ndef main():\n    data=sys.stdin.read().splitlines()\n    if not data:\n        return\n    D=int(data[0])\n    out=[]\n    for i in range(1,D+1):\n        s=data[i].strip()\n        out.append('YES' if is_special(s) else 'NO')\n    sys.stdout.write('\\n'.join(out))\nif __name__=='__main__':\n    main()\n",
+      "JavaScript": "const lines=require('fs').readFileSync(0,'utf-8').trim().split('\\n');let idx=0;const D=parseInt(lines[idx++],10);let out=[];function isDouble(s){const half=s.length>>1;return s.slice(0,half)===s.slice(half);}function canDeleteFromLeft(s){const n=s.length;const half=(n-1)>>1;let i=0,j=half+1,skipped=false;while(i<half+1 && j<n){if(s[i]===s[j]){i++;j++;}else if(!skipped){skipped=true;i++;}else return false;}return true;}function canDeleteFromRight(s){const n=s.length;const half=(n-1)>>1;let i=0,j=half,skipped=false;while(i<half && j<n){if(s[i]===s[j]){i++;j++;}else if(!skipped){skipped=true;j++;}else return false;}return true;}function isSpecial(s){const n=s.length;if(n===1) return false;if((n&1)===0) return isDouble(s);return canDeleteFromLeft(s)||canDeleteFromRight(s);}for(let t=0;t<D;++t){const s=lines[idx++]||'';out.push(isSpecial(s)?'YES':'NO');}console.log(out.join('\\n'));"
+    }
+  }
+}

@@ -1,0 +1,142 @@
+{
+  "questionId": "Q8173",
+  "title": "Find Tree Diameter",
+  "slug": "find-tree-diameter",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Tree",
+      "Diameter",
+      "BFS",
+      "Two‑Pass BFS",
+      "Graph Traversal"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Trees"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You're given a tree with NNN vertices numbered from 111 to NNN. A tree is defined as a connected, undirected graph with NNN vertices and N−1N-1N−1 edges. The distance between two vertices in a tree is equal to the number of edges on the unique simple path between them.\n\nThe diameter of a tree is the maximum distance between two nodes. Your task is to determine the diameter of the tree.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 100000",
+      "1 <= u, v <= N"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, the first line contains an integer N, the number of vertices in the tree. The next N‑1 lines each contain two integers u and v, denoting an undirected edge between vertices u and v.",
+    "outputFormat": "For each test case, output a single line containing the diameter of the given tree (the maximum distance between any two vertices).",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\\n6\\n1 2\\n1 3\\n2 4\\n2 5\\n3 6\\n5\\n1 2\\n1 3\\n3 4\\n3 5",
+        "output": "4\\n3",
+        "explanation": "First tree: longest path is 4-2-1-3-6 (or 5-2-1-3-6) length 4. Second tree: longest path is 4-3-5 length 3."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\\n2\\n1 2",
+        "output": "1",
+        "explanation": "Only two vertices, the single edge gives distance 1, which is the diameter."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\\n4\\n1 2\\n1 3\\n1 4",
+        "output": "2",
+        "explanation": "Star shaped tree; any leaf to another leaf passes through the center, giving distance 2."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\\n1",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum compact boundary",
+        "input": "1\\n15\\n1 2\\n2 3\\n3 4\\n4 5\\n5 6\\n6 7\\n7 8\\n8 9\\n9 10\\n10 11\\n11 12\\n12 13\\n13 14\\n14 15",
+        "expectedOutput": "14",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case line of three",
+        "input": "1\\n3\\n1 2\\n2 3",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "balanced binary tree",
+        "input": "1\\n7\\n1 2\\n1 3\\n2 4\\n2 5\\n3 6\\n3 7",
+        "expectedOutput": "4",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "mixed branching",
+        "input": "1\\n6\\n1 2\\n2 3\\n3 4\\n2 5\\n5 6",
+        "expectedOutput": "4",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The diameter of a tree can be found with two breadth‑first searches (BFS). First, run BFS from any vertex (e.g., 1) to find the farthest vertex A. Then run BFS again starting from A; the greatest distance reached in this second BFS is the tree diameter. This works because the farthest vertex from any node is always an endpoint of a diameter. Each BFS visits every vertex and edge once, giving O(N) time per test case.",
+    "timeComplexity": "O(N) per test case, because each of the two BFS traversals processes all vertices and edges once.",
+    "spaceComplexity": "O(N) for the adjacency list and distance array.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\ntypedef struct Node {\n    int v;\n    struct Node* next;\n} Node;\n\ntypedef struct {\n    Node** head;\n    int n;\n} Graph;\n\nGraph* createGraph(int n) {\n    Graph* g = (Graph*)malloc(sizeof(Graph));\n    g->n = n;\n    g->head = (Node**)calloc(n + 1, sizeof(Node*));\n    return g;\n}\n\nvoid addEdge(Graph* g, int u, int v) {\n    Node* a = (Node*)malloc(sizeof(Node)); a->v = v; a->next = g->head[u]; g->head[u] = a;\n    Node* b = (Node*)malloc(sizeof(Node)); b->v = u; b->next = g->head[v]; g->head[v] = b;\n}\n\nvoid bfs(int start, Graph* g, int* farthest, int* maxDist) {\n    int* dist = (int*)malloc((g->n + 1) * sizeof(int));\n    for (int i = 1; i <= g->n; ++i) dist[i] = -1;\n    int* q = (int*)malloc((g->n) * sizeof(int));\n    int front = 0, back = 0;\n    q[back++] = start;\n    dist[start] = 0;\n    *farthest = start;\n    *maxDist = 0;\n    while (front < back) {\n        int u = q[front++];\n        for (Node* cur = g->head[u]; cur; cur = cur->next) {\n            int v = cur->v;\n            if (dist[v] == -1) {\n                dist[v] = dist[u] + 1;\n                q[back++] = v;\n                if (dist[v] > *maxDist) {\n                    *maxDist = dist[v];\n                    *farthest = v;\n                }\n            }\n        }\n    }\n    free(dist);\n    free(q);\n}\n\nint main() {\n    int T; if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        int N; scanf(\"%d\", &N);\n        Graph* g = createGraph(N);\n        for (int i = 0; i < N - 1; ++i) {\n            int u, v; scanf(\"%d %d\", &u, &v);\n            addEdge(g, u, v);\n        }\n        int far, d;\n        bfs(1, g, &far, &d);\n        bfs(far, g, &far, &d);\n        printf(\"%d\\n\", d);\n        // free graph\n        for (int i = 1; i <= N; ++i) {\n            Node* cur = g->head[i];\n            while (cur) { Node* tmp = cur; cur = cur->next; free(tmp); }\n        }\n        free(g->head); free(g);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\npair<int,int> bfs(int start, const vector<vector<int>>& adj) {\n    vector<int> dist(adj.size(), -1);\n    queue<int> q;\n    q.push(start);\n    dist[start] = 0;\n    int far = start, maxd = 0;\n    while (!q.empty()) {\n        int u = q.front(); q.pop();\n        for (int v : adj[u]) {\n            if (dist[v] == -1) {\n                dist[v] = dist[u] + 1;\n                q.push(v);\n                if (dist[v] > maxd) {\n                    maxd = dist[v];\n                    far = v;\n                }\n            }\n        }\n    }\n    return {far, maxd};\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; cin >> T;\n    while (T--) {\n        int N; cin >> N;\n        vector<vector<int>> adj(N + 1);\n        for (int i = 0; i < N - 1; ++i) {\n            int u, v; cin >> u >> v;\n            adj[u].push_back(v);\n            adj[v].push_back(u);\n        }\n        auto p1 = bfs(1, adj);\n        auto p2 = bfs(p1.first, adj);\n        cout << p2.second << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    private static class Pair {\n        int node, dist;\n        Pair(int n, int d) { node = n; dist = d; }\n    }\n\n    private static Pair bfs(int start, List<List<Integer>> adj) {\n        int n = adj.size();\n        int[] dist = new int[n];\n        Arrays.fill(dist, -1);\n        ArrayDeque<Integer> q = new ArrayDeque<>();\n        q.add(start);\n        dist[start] = 0;\n        int far = start, max = 0;\n        while (!q.isEmpty()) {\n            int u = q.poll();\n            for (int v : adj.get(u)) {\n                if (dist[v] == -1) {\n                    dist[v] = dist[u] + 1;\n                    q.add(v);\n                    if (dist[v] > max) {\n                        max = dist[v];\n                        far = v;\n                    }\n                }\n            }\n        }\n        return new Pair(far, max);\n    }\n\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder sb = new StringBuilder();\n        int T = Integer.parseInt(br.readLine().trim());\n        while (T-- > 0) {\n            int N = Integer.parseInt(br.readLine().trim());\n            List<List<Integer>> adj = new ArrayList<>(N + 1);\n            for (int i = 0; i <= N; i++) adj.add(new ArrayList<>());\n            for (int i = 0; i < N - 1; i++) {\n                StringTokenizer st = new StringTokenizer(br.readLine());\n                int u = Integer.parseInt(st.nextToken());\n                int v = Integer.parseInt(st.nextToken());\n                adj.get(u).add(v);\n                adj.get(v).add(u);\n            }\n            Pair p1 = bfs(1, adj);\n            Pair p2 = bfs(p1.node, adj);\n            sb.append(p2.dist).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "import sys\nfrom collections import deque\n\ndef bfs(start, adj):\n    n = len(adj)\n    dist = [-1] * n\n    q = deque([start])\n    dist[start] = 0\n    far = start\n    maxd = 0\n    while q:\n        u = q.popleft()\n        for v in adj[u]:\n            if dist[v] == -1:\n                dist[v] = dist[u] + 1\n                q.append(v)\n                if dist[v] > maxd:\n                    maxd = dist[v]\n                    far = v\n    return far, maxd\n\ndef main():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it))\n        adj = [[] for _ in range(N + 1)]\n        for _ in range(N - 1):\n            u = int(next(it)); v = int(next(it))\n            adj[u].append(v)\n            adj[v].append(u)\n        far, _ = bfs(1, adj)\n        _, diam = bfs(far, adj)\n        out_lines.append(str(diam))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    main()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/).map(Number);\nlet idx = 0;\nconst T = input[idx++];\nlet outputs = [];\nfunction bfs(start, adj) {\n  const n = adj.length;\n  const dist = new Int32Array(n).fill(-1);\n  const queue = new Int32Array(n);\n  let head = 0, tail = 0;\n  queue[tail++] = start;\n  dist[start] = 0;\n  let far = start, max = 0;\n  while (head < tail) {\n    const u = queue[head++];\n    for (const v of adj[u]) {\n      if (dist[v] === -1) {\n        dist[v] = dist[u] + 1;\n        queue[tail++] = v;\n        if (dist[v] > max) { max = dist[v]; far = v; }\n      }\n    }\n  }\n  return [far, max];\n}\nfor (let t = 0; t < T; ++t) {\n  const N = input[idx++];\n  const adj = Array.from({length: N + 1}, () => []);\n  for (let i = 0; i < N - 1; ++i) {\n    const u = input[idx++];\n    const v = input[idx++];\n    adj[u].push(v);\n    adj[v].push(u);\n  }\n  const [a] = bfs(1, adj);\n  const [, diam] = bfs(a, adj);\n  outputs.push(String(diam));\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

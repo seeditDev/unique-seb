@@ -1,0 +1,129 @@
+{
+  "questionId": "Q6232",
+  "title": "Matched Brackets",
+  "slug": "matched-brackets",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Data Structures",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Bracket Sequence",
+      "Stack",
+      "Depth",
+      "Maximum Length"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Data Structures"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Zonal Computing Olympiad 2012, 26 Nov 2011\nA sequence of opening and closing brackets is well-bracketed if we can pair up each opening bracket with a matching closing bracket in the usual sense.  For instance, the sequences (), (()) and ()(()) are well-bracketed, while (, ()), (()(), and )(  are not well-bracketed.\n\n\n The nesting depth of a well-bracketed sequence tells us the maximum number of levels of inner matched brackets enclosed within outer matched brackets.  For instance, the nesting depth of () and ()()() is 1, the nesting depth of (()) and ()(()) is 2, the nesting depth of ((())) is 3, and so on.  \n\n\n Given a well-bracketed sequence, we are interested in computing the following: \n\n\n The nesting depth, and the first position where it occurs–this will be the position of the first opening bracket at this nesting depth, where the positions are numbered starting with 1.\n\n\n The maximum number of symbols between any pair of matched  brackets, including both the outer brackets, and the first position where this occurs–that is, the position of the first opening bracket of this segment\n\n\n\n\n\nFor instance, the nesting depth of ()(())()(()())(()()) is 2 and the first position where this occurs is 4.  The opening bracket at position 10 is also at nesting depth 2 but we have to report the first position where this occurs, which is 4.\n\n\nIn this sequence, the maximum number of symbols between a pair of matched bracket is 6, starting at position 9. There is another such sequence of length 6 starting at position 15, but this is not the first such position.",
+    "constraints": [
+      "1 ≤ T ≤ 10",
+      "2 ≤ N ≤ 10^5",
+      "The given bracket sequence for each test case is guaranteed to be well‑bracketed."
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, the first line contains an integer N (the length of the bracket sequence). The second line contains N space‑separated integers where 1 denotes '(' and 2 denotes ')'.",
+    "outputFormat": "For each test case output a single line with four space‑separated integers: the maximum nesting depth, the first position where this depth occurs, the maximum length of a contiguous subsequence that forms a matched pair of brackets (including the outer brackets), and the first position where such a maximum‑length subsequence starts.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "20\n1 2 1 1 2 2 1 2 1 1 2 1 2 2 1 1 2 1 2 2",
+        "output": "2 4 6 9",
+        "explanation": "The maximum nesting depth is 2, which occurs at position 4. The maximum length of a sequence between matching brackets is 6, which occurs at position 9."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Traverse the sequence from left to right while maintaining a stack of indices of opening brackets. The current stack size equals the current nesting depth. Whenever we push an opening bracket, if the new depth exceeds the recorded maximum depth we update maxDepth and store the current position (1‑based) as maxDepthPos. When we encounter a closing bracket we pop the matching opening index; the length of this matched segment is (currentIndex - startIndex + 1). If this length exceeds the recorded maximum length we update maxLength and store startIndex+1 as maxLengthPos. Because each bracket is processed once, the algorithm runs in O(N) time per test case and uses O(N) auxiliary space for the stack.",
+    "timeComplexity": "O(N) per test case, where N is the length of the bracket sequence.",
+    "spaceComplexity": "O(N) for the stack (worst‑case when the whole sequence is a chain of opening brackets).",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nint main() {\n    int T; scanf(\"%d\", &T);\n    while (T--) {\n        int N; scanf(\"%d\", &N);\n        int *brackets = (int*)malloc(N * sizeof(int));\n        for (int i = 0; i < N; ++i) scanf(\"%d\", &brackets[i]);\n        int *stack = (int*)malloc(N * sizeof(int));\n        int top = -1;\n        int maxDepth = 0, maxDepthPos = 0, maxLength = 0, maxLengthPos = 0;\n        for (int i = 0; i < N; ++i) {\n            if (brackets[i] == 1) { // opening\n                stack[++top] = i;\n                if (top + 1 > maxDepth) {\n                    maxDepth = top + 1;\n                    maxDepthPos = i + 1; // 1‑based\n                }\n            } else { // closing\n                int start = stack[top--];\n                int length = i - start + 1;\n                if (length > maxLength) {\n                    maxLength = length;\n                    maxLengthPos = start + 1; // 1‑based\n                }\n            }\n        }\n        printf(\"%d %d %d %d\\n\", maxDepth, maxDepthPos, maxLength, maxLengthPos);\n        free(brackets);\n        free(stack);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin >> T)) return 0;\n    while (T--) {\n        int N; cin >> N;\n        vector<int> a(N);\n        for (int i = 0; i < N; ++i) cin >> a[i];\n        vector<int> st;\n        st.reserve(N);\n        int maxDepth = 0, maxDepthPos = 0, maxLength = 0, maxLengthPos = 0;\n        for (int i = 0; i < N; ++i) {\n            if (a[i] == 1) { // '('\n                st.push_back(i);\n                if ((int)st.size() > maxDepth) {\n                    maxDepth = st.size();\n                    maxDepthPos = i + 1; // 1‑based\n                }\n            } else { // ')'\n                int start = st.back();\n                st.pop_back();\n                int length = i - start + 1;\n                if (length > maxLength) {\n                    maxLength = length;\n                    maxLengthPos = start + 1; // 1‑based\n                }\n            }\n        }\n        cout << maxDepth << ' ' << maxDepthPos << ' ' << maxLength << ' ' << maxLengthPos << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st = new StringTokenizer(br.readLine());\n        int T = Integer.parseInt(st.nextToken());\n        StringBuilder sb = new StringBuilder();\n        while (T-- > 0) {\n            int N = Integer.parseInt(br.readLine().trim());\n            int[] arr = new int[N];\n            st = new StringTokenizer(br.readLine());\n            for (int i = 0; i < N; i++) arr[i] = Integer.parseInt(st.nextToken());\n            int[] stack = new int[N];\n            int top = -1;\n            int maxDepth = 0, maxDepthPos = 0, maxLength = 0, maxLengthPos = 0;\n            for (int i = 0; i < N; i++) {\n                if (arr[i] == 1) { // opening\n                    stack[++top] = i;\n                    if (top + 1 > maxDepth) {\n                        maxDepth = top + 1;\n                        maxDepthPos = i + 1; // 1‑based\n                    }\n                } else { // closing\n                    int start = stack[top--];\n                    int length = i - start + 1;\n                    if (length > maxLength) {\n                        maxLength = length;\n                        maxLengthPos = start + 1; // 1‑based\n                    }\n                }\n            }\n            sb.append(maxDepth).append(' ').append(maxDepthPos).append(' ') .append(maxLength).append(' ').append(maxLengthPos).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef solve():\n    data = list(map(int, sys.stdin.read().strip().split()))\n    if not data:\n        return\n    it = iter(data)\n    T = next(it)\n    out_lines = []\n    for _ in range(T):\n        N = next(it)\n        brackets = [next(it) for _ in range(N)]\n        stack = []\n        maxDepth = maxDepthPos = maxLength = maxLengthPos = 0\n        for i, val in enumerate(brackets):\n            if val == 1:  # opening\n                stack.append(i)\n                if len(stack) > maxDepth:\n                    maxDepth = len(stack)\n                    maxDepthPos = i + 1  # 1‑based\n            else:  # closing\n                start = stack.pop()\n                length = i - start + 1\n                if length > maxLength:\n                    maxLength = length\n                    maxLengthPos = start + 1  # 1‑based\n        out_lines.append(f\"{maxDepth} {maxDepthPos} {maxLength} {maxLengthPos}\")\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()",
+      "JavaScript": "const fs = require('fs');\nconst data = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/).map(Number);\nlet idx = 0;\nconst T = data[idx++];\nlet outputs = [];\nfor (let t = 0; t < T; t++) {\n  const N = data[idx++];\n  const brackets = data.slice(idx, idx + N);\n  idx += N;\n  const stack = [];\n  let maxDepth = 0, maxDepthPos = 0, maxLength = 0, maxLengthPos = 0;\n  for (let i = 0; i < N; i++) {\n    if (brackets[i] === 1) { // opening\n      stack.push(i);\n      if (stack.length > maxDepth) {\n        maxDepth = stack.length;\n        maxDepthPos = i + 1; // 1‑based\n      }\n    } else { // closing\n      const start = stack.pop();\n      const length = i - start + 1;\n      if (length > maxLength) {\n        maxLength = length;\n        maxLengthPos = start + 1; // 1‑based\n      }\n    }\n  }\n  outputs.push(`${maxDepth} ${maxDepthPos} ${maxLength} ${maxLengthPos}`);\n}\nconsole.log(outputs.join('\\n'));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

@@ -1,0 +1,118 @@
+{
+  "questionId": "Q11971",
+  "title": "Minimum insertions to make string palindrome",
+  "slug": "minimum-insertion-steps-to-make-a-string-palindrome",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "String",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Dynamic Programming",
+      "Longest Common Subsequence",
+      "Palindrome"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Given a string s, find the minimum number of insertions needed to make it a palindrome. A palindrome is a sequence that reads the same backward as forward. You can insert characters at any position in the string.",
+    "constraints": [
+      "1 <= length of s <= 10^5",
+      "s contains only lowercase English letters"
+    ],
+    "inputFormat": "A single string s",
+    "outputFormat": "The minimum number of insertions needed to make the string a palindrome",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "a",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "abcdefghij",
+        "expectedOutput": "9",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform",
+        "input": "aaaaaaaaaa",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "abba",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "mixed case",
+        "input": "abcbaa",
+        "expectedOutput": "1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Calculate the length of the longest palindromic subsequence and subtract it from the length of the string",
+    "timeComplexity": "O(n^2)",
+    "spaceComplexity": "O(n^2)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n\nint lcs(char *s1, char *s2) {\n    int n = strlen(s1);\n    int m = strlen(s2);\n    int dp[n + 1][m + 1];\n    for (int i = 0; i <= n; i++) {\n        for (int j = 0; j <= m; j++) {\n            if (i == 0 || j == 0) {\n                dp[i][j] = 0;\n            } else if (s1[i - 1] == s2[j - 1]) {\n                dp[i][j] = dp[i - 1][j - 1] + 1;\n            } else {\n                dp[i][j] = (dp[i - 1][j] > dp[i][j - 1]) ? dp[i - 1][j] : dp[i][j - 1];\n            }\n        }\n    }\n    return dp[n][m];\n}\n\nint minInsertion(char *s) {\n    int n = strlen(s);\n    char t[n + 1];\n    strcpy(t, s);\n    strrev(t);\n    return n - lcs(s, t);\n}\n\nint main() {\n    char s[100];\n    scanf(\"%s\", s);\n    printf(\"%d\\n\", minInsertion(s));\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\n// Define a class named Solution\nclass Solution {\npublic:\n\n    // Function to calculate Longest Common Subsequence\n    int lcs(string s1, string s2) {\n        \n        // Get sizes of both strings\n        int n = s1.size();\n        int m = s2.size();\n\n        // Create a dp table of size (n+1) x (m+1)\n        vector<vector<int>> dp(n + 1, vector<int>(m + 1, -1));\n\n        // Initialize first row as 0\n        for (int i = 0; i <= n; i++) {\n            dp[i][0] = 0;\n        }\n\n        // Initialize first column as 0\n        for (int i = 0; i <= m; i++) {\n            dp[0][i] = 0;\n        }\n\n        // Fill dp table using bottom-up approach\n        for (int ind1 = 1; ind1 <= n; ind1++) {\n            for (int ind2 = 1; ind2 <= m; ind2++) {\n\n                // If characters match, add 1 to previous diagonal\n                if (s1[ind1 - 1] == s2[ind2 - 1])\n                    dp[ind1][ind2] = \n                        1 + dp[ind1 - 1][ind2 - 1];\n\n                // Else take max from top or left\n                else\n                    dp[ind1][ind2] = \n                        max(dp[ind1 - 1][ind2], \n                            dp[ind1][ind2 - 1]);\n            }\n        }\n\n        // Return bottom-right value\n        return dp[n][m];\n    }\n\n    // Function to find length of Longest Palindromic Subsequence\n    int longestPalindromeSubsequence(string s) {\n        \n        // Reverse the string\n        string t = s;\n        reverse(s.begin(), s.end());\n\n        // LCS of s and its reverse is the LPS\n        return lcs(s, t);\n    }\n\n    // Function to find min insertions to make string a palindrome\n    int minInsertion(string s) {\n        \n        // Get length of input string\n        int n = s.size();\n\n        // Get length of longest palindromic subsequence\n        int k = longestPalindromeSubsequence(s);\n\n        // Return total - palindromic length\n        return n - k;\n    }\n};\n\n// Main function\nint main() {\n    \n    // Create object of Solution class\n    Solution obj;\n\n    // Input string\n    string s = \"abcaa\";\n\n    // Call minInsertion and print result\n    cout << \"The Minimum insertions required to make string palindrome: \"\n         << obj.minInsertion(s);\n\n    return 0;\n}",
+      "Java": "import java.util.*;\n\nclass Solution {\n\n    // Function to calculate Longest Common Subsequence\n    public int lcs(String s1, String s2) {\n\n        // Get sizes of strings\n        int n = s1.length();\n        int m = s2.length();\n\n        // Create dp array\n        int[][] dp = new int[n + 1][m + 1];\n\n        // Fill dp array\n        for (int ind1 = 1; ind1 <= n; ind1++) {\n            for (int ind2 = 1; ind2 <= m; ind2++) {\n\n                // If characters match\n                if (s1.charAt(ind1 - 1) == s2.charAt(ind2 - 1)) {\n                    dp[ind1][ind2] = \n                        1 + dp[ind1 - 1][ind2 - 1];\n                }\n\n                // If they don't match\n                else {\n                    dp[ind1][ind2] = \n                        Math.max(dp[ind1 - 1][ind2], \n                                 dp[ind1][ind2 - 1]);\n                }\n            }\n        }\n\n        // Return bottom-right value\n        return dp[n][m];\n    }\n\n    // Function to calculate LPS\n    public int longestPalindromeSubsequence(String s) {\n        \n        // Reverse string\n        String t = new StringBuilder(s).reverse().toString();\n\n        // LCS of s and reverse\n        return lcs(s, t);\n    }\n\n    // Function to calculate minimum insertions\n    public int minInsertion(String s) {\n\n        // Get length\n        int n = s.length();\n\n        // Get LPS length\n        int k = longestPalindromeSubsequence(s);\n\n        // Return answer\n        return n - k;\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n\n        // Create object\n        Solution sol = new Solution();\n\n        // Input string\n        String s = \"abcaa\";\n\n        // Print result\n        System.out.println(\n            \"The Minimum insertions required to make string palindrome: \" + \n            sol.minInsertion(s));\n    }\n}",
+      "Python3": "class Solution:\n\n    # Function to calculate LCS\n    def lcs(self, s1, s2):\n\n        # Get sizes\n        n = len(s1)\n        m = len(s2)\n\n        # Create dp array\n        dp = [[0] * (m + 1) for _ in range(n + 1)]\n\n        # Fill dp array\n        for ind1 in range(1, n + 1):\n            for ind2 in range(1, m + 1):\n\n                # If characters match\n                if s1[ind1 - 1] == s2[ind2 - 1]:\n                    dp[ind1][ind2] = 1 + dp[ind1 - 1][ind2 - 1]\n\n                # If not\n                else:\n                    dp[ind1][ind2] = max(\n                        dp[ind1 - 1][ind2], \n                        dp[ind1][ind2 - 1]\n                    )\n\n        # Return result\n        return dp[n][m]\n\n    # Function to calculate LPS\n    def longestPalindromeSubsequence(self, s):\n        \n        # Reverse string\n        t = s[::-1]\n\n        # Return LCS of s and reverse\n        return self.lcs(s, t)\n\n    # Function to get min insertions\n    def minInsertion(self, s):\n\n        # Get LPS\n        k = self.longestPalindromeSubsequence(s)\n\n        # Return result\n        return len(s) - k\n\n\n# Main driver\nif __name__ == \"__main__\":\n    \n    # Create object\n    sol = Solution()\n\n    # Input string\n    s = \"abcaa\"\n\n    # Print result\n    print(\"The Minimum insertions required to make string palindrome:\",\n          sol.minInsertion(s))",
+      "JavaScript": "class Solution {\n\n    // Function to calculate LCS\n    lcs(s1, s2) {\n\n        // Get lengths\n        const n = s1.length;\n        const m = s2.length;\n\n        // Create dp array\n        const dp = Array.from({ length: n + 1 }, () => \n                   Array(m + 1).fill(0));\n\n        // Fill dp array\n        for (let ind1 = 1; ind1 <= n; ind1++) {\n            for (let ind2 = 1; ind2 <= m; ind2++) {\n\n                // If characters match\n                if (s1[ind1 - 1] === s2[ind2 - 1]) {\n                    dp[ind1][ind2] = \n                        1 + dp[ind1 - 1][ind2 - 1];\n                }\n\n                // If not\n                else {\n                    dp[ind1][ind2] = Math.max(\n                        dp[ind1 - 1][ind2], \n                        dp[ind1][ind2 - 1]\n                    );\n                }\n            }\n        }\n\n        // Return final result\n        return dp[n][m];\n    }\n\n    // Function to get LPS\n    longestPalindromeSubsequence(s) {\n\n        // Reverse string\n        const t = s.split('').reverse().join('');\n\n        // Return LCS of s and reverse\n        return this.lcs(s, t);\n    }\n\n    // Function to get min insertions\n    minInsertion(s) {\n\n        // Get LPS\n        const k = this.longestPalindromeSubsequence(s);\n\n        // Return result\n        return s.length - k;\n    }\n}\n\n// Main\nconst sol = new Solution();\n\n// Input\nconst s = \"abcaa\";\n\n// Output result\nconsole.log(\"The Minimum insertions required to make string palindrome:\",\n            sol.minInsertion(s));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

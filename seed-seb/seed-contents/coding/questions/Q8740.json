@@ -1,0 +1,135 @@
+{
+  "questionId": "Q8740",
+  "title": "Longest Good Substring",
+  "slug": "longest-good-substring",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Sliding Window",
+      "Two Pointers",
+      "Frequency Array"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Strings"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Given a string sss and an integer kkk, Alice calls a string good if it follows the following condition\n\n\nAll the characters present in the string are of frequency kkk\nFind the longest good substring of the string sss to make Alice happy.\n\nString aaa is a substring of string bbb if it is possible to choose several consecutive letters in bbb in such a way that they form aaa.\n\nOutput the First such string that occurs.\n\n\nInput Format\n\nThe first line will contain 222 numbers |SSS| ,kkk\nThe second line contains the string SSS\n\n\nOutput Format\nOutput the length of the longest good substring and on next line output the substring as well. If there is no such substring, print “IMPOSSIBLE” without the quotes.",
+    "constraints": [
+      "1 ≤ T ≤ 10",
+      "1 ≤ N ≤ 10^5",
+      "1 ≤ K ≤ 10^5",
+      "Sum of N over all test cases ≤ 10^5"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, the first line contains two integers N and K (1 ≤ N, K ≤ 10^5) – the length of the string and the required frequency. The second line contains a string S of length N consisting of lowercase English letters.",
+    "outputFormat": "For each test case, if a good substring exists, output two lines: the length of the longest good substring and on the next line the substring itself (the first one in case of several with the same maximum length). If no good substring exists, output a single line with the word IMPOSSIBLE.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\\n8 2\\naabcbcde",
+        "output": "6\naabcbc",
+        "explanation": "The substrings \"aa\", \"aabcbc\" and \"bcbc\" each have every character occurring exactly 2 times. The longest among them is \"aabcbc\" with length 6."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\\n8 3\\nabcdefgh",
+        "output": "IMPOSSIBLE",
+        "explanation": "No substring contains characters each appearing exactly 3 times, therefore the answer is IMPOSSIBLE."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For a substring to be good, every distinct character inside it must appear exactly K times. The number of distinct characters in a good substring cannot exceed 26 (lowercase alphabet). We iterate over the possible number of distinct characters d = 1 … 26. For each d we use a sliding‑window (two‑pointer) technique that maintains:\n- cnt[c]: current frequency of character c in the window,\n- distinct: number of characters with cnt > 0,\n- exactK: number of characters whose frequency is exactly K.\nWhen we extend the right end, we update cnt, distinct and exactK. If distinct exceeds d we shrink the left end until distinct ≤ d, updating the counters similarly. Whenever distinct == d && distinct == exactK the current window satisfies the condition; we compare its length with the best answer and keep the first longest one. The overall complexity is O(26·N) = O(N) per test case, and the extra memory is O(26).",
+    "timeComplexity": "O(N) per test case (26·N in the worst case, but 26 is a constant).",
+    "spaceComplexity": "O(26) = O(1) additional memory.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    while(T--){\n        int N, K; scanf(\"%d %d\", &N, &K);\n        char s[100005]; scanf(\"%s\", s);\n        int bestLen = 0; int bestPos = -1;\n        for(int d=1; d<=26; ++d){\n            int cnt[26] = {0};\n            int distinct = 0, exactK = 0;\n            int left = 0;\n            for(int right=0; right<N; ++right){\n                int idx = s[right]-'a';\n                if(cnt[idx]==0) distinct++;\n                if(cnt[idx]==K) exactK--;\n                cnt[idx]++;\n                if(cnt[idx]==K) exactK++;\n                while(distinct > d){\n                    int idl = s[left]-'a';\n                    if(cnt[idl]==K) exactK--;\n                    cnt[idl]--;\n                    if(cnt[idl]==0) distinct--;\n                    if(cnt[idl]==K) exactK++;\n                    left++;\n                }\n                if(distinct==d && distinct==exactK){\n                    int len = right-left+1;\n                    if(len > bestLen){\n                        bestLen = len; bestPos = left;\n                    }\n                }\n            }\n        }\n        if(bestLen==0){\n            printf(\"IMPOSSIBLE\\n\");\n        }else{\n            printf(\"%d\\n\", bestLen);\n            for(int i=0;i<bestLen;++i) putchar(s[bestPos+i]);\n            putchar('\\n');\n        }\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N, K; cin>>N>>K; string s; cin>>s;\n        int bestLen=0, bestPos=-1;\n        for(int d=1; d<=26; ++d){\n            array<int,26> cnt{}; int distinct=0, exactK=0; int left=0;\n            for(int right=0; right<N; ++right){\n                int idx=s[right]-'a';\n                if(cnt[idx]==0) distinct++;\n                if(cnt[idx]==K) exactK--;\n                ++cnt[idx];\n                if(cnt[idx]==K) exactK++;\n                while(distinct> d){\n                    int idl=s[left]-'a';\n                    if(cnt[idl]==K) exactK--;\n                    --cnt[idl];\n                    if(cnt[idl]==0) distinct--;\n                    if(cnt[idl]==K) exactK++;\n                    ++left;\n                }\n                if(distinct==d && distinct==exactK){\n                    int len=right-left+1;\n                    if(len>bestLen){\n                        bestLen=len; bestPos=left;\n                    }\n                }\n            }\n        }\n        if(bestLen==0){\n            cout<<\"IMPOSSIBLE\\n\";\n        }else{\n            cout<<bestLen<<\"\\n\"<<s.substr(bestPos,bestLen)<<\"\\n\";\n        }\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st = new StringTokenizer(br.readLine());\n        int T = Integer.parseInt(st.nextToken());\n        StringBuilder out = new StringBuilder();\n        while (T-- > 0) {\n            st = new StringTokenizer(br.readLine());\n            int N = Integer.parseInt(st.nextToken());\n            int K = Integer.parseInt(st.nextToken());\n            String s = br.readLine();\n            int bestLen = 0, bestPos = -1;\n            for (int d = 1; d <= 26; d++) {\n                int[] cnt = new int[26];\n                int distinct = 0, exactK = 0, left = 0;\n                for (int right = 0; right < N; right++) {\n                    int idx = s.charAt(right) - 'a';\n                    if (cnt[idx] == 0) distinct++;\n                    if (cnt[idx] == K) exactK--;\n                    cnt[idx]++;\n                    if (cnt[idx] == K) exactK++;\n                    while (distinct > d) {\n                        int idl = s.charAt(left) - 'a';\n                        if (cnt[idl] == K) exactK--;\n                        cnt[idl]--;\n                        if (cnt[idl] == 0) distinct--;\n                        if (cnt[idl] == K) exactK++;\n                        left++;\n                    }\n                    if (distinct == d && distinct == exactK) {\n                        int len = right - left + 1;\n                        if (len > bestLen) {\n                            bestLen = len;\n                            bestPos = left;\n                        }\n                    }\n                }\n            }\n            if (bestLen == 0) {\n                out.append(\"IMPOSSIBLE\\n\");\n            } else {\n                out.append(bestLen).append('\\n').append(s.substring(bestPos, bestPos + bestLen)).append('\\n');\n            }\n        }\n        System.out.print(out.toString());\n    }\n}\n",
+      "Python3": "#!/usr/bin/env python3\nimport sys\n\ndef solve_one(N, K, s):\n    best_len = 0\n    best_pos = -1\n    for d in range(1, 27):\n        cnt = [0] * 26\n        distinct = exactK = 0\n        left = 0\n        for right, ch in enumerate(s):\n            idx = ord(ch) - ord('a')\n            if cnt[idx] == 0:\n                distinct += 1\n            if cnt[idx] == K:\n                exactK -= 1\n            cnt[idx] += 1\n            if cnt[idx] == K:\n                exactK += 1\n            while distinct > d:\n                idxl = ord(s[left]) - ord('a')\n                if cnt[idxl] == K:\n                    exactK -= 1\n                cnt[idxl] -= 1\n                if cnt[idxl] == 0:\n                    distinct -= 1\n                if cnt[idxl] == K:\n                    exactK += 1\n                left += 1\n            if distinct == d and distinct == exactK:\n                cur_len = right - left + 1\n                if cur_len > best_len:\n                    best_len = cur_len\n                    best_pos = left\n    if best_len == 0:\n        return None\n    return s[best_pos:best_pos + best_len]\n\ndef main():\n    data = sys.stdin.read().strip().split()  # fast tokenisation\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it)); K = int(next(it))\n        s = next(it)\n        res = solve_one(N, K, s)\n        if res is None:\n            out_lines.append('IMPOSSIBLE')\n        else:\n            out_lines.append(str(len(res)))\n            out_lines.append(res)\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    main()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet output = [];\nfunction solveOne(N, K, s) {\n  let bestLen = 0, bestPos = -1;\n  for (let d = 1; d <= 26; d++) {\n    const cnt = new Array(26).fill(0);\n    let distinct = 0, exactK = 0, left = 0;\n    for (let right = 0; right < N; right++) {\n      const chIdx = s.charCodeAt(right) - 97;\n      if (cnt[chIdx] === 0) distinct++;\n      if (cnt[chIdx] === K) exactK--;\n      cnt[chIdx]++;\n      if (cnt[chIdx] === K) exactK++;\n      while (distinct > d) {\n        const lIdx = s.charCodeAt(left) - 97;\n        if (cnt[lIdx] === K) exactK--;\n        cnt[lIdx]--;\n        if (cnt[lIdx] === 0) distinct--;\n        if (cnt[lIdx] === K) exactK++;\n        left++;\n      }\n      if (distinct === d && distinct === exactK) {\n        const len = right - left + 1;\n        if (len > bestLen) { bestLen = len; bestPos = left; }\n      }\n    }\n  }\n  if (bestLen === 0) return null;\n  return s.substring(bestPos, bestPos + bestLen);\n}\nfor (let t = 0; t < T; t++) {\n  const N = Number(input[idx++]);\n  const K = Number(input[idx++]);\n  const s = input[idx++];\n  const ans = solveOne(N, K, s);\n  if (ans === null) output.push('IMPOSSIBLE');\n  else { output.push(String(ans.length)); output.push(ans); }\n}\nconsole.log(output.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

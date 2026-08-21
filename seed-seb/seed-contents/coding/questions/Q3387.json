@@ -1,0 +1,128 @@
+{
+  "questionId": "Q3387",
+  "title": "Akhil And Pending Homework",
+  "slug": "akhil-and-pending-homework",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Palindrome",
+      "Minimum Deletions",
+      "Strings",
+      "String Concatenation"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ]
+  },
+  "content": {
+    "problemStatement": "Akhil is a professor at University of Alexia. This semester, he is taking a course on Algorithms. One day after teaching about palindrome and related algorithms, he gave the following task to his students. Students found it very easy and solved it quickly. Can you solve it too?\n \n\nYou are given **N** strings. Each of them will have size equal to one or two, with their characters belonging to the character set **{\u2018a\u2019,\u2019b\u2019}**. You have to delete minimum number of strings from the above given strings such that the string obtained after concatenating the remaining strings (in the original order of appearance in the **N** strings) is a palindrome. Find out the minimum number of deletions required.",
+    "constraints": [
+      "1 \u2264 T \u2264 5",
+      "1 \u2264 N \u2264 103",
+      "Each string will have size equal to one or two, with their characters belonging to the character set {\u2018a\u2019,\u2019b\u2019}"
+    ],
+    "inputFormat": "The first line of the input contains an integer T denoting the number of test cases. The description of T test cases follows: First line of each test case will contain a single integer number N denoting number of strings. Next line of each test case will contain N space separated strings.",
+    "outputFormat": "For each test case, output a single integer corresponding to the minimum number of strings to be deleted.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n4\nab a b ba",
+        "output": "1",
+        "explanation": "Explanation: You need to delete strings either \"a\" or \"b\" (one of them), rest of the strings can be concatenated to form a palindrome, i.e. \"abbba\" and \"ababa\" respectively."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n3\na b c",
+        "output": "2",
+        "explanation": "Explanation: You need to delete two strings to form a palindrome, i.e. \"a\" and \"b\" or \"a\" and \"c\" or \"b\" and \"c\"."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n2\nab ba",
+        "output": "0",
+        "explanation": "Explanation: The strings can be concatenated to form a palindrome, i.e. \"abba\"."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\na",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n15\na b c d e f g h i j k l m n o",
+        "expectedOutput": "14",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n2\naa bb",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n5\nab a b ba ab",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n10\na b c d e f g h i j",
+        "expectedOutput": "9",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a dynamic programming approach. We will maintain two pointers, one at the start and one at the end of the concatenated string. We will then try to match the characters at these two pointers. If they match, we can move both pointers. If they do not match, we will try to delete the string at the start or the end of the concatenated string and see which one results in a palindrome with the minimum number of deletions.",
+    "timeComplexity": "O(T * N^2) \u2014 where T is the number of test cases and N is the number of strings in each test case. The reason for this time complexity is that we are using two nested loops to generate all possible combinations of strings and checking if the resulting string is a palindrome.",
+    "spaceComplexity": "O(N) \u2014 where N is the number of strings in each test case. The reason for this space complexity is that we are storing the strings in an array.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n\nint isPalindrome(char *str) {\n    int start = 0;\n    int end = strlen(str) - 1;\n    while (start < end) {\n        if (str[start] != str[end]) {\n            return 0;\n        }\n        start++;\n        end--;\n    }\n    return 1;\n}\n\nint minDeletions(char **strs, int N) {\n    int minDeletions = N;\n    for (int i = 0; i < (1 << N); i++) {\n        char concatenatedStr[1000] = \"\";\n        int numDeletions = 0;\n        for (int j = 0; j < N; j++) {\n            if ((i & (1 << j)) == 0) {\n                strcat(concatenatedStr, strs[j]);\n            } else {\n                numDeletions++;\n            }\n        }\n        if (isPalindrome(concatenatedStr)) {\n            minDeletions = (minDeletions < numDeletions) ? minDeletions : numDeletions;\n        }\n    }\n    return minDeletions;\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int N;\n        scanf(\"%d\", &N);\n        char **strs = (char **)malloc(N * sizeof(char *));\n        for (int i = 0; i < N; i++) {\n            strs[i] = (char *)malloc(3 * sizeof(char));\n            scanf(\"%s\", strs[i]);\n        }\n        printf(\"%d\\n\", minDeletions(strs, N));\n        for (int i = 0; i < N; i++) {\n            free(strs[i]);\n        }\n        free(strs);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <string>\nusing namespace std;\n\nint isPalindrome(string str) {\n    int start = 0;\n    int end = str.length() - 1;\n    while (start < end) {\n        if (str[start] != str[end]) {\n            return 0;\n        }\n        start++;\n        end--;\n    }\n    return 1;\n}\n\nint minDeletions(string strs[], int N) {\n    int minDeletions = N;\n    for (int i = 0; i < (1 << N); i++) {\n        string concatenatedStr = \"\";\n        int numDeletions = 0;\n        for (int j = 0; j < N; j++) {\n            if ((i & (1 << j)) == 0) {\n                concatenatedStr += strs[j];\n            } else {\n                numDeletions++;\n            }\n        }\n        if (isPalindrome(concatenatedStr)) {\n            minDeletions = (minDeletions < numDeletions) ? minDeletions : numDeletions;\n        }\n    }\n    return minDeletions;\n}\n\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        int N;\n        cin >> N;\n        string *strs = new string[N];\n        for (int i = 0; i < N; i++) {\n            cin >> strs[i];\n        }\n        cout << minDeletions(strs, N) << endl;\n        delete[] strs;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    public static boolean isPalindrome(String str) {\n        int start = 0;\n        int end = str.length() - 1;\n        while (start < end) {\n            if (str.charAt(start) != str.charAt(end)) {\n                return false;\n            }\n            start++;\n            end--;\n        }\n        return true;\n    }\n\n    public static int minDeletions(String[] strs, int N) {\n        int minDeletions = N;\n        for (int i = 0; i < (1 << N); i++) {\n            StringBuilder concatenatedStr = new StringBuilder();\n            int numDeletions = 0;\n            for (int j = 0; j < N; j++) {\n                if ((i & (1 << j)) == 0) {\n                    concatenatedStr.append(strs[j]);\n                } else {\n                    numDeletions++;\n                }\n            }\n            if (isPalindrome(concatenatedStr.toString())) {\n                minDeletions = (minDeletions < numDeletions) ? minDeletions : numDeletions;\n            }\n        }\n        return minDeletions;\n    }\n\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int T = scanner.nextInt();\n        while (T-- > 0) {\n            int N = scanner.nextInt();\n            String[] strs = new String[N];\n            for (int i = 0; i < N; i++) {\n                strs[i] = scanner.next();\n            }\n            System.out.println(minDeletions(strs, N));\n        }\n        scanner.close();\n    }\n}",
+      "Python3": "def is_palindrome(s):\n    start = 0\n    end = len(s) - 1\n    while start < end:\n        if s[start] != s[end]:\n            return False\n        start += 1\n        end -= 1\n    return True\n\n\ndef min_deletions(strs, N):\n    min_deletions = N\n    for i in range(1 << N):\n        concatenated_str = ''\n        num_deletions = 0\n        for j in range(N):\n            if (i & (1 << j)) == 0:\n                concatenated_str += strs[j]\n            else:\n                num_deletions += 1\n        if is_palindrome(concatenated_str):\n            min_deletions = min(min_deletions, num_deletions)\n    return min_deletions\n\nT = int(input())\nwhile T > 0:\n    N = int(input())\n    strs = input().split()\n    print(min_deletions(strs, N))\n    T -= 1",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\n\nfunction isPalindrome(s) {\n    let start = 0;\n    let end = s.length - 1;\n    while (start < end) {\n        if (s[start] !== s[end]) {\n            return false;\n        }\n        start++;\n        end--;\n    }\n    return true;\n}\n\nfunction minDeletions(strs, N) {\n    let minDeletions = N;\n    for (let i = 0; i < (1 << N); i++) {\n        let concatenatedStr = '';\n        let numDeletions = 0;\n        for (let j = 0; j < N; j++) {\n            if ((i & (1 << j)) === 0) {\n                concatenatedStr += strs[j];\n            } else {\n                numDeletions++;\n            }\n        }\n        if (isPalindrome(concatenatedStr)) {\n            minDeletions = Math.min(minDeletions, numDeletions);\n        }\n    }\n    return minDeletions;\n}\n\nlet T = parseInt(lines[idx++]);\nwhile (T-- > 0) {\n    let N = parseInt(lines[idx++]);\n    let strs = lines[idx++].trim().split(' ');\n    console.log(minDeletions(strs, N));\n}"
+    }
+  }
+}

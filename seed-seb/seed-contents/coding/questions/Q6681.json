@@ -1,0 +1,128 @@
+{
+  "questionId": "Q6681",
+  "title": "IPC Trainers",
+  "slug": "ipc-trainers",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Greedy",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Sorting",
+      "Greedy Algorithm"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Greedy Algorithms"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "During the Indian Programming Camp (IPC), there are **N** trainers. The camp runs for **D** days. Each day, there can be at most one lecture. The i-th trainer arrives on day **D**i and then stays till the end of the camp. He also wants to teach exactly **T**i lectures. For each lecture that a trainer was not able to teach, he will feel sad and his sadness level will be increased by **Si**.\n\nYou are the main organizer of the contest. You want to find minimum total sadness of the trainers.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N, D <= 10^5",
+      "1 <= Di, Ti <= D",
+      "1 <= Si <= 10^5"
+    ],
+    "inputFormat": "The first line contains an integer T, denoting the number of test cases. For each test case, the first line contains two space-separated integers, N and D. The i-th of the next N lines will contain three space-separated integers: Di, Ti, Si respectively.",
+    "outputFormat": "For each test case, output a single integer corresponding to the minimum total sadness of the trainers achievable.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n2 3\n1 2 300\n2 2 100\n2 3\n1 1 100\n2 2 300\n2 3\n3 2 150\n1 1 200",
+        "output": "100\n0\n150",
+        "explanation": "Explanation:\nExample case 1. Both the first and second trainer want to take exactly two lectures. The first trainer arrives on the 1st day and the second trainer arrives on the 2nd day. Consider a schedule where the first trainer takes the first two lectures, and the second trainer takes the last lecture on the day 3. This way the second trainer will take only one lecture but wanted to take two. Thus, his sadness will be 100. The first trainer took all the lectures that he wanted to take (ie. two lectures). Thus the total sadness is 100 + 0 = 100. You can check that no other way of assigning trainers to the days will give a better answer than this.\nExample case 2. In this case, the trainers can all take all their ideal number of lectures.\nExample case 3. In this case, the first trainer arrives on day 3 and wants to take two lectures. This is not possible as he can take at most one lecture on day 3 and the camp ends on day 3. The second trainer wants to take only one lecture which he can take on any one of the 1st or 2nd days. You can see that in one of the first or second days, no lecture will be held."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1\n1 1 1",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n100000 100000\n1 100000 100000",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n2 2\n1 2 1\n2 1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n3 3\n1 2 1\n2 1 1\n3 1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n4 4\n1 2 1\n2 1 1\n3 1 1\n4 1 1",
+        "expectedOutput": "2",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we first sort the trainers based on their sadness levels in descending order. Then, we iterate over the sorted trainers and assign them to the available days. We start from the day when the trainer arrives and try to assign them to the available days. If we cannot assign a trainer to any day, we move on to the next trainer. The total sadness is calculated by summing up the sadness levels of the trainers who are not assigned to any day.",
+    "timeComplexity": "O(T * N * log N) — where T is the number of test cases, N is the number of trainers, and log N is the time complexity of sorting the trainers.",
+    "spaceComplexity": "O(N) — where N is the number of trainers.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\n// Structure to represent a trainer\ntypedef struct {\n    int arrivalDay;\n    int totalLectures;\n    int sadness;\n} Trainer;\n\n// Comparison function for sorting trainers based on sadness\nint compareTrainers(const void* a, const void* b) {\n    Trainer* t1 = (Trainer*)a;\n    Trainer* t2 = (Trainer*)b;\n    return t2->sadness - t1->sadness;\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n\n    while (T--) {\n        int N, D;\n        scanf(\"%d %d\", &N, &D);\n\n        Trainer* trainers = (Trainer*)malloc(N * sizeof(Trainer));\n        for (int i = 0; i < N; i++) {\n            scanf(\"%d %d %d\", &trainers[i].arrivalDay, &trainers[i].totalLectures, &trainers[i].sadness);\n        }\n\n        // Sort trainers based on sadness\n        qsort(trainers, N, sizeof(Trainer), compareTrainers);\n\n        int* availableDays = (int*)malloc(D * sizeof(int));\n        for (int i = 0; i < D; i++) {\n            availableDays[i] = 1;\n        }\n\n        long long totalSadness = 0;\n        for (int i = 0; i < N; i++) {\n            int assigned = 0;\n            for (int j = trainers[i].arrivalDay - 1; j < D; j++) {\n                if (availableDays[j] == 1) {\n                    availableDays[j] = 0;\n                    assigned++;\n                    if (assigned == trainers[i].totalLectures) {\n                        break;\n                    }\n                }\n            }\n            totalSadness += (long long)(trainers[i].totalLectures - assigned) * trainers[i].sadness;\n        }\n\n        printf(\"%lld\\n\", totalSadness);\n        free(trainers);\n        free(availableDays);\n    }\n\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\n#include <algorithm>\nusing namespace std;\n\nstruct Trainer {\n    int arrivalDay;\n    int totalLectures;\n    int sadness;\n};\n\nbool compareTrainers(Trainer t1, Trainer t2) {\n    return t2.sadness > t1.sadness;\n}\n\nint main() {\n    int T;\n    cin >> T;\n\n    while (T--) {\n        int N, D;\n        cin >> N >> D;\n\n        vector<Trainer> trainers(N);\n        for (int i = 0; i < N; i++) {\n            cin >> trainers[i].arrivalDay >> trainers[i].totalLectures >> trainers[i].sadness;\n        }\n\n        // Sort trainers based on sadness\n        sort(trainers.begin(), trainers.end(), compareTrainers);\n\n        vector<int> availableDays(D, 1);\n        long long totalSadness = 0;\n        for (int i = 0; i < N; i++) {\n            int assigned = 0;\n            for (int j = trainers[i].arrivalDay - 1; j < D; j++) {\n                if (availableDays[j] == 1) {\n                    availableDays[j] = 0;\n                    assigned++;\n                    if (assigned == trainers[i].totalLectures) {\n                        break;\n                    }\n                }\n            }\n            totalSadness += (long long)(trainers[i].totalLectures - assigned) * trainers[i].sadness;\n        }\n\n        cout << totalSadness << endl;\n    }\n\n    return 0;\n}",
+      "Java": "import java.util.Arrays;\nimport java.util.Scanner;\n\npublic class Main {\n    static class Trainer implements Comparable<Trainer> {\n        int arrivalDay;\n        int totalLectures;\n        int sadness;\n\n        public Trainer(int arrivalDay, int totalLectures, int sadness) {\n            this.arrivalDay = arrivalDay;\n            this.totalLectures = totalLectures;\n            this.sadness = sadness;\n        }\n\n        @Override\n        public int compareTo(Trainer o) {\n            return o.sadness - this.sadness;\n        }\n    }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n\n        while (T-- > 0) {\n            int N = sc.nextInt();\n            int D = sc.nextInt();\n\n            Trainer[] trainers = new Trainer[N];\n            for (int i = 0; i < N; i++) {\n                trainers[i] = new Trainer(sc.nextInt(), sc.nextInt(), sc.nextInt());\n            }\n\n            // Sort trainers based on sadness\n            Arrays.sort(trainers);\n\n            int[] availableDays = new int[D];\n            long totalSadness = 0;\n            for (int i = 0; i < N; i++) {\n                int assigned = 0;\n                for (int j = trainers[i].arrivalDay - 1; j < D; j++) {\n                    if (availableDays[j] == 0) {\n                        availableDays[j] = 1;\n                        assigned++;\n                        if (assigned == trainers[i].totalLectures) {\n                            break;\n                        }\n                    }\n                }\n                totalSadness += (long) (trainers[i].totalLectures - assigned) * trainers[i].sadness;\n            }\n\n            System.out.println(totalSadness);\n        }\n    }\n}",
+      "Python3": "import sys\n\n# Read input from stdin\ninput = sys.stdin.readline\n\n# Structure to represent a trainer\nclass Trainer:\n    def __init__(self, arrivalDay, totalLectures, sadness):\n        self.arrivalDay = arrivalDay\n        self.totalLectures = totalLectures\n        self.sadness = sadness\n\n# Comparison function for sorting trainers based on sadness\ndef compareTrainers(t1, t2):\n    return t2.sadness - t1.sadness\n\n# Main function\ndef main():\n    T = int(input())\n\n    for _ in range(T):\n        N, D = map(int, input().split())\n\n        trainers = []\n        for _ in range(N):\n            arrivalDay, totalLectures, sadness = map(int, input().split())\n            trainers.append(Trainer(arrivalDay, totalLectures, sadness))\n\n        # Sort trainers based on sadness\n        trainers.sort(key=lambda x: x.sadness, reverse=True)\n\n        availableDays = [0] * D\n        totalSadness = 0\n        for trainer in trainers:\n            assigned = 0\n            for j in range(trainer.arrivalDay - 1, D):\n                if availableDays[j] == 0:\n                    availableDays[j] = 1\n                    assigned += 1\n                    if assigned == trainer.totalLectures:\n                        break\n            totalSadness += (trainer.totalLectures - assigned) * trainer.sadness\n\n        print(totalSadness)\n\nif __name__ == '__main__':\n    main()",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\n\n// Structure to represent a trainer\nclass Trainer {\n    constructor(arrivalDay, totalLectures, sadness) {\n        this.arrivalDay = arrivalDay;\n        this.totalLectures = totalLectures;\n        this.sadness = sadness;\n    }\n}\n\n// Comparison function for sorting trainers based on sadness\nfunction compareTrainers(t1, t2) {\n    return t2.sadness - t1.sadness;\n}\n\n// Main function\nfunction main() {\n    const T = parseInt(lines[idx++]);\n\n    for (let i = 0; i < T; i++) {\n        const [N, D] = lines[idx++].split(' ').map(Number);\n\n        const trainers = [];\n        for (let j = 0; j < N; j++) {\n            const [arrivalDay, totalLectures, sadness] = lines[idx++].split(' ').map(Number);\n            trainers.push(new Trainer(arrivalDay, totalLectures, sadness));\n        }\n\n        // Sort trainers based on sadness\n        trainers.sort(compareTrainers);\n\n        const availableDays = new Array(D).fill(0);\n        let totalSadness = 0;\n        for (const trainer of trainers) {\n            let assigned = 0;\n            for (let k = trainer.arrivalDay - 1; k < D; k++) {\n                if (availableDays[k] === 0) {\n                    availableDays[k] = 1;\n                    assigned++;\n                    if (assigned === trainer.totalLectures) {\n                        break;\n                    }\n                }\n            }\n            totalSadness += (trainer.totalLectures - assigned) * trainer.sadness;\n        }\n\n        console.log(totalSadness);\n    }\n}\n\nmain();"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

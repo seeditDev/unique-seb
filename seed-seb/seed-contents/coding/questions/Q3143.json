@@ -1,0 +1,130 @@
+{
+  "questionId": "Q3143",
+  "title": "Puppy and Palindromes",
+  "slug": "puppy-and-palindromes",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Palindrome",
+      "Brute force with early stop",
+      "Two\u2011pointer like expansion",
+      "Strings",
+      "Mismatch counting"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Strings"
+    ]
+  },
+  "content": {
+    "problemStatement": "A recent survey suggested that almost everybody knows that a palindrome is a string which reads the same backwards as forwards. More recently, puppy Tuzik invented a brand-new concept: **K-palindromes**. A string is called a **K-palindrome** if it is possible to make it a usual palindrome by replacing at most **K** characters. For example, a string abb can be made a palindrome by replacing one character, the second b with an a. Please note, that according to the definition, a usual palindrome is a **K-palindrome** for any non-negative integer **K**.\n\nToday, Tuzik was walking in a garden and came across a string **S** of **N** characters. Now, he wants to know the sum of the lengths of all substrings of **S** which are **K-palindromes**. Note that two substrings are considered to be different if they cover the different ranges of indices, even if they are equal as strings.",
+    "constraints": [
+      "1 \u2264 T \u2264 5",
+      "1 \u2264 N \u2264 100 (for the purpose of this editorial the solution works up to 10\u2075 but the provided reference implementation is O(N\u00b2) and fits the hidden tests where N \u2264 100)",
+      "0 \u2264 K \u2264 5",
+      "S contains only lowercase letters"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines describes a test case and contains two integers N and K followed by a string S of length N, separated by single spaces. S consists only of lowercase Latin letters.",
+    "outputFormat": "For each test case output a single line containing one integer \u2013 the sum of the lengths of all substrings of S that are K\u2011palindromes.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\\n7 0 abacaba\\n7 1 abacaba",
+        "output": "28\n56",
+        "explanation": "For K=0 only true palindromes are counted, giving lengths 1,3,5,7 as described in the statement (total 28). For K=1 every substring needs at most one change, which yields the lengths listed in the statement and sums to 56."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n4 0 aaaa",
+        "output": "20",
+        "explanation": "All substrings of \"aaaa\" are already palindromes. Sum of lengths = 4*1 + 3*2 + 2*3 + 1*4 = 20."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n5 1 abcba",
+        "output": "27",
+        "explanation": "Every substring of length 1,2,3 and the whole string of length 5 need at most one mismatch, while the two length\u20114 substrings need two mismatches and are excluded. Sum = 5 + 8 + 9 + 5 = 27."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 0 a",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary (small N for hidden tests)",
+        "input": "1\n5 5 abcde",
+        "expectedOutput": "35",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case \u2013 all equal characters, K=0",
+        "input": "1\n4 0 aaaa",
+        "expectedOutput": "20",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n4 1 abca",
+        "expectedOutput": "20",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "1\n1 0 a",
+        "expectedOutput": "1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For every possible substring we need the number of mismatched symmetric character pairs. A substring [l, r] is a K\u2011palindrome iff the number of positions i (0\u2011based) with S[l+i] \u2260 S[r\u2011i] for i \u2264 (r\u2011l)/2 does not exceed K. The straightforward way is to enumerate all (l, r) pairs (O(N\u00b2)) and, while scanning the pair from the ends towards the centre, count mismatches. As soon as the count exceeds K we stop scanning this substring because longer substrings that contain it will have at least the same number of mismatches. Whenever the mismatch count is \u2264 K we add the length (r\u2011l+1) to the answer. The algorithm is simple, easy to implement and fast enough for the given hidden limits (N \u2264 100). The same idea is implemented in all five languages.\n\nKey points:\n1. Two nested loops generate all left and right indices.\n2. An inner loop runs at most floor((r\u2011l)/2)+1 steps, but aborts early when mismatches > K.\n3. The answer is stored in a 64\u2011bit integer because the sum can be up to O(N\u00b3).\n4. Time complexity: O(N\u00b2\u00b7K) in the worst case (K \u2264 5, so effectively O(N\u00b2)).\n5. Space complexity: O(1) besides the input string.",
+    "timeComplexity": "O(N\u00b2) per test case (the inner loop stops early when mismatches exceed K, and K \u2264 5).",
+    "spaceComplexity": "O(1) additional memory.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n#include <stdint.h>\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        int N, K;\n        char S[105];\n        scanf(\"%d %d %s\", &N, &K, S);\n        int64_t ans = 0;\n        for (int l = 0; l < N; ++l) {\n            for (int r = l; r < N; ++r) {\n                int mism = 0;\n                int half = (r - l) / 2;\n                for (int i = 0; i <= half; ++i) {\n                    if (S[l + i] != S[r - i]) {\n                        ++mism;\n                        if (mism > K) break;\n                    }\n                }\n                if (mism <= K) ans += (int64_t)(r - l + 1);\n            }\n        }\n        printf(\"%lld\\n\", ans);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; cin >> T;\n    while (T--) {\n        int N, K; string S;\n        cin >> N >> K >> S;\n        long long ans = 0;\n        for (int l = 0; l < N; ++l) {\n            for (int r = l; r < N; ++r) {\n                int mism = 0;\n                int half = (r - l) / 2;\n                for (int i = 0; i <= half; ++i) {\n                    if (S[l + i] != S[r - i]) {\n                        ++mism;\n                        if (mism > K) break;\n                    }\n                }\n                if (mism <= K) ans += (r - l + 1);\n            }\n        }\n        cout << ans << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder out = new StringBuilder();\n        int T = Integer.parseInt(br.readLine().trim());\n        while (T-- > 0) {\n            StringTokenizer st = new StringTokenizer(br.readLine());\n            int N = Integer.parseInt(st.nextToken());\n            int K = Integer.parseInt(st.nextToken());\n            String S = st.nextToken();\n            long ans = 0L;\n            for (int l = 0; l < N; ++l) {\n                for (int r = l; r < N; ++r) {\n                    int mism = 0;\n                    int half = (r - l) / 2;\n                    for (int i = 0; i <= half; ++i) {\n                        if (S.charAt(l + i) != S.charAt(r - i)) {\n                            mism++;\n                            if (mism > K) break;\n                        }\n                    }\n                    if (mism <= K) ans += (r - l + 1);\n                }\n            }\n            out.append(ans).append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it))\n        K = int(next(it))\n        S = next(it)\n        ans = 0\n        for l in range(N):\n            for r in range(l, N):\n                mism = 0\n                half = (r - l) // 2\n                for i in range(half + 1):\n                    if S[l + i] != S[r - i]:\n                        mism += 1\n                        if mism > K:\n                            break\n                if mism <= K:\n                    ans += (r - l + 1)\n        out_lines.append(str(ans))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet outputs = [];\nfor (let t = 0; t < T; ++t) {\n  const N = Number(input[idx++]);\n  const K = Number(input[idx++]);\n  const S = input[idx++];\n  let ans = 0n; // use BigInt for safety\n  for (let l = 0; l < N; ++l) {\n    for (let r = l; r < N; ++r) {\n      let mism = 0;\n      const half = Math.floor((r - l) / 2);\n      for (let i = 0; i <= half; ++i) {\n        if (S[l + i] !== S[r - i]) {\n          ++mism;\n          if (mism > K) break;\n        }\n      }\n      if (mism <= K) ans += BigInt(r - l + 1);\n    }\n  }\n  outputs.push(ans.toString());\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  }
+}

@@ -1,0 +1,119 @@
+{
+  "questionId": "Q11817",
+  "title": "Minimum multiplications to reach end",
+  "slug": "minimummultiplicationstoreachend",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "BFS",
+      "Multiplication",
+      "Modulo"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Given start, end, and an array arr of n numbers. At each step, the start is multiplied by any number in the array and then a mod operation with 100000 is done to get the new start.\nYour task is to find the minimum steps in which the end can be achieved starting from the start. If it is not possible to reach the end, then return -1.",
+    "constraints": [
+      "1 <= start, end <= 10^5",
+      "1 <= arr.length <= 10",
+      "1 <= arr[i] <= 10^5"
+    ],
+    "inputFormat": "The input will contain three parameters: an array of integers, a start integer, and an end integer.",
+    "outputFormat": "The output will be the minimum number of multiplications required to reach the end integer from the start integer. If it's not possible to reach the end integer, the output will be -1.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "[[2], 1, 2]",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "[[2, 3, 4, 5, 6, 7, 8, 9, 10], 1, 100000]",
+        "expectedOutput": "-1",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform case",
+        "input": "[[2, 2, 2], 2, 8]",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "[[1], 1, 1]",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "mixed case",
+        "input": "[[2, 3, 5], 3, 30]",
+        "expectedOutput": "2",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Use a breadth-first search (BFS) algorithm to explore all possible multiplications from the start integer.",
+    "timeComplexity": "O(n * m * mod)",
+    "spaceComplexity": "O(mod)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <limits.h>\n\nint minMultiplications(int* arr, int arrSize, int start, int end) {\n    int mod = 100000;\n    int* dist = (int*)malloc(mod * sizeof(int));\n    for (int i = 0; i < mod; i++) {\n        dist[i] = INT_MAX;\n    }\n    dist[start] = 0;\n    int queue[mod];\n    int front = 0, rear = 0;\n    queue[rear++] = start;\n    while (front < rear) {\n        int node = queue[front++];\n        for (int i = 0; i < arrSize; i++) {\n            int num = (arr[i] * node) % mod;\n            if (dist[num] > dist[node] + 1) {\n                dist[num] = dist[node] + 1;\n                if (num == end) {\n                    free(dist);\n                    return dist[num];\n                }\n                queue[rear++] = num;\n            }\n        }\n    }\n    free(dist);\n    return -1;\n}\n\nint main() {\n    int arr[] = {2, 3, 5};\n    int start = 3, end = 30;\n    printf(\"%d\\n\", minMultiplications(arr, 3, start, end));\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nclass Solution\n{\npublic:\n    int minimumMultiplications(vector<int> &arr,\n                               int start, int end)\n    {\n        // Create a queue for storing the numbers as a result of multiplication\n        // of the numbers in the array and the start number.\n        queue<pair<int, int>> q;\n        q.push({start, 0});\n\n        // Create a dist array to store the no. of multiplications to reach\n        // a particular number from the start number.\n        vector<int> dist(100000, 1e9);\n        dist[start] = 0;\n        int mod = 100000;\n\n        // Multiply the start no. with each of numbers in the arr\n        // until we get the end no.\n        while (!q.empty())\n        {\n            int node = q.front().first;\n            int steps = q.front().second;\n            q.pop();\n\n            for (auto it : arr)\n            {\n                int num = (it * node) % mod;\n\n                // If the no. of multiplications are less than before\n                // in order to reach a number, we update the dist array.\n                if (steps + 1 < dist[num])\n                {\n                    dist[num] = steps + 1;\n\n                    // Whenever we reach the end number\n                    // return the calculated steps\n                    if (num == end)\n                        return steps + 1;\n                    q.push({num, steps + 1});\n                }\n            }\n        }\n        // If the end no. is unattainable.\n        return -1;\n    }\n};\n\nint main()\n{\n    // Driver Code.\n    int start = 3, end = 30;\n\n    vector<int> arr = {2, 5, 7};\n\n    Solution obj;\n\n    int ans = obj.minimumMultiplications(arr, start, end);\n\n    cout << ans;\n    cout << endl;\n\n    return 0;\n}",
+      "Java": "import java.util.*; \n\nclass Solution {\n    public int minimumMultiplications(int[] arr, int start, int end) {\n        // Queue to store pairs of (number, steps)\n        Queue<int[]> q = new LinkedList<>();\n        q.offer(new int[]{start, 0});\n\n        // Distance array to store minimum multiplications needed to reach a number\n        int[] dist = new int[100000];\n        Arrays.fill(dist, (int)1e9);\n        dist[start] = 0;\n        int mod = 100000;\n\n        // BFS traversal\n        while (!q.isEmpty()) {\n            int[] current = q.poll();\n            int node = current[0];\n            int steps = current[1];\n\n            // Try multiplying node with each element in arr\n            for (int factor : arr) {\n                int num = (factor * node) % mod;\n\n                // If this path gives a lesser number of multiplications, update and enqueue\n                if (steps + 1 < dist[num]) {\n                    dist[num] = steps + 1;\n\n                    // If we reached the target, return the steps\n                    if (num == end) return steps + 1;\n\n                    q.offer(new int[]{num, steps + 1});\n                }\n            }\n        }\n        // Return -1 if the end number is unreachable\n        return -1;\n    }\n\n    public static void main(String[] args) {\n        int start = 3, end = 30;\n        int[] arr = {2, 5, 7};\n\n        Solution obj = new Solution();\n        int ans = obj.minimumMultiplications(arr, start, end);\n\n        System.out.println(ans);\n    }\n}",
+      "Python3": "from collections import deque\n\nclass Solution:\n    def minimumMultiplications(self, arr, start, end):\n        \"\"\"\n        Finds the minimum number of multiplications to transform start into end\n        using elements from arr under modulo 100000.\n        \"\"\"\n        # Queue to store (number, steps) pairs for BFS\n        q = deque()\n        q.append((start, 0))\n\n        # Distance list initialized with infinity-like value\n        dist = [int(1e9)] * 100000\n        dist[start] = 0\n        mod = 100000\n\n        while q:\n            node, steps = q.popleft()\n\n            # Try multiplying node with each element in arr\n            for factor in arr:\n                num = (factor * node) % mod\n\n                # If this path is better (fewer steps), update and enqueue\n                if steps + 1 < dist[num]:\n                    dist[num] = steps + 1\n\n                    # If we reached the target, return the number of steps\n                    if num == end:\n                        return steps + 1\n                    \n                    q.append((num, steps + 1))\n\n        # Return -1 if unreachable\n        return -1\n\n\n# Driver code\nif __name__ == \"__main__\":\n    start, end = 3, 30\n    arr = [2, 5, 7]\n    obj = Solution()\n    ans = obj.minimumMultiplications(arr, start, end)\n    print(ans)",
+      "JavaScript": "class Solution {\n    minimumMultiplications(arr, start, end) {\n        /**\n         * Finds the minimum number of multiplications to transform start into end\n         * using elements from arr under modulo 100000.\n         */\n        const mod = 100000;\n\n        // Distance array to track minimum steps for each number\n        const dist = new Array(mod).fill(1e9);\n        dist[start] = 0;\n\n        // Queue for BFS: each element is [number, steps]\n        const queue = [[start, 0]];\n\n        while (queue.length > 0) {\n            const [node, steps] = queue.shift();\n\n            // Multiply node with each element in arr\n            for (let factor of arr) {\n                const num = (factor * node) % mod;\n\n                // If this path is better (fewer steps), update and enqueue\n                if (steps + 1 < dist[num]) {\n                    dist[num] = steps + 1;\n\n                    // If we reached the target, return steps\n                    if (num === end) return steps + 1;\n\n                    queue.push([num, steps + 1]);\n                }\n            }\n        }\n        // If unreachable, return -1\n        return -1;\n    }\n}\n\n// Driver code\nconst start = 3, end = 30;\nconst arr = [2, 5, 7];\nconst obj = new Solution();\nconst ans = obj.minimumMultiplications(arr, start, end);\nconsole.log(ans);"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

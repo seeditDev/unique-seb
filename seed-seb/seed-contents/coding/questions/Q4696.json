@@ -1,0 +1,140 @@
+{
+  "questionId": "Q4696",
+  "title": "Sum of deepest leaves",
+  "slug": "sum-of-deepest-leaves",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "BFS",
+      "Tree Traversal"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Trees"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Given a binary tree, find the sum of leaves at deepest level.\n\nFor example, in the following tree, leaves 444 and 555 are the the deepest level and their sum is 999.\n\n\n\n\nInput Format\n\nThe first line of the input contains a single integer NNN — the number of nodes in the binary tree.\nNext N−1N - 1N−1 lines contain three space separated characters pi,ci,Rip_i, c_i, R_ipi​,ci​,Ri​, describing the tree with edge informations - pip_ipi​ is an integer denoting the parent node of the iiith edge, cic_ici​ is child node, and the letter RiR_iRi​ denotes whether the child is left child or right child, it's value is `L` if cic_ici​ is left child of pip_ipi​, else `R`.\n\n\nOutput Format\nOutput on the single line, the sum of leaves at the deepest level.",
+    "constraints": [
+      "1 <= N <= 10000",
+      "1 <= pi, ci <= 100000",
+      "Ri = 'L' or 'R'",
+      "All pi's and ci's are distinct"
+    ],
+    "inputFormat": "First line contains N, the number of nodes in the binary tree. Each of the next N-1 lines contains three space-separated values: pi, ci, and Ri, where pi is the parent node, ci is the child node, and Ri is 'L' if ci is the left child of pi, and 'R' otherwise.",
+    "outputFormat": "Output the sum of the leaves at the deepest level of the binary tree.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "5\n1 2 L\n1 3 R\n3 4 L\n3 5 R",
+        "output": "9",
+        "explanation": "The deepest leaves are 4 and 5, and their sum is 9."
+      },
+      {
+        "id": "sample_2",
+        "input": "3\n1 2 L\n1 3 R",
+        "output": "5",
+        "explanation": "The deepest leaves are 2 and 3, and their sum is 5."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n",
+        "output": "1",
+        "explanation": "The only leaf is 1, and its sum is 1."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "10000\n1 2 L\n1 3 R\n3 4 L\n3 5 R",
+        "expectedOutput": "9",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "5\n1 1 L\n1 1 R\n1 1 L\n1 1 R",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "5\n1 2 L\n1 3 R\n3 4 L\n3 5 R",
+        "expectedOutput": "9",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "100\n1 2 L\n1 3 R\n3 4 L\n3 5 R",
+        "expectedOutput": "9",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a Breadth-First Search (BFS) approach. We start by creating a queue and adding the root node to it. Then, we iterate through the queue, and for each node, we check if it has any children. If it does, we add them to the queue and mark the current node as visited. We also keep track of the level of each node. Once we have traversed all nodes, we can find the sum of the leaves at the deepest level by iterating through the nodes at the deepest level and adding their values.",
+    "timeComplexity": "O(N) per test case, where N is the number of nodes in the binary tree.",
+    "spaceComplexity": "O(N) for storing the nodes in the queue.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\n// Define the structure for a tree node\ntypedef struct Node {\n    int val;\n    struct Node* left;\n    struct Node* right;\n} Node;\n\n// Function to create a new node\nNode* createNode(int val) {\n    Node* newNode = (Node*) malloc(sizeof(Node));\n    if (!newNode) {\n        printf(\"Memory error\\n\");\n        return NULL;\n    }\n    newNode->val = val;\n    newNode->left = newNode->right = NULL;\n    return newNode;\n}\n\n// Function to find the sum of deepest leaves\nint deepestLeavesSum(Node* root) {\n    if (root == NULL) return 0;\n\n    int maxLevel = 0;\n    int sum = 0;\n\n    // Create a queue for BFS and enqueue the root node\n    Node** queue = (Node**) malloc(sizeof(Node*) * 10000);\n    int* level = (int*) malloc(sizeof(int) * 10000);\n    int front = 0, rear = 0;\n    queue[rear] = root;\n    level[rear] = 0;\n    rear++;\n\n    while (front < rear) {\n        Node* temp = queue[front];\n        int currLevel = level[front];\n        front++;\n\n        if (currLevel > maxLevel) {\n            maxLevel = currLevel;\n            sum = temp->val;\n        } else if (currLevel == maxLevel) {\n            sum += temp->val;\n        }\n\n        if (temp->left) {\n            queue[rear] = temp->left;\n            level[rear] = currLevel + 1;\n            rear++;\n        }\n\n        if (temp->right) {\n            queue[rear] = temp->right;\n            level[rear] = currLevel + 1;\n            rear++;\n        }\n    }\n\n    free(queue);\n    free(level);\n    return sum;\n}\n\nint main() {\n    int N;\n    scanf(\"%d\", &N);\n\n    Node* root = NULL;\n    for (int i = 0; i < N - 1; i++) {\n        int pi, ci;\n        char Ri;\n        scanf(\"%d %d %c\", &pi, &ci, &Ri);\n\n        // Create nodes if they don't exist\n        Node* parentNode = NULL;\n        Node* childNode = NULL;\n        if (root == NULL) {\n            root = createNode(pi);\n            parentNode = root;\n        } else {\n            parentNode = root;\n            while (parentNode->val != pi) {\n                if (parentNode->left && parentNode->left->val == pi) {\n                    parentNode = parentNode->left;\n                    break;\n                }\n                if (parentNode->right && parentNode->right->val == pi) {\n                    parentNode = parentNode->right;\n                    break;\n                }\n                if (parentNode->left) parentNode = parentNode->left;\n            }\n        }\n\n        if (Ri == 'L') {\n            if (parentNode->left == NULL) {\n                parentNode->left = createNode(ci);\n            }\n        } else {\n            if (parentNode->right == NULL) {\n                parentNode->right = createNode(ci);\n            }\n        }\n    }\n\n    printf(\"%d\\n\", deepestLeavesSum(root));\n\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <queue>\nusing namespace std;\n\n// Define the structure for a tree node\nstruct Node {\n    int val;\n    Node* left;\n    Node* right;\n};\n\n// Function to create a new node\nNode* createNode(int val) {\n    Node* newNode = new Node();\n    newNode->val = val;\n    newNode->left = newNode->right = NULL;\n    return newNode;\n}\n\n// Function to find the sum of deepest leaves\nint deepestLeavesSum(Node* root) {\n    if (root == NULL) return 0;\n\n    int maxLevel = 0;\n    int sum = 0;\n\n    // Create a queue for BFS and enqueue the root node\n    queue<Node*> q;\n    queue<int> level;\n    q.push(root);\n    level.push(0);\n\n    while (!q.empty()) {\n        Node* temp = q.front();\n        int currLevel = level.front();\n        q.pop();\n        level.pop();\n\n        if (currLevel > maxLevel) {\n            maxLevel = currLevel;\n            sum = temp->val;\n        } else if (currLevel == maxLevel) {\n            sum += temp->val;\n        }\n\n        if (temp->left) {\n            q.push(temp->left);\n            level.push(currLevel + 1);\n        }\n\n        if (temp->right) {\n            q.push(temp->right);\n            level.push(currLevel + 1);\n        }\n    }\n\n    return sum;\n}\n\nint main() {\n    int N;\n    cin >> N;\n\n    Node* root = NULL;\n    for (int i = 0; i < N - 1; i++) {\n        int pi, ci;\n        char Ri;\n        cin >> pi >> ci >> Ri;\n\n        // Create nodes if they don't exist\n        Node* parentNode = NULL;\n        Node* childNode = NULL;\n        if (root == NULL) {\n            root = createNode(pi);\n            parentNode = root;\n        } else {\n            parentNode = root;\n            while (parentNode->val != pi) {\n                if (parentNode->left && parentNode->left->val == pi) {\n                    parentNode = parentNode->left;\n                    break;\n                }\n                if (parentNode->right && parentNode->right->val == pi) {\n                    parentNode = parentNode->right;\n                    break;\n                }\n                if (parentNode->left) parentNode = parentNode->left;\n            }\n        }\n\n        if (Ri == 'L') {\n            if (parentNode->left == NULL) {\n                parentNode->left = createNode(ci);\n            }\n        } else {\n            if (parentNode->right == NULL) {\n                parentNode->right = createNode(ci);\n            }\n        }\n    }\n\n    cout << deepestLeavesSum(root) << endl;\n\n    return 0;\n}",
+      "Java": "import java.util.Queue;\nimport java.util.LinkedList;\n\npublic class Main {\n    // Define the structure for a tree node\n    static class Node {\n        int val;\n        Node left;\n        Node right;\n\n        Node(int val) {\n            this.val = val;\n            this.left = null;\n            this.right = null;\n        }\n    }\n\n    // Function to find the sum of deepest leaves\n    public static int deepestLeavesSum(Node root) {\n        if (root == null) return 0;\n\n        int maxLevel = 0;\n        int sum = 0;\n\n        // Create a queue for BFS and enqueue the root node\n        Queue<Node> q = new LinkedList<>();\n        Queue<Integer> level = new LinkedList<>();\n        q.add(root);\n        level.add(0);\n\n        while (!q.isEmpty()) {\n            Node temp = q.poll();\n            int currLevel = level.poll();\n\n            if (currLevel > maxLevel) {\n                maxLevel = currLevel;\n                sum = temp.val;\n            } else if (currLevel == maxLevel) {\n                sum += temp.val;\n            }\n\n            if (temp.left != null) {\n                q.add(temp.left);\n                level.add(currLevel + 1);\n            }\n\n            if (temp.right != null) {\n                q.add(temp.right);\n                level.add(currLevel + 1);\n            }\n        }\n\n        return sum;\n    }\n\n    public static void main(String[] args) {\n        // Read input\n        java.util.Scanner sc = new java.util.Scanner(System.in);\n        int N = sc.nextInt();\n        sc.nextLine();\n\n        Node root = null;\n        for (int i = 0; i < N - 1; i++) {\n            String[] input = sc.nextLine().split(\" \");\n            int pi = Integer.parseInt(input[0]);\n            int ci = Integer.parseInt(input[1]);\n            char Ri = input[2].charAt(0);\n\n            // Create nodes if they don't exist\n            Node parentNode = null;\n            Node childNode = null;\n            if (root == null) {\n                root = new Node(pi);\n                parentNode = root;\n            } else {\n                parentNode = root;\n                while (parentNode.val != pi) {\n                    if (parentNode.left != null && parentNode.left.val == pi) {\n                        parentNode = parentNode.left;\n                        break;\n                    }\n                    if (parentNode.right != null && parentNode.right.val == pi) {\n                        parentNode = parentNode.right;\n                        break;\n                    }\n                    if (parentNode.left != null) parentNode = parentNode.left;\n                }\n            }\n\n            if (Ri == 'L') {\n                if (parentNode.left == null) {\n                    parentNode.left = new Node(ci);\n                }\n            } else {\n                if (parentNode.right == null) {\n                    parentNode.right = new Node(ci);\n                }\n            }\n        }\n\n        System.out.println(deepestLeavesSum(root));\n    }\n}",
+      "Python3": "from collections import deque\n\nclass Node:\n    def __init__(self, val):\n        self.val = val\n        self.left = None\n        self.right = None\n\n# Function to find the sum of deepest leaves\ndef deepestLeavesSum(root):\n    if root is None: return 0\n\n    maxLevel = 0\n    sum = 0\n\n    # Create a queue for BFS and enqueue the root node\n    q = deque([root])\n    level = deque([0])\n\n    while q:\n        temp = q.popleft()\n        currLevel = level.popleft()\n\n        if currLevel > maxLevel:\n            maxLevel = currLevel\n            sum = temp.val\n        elif currLevel == maxLevel:\n            sum += temp.val\n\n        if temp.left:\n            q.append(temp.left)\n            level.append(currLevel + 1)\n\n        if temp.right:\n            q.append(temp.right)\n            level.append(currLevel + 1)\n\n    return sum\n\n# Read input\nimport sys\nN = int(sys.stdin.readline())\n\nroot = None\nfor i in range(N - 1):\n    pi, ci, Ri = sys.stdin.readline().split()\n    pi, ci = int(pi), int(ci)\n\n    # Create nodes if they don't exist\n    parentNode = None\n    childNode = None\n    if root is None:\n        root = Node(pi)\n        parentNode = root\n    else:\n        parentNode = root\n        while parentNode.val != pi:\n            if parentNode.left and parentNode.left.val == pi:\n                parentNode = parentNode.left\n                break\n            if parentNode.right and parentNode.right.val == pi:\n                parentNode = parentNode.right\n                break\n            if parentNode.left: parentNode = parentNode.left\n\n    if Ri == 'L':\n        if parentNode.left is None:\n            parentNode.left = Node(ci)\n    else:\n        if parentNode.right is None:\n            parentNode.right = Node(ci)\n\nprint(deepestLeavesSum(root))",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\n\n// Define the structure for a tree node\nclass Node {\n    constructor(val) {\n        this.val = val;\n        this.left = null;\n        this.right = null;\n    }\n}\n\n// Function to find the sum of deepest leaves\nfunction deepestLeavesSum(root) {\n    if (root === null) return 0;\n\n    let maxLevel = 0;\n    let sum = 0;\n\n    // Create a queue for BFS and enqueue the root node\n    let q = [root];\n    let level = [0];\n\n    while (q.length > 0) {\n        let temp = q.shift();\n        let currLevel = level.shift();\n\n        if (currLevel > maxLevel) {\n            maxLevel = currLevel;\n            sum = temp.val;\n        } else if (currLevel === maxLevel) {\n            sum += temp.val;\n        }\n\n        if (temp.left) {\n            q.push(temp.left);\n            level.push(currLevel + 1);\n        }\n\n        if (temp.right) {\n            q.push(temp.right);\n            level.push(currLevel + 1);\n        }\n    }\n\n    return sum;\n}\n\n// Read input\nlet N = parseInt(input[idx++]);\nlet root = null;\nfor (let i = 0; i < N - 1; i++) {\n    let [pi, ci, Ri] = input[idx++].split(' ');\n    pi = parseInt(pi);\n    ci = parseInt(ci);\n\n    // Create nodes if they don't exist\n    let parentNode = null;\n    let childNode = null;\n    if (root === null) {\n        root = new Node(pi);\n        parentNode = root;\n    } else {\n        parentNode = root;\n        while (parentNode.val !== pi) {\n            if (parentNode.left && parentNode.left.val === pi) {\n                parentNode = parentNode.left;\n                break;\n            }\n            if (parentNode.right && parentNode.right.val === pi) {\n                parentNode = parentNode.right;\n                break;\n            }\n            if (parentNode.left) parentNode = parentNode.left;\n        }\n    }\n\n    if (Ri === 'L') {\n        if (parentNode.left === null) {\n            parentNode.left = new Node(ci);\n        }\n    } else {\n        if (parentNode.right === null) {\n            parentNode.right = new Node(ci);\n        }\n    }\n}\n\nconsole.log(deepestLeavesSum(root));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

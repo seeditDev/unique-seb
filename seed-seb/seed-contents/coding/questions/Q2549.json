@@ -1,0 +1,120 @@
+{
+  "questionId": "Q2549",
+  "title": "Coal Scam",
+  "slug": "coal-scam",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graphs",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Graphs",
+      "Disjoint Set Union",
+      "Minimum Spanning Tree",
+      "Kruskal's Algorithm"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Graphs"
+    ]
+  },
+  "content": {
+    "problemStatement": "Chef has entered the politics of Byteland. He is a minister in the coal department of the government. Recently, he has been assigned a project on constructing special bidirectional roads for transferring coals in such a way that the whole country is connected by a road network.\n\nDifferent companies submitted their proposal of roads that they could build along with their estimated cost of the road. Chef has to select a subset of these proposed roads so that all cities of the country are connected.\n\nChef, corrupt as he is, managed to submit bids by his own company for certain roads. If some of his proposed roads are selected, he'd use low grade material. We can safely assume that the cost of building these roads is nothing to him. He would still receive the price he has quoted in the bid and hence, would make as much profit. He wants to choose some subset of proposed roads so that his own profit is maximised.\n\nByteland consists of N cities. There are M1 proposals to build roads by companies other than Chef's. Chef's company has proposed to build M2 roads. Chef wants to choose a subset of these roads in such a way that **for each pair of cities, there is exactly one path of roads connecting them**. The profit Chef will gain is equal to the sum of costs of the roads chosen from among those made by Chef's company.\n\nHelp Chef choose the roads in such a way that his profit is maximized. If there are multiple ways to achieve that, choose the way where the sum of costs of all chosen roads is minimized.",
+    "constraints": [
+      "1 \u2264 T \u2264 5",
+      "2 \u2264 N \u2264 5,000",
+      "1 \u2264 M1 \u2264 20,000",
+      "1 \u2264 M2 \u2264 20,000",
+      "For each proposed road, the end points will be two different cities.",
+      "There may be several proposed roads between the same pair of cities.",
+      "For each proposed road, 0 \u2264 c \u2264 1,000,000,000"
+    ],
+    "inputFormat": "The first line contains T, the number of test cases. Each test case contains three space-separated integers N, M1, and M2. Then M1 lines follow, each containing three space-separated integers u, v, and c, where u and v denote the end points of the road and c denotes the associated cost. Then M2 lines follow, each containing a description of a road proposed by Chef's company in the same format.",
+    "outputFormat": "For each test case, if it is impossible to choose a subset of the roads in such a way that for each pair of cities, there is exactly one path of roads connecting them, output a single line containing 'Impossible'. Otherwise, output a single line containing two space-separated integers: the maximum profit Chef can gain and the minimum total cost of the chosen roads that yields the maximum profit.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n3 2 1\n0 1 5\n1 2 4\n0 1 10\n3 1 1\n0 1 1\n0 1 3",
+        "output": "10 14\nImpossible",
+        "explanation": ""
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use Kruskal's algorithm to find the minimum spanning tree of the graph. We will first sort all the edges in non-decreasing order of their weights. Then, we will iterate over the sorted edges and add them to the minimum spanning tree if they do not form a cycle. We will use a disjoint set union data structure to check if two nodes are in the same connected component. If they are not, we will add the edge to the minimum spanning tree and union the two nodes. We will keep track of the maximum profit and the minimum total cost of the chosen roads.",
+    "timeComplexity": "O((M1 + M2) log (M1 + M2)) per test case, O(T * (M1 + M2) log (M1 + M2)) total.",
+    "spaceComplexity": "O(N + M1 + M2) \u2014 the dominant structure is the disjoint set union data structure and the array of edges.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#define MAX 100000\n#define INF 1000000000\n\n// Define the structure for an edge\ntypedef struct {\n    int u, v, c;\n} Edge;\n\n// Define the structure for a disjoint set\ntypedef struct {\n    int parent[MAX], rank[MAX];\n} DisjointSet;\n\n// Function to find the parent of a node in the disjoint set\nint find(DisjointSet *ds, int node) {\n    if (ds->parent[node] != node) {\n        ds->parent[node] = find(ds, ds->parent[node]);\n    }\n    return ds->parent[node];\n}\n\n// Function to union two nodes in the disjoint set\nvoid unionSet(DisjointSet *ds, int node1, int node2) {\n    int parent1 = find(ds, node1);\n    int parent2 = find(ds, node2);\n    if (ds->rank[parent1] < ds->rank[parent2]) {\n        ds->parent[parent1] = parent2;\n    } else if (ds->rank[parent1] > ds->rank[parent2]) {\n        ds->parent[parent2] = parent1;\n    } else {\n        ds->parent[parent2] = parent1;\n        ds->rank[parent1]++;\n    }\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int N, M1, M2;\n        scanf(\"%d %d %d\", &N, &M1, &M2);\n        Edge edges[M1 + M2];\n        for (int i = 0; i < M1; i++) {\n            scanf(\"%d %d %d\", &edges[i].u, &edges[i].v, &edges[i].c);\n        }\n        for (int i = M1; i < M1 + M2; i++) {\n            scanf(\"%d %d %d\", &edges[i].u, &edges[i].v, &edges[i].c);\n        }\n        // Sort the edges in non-decreasing order of their weights\n        for (int i = 0; i < M1 + M2; i++) {\n            for (int j = i + 1; j < M1 + M2; j++) {\n                if (edges[i].c > edges[j].c) {\n                    Edge temp = edges[i];\n                    edges[i] = edges[j];\n                    edges[j] = temp;\n                }\n            }\n        }\n        // Initialize the disjoint set\n        DisjointSet ds;\n        for (int i = 0; i < N; i++) {\n            ds.parent[i] = i;\n            ds.rank[i] = 0;\n        }\n        int maxProfit = 0, minCost = 0;\n        for (int i = 0; i < M1 + M2; i++) {\n            if (find(&ds, edges[i].u) != find(&ds, edges[i].v)) {\n                unionSet(&ds, edges[i].u, edges[i].v);\n                if (i >= M1) {\n                    maxProfit += edges[i].c;\n                }\n                minCost += edges[i].c;\n            }\n        }\n        if (minCost == INF) {\n            printf(\"Impossible\\n\");\n        } else {\n            printf(\"%d %d\\n\", maxProfit, minCost);\n        }\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\n#include <algorithm>\nusing namespace std;\n\n// Define the structure for an edge\nstruct Edge {\n    int u, v, c;\n};\n\n// Define the structure for a disjoint set\nstruct DisjointSet {\n    vector<int> parent, rank;\n};\n\n// Function to find the parent of a node in the disjoint set\nint find(DisjointSet &ds, int node) {\n    if (ds.parent[node] != node) {\n        ds.parent[node] = find(ds, ds.parent[node]);\n    }\n    return ds.parent[node];\n}\n\n// Function to union two nodes in the disjoint set\nvoid unionSet(DisjointSet &ds, int node1, int node2) {\n    int parent1 = find(ds, node1);\n    int parent2 = find(ds, node2);\n    if (ds.rank[parent1] < ds.rank[parent2]) {\n        ds.parent[parent1] = parent2;\n    } else if (ds.rank[parent1] > ds.rank[parent2]) {\n        ds.parent[parent2] = parent1;\n    } else {\n        ds.parent[parent2] = parent1;\n        ds.rank[parent1]++;\n    }\n}\n\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        int N, M1, M2;\n        cin >> N >> M1 >> M2;\n        vector<Edge> edges(M1 + M2);\n        for (int i = 0; i < M1; i++) {\n            cin >> edges[i].u >> edges[i].v >> edges[i].c;\n        }\n        for (int i = M1; i < M1 + M2; i++) {\n            cin >> edges[i].u >> edges[i].v >> edges[i].c;\n        }\n        // Sort the edges in non-decreasing order of their weights\n        sort(edges.begin(), edges.end(), [](Edge &a, Edge &b) {\n            return a.c < b.c;\n        });\n        // Initialize the disjoint set\n        DisjointSet ds;\n        ds.parent.resize(N);\n        ds.rank.resize(N);\n        for (int i = 0; i < N; i++) {\n            ds.parent[i] = i;\n            ds.rank[i] = 0;\n        }\n        int maxProfit = 0, minCost = 0;\n        for (int i = 0; i < M1 + M2; i++) {\n            if (find(ds, edges[i].u) != find(ds, edges[i].v)) {\n                unionSet(ds, edges[i].u, edges[i].v);\n                if (i >= M1) {\n                    maxProfit += edges[i].c;\n                }\n                minCost += edges[i].c;\n            }\n        }\n        if (minCost == INT_MAX) {\n            cout << \"Impossible\" << endl;\n        } else {\n            cout << maxProfit << \" \" << minCost << endl;\n        }\n    }\n    return 0;\n}",
+      "Java": "import java.util.Arrays;\nimport java.util.Scanner;\n\npublic class Main {\n    static class Edge {\n        int u, v, c;\n    }\n\n    static class DisjointSet {\n        int[] parent, rank;\n    }\n\n    // Function to find the parent of a node in the disjoint set\n    static int find(DisjointSet ds, int node) {\n        if (ds.parent[node] != node) {\n            ds.parent[node] = find(ds, ds.parent[node]);\n        }\n        return ds.parent[node];\n    }\n\n    // Function to union two nodes in the disjoint set\n    static void unionSet(DisjointSet ds, int node1, int node2) {\n        int parent1 = find(ds, node1);\n        int parent2 = find(ds, node2);\n        if (ds.rank[parent1] < ds.rank[parent2]) {\n            ds.parent[parent1] = parent2;\n        } else if (ds.rank[parent1] > ds.rank[parent2]) {\n            ds.parent[parent2] = parent1;\n        } else {\n            ds.parent[parent2] = parent1;\n            ds.rank[parent1]++;\n        }\n    }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n        while (T-- > 0) {\n            int N = sc.nextInt();\n            int M1 = sc.nextInt();\n            int M2 = sc.nextInt();\n            Edge[] edges = new Edge[M1 + M2];\n            for (int i = 0; i < M1; i++) {\n                edges[i] = new Edge();\n                edges[i].u = sc.nextInt();\n                edges[i].v = sc.nextInt();\n                edges[i].c = sc.nextInt();\n            }\n            for (int i = M1; i < M1 + M2; i++) {\n                edges[i] = new Edge();\n                edges[i].u = sc.nextInt();\n                edges[i].v = sc.nextInt();\n                edges[i].c = sc.nextInt();\n            }\n            // Sort the edges in non-decreasing order of their weights\n            Arrays.sort(edges, (a, b) -> a.c - b.c);\n            // Initialize the disjoint set\n            DisjointSet ds = new DisjointSet();\n            ds.parent = new int[N];\n            ds.rank = new int[N];\n            for (int i = 0; i < N; i++) {\n                ds.parent[i] = i;\n                ds.rank[i] = 0;\n            }\n            int maxProfit = 0, minCost = 0;\n            for (int i = 0; i < M1 + M2; i++) {\n                if (find(ds, edges[i].u) != find(ds, edges[i].v)) {\n                    unionSet(ds, edges[i].u, edges[i].v);\n                    if (i >= M1) {\n                        maxProfit += edges[i].c;\n                    }\n                    minCost += edges[i].c;\n                }\n            }\n            if (minCost == Integer.MAX_VALUE) {\n                System.out.println(\"Impossible\");\n            } else {\n                System.out.println(maxProfit + \" \" + minCost);\n            }\n        }\n    }\n}",
+      "Python3": "import sys\n\n# Define the structure for an edge\nclass Edge:\n    def __init__(self, u, v, c):\n        self.u = u\n        self.v = v\n        self.c = c\n\n# Define the structure for a disjoint set\nclass DisjointSet:\n    def __init__(self, N):\n        self.parent = list(range(N))\n        self.rank = [0] * N\n\n# Function to find the parent of a node in the disjoint set\ndef find(ds, node):\n    if ds.parent[node] != node:\n        ds.parent[node] = find(ds, ds.parent[node])\n    return ds.parent[node]\n\n# Function to union two nodes in the disjoint set\ndef unionSet(ds, node1, node2):\n    parent1 = find(ds, node1)\n    parent2 = find(ds, node2)\n    if ds.rank[parent1] < ds.rank[parent2]:\n        ds.parent[parent1] = parent2\n    elif ds.rank[parent1] > ds.rank[parent2]:\n        ds.parent[parent2] = parent1\n    else:\n        ds.parent[parent2] = parent1\n        ds.rank[parent1] += 1\n\nT = int(input())\nwhile T > 0:\n    N, M1, M2 = map(int, input().split())\n    edges = []\n    for _ in range(M1):\n        u, v, c = map(int, input().split())\n        edges.append(Edge(u, v, c))\n    for _ in range(M2):\n        u, v, c = map(int, input().split())\n        edges.append(Edge(u, v, c))\n    # Sort the edges in non-decreasing order of their weights\n    edges.sort(key=lambda x: x.c)\n    # Initialize the disjoint set\n    ds = DisjointSet(N)\n    maxProfit = 0\n    minCost = 0\n    for i, edge in enumerate(edges):\n        if find(ds, edge.u) != find(ds, edge.v):\n            unionSet(ds, edge.u, edge.v)\n            if i >= M1:\n                maxProfit += edge.c\n            minCost += edge.c\n    if minCost == float('inf'):\n        print('Impossible')\n    else:\n        print(maxProfit, minCost)\n    T -= 1",
+      "JavaScript": "const lines = require('fs').readFileSync(0,'utf-8').trim().split('\\n');\nlet i=0;\nconst readline = () => lines[i++];\n\n// Define the structure for an edge\nfunction Edge(u, v, c) {\n    this.u = u;\n    this.v = v;\n    this.c = c;\n}\n\n// Define the structure for a disjoint set\nfunction DisjointSet(N) {\n    this.parent = Array(N).fill(0).map((_, i) => i);\n    this.rank = Array(N).fill(0);\n}\n\n// Function to find the parent of a node in the disjoint set\nfunction find(ds, node) {\n    if (ds.parent[node] !== node) {\n        ds.parent[node] = find(ds, ds.parent[node]);\n    }\n    return ds.parent[node];\n}\n\n// Function to union two nodes in the disjoint set\nfunction unionSet(ds, node1, node2) {\n    let parent1 = find(ds, node1);\n    let parent2 = find(ds, node2);\n    if (ds.rank[parent1] < ds.rank[parent2]) {\n        ds.parent[parent1] = parent2;\n    } else if (ds.rank[parent1] > ds.rank[parent2]) {\n        ds.parent[parent2] = parent1;\n    } else {\n        ds.parent[parent2] = parent1;\n        ds.rank[parent1]++;\n    }\n}\n\nlet T = +readline();\nwhile (T--) {\n    let [N, M1, M2] = readline().split(' ').map(Number);\n    let edges = [];\n    for (let i = 0; i < M1; i++) {\n        let [u, v, c] = readline().split(' ').map(Number);\n        edges.push(new Edge(u, v, c));\n    }\n    for (let i = 0; i < M2; i++) {\n        let [u, v, c] = readline().split(' ').map(Number);\n        edges.push(new Edge(u, v, c));\n    }\n    // Sort the edges in non-decreasing order of their weights\n    edges.sort((a, b) => a.c - b.c);\n    // Initialize the disjoint set\n    let ds = new DisjointSet(N);\n    let maxProfit = 0;\n    let minCost = 0;\n    for (let i = 0; i < M1 + M2; i++) {\n        if (find(ds, edges[i].u) !== find(ds, edges[i].v)) {\n            unionSet(ds, edges[i].u, edges[i].v);\n            if (i >= M1) {\n                maxProfit += edges[i].c;\n            }\n            minCost += edges[i].c;\n        }\n    }\n    if (minCost === Infinity) {\n        console.log('Impossible');\n    } else {\n        console.log(maxProfit + ' ' + minCost);\n    }\n}"
+    }
+  }
+}

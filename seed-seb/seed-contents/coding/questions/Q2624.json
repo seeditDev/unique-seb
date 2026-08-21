@@ -1,0 +1,115 @@
+{
+  "questionId": "Q2624",
+  "title": "Level Of Difference",
+  "slug": "level-of-difference",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Symmetric Difference",
+      "Linear Time",
+      "Strings",
+      "Suffix Automaton",
+      "Distinct Substrings"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Strings"
+    ]
+  },
+  "content": {
+    "problemStatement": "How to measure the difference between two strings? This is a midnight question of biological scientists. The number of pairs of different characters in the same position may be a good indicator. However, it will not work well in the case when two strings have different lengths. The longest common subsequence will also fail when strings are too long.\n\n\n\nRecently, Professor of Math L.P.C. has invented the special method to deal with this problem. His invention has been known as a simple but creative solution: the difference is based on the number of substrings (a non-empty group of consecutive characters) of one string that are not substrings of the other string.\n\n\n\nLet's learn about his invention. Call the first string as **A** and the second string as **B**. Let **S** be the set of all different substrings of **A**, and **T** be the set of all different substrings of **B**. We then define another set **P** which consists of all the strings that belongs to **S** or **T**, but not both. According to the Professor L.P.C. method, the size of **P** is a good indicator to measure the difference between **A** and **B**.\n\n\n\nFor example, let **A = aacd** and **B = cdaa**. We can see that:\n **S = {a, aa, aac, aacd, ac, acd, c, cd, d}**,\n **T = {c, cd, cda, cdaa, d, da, daa, a, aa}**,\n **P = {aac, aacd, ac, acd, cda, cdaa, da, daa}**.\n Size of **P** is **8** and we can say the level of difference between **A** and **B** is **8**.\n\n\n\nYour task is to find this indicator.",
+    "constraints": [
+      "1 \u2264 T \u2264 10",
+      "1 \u2264 |A|, |B| \u2264 100000",
+      "Sum of |A| + |B| over all test cases \u2264 200000"
+    ],
+    "inputFormat": "The first line contains an integer T (1 \u2264 T \u2264 10), the number of test cases. Each test case consists of two lines: the first line is string A, the second line is string B. Both strings contain only lowercase English letters and have lengths between 1 and 100000 inclusive.",
+    "outputFormat": "For each test case output a single line containing the level of difference between the two strings, defined as the size of the symmetric difference of their distinct substring sets.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "aacd\ncdaa",
+        "output": "8",
+        "explanation": "The set of substrings for A is {a, aa, aac, aacd, ac, acd, c, cd, d} and for B is {c, cd, cda, cdaa, d, da, daa, a, aa}. The set of unique substrings is {aac, aacd, ac, acd, cda, cdaa, da, daa}. The size of this set is 8."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For a string X, the number of distinct substrings equals \u03a3 (len(v) - len(link(v))) over all states v of its suffix automaton (SAM). To obtain the answer we need:\n1. distinctA = number of distinct substrings of A.\n2. distinctB = number of distinct substrings of B.\n3. common = number of distinct substrings that appear in both A and B.\n   Build a SAM for A. While scanning B, keep for each state the longest length of a substring of B that ends in that state (array best). After the scan, for each state v the contribution to common substrings is max(0, min(best[v], len(v)) - len(link(v))). Summing these contributions yields common.\n4. The required value is distinctA + distinctB - 2 * common.\nThe algorithm runs in O(|A| + |B|) time per test case and uses O(|A|) memory for the SAM of A (and similarly O(|B|) for the second SAM).",
+    "timeComplexity": "O(|A| + |B|) per test case",
+    "spaceComplexity": "O(|A| + |B|) for the two suffix automata",
+    "code": {
+      "C": "// COMPLETE, COMPILABLE C code\n#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n#define ALPHABET 26\n#define MAXLEN 200000\n\ntypedef struct State {\n    int next[ALPHABET];\n    int link;\n    int len;\n} State;\n\ntypedef struct SAM {\n    State *st;\n    int size;\n    int last;\n} SAM;\n\nSAM *sam_create(int maxLen) {\n    SAM *sam = (SAM *)malloc(sizeof(SAM));\n    sam->st = (State *)calloc(2 * maxLen, sizeof(State));\n    for (int i = 0; i < 2 * maxLen; ++i) for (int c = 0; c < ALPHABET; ++c) sam->st[i].next[c] = -1;\n    sam->st[0].len = 0;\n    sam->st[0].link = -1;\n    sam->size = 1;\n    sam->last = 0;\n    return sam;\n}\n\nvoid sam_extend(SAM *sam, int ch) {\n    int cur = sam->size++;\n    sam->st[cur].len = sam->st[sam->last].len + 1;\n    for (int i = 0; i < ALPHABET; ++i) sam->st[cur].next[i] = -1;\n    int p = sam->last;\n    while (p != -1 && sam->st[p].next[ch] == -1) {\n        sam->st[p].next[ch] = cur;\n        p = sam->st[p].link;\n    }\n    if (p == -1) {\n        sam->st[cur].link = 0;\n    } else {\n        int q = sam->st[p].next[ch];\n        if (sam->st[p].len + 1 == sam->st[q].len) {\n            sam->st[cur].link = q;\n        } else {\n            int clone = sam->size++;\n            sam->st[clone] = sam->st[q];\n            sam->st[clone].len = sam->st[p].len + 1;\n            while (p != -1 && sam->st[p].next[ch] == q) {\n                sam->st[p].next[ch] = clone;\n                p = sam->st[p].link;\n            }\n            sam->st[q].link = sam->st[cur].link = clone;\n        }\n    }\n    sam->last = cur;\n}\n\nlong long distinct_substrings(SAM *sam) {\n    long long res = 0;\n    for (int i = 1; i < sam->size; ++i) {\n        res += sam->st[i].len - sam->st[sam->st[i].link].len;\n    }\n    return res;\n}\n\nlong long common_substrings(SAM *sam, const char *s) {\n    int n = strlen(s);\n    int *best = (int *)calloc(sam->size, sizeof(int));\n    int v = 0, l = 0;\n    for (int i = 0; i < n; ++i) {\n        int c = s[i] - 'a';\n        while (v && sam->st[v].next[c] == -1) {\n            v = sam->st[v].link;\n            l = sam->st[v].len;\n        }\n        if (sam->st[v].next[c] != -1) {\n            v = sam->st[v].next[c];\n            ++l;\n        } else {\n            v = 0; l = 0;\n        }\n        if (best[v] < l) best[v] = l;\n    }\n    // propagate best values to suffix links in topological order (by length descending)\n    int maxLen = 0;\n    for (int i = 0; i < sam->size; ++i) if (sam->st[i].len > maxLen) maxLen = sam->st[i].len;\n    int *cnt = (int *)calloc(maxLen + 1, sizeof(int));\n    for (int i = 0; i < sam->size; ++i) ++cnt[sam->st[i].len];\n    for (int i = 1; i <= maxLen; ++i) cnt[i] += cnt[i-1];\n    int *order = (int *)malloc(sam->size * sizeof(int));\n    for (int i = sam->size-1; i >=0; --i) order[--cnt[sam->st[i].len]] = i;\n    for (int i = sam->size-1; i > 0; --i) {\n        int v = order[i];\n        int p = sam->st[v].link;\n        if (p >=0 && best[v] > 0) {\n            if (best[p] < (best[v] > sam->st[p].len ? sam->st[p].len : best[v]))\n                best[p] = best[v] > sam->st[p].len ? sam->st[p].len : best[v];\n        }\n    }\n    long long common = 0;\n    for (int i = 1; i < sam->size; ++i) {\n        int low = sam->st[sam->st[i].link].len;\n        int high = sam->st[i].len;\n        int mx = best[i];\n        if (mx > low) {\n            if (mx > high) mx = high;\n            common += (mx - low);\n        }\n    }\n    free(best);\n    free(cnt);\n    free(order);\n    return common;\n}\n\nint main() {\n    int T; if (scanf(\"%d\", &T)!=1) return 0;\n    char A[MAXLEN+5], B[MAXLEN+5];\n    while (T--) {\n        scanf(\"%s\", A);\n        scanf(\"%s\", B);\n        int lenA = strlen(A), lenB = strlen(B);\n        SAM *samA = sam_create(lenA);\n        for (int i = 0; i < lenA; ++i) sam_extend(samA, A[i]-'a');\n        long long distinctA = distinct_substrings(samA);\n        long long common = common_substrings(samA, B);\n        // Build SAM for B to get its distinct count\n        SAM *samB = sam_create(lenB);\n        for (int i = 0; i < lenB; ++i) sam_extend(samB, B[i]-'a');\n        long long distinctB = distinct_substrings(samB);\n        long long answer = distinctA + distinctB - 2 * common;\n        printf(\"%lld\\n\", answer);\n        free(samA->st); free(samA);\n        free(samB->st); free(samB);\n    }\n    return 0;\n}\n",
+      "C++": "// COMPLETE, COMPILABLE C++ code\n#include <bits/stdc++.h>\nusing namespace std;\n\nstruct SAM {\n    struct State {int next[26]; int link; int len; State(){fill(begin(next), end(next), -1); link=-1; len=0;}};\n    vector<State> st; int last;\n    SAM(int maxLen){st.reserve(2*maxLen); st.push_back(State()); last=0;}\n    void extend(int c){\n        int cur = st.size(); st.push_back(State()); st[cur].len = st[last].len + 1;\n        int p = last;\n        while(p!=-1 && st[p].next[c]==-1){st[p].next[c]=cur; p=st[p].link;}\n        if(p==-1) st[cur].link = 0;\n        else{\n            int q = st[p].next[c];\n            if(st[p].len + 1 == st[q].len) st[cur].link = q;\n            else{\n                int clone = st.size(); st.push_back(st[q]); st[clone].len = st[p].len + 1;\n                while(p!=-1 && st[p].next[c]==q){st[p].next[c]=clone; p=st[p].link;}\n                st[q].link = st[cur].link = clone;\n            }\n        }\n        last = cur;\n    }\n    long long distinct() const{\n        long long ans=0; for(size_t i=1;i<st.size();++i) ans+= st[i].len - st[st[i].link].len; return ans;}\n    long long common(const string &s) const{\n        vector<int> best(st.size(),0);\n        int v=0,l=0;\n        for(char ch: s){int c=ch-'a';\n            while(v && st[v].next[c]==-1){v=st[v].link; l=st[v].len;}\n            if(st[v].next[c]!=-1){v=st[v].next[c]; ++l;} else {v=0; l=0;}\n            best[v]=max(best[v],l);\n        }\n        // order states by length descending\n        int maxLen=0; for(auto &stt:st) maxLen=max(maxLen,stt.len);\n        vector<int> cnt(maxLen+1,0);\n        for(auto &stt:st) ++cnt[stt.len];\n        for(int i=1;i<=maxLen;++i) cnt[i]+=cnt[i-1];\n        vector<int> order(st.size());\n        for(int i=st.size()-1;i>=0;--i) order[--cnt[st[i].len]]=i;\n        for(int i=st.size()-1;i>0;--i){int v=order[i]; int p=st[v].link; if(p!=-1){best[p]=max(best[p], min(best[v], st[p].len));}}\n        long long common=0;\n        for(size_t i=1;i<st.size();++i){int low=st[st[i].link].len; int high=st[i].len; int mx=best[i]; if(mx>low){if(mx>high) mx=high; common+= mx - low;}}\n        return common;\n    }\n};\n\nint main(){ios::sync_with_stdio(false);cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0; while(T--){string A,B;cin>>A>>B; SAM samA(A.size()); for(char ch:A) samA.extend(ch-'a'); long long distinctA=samA.distinct(); long long common=samA.common(B); SAM samB(B.size()); for(char ch:B) samB.extend(ch-'a'); long long distinctB=samB.distinct(); long long ans=distinctA+distinctB-2*common; cout<<ans<<\"\\n\"; }\n    return 0; }\n",
+      "Java": ""
+    }
+  }
+}

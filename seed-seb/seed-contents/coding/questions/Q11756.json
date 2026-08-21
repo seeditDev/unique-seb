@@ -1,0 +1,118 @@
+{
+  "questionId": "Q11756",
+  "title": "Target sum",
+  "slug": "target-sum",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Subset Sum",
+      "Memoization"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "We are given an array ‘ARR’ of size ‘N’ and a number ‘Target’. Our task is to build an expression from the given array where we can place a ‘+’ or ‘-’ sign in front of an integer. We want to place a sign in front of every integer of the array and get our required target. We need to count the number of ways in which we can achieve our required target.",
+    "constraints": [
+      "1 <= N <= 20",
+      "-1000 <= ARR[i] <= 1000",
+      "-10000 <= Target <= 10000"
+    ],
+    "inputFormat": "The input consists of an array 'ARR' of size 'N' and a number 'Target'.",
+    "outputFormat": "The output is the number of ways in which we can achieve our required target.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "[1], 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "[1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000], 10000",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform case",
+        "input": "[0, 0, 0, 0, 0], 0",
+        "expectedOutput": "16",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "[0], 0",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "mixed case",
+        "input": "[1, 1, 1, 1, 1], 3",
+        "expectedOutput": "5",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Transform the problem into a subset sum problem and use memoization to optimize the solution.",
+    "timeComplexity": "O(N * sum)",
+    "spaceComplexity": "O(N * sum)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nint findTargetSumWays(int* nums, int numsSize, int target) {\n    int totalSum = 0;\n    for (int i = 0; i < numsSize; i++) {\n        totalSum += nums[i];\n    }\n    if ((totalSum - target) < 0 || (totalSum - target) % 2 != 0) {\n        return 0;\n    }\n    int subsetSum = (totalSum - target) / 2;\n    int** dp = (int**)malloc(numsSize * sizeof(int*));\n    for (int i = 0; i < numsSize; i++) {\n        dp[i] = (int*)malloc((subsetSum + 1) * sizeof(int));\n    }\n    for (int i = 0; i < numsSize; i++) {\n        for (int j = 0; j <= subsetSum; j++) {\n            dp[i][j] = -1;\n        }\n    }\n    return countSubsets(nums, numsSize - 1, subsetSum, dp);\n}\n\nint countSubsets(int* nums, int ind, int target, int** dp) {\n    if (ind == 0) {\n        if (target == 0 && nums[0] == 0) return 2;\n        if (target == 0 || target == nums[0]) return 1;\n        return 0;\n    }\n    if (dp[ind][target] != -1) return dp[ind][target];\n    int notPick = countSubsets(nums, ind - 1, target, dp);\n    int pick = 0;\n    if (nums[ind] <= target) {\n        pick = countSubsets(nums, ind - 1, target - nums[ind], dp);\n    }\n    return dp[ind][target] = pick + notPick;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nclass Solution {\npublic:\n    // Function to count number of ways to assign '+' or '-' to reach target\n    int findTargetSumWays(vector<int>& nums, int target) {\n        // Calculate the total sum of the array\n        int totalSum = accumulate(nums.begin(), nums.end(), 0);\n\n        // If target is not achievable (because of sum or parity), return 0\n        if ((totalSum - target) < 0 || (totalSum - target) % 2 != 0) \n            return 0;\n\n        // Our problem reduces to subset sum with sum = (totalSum - target) / 2\n        int subsetSum = (totalSum - target) / 2;\n\n        // Initialize memo table with -1\n        vector<vector<int>> dp(nums.size(), vector<int>(subsetSum + 1, -1));\n\n        // Call recursive function with memoization\n        return countSubsets(nums, nums.size() - 1, subsetSum, dp);\n    }\n\nprivate:\n    // Recursive function with memoization\n    int countSubsets(vector<int>& nums, int ind, int target, vector<vector<int>>& dp) {\n        // Base case: when we are at index 0\n        if (ind == 0) {\n            // Two scenarios:\n            if (target == 0 && nums[0] == 0) return 2; // {pick or not pick 0}\n            if (target == 0 || target == nums[0]) return 1; // Either pick or skip\n            return 0; // Otherwise no valid way\n        }\n\n        // Return if already computed\n        if (dp[ind][target] != -1) return dp[ind][target];\n\n        // Exclude current element\n        int notPick = countSubsets(nums, ind - 1, target, dp);\n\n        // Include current element if it is <= target\n        int pick = 0;\n        if (nums[ind] <= target)\n            pick = countSubsets(nums, ind - 1, target - nums[ind], dp);\n\n        // Store and return result\n        return dp[ind][target] = pick + notPick;\n    }\n};",
+      "Java": "import java.util.*;\n\nclass Solution {\n    // Function to count number of ways to assign '+' or '-' to reach target\n    public int findTargetSumWays(int[] nums, int target) {\n        // Step 1: Calculate the total sum of the array\n        int totalSum = 0;\n        for (int num : nums) totalSum += num;\n\n        // Step 2: Check feasibility\n        // (totalSum - target) must be >= 0 and even, otherwise no valid partition exists\n        if ((totalSum - target) < 0 || (totalSum - target) % 2 != 0)\n            return 0;\n\n        // Step 3: Transform problem into subset sum\n        // We need to count subsets with sum = (totalSum - target) / 2\n        int subsetSum = (totalSum - target) / 2;\n\n        // Step 4: Create memoization table with default -1 (uncomputed)\n        int[][] dp = new int[nums.length][subsetSum + 1];\n        for (int[] row : dp) Arrays.fill(row, -1);\n\n        // Step 5: Call helper recursive function\n        return countSubsets(nums, nums.length - 1, subsetSum, dp);\n    }\n\n    // Recursive helper function with memoization\n    private int countSubsets(int[] nums, int ind, int target, int[][] dp) {\n        // Base case: when we are at the first element\n        if (ind == 0) {\n            // If both target and nums[0] are zero → we have two choices: pick or not pick\n            if (target == 0 && nums[0] == 0) return 2;\n\n            // If target is zero → one way (exclude this element)\n            // Or if nums[0] equals target → one way (include this element)\n            if (target == 0 || target == nums[0]) return 1;\n\n            // Otherwise → no valid way\n            return 0;\n        }\n\n        // If value already computed, return it\n        if (dp[ind][target] != -1) return dp[ind][target];\n\n        // Option 1: Do not include current element\n        int notPick = countSubsets(nums, ind - 1, target, dp);\n\n        // Option 2: Include current element if it does not exceed target\n        int pick = 0;\n        if (nums[ind] <= target)\n            pick = countSubsets(nums, ind - 1, target - nums[ind], dp);\n\n        // Store result in memo table and return\n        return dp[ind][target] = pick + notPick;\n    }\n}",
+      "Python3": "class Solution:\n    # Function to count number of ways to assign '+' or '-' to reach target\n    def findTargetSumWays(self, nums, target):\n        # Step 1: Calculate total sum of array\n        totalSum = sum(nums)\n\n        # Step 2: Feasibility check\n        # If (totalSum - target) is negative or odd → impossible\n        if (totalSum - target) < 0 or (totalSum - target) % 2 != 0:\n            return 0\n\n        # Step 3: Problem reduces to subset sum\n        subsetSum = (totalSum - target) // 2\n\n        # Step 4: Memoization dictionary to cache results\n        dp = {}\n\n        # Step 5: Recursive helper function\n        def countSubsets(ind, target):\n            # Base case: when at index 0\n            if ind == 0:\n                # Case 1: Both zero → two choices (pick or not pick)\n                if target == 0 and nums[0] == 0:\n                    return 2\n                # Case 2: Either target is zero or equal to nums[0]\n                if target == 0 or target == nums[0]:\n                    return 1\n                # Case 3: No valid subset\n                return 0\n\n            # If already computed, return cached value\n            if (ind, target) in dp:\n                return dp[(ind, target)]\n\n            # Option 1: Exclude current element\n            notPick = countSubsets(ind - 1, target)\n\n            # Option 2: Include current element (only if <= target)\n            pick = 0\n            if nums[ind] <= target:\n                pick = countSubsets(ind - 1, target - nums[ind])\n\n            # Store result in dp and return\n            dp[(ind, target)] = pick + notPick\n            return dp[(ind, target)]\n\n        # Start recursion from last index\n        return countSubsets(len(nums) - 1, subsetSum)\n",
+      "JavaScript": "class Solution {\n    // Function to count number of ways to assign '+' or '-' to reach target\n    findTargetSumWays(nums, target) {\n        // Step 1: Calculate total sum of array\n        let totalSum = nums.reduce((a, b) => a + b, 0);\n\n        // Step 2: Feasibility check\n        if ((totalSum - target) < 0 || (totalSum - target) % 2 !== 0)\n            return 0;\n\n        // Step 3: Problem reduces to subset sum\n        let subsetSum = (totalSum - target) / 2;\n\n        // Step 4: Memoization map to cache results\n        let dp = new Map();\n\n        // Step 5: Recursive helper function\n        function countSubsets(ind, target) {\n            // Base case: when at index 0\n            if (ind === 0) {\n                // Case 1: Both zero → two choices\n                if (target === 0 && nums[0] === 0) return 2;\n                // Case 2: Target matches 0 (exclude) or nums[0] (include)\n                if (target === 0 || target === nums[0]) return 1;\n                // Case 3: No valid subset\n                return 0;\n            }\n\n            // Use key for memoization\n            let key = ind + \",\" + target;\n            if (dp.has(key)) return dp.get(key);\n\n            // Option 1: Exclude current element\n            let notPick = countSubsets(ind - 1, target);\n\n            // Option 2: Include current element (only if <= target)\n            let pick = 0;\n            if (nums[ind] <= target) {\n                pick = countSubsets(ind - 1, target - nums[ind]);\n            }\n\n            // Save in memo and return\n            dp.set(key, pick + notPick);\n            return dp.get(key);\n        }\n\n        // Start recursion from last index\n        return countSubsets(nums.length - 1, subsetSum);\n    }\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

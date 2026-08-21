@@ -1,0 +1,132 @@
+{
+  "questionId": "Q4468",
+  "title": "Single Source Shortest Path",
+  "slug": "single-source-shortest-path",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Easy",
+    "isPremium": true,
+    "tags": [
+      "Dijkstra",
+      "Priority Queue",
+      "Shortest Path",
+      "Adjacency List"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Graphs"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given an undirected weighted graph it has NNN vertices and MMM edges. \n\nYou are tasked to find the distance of the shortest path from vertex 111 to all the other vertices.\n\nNotice the larger constraints of this problem.\n\nTaskSubmit the optimised and unoptimised approaches and checkout the verdicts.\n\n\nInput Format\n\nThe first line of input will contain a two integers NNN and MMM, denoting the number of vertices and edges.\nNext MMM lines describes the edges. i−thi-thi−th of these MMM lines contains three space-separated integers uiu_iui​, viv_ivi​ and wiw_iwi​ denoting there exists an edge between uiu_iui​ and viv_ivi​ with weight wiw_iwi​.\n\n\nOutput Format\nFor each test case, output on NNN space-separated integers. Where the ithi^{th}ith integer denotes the distance from vertex 111 to vertex iii.\n\n\nIf a vertex is not reachable, print -1 instead.",
+    "constraints": [
+      "1 <= T <= 5",
+      "1 <= N <= 200000",
+      "0 <= M <= min(200000, N*(N-1)/2)",
+      "1 <= u, v <= N",
+      "0 <= w <= 10^9",
+      "The graph is simple (no self‑loops, no multiple edges)."
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, the first line contains two integers N and M — the number of vertices and edges. The next M lines each contain three integers u, v, w describing an undirected edge between vertices u and v with weight w.",
+    "outputFormat": "For each test case output a single line with N space‑separated integers. The i‑th integer is the length of the shortest path from vertex 1 to vertex i. If vertex i is unreachable, output -1 for that position.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n5 4\n1 2 3\n2 3 5\n1 3 2\n3 4 1",
+        "output": "0 3 2 3 -1",
+        "explanation": "Shortest distances from vertex 1: to 1 is 0, to 2 via edge (1,2) =3, to 3 via edge (1,3)=2, to 4 via 1‑3‑4 =2+1=3, vertex 5 is isolated so -1."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each test case we run Dijkstra's algorithm starting from vertex 1. The graph is stored as an adjacency list of (neighbor, weight) pairs. A min‑heap (priority queue) stores pairs (current distance, vertex). When a vertex is extracted, if the stored distance is larger than the already known shortest distance we skip it (lazy deletion). For every outgoing edge we relax the neighbour. After the heap is empty, distances that remain INF are replaced by -1. The algorithm runs in O((N+M) log N) time and O(N+M) memory.",
+    "timeComplexity": "O((N + M) log N) per test case",
+    "spaceComplexity": "O(N + M) per test case",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <limits.h>\n\ntypedef struct Edge {int to; long long w; struct Edge *next;} Edge;\n\nint main() {\n    int T; if (scanf(\"%d\", &T)!=1) return 0;\n    while (T--) {\n        int N, M; scanf(\"%d %d\", &N, &M);\n        Edge **adj = (Edge**)calloc(N+1, sizeof(Edge*));\n        for (int i=0;i<M;i++){\n            int u,v; long long w; scanf(\"%d %d %lld\", &u, &v, &w);\n            Edge *e1 = (Edge*)malloc(sizeof(Edge)); e1->to=v; e1->w=w; e1->next=adj[u]; adj[u]=e1;\n            Edge *e2 = (Edge*)malloc(sizeof(Edge)); e2->to=u; e2->w=w; e2->next=adj[v]; adj[v]=e2;\n        }\n        const long long INF = 9e18;\n        long long *dist = (long long*)malloc((N+1)*sizeof(long long));\n        for (int i=1;i<=N;i++) dist[i]=INF;\n        dist[1]=0;\n        // binary heap (min‑heap) implementation\n        int heapSize = 0;\n        int cap = N*2+5;\n        int *heapV = (int*)malloc(cap*sizeof(int));\n        long long *heapD = (long long*)malloc(cap*sizeof(long long));\n        // push function\n        #define PUSH(d,v) do{ heapSize++; int i=heapSize; while(i>1 && heapD[i/2]>d){ heapD[i]=heapD[i/2]; heapV[i]=heapV[i/2]; i/=2; } heapD[i]=d; heapV[i]=v; }while(0)\n        #define POP(d,v) do{ d=heapD[1]; v=heapV[1]; heapD[1]=heapD[heapSize]; heapV[1]=heapV[heapSize]; heapSize--; int i=1; while(1){ int l=i*2, r=l+1, smallest=i; if(l<=heapSize && heapD[l]<heapD[smallest]) smallest=l; if(r<=heapSize && heapD[r]<heapD[smallest]) smallest=r; if(smallest==i) break; heapD[i]=heapD[smallest]; heapV[i]=heapV[smallest]; i=smallest; } }while(0)\n        PUSH(0,1);\n        while (heapSize) {\n            long long d; int v; POP(d,v);\n            if (d!=dist[v]) continue;\n            for (Edge *e=adj[v]; e; e=e->next) {\n                if (dist[e->to] > d + e->w) {\n                    dist[e->to] = d + e->w;\n                    PUSH(dist[e->to], e->to);\n                }\n            }\n        }\n        for (int i=1;i<=N;i++) {\n            if (dist[i]==INF) printf(\"-1\"); else printf(\"%lld\", dist[i]);\n            if (i<N) printf(\" \");\n        }\n        printf(\"\\n\");\n        // free memory\n        for (int i=1;i<=N;i++) {\n            Edge *e=adj[i]; while(e){ Edge *tmp=e; e=e->next; free(tmp);} }\n        free(adj); free(dist); free(heapV); free(heapD);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nusing ll = long long;\nconst ll INF = (ll)4e18;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N,M; cin>>N>>M;\n        vector<vector<pair<int,ll>>> adj(N+1);\n        for(int i=0;i<M;i++){\n            int u,v; ll w; cin>>u>>v>>w;\n            adj[u].push_back({v,w});\n            adj[v].push_back({u,w});\n        }\n        vector<ll> dist(N+1, INF);\n        dist[1]=0;\n        priority_queue<pair<ll,int>, vector<pair<ll,int>>, greater<pair<ll,int>>> pq;\n        pq.push({0,1});\n        while(!pq.empty()){\n            auto [d,u]=pq.top(); pq.pop();\n            if(d!=dist[u]) continue;\n            for(auto [v,w]:adj[u]){\n                if(dist[v]>d+w){\n                    dist[v]=d+w;\n                    pq.push({dist[v],v});\n                }\n            }\n        }\n        for(int i=1;i<=N;i++){\n            if(dist[i]==INF) cout<<-1;\n            else cout<<dist[i];\n            if(i<N) cout<<' ';\n        }\n        cout<<'\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    static class FastScanner {\n        private final BufferedInputStream in = new BufferedInputStream(System.in);\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        private int readByte() throws IOException {\n            if (ptr >= len) {\n                len = in.read(buffer);\n                ptr = 0;\n                if (len <= 0) return -1;\n            }\n            return buffer[ptr++];\n        }\n        int nextInt() throws IOException {\n            int c, sign = 1, val = 0;\n            do { c = readByte(); } while (c <= ' ');\n            if (c == '-') { sign = -1; c = readByte(); }\n            while (c > ' ') {\n                val = val * 10 + (c - '0');\n                c = readByte();\n            }\n            return val * sign;\n        }\n        long nextLong() throws IOException {\n            int c, sign = 1;\n            long val = 0;\n            do { c = readByte(); } while (c <= ' ');\n            if (c == '-') { sign = -1; c = readByte(); }\n            while (c > ' ') {\n                val = val * 10 + (c - '0');\n                c = readByte();\n            }\n            return val * sign;\n        }\n    }\n    static class Edge {int to; long w; Edge(int t,long w){this.to=t;this.w=w;}}\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner();\n        int T = fs.nextInt();\n        StringBuilder out = new StringBuilder();\n        final long INF = Long.MAX_VALUE/4;\n        while (T-- > 0) {\n            int N = fs.nextInt();\n            int M = fs.nextInt();\n            @SuppressWarnings(\"unchecked\")\n            ArrayList<Edge>[] adj = new ArrayList[N+1];\n            for (int i=1;i<=N;i++) adj[i]=new ArrayList<>();\n            for (int i=0;i<M;i++) {\n                int u = fs.nextInt();\n                int v = fs.nextInt();\n                long w = fs.nextLong();\n                adj[u].add(new Edge(v,w));\n                adj[v].add(new Edge(u,w));\n            }\n            long[] dist = new long[N+1];\n            Arrays.fill(dist, INF);\n            dist[1]=0;\n            PriorityQueue<long[]> pq = new PriorityQueue<>(Comparator.comparingLong(a->a[0]));\n            pq.add(new long[]{0,1});\n            while(!pq.isEmpty()){\n                long[] cur = pq.poll();\n                long d = cur[0]; int u = (int)cur[1];\n                if(d!=dist[u]) continue;\n                for(Edge e: adj[u]){\n                    if(dist[e.to] > d + e.w){\n                        dist[e.to] = d + e.w;\n                        pq.add(new long[]{dist[e.to], e.to});\n                    }\n                }\n            }\n            for(int i=1;i<=N;i++){\n                if(dist[i]==INF) out.append(-1);\n                else out.append(dist[i]);\n                if(i<N) out.append(' ');\n            }\n            out.append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "import sys, heapq\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    INF = 10**19\n    for _ in range(T):\n        N = int(next(it)); M = int(next(it))\n        adj = [[] for _ in range(N+1)]\n        for __ in range(M):\n            u = int(next(it)); v = int(next(it)); w = int(next(it))\n            adj[u].append((v,w))\n            adj[v].append((u,w))\n        dist = [INF]*(N+1)\n        dist[1]=0\n        pq = [(0,1)]\n        while pq:\n            d,u = heapq.heappop(pq)\n            if d!=dist[u]:\n                continue\n            for v,w in adj[u]:\n                nd = d + w\n                if nd < dist[v]:\n                    dist[v] = nd\n                    heapq.heappush(pq,(nd,v))\n        out_lines.append(' '.join(str(-1 if dist[i]==INF else dist[i]) for i in range(1,N+1)))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0,'utf-8').trim().split(/\\s+/).map(Number);\nlet idx = 0;\nif (input.length===0) process.exit(0);\nconst T = input[idx++];\nlet outputs = [];\nconst INF = 9n ** 18n; // large enough\nfor (let tc = 0; tc < T; tc++) {\n  const N = input[idx++];\n  const M = input[idx++];\n  const adj = Array.from({length: N+1}, () => []);\n  for (let i = 0; i < M; i++) {\n    const u = input[idx++];\n    const v = input[idx++];\n    const w = BigInt(input[idx++]);\n    adj[u].push([v, w]);\n    adj[v].push([u, w]);\n  }\n  const dist = Array(N+1).fill(INF);\n  dist[1] = 0n;\n  // binary heap (min‑heap) using array\n  const heap = [];\n  const push = (d, v) => {\n    heap.push([d, v]);\n    let i = heap.length - 1;\n    while (i > 0) {\n      const p = (i - 1) >> 1;\n      if (heap[p][0] <= heap[i][0]) break;\n      [heap[p], heap[i]] = [heap[i], heap[p]];\n      i = p;\n    }\n  };\n  const pop = () => {\n    const top = heap[0];\n    const last = heap.pop();\n    if (heap.length) {\n      heap[0] = last;\n      let i = 0;\n      while (true) {\n        let l = i * 2 + 1, r = l + 1, smallest = i;\n        if (l < heap.length && heap[l][0] < heap[smallest][0]) smallest = l;\n        if (r < heap.length && heap[r][0] < heap[smallest][0]) smallest = r;\n        if (smallest === i) break;\n        [heap[i], heap[smallest]] = [heap[smallest], heap[i]];\n        i = smallest;\n      }\n    }\n    return top;\n  };\n  push(0n, 1);\n  while (heap.length) {\n    const [d, u] = pop();\n    if (d !== dist[u]) continue;\n    for (const [v, w] of adj[u]) {\n      const nd = d + w;\n      if (nd < dist[v]) {\n        dist[v] = nd;\n        push(nd, v);\n      }\n    }\n  }\n  const line = [];\n  for (let i = 1; i <= N; i++) {\n    line.push(dist[i] === INF ? '-1' : dist[i].toString());\n  }\n  outputs.push(line.join(' '));\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

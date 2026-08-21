@@ -1,0 +1,130 @@
+{
+  "questionId": "Q1509",
+  "title": "Chef and the Magical Subarray",
+  "slug": "chef-and-the-magical-subarray",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Arrays",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "DP",
+      "Linear Scan",
+      "Maximum Product Subarray",
+      "Kadane's algorithm variant",
+      "Arrays"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Arrays"
+    ]
+  },
+  "content": {
+    "problemStatement": "Chef found a **magical array** of integers arrarrarr in his kitchen.\n\nHe believes that somewhere inside this array, there exists a **contiguous sequence of dishes (subarray)** whose product of tastiness values **is the highest possible**.\n\nNow Chef is curious:\n\nCan you help him find the **maximum product** among all possible subarrays?\n\nFunction DeclarationFunction NamemaxProductSubarraymaxProductSubarraymaxProductSubarray \u2013 This function computes the maximum product of any contiguous subarray.\n\nParameters\narrarrarr : An array of integers that may contain positive numbers, negative numbers, and zeros.\nReturn Value\nReturns a single integer \u2014 the **maximum product** of any contiguous subarray.\nConstraints\n1\u2264N\u22642\u00d71041 \\leq N \\leq 2 \\times 10^41\u2264N\u22642\u00d7104\n\u221210\u2264arr[i]\u226410\u221210 \\leq arr[i] \\leq 10\u221210\u2264arr[i]\u226410\nThe product of any subarray fits in a **32-bit signed integer**\n\nInput Format\n\nThe first line contains a single integer NNN \u2014 the number of elements in the array.\nThe second line contains NNN space-separated integers representing the array elements.\n\n\nOutput Format\nOutput a single integer \u2014 the **maximum product of any contiguous subarray**.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 20000",
+      "-10 <= arr[i] <= 10",
+      "The product of any subarray fits in a 32\u2011bit signed integer"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, the first line contains an integer N, the size of the array. The second line contains N space\u2011separated integers arr[i].",
+    "outputFormat": "For each test case output a single line containing the maximum product of any contiguous subarray.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n5\n-1 -2 -3 4 -2",
+        "output": "24",
+        "explanation": "The subarray [-2, -3, 4] yields product 24, which is the maximum."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n6\n0 -1 -2 -3 0 4",
+        "output": "24",
+        "explanation": "The subarray [-2, -3, 4] gives product 24, the highest possible."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n3\n-2 0 -1",
+        "output": "0",
+        "explanation": "All subarrays have product <=0; the subarray [0] gives product 0, which is maximal."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n15\n10 10 10 10 10 10 10 10 10 1 1 1 1 1 1",
+        "expectedOutput": "1000000000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case with zeros and negatives",
+        "input": "1\n5\n-1 -2 0 -3 -4",
+        "expectedOutput": "12",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n4\n-2 -3 4 -1",
+        "expectedOutput": "24",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2 with odd negatives",
+        "input": "1\n3\n-5 -1 -3",
+        "expectedOutput": "5",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Traverse the array while maintaining two values: the maximum product ending at the current position (currMax) and the minimum product ending at the current position (currMin). Because a negative number can turn a small minimum into a large maximum, we swap currMax and currMin whenever the current element is negative. For each element we update:\n    currMax = max(num, currMax * num)\n    currMin = min(num, currMin * num)\nand keep the global answer as the maximum of all currMax values seen. This runs in O(N) time per test case and O(1) extra space.",
+    "timeComplexity": "O(N) per test case, overall O(T * N).",
+    "spaceComplexity": "O(1) auxiliary space.",
+    "code": {
+      "C": "#include <stdio.h>\n\nint main() {\n    int T; if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        int n; scanf(\"%d\", &n);\n        int maxProd, currMax, currMin, num;\n        if (n == 0) { printf(\"0\\n\"); continue; }\n        scanf(\"%d\", &num);\n        maxProd = currMax = currMin = num;\n        for (int i = 1; i < n; ++i) {\n            scanf(\"%d\", &num);\n            if (num < 0) {\n                int tmp = currMax; currMax = currMin; currMin = tmp;\n            }\n            if (currMax * num > num) currMax = currMax * num; else currMax = num;\n            if (currMin * num < num) currMin = currMin * num; else currMin = num;\n            if (currMax > maxProd) maxProd = currMax;\n        }\n        printf(\"%d\\n\", maxProd);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--) {\n        int n; cin>>n;\n        long long maxProd, currMax, currMin, num;\n        if(n==0){ cout<<0<<\"\\n\"; continue; }\n        cin>>num;\n        maxProd = currMax = currMin = num;\n        for(int i=1;i<n;++i){\n            cin>>num;\n            if(num<0) swap(currMax,currMin);\n            currMax = max(num, currMax*num);\n            currMin = min(num, currMin*num);\n            maxProd = max(maxProd, currMax);\n        }\n        cout<<maxProd<<\"\\n\";\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st = new StringTokenizer(br.readLine());\n        int T = Integer.parseInt(st.nextToken());\n        StringBuilder sb = new StringBuilder();\n        while (T-- > 0) {\n            int n = Integer.parseInt(br.readLine().trim());\n            st = new StringTokenizer(br.readLine());\n            long maxProd = 0, currMax = 0, currMin = 0;\n            if (n > 0) {\n                long num = Long.parseLong(st.nextToken());\n                maxProd = currMax = currMin = num;\n                for (int i = 1; i < n; i++) {\n                    num = Long.parseLong(st.nextToken());\n                    if (num < 0) {\n                        long tmp = currMax; currMax = currMin; currMin = tmp;\n                    }\n                    currMax = Math.max(num, currMax * num);\n                    currMin = Math.min(num, currMin * num);\n                    maxProd = Math.max(maxProd, currMax);\n                }\n            }\n            sb.append(maxProd).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef max_product_subarray(arr):\n    max_prod = curr_max = curr_min = arr[0]\n    for num in arr[1:]:\n        if num < 0:\n            curr_max, curr_min = curr_min, curr_max\n        curr_max = max(num, curr_max * num)\n        curr_min = min(num, curr_min * num)\n        max_prod = max(max_prod, curr_max)\n    return max_prod\n\ndef main():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        n = int(next(it))\n        arr = [int(next(it)) for _ in range(n)]\n        out_lines.append(str(max_product_subarray(arr)))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    main()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet outputs = [];\nfor (let t = 0; t < T; t++) {\n  const n = Number(input[idx++]);\n  let maxProd = 0, currMax = 0, currMin = 0;\n  if (n > 0) {\n    let num = Number(input[idx++]);\n    maxProd = currMax = currMin = num;\n    for (let i = 1; i < n; i++) {\n      num = Number(input[idx++]);\n      if (num < 0) {\n        const tmp = currMax; currMax = currMin; currMin = tmp;\n      }\n      currMax = Math.max(num, currMax * num);\n      currMin = Math.min(num, currMin * num);\n      if (currMax > maxProd) maxProd = currMax;\n    }\n  }\n  outputs.push(String(maxProd));\n}\nconsole.log(outputs.join('\\n'));"
+    }
+  }
+}

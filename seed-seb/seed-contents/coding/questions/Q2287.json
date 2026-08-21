@@ -1,0 +1,117 @@
+{
+  "questionId": "Q2287",
+  "title": "Squares Game",
+  "slug": "squares-game",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-03",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Graph",
+      "Game Theory",
+      "Math",
+      "Depth-First Search"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Game Theory"
+    ]
+  },
+  "content": {
+    "problemStatement": "Fat Tony and Fit Tony are playing the square painting game. There are n squares drawn on a plane. The sides of the squares are parallel to the axes. Squares don't intersect, but some of them can be inside others. In his turn a player can choose any square and paint it's internal area black. All squares inside the painted one are also painted black. The player can't paint the squares that were already painted. The loser is the player who can't make a turn. Determine the winner of the game if both players play optimally and Fat Tony's turn is the first. Also if Fat Tony can win the game determine which square he has to paint on his first turn in order to win. If there are many squares which guarantee victory to Fat Tony choose the one with the smallest number.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= n <= 50000",
+      "-10^8 <= x, y <= 10^8",
+      "1 <= a <= 10^8"
+    ],
+    "inputFormat": "The first line contains the number of test cases T. Each test case starts with a line containing the number of squares n. Then n lines follow, each containing three integers x, y, a - the coordinates of the lowest left corner of the square and the length of its sides.",
+    "outputFormat": "For each test case, print 'Fat x' where x is the number of the square that needs to be painted on the first turn in order to win, if Fat Tony wins. If Fit Tony wins, print 'Fit'.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n5\n0 0 10\n15 15 1\n1 1 3\n5 5 1\n14 14 3\n2\n1 1 1\n3 3 1",
+        "output": "Fat 2\nFit",
+        "explanation": ""
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a game theory approach. We can represent the squares as a graph where each square is a node, and two nodes are connected if one square is inside the other. We can then use a depth-first search to find the winner of the game. If Fat Tony can win, we need to find the square that he needs to paint on the first turn.",
+    "timeComplexity": "O(T * n^2) - where n is the number of squares in a test case. The reason is that in the worst case, we need to perform a depth-first search for each square.",
+    "spaceComplexity": "O(n) - where n is the number of squares in a test case. The reason is that we need to store the graph of squares.",
+    "code": {
+      "C": "// COMPLETE, COMPILABLE C code\n#include <stdio.h>\n#include <stdlib.h>\n\n// Structure to represent a square\ntypedef struct Square {\n    int x, y, a;\n    int id;\n} Square;\n\n// Function to compare two squares\nint compareSquares(const void *a, const void *b) {\n    Square *s1 = (Square *)a;\n    Square *s2 = (Square *)b;\n    if (s1->x != s2->x) return s1->x - s2->x;\n    if (s1->y != s2->y) return s1->y - s2->y;\n    return s1->a - s2->a;\n}\n\n// Function to check if a square is inside another square\nint isInside(Square *s1, Square *s2) {\n    return s1->x >= s2->x && s1->y >= s2->y && s1->x + s1->a <= s2->x + s2->a && s1->y + s1->a <= s2->y + s2->a;\n}\n\n// Function to find the winner of the game\nint findWinner(Square *squares, int n) {\n    // Create a graph where each square is a node, and two nodes are connected if one square is inside the other\n    int **graph = (int **)malloc(n * sizeof(int *));\n    for (int i = 0; i < n; i++) {\n        graph[i] = (int *)malloc(n * sizeof(int));\n        for (int j = 0; j < n; j++) {\n            graph[i][j] = 0;\n        }\n    }\n    for (int i = 0; i < n; i++) {\n        for (int j = 0; j < n; j++) {\n            if (i != j && isInside(&squares[i], &squares[j])) {\n                graph[i][j] = 1;\n            }\n        }\n    }\n\n    // Perform a depth-first search to find the winner of the game\n    int *visited = (int *)malloc(n * sizeof(int));\n    for (int i = 0; i < n; i++) {\n        visited[i] = 0;\n    }\n    int winner = -1;\n    for (int i = 0; i < n; i++) {\n        if (!visited[i]) {\n            int result = dfs(graph, visited, squares, i, n);\n            if (result == 1) {\n                winner = squares[i].id;\n                break;\n            }\n        }\n    }\n    free(visited);\n    for (int i = 0; i < n; i++) {\n        free(graph[i]);\n    }\n    free(graph);\n    return winner;\n}\n\n// Function to perform a depth-first search\nint dfs(int **graph, int *visited, Square *squares, int node, int n) {\n    visited[node] = 1;\n    int result = 0;\n    for (int i = 0; i < n; i++) {\n        if (graph[node][i] && !visited[i]) {\n            result = dfs(graph, visited, squares, i, n);\n            if (result == 0) {\n                return 1;\n            }\n        }\n    }\n    return result;\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    for (int t = 0; t < T; t++) {\n        int n;\n        scanf(\"%d\", &n);\n        Square *squares = (Square *)malloc(n * sizeof(Square));\n        for (int i = 0; i < n; i++) {\n            scanf(\"%d %d %d\", &squares[i].x, &squares[i].y, &squares[i].a);\n            squares[i].id = i + 1;\n        }\n        qsort(squares, n, sizeof(Square), compareSquares);\n        int winner = findWinner(squares, n);\n        if (winner != -1) {\n            printf(\"Fat %d\\n\", winner);\n        } else {\n            printf(\"Fit\\n\");\n        }\n        free(squares);\n    }\n    return 0;\n}",
+      "C++": "// COMPLETE, COMPILABLE C++ code\n#include <iostream>\n#include <vector>\n#include <algorithm>\nusing namespace std;\n\n// Structure to represent a square\nstruct Square {\n    int x, y, a;\n    int id;\n};\n\n// Function to compare two squares\nbool compareSquares(const Square &s1, const Square &s2) {\n    if (s1.x != s2.x) return s1.x < s2.x;\n    if (s1.y != s2.y) return s1.y < s2.y;\n    return s1.a < s2.a;\n}\n\n// Function to check if a square is inside another square\nbool isInside(const Square &s1, const Square &s2) {\n    return s1.x >= s2.x && s1.y >= s2.y && s1.x + s1.a <= s2.x + s2.a && s1.y + s1.a <= s2.y + s2.a;\n}\n\n// Function to find the winner of the game\nint findWinner(vector<Square> &squares) {\n    // Create a graph where each square is a node, and two nodes are connected if one square is inside the other\n    vector<vector<int>> graph(squares.size(), vector<int>(squares.size(), 0));\n    for (int i = 0; i < squares.size(); i++) {\n        for (int j = 0; j < squares.size(); j++) {\n            if (i != j && isInside(squares[i], squares[j])) {\n                graph[i][j] = 1;\n            }\n        }\n    }\n\n    // Perform a depth-first search to find the winner of the game\n    vector<int> visited(squares.size(), 0);\n    int winner = -1;\n    for (int i = 0; i < squares.size(); i++) {\n        if (!visited[i]) {\n            int result = dfs(graph, visited, squares, i);\n            if (result == 1) {\n                winner = squares[i].id;\n                break;\n            }\n        }\n    }\n    return winner;\n}\n\n// Function to perform a depth-first search\nint dfs(const vector<vector<int>> &graph, vector<int> &visited, const vector<Square> &squares, int node) {\n    visited[node] = 1;\n    int result = 0;\n    for (int i = 0; i < squares.size(); i++) {\n        if (graph[node][i] && !visited[i]) {\n            result = dfs(graph, visited, squares, i);\n            if (result == 0) {\n                return 1;\n            }\n        }\n    }\n    return result;\n}\n\nint main() {\n    int T;\n    cin >> T;\n    for (int t = 0; t < T; t++) {\n        int n;\n        cin >> n;\n        vector<Square> squares(n);\n        for (int i = 0; i < n; i++) {\n            cin >> squares[i].x >> squares[i].y >> squares[i].a;\n            squares[i].id = i + 1;\n        }\n        sort(squares.begin(), squares.end(), compareSquares);\n        int winner = findWinner(squares);\n        if (winner != -1) {\n            cout << \"Fat \" << winner << endl;\n        } else {\n            cout << \"Fit\" << endl;\n        }\n    }\n    return 0;\n}",
+      "Java": "// COMPLETE, COMPILABLE Java code\nimport java.util.Arrays;\nimport java.util.Scanner;\npublic class Main {\n    // Structure to represent a square\n    static class Square implements Comparable<Square> {\n        int x, y, a;\n        int id;\n        public Square(int x, int y, int a, int id) {\n            this.x = x;\n            this.y = y;\n            this.a = a;\n            this.id = id;\n        }\n        @Override\n        public int compareTo(Square o) {\n            if (x != o.x) return x - o.x;\n            if (y != o.y) return y - o.y;\n            return a - o.a;\n        }\n    }\n\n    // Function to check if a square is inside another square\n    public static boolean isInside(Square s1, Square s2) {\n        return s1.x >= s2.x && s1.y >= s2.y && s1.x + s1.a <= s2.x + s2.a && s1.y + s1.a <= s2.y + s2.a;\n    }\n\n    // Function to find the winner of the game\n    public static int findWinner(Square[] squares) {\n        // Create a graph where each square is a node, and two nodes are connected if one square is inside the other\n        int[][] graph = new int[squares.length][squares.length];\n        for (int i = 0; i < squares.length; i++) {\n            for (int j = 0; j < squares.length; j++) {\n                if (i != j && isInside(squares[i], squares[j])) {\n                    graph[i][j] = 1;\n                }\n            }\n        }\n\n        // Perform a depth-first search to find the winner of the game\n        int[] visited = new int[squares.length];\n        int winner = -1;\n        for (int i = 0; i < squares.length; i++) {\n            if (visited[i] == 0) {\n                int result = dfs(graph, visited, squares, i);\n                if (result == 1) {\n                    winner = squares[i].id;\n                    break;\n                }\n            }\n        }\n        return winner;\n    }\n\n    // Function to perform a depth-first search\n    public static int dfs(int[][] graph, int[] visited, Square[] squares, int node) {\n        visited[node] = 1;\n        int result = 0;\n        for (int i = 0; i < squares.length; i++) {\n            if (graph[node][i] == 1 && visited[i] == 0) {\n                result = dfs(graph, visited, squares, i);\n                if (result == 0) {\n                    return 1;\n                }\n            }\n        }\n        return result;\n    }\n\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int T = scanner.nextInt();\n        for (int t = 0; t < T; t++) {\n            int n = scanner.nextInt();\n            Square[] squares = new Square[n];\n            for (int i = 0; i < n; i++) {\n                int x = scanner.nextInt();\n                int y = scanner.nextInt();\n                int a = scanner.nextInt();\n                squares[i] = new Square(x, y, a, i + 1);\n            }\n            Arrays.sort(squares);\n            int winner = findWinner(squares);\n            if (winner != -1) {\n                System.out.println(\"Fat \" + winner);\n            } else {\n                System.out.println(\"Fit\");\n            }\n        }\n    }\n}",
+      "Python3": "# COMPLETE, RUNNABLE Python3 code\nimport sys\nfrom functools import cmp_to_key\n\n# Structure to represent a square\nclass Square:\n    def __init__(self, x, y, a, id):\n        self.x = x\n        self.y = y\n        self.a = a\n        self.id = id\n\n# Function to compare two squares\ndef compareSquares(s1, s2):\n    if s1.x != s2.x: return s1.x - s2.x\n    if s1.y != s2.y: return s1.y - s2.y\n    return s1.a - s2.a\n\n# Function to check if a square is inside another square\ndef isInside(s1, s2):\n    return s1.x >= s2.x and s1.y >= s2.y and s1.x + s1.a <= s2.x + s2.a and s1.y + s1.a <= s2.y + s2.a\n\n# Function to find the winner of the game\ndef findWinner(squares):\n    # Create a graph where each square is a node, and two nodes are connected if one square is inside the other\n    graph = [[0] * len(squares) for _ in range(len(squares))]\n    for i in range(len(squares)):\n        for j in range(len(squares)):\n            if i != j and isInside(squares[i], squares[j]):\n                graph[i][j] = 1\n\n    # Perform a depth-first search to find the winner of the game\n    visited = [0] * len(squares)\n    winner = -1\n    for i in range(len(squares)):\n        if visited[i] == 0:\n            result = dfs(graph, visited, squares, i)\n            if result == 1:\n                winner = squares[i].id\n                break\n    return winner\n\n# Function to perform a depth-first search\ndef dfs(graph, visited, squares, node):\n    visited[node] = 1\n    result = 0\n    for i in range(len(squares)):\n        if graph[node][i] == 1 and visited[i] == 0:\n            result = dfs(graph, visited, squares, i)\n            if result == 0:\n                return 1\n    return result\n\n# Read input\nT = int(input())\nfor t in range(T):\n    n = int(input())\n    squares = []\n    for i in range(n):\n        x, y, a = map(int, input().split())\n        squares.append(Square(x, y, a, i + 1))\n    squares.sort(key=cmp_to_key(compareSquares))\n    winner = findWinner(squares)\n    if winner != -1:\n        print(\"Fat\", winner)\n    else:\n        print(\"Fit\")",
+      "JavaScript": ""
+    }
+  }
+}

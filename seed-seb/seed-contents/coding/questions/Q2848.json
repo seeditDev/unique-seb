@@ -1,0 +1,129 @@
+{
+  "questionId": "Q2848",
+  "title": "Statements Checking",
+  "slug": "statements-checking",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Math",
+      "Number System",
+      "Base Conversion"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Ad-hoc & Implementation"
+    ]
+  },
+  "content": {
+    "problemStatement": "Run has given you a list of statements of the form \"A+B=C\", where A, B and C consist only of decimal digits and small latin letters from 'a' to 'f'. Moreover, the first symbol of **A**, **B**, **C** is always not a zero and the length of **A**, **B**, **C** is not greater than 8.  How many statements have an integer **Q** in the range [2; 16] such that **A**+**B** equals to **C** in the base **Q**?",
+    "constraints": [
+      "1 \u2264 T \u2264 100000",
+      "1 \u2264 |A|, |B|, |C| \u2264 8",
+      "Characters are only '0'-'9' and 'a'-'f'",
+      "The first character of each part is not '0'",
+      "2 \u2264 Q \u2264 16"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case contains a statement of the form A+B=C without spaces.",
+    "outputFormat": "For each test case, print 1 if there exists an integer base Q (2 \u2264 Q \u2264 16) such that the equality A+B=C holds when the three strings are interpreted as numbers in base Q, otherwise print 0.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n2+2=10\n1+2=a\n3+5=8",
+        "output": "2",
+        "explanation": "Statement 1 is true in base 4, statement 2 is false in every base 2..16, statement 3 is true in base 9. Hence two statements satisfy the condition."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n1+1=2",
+        "output": "1",
+        "explanation": "Statement 1 is true in base 2."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n1+1=3",
+        "output": "0",
+        "explanation": "Statement 1 is false in every base 2..16."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1+0=1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\nf+f=1e",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n1+1=2",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n1+1=10",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "5\n2+2=10\n1+2=a\n3+5=8\n1+1=2\n1+1=3",
+        "expectedOutput": "3",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The key insight is to find the maximum digit value in A, B, and C, and then start checking from the base that is one more than this maximum value. We convert each string to its decimal equivalent in the given base and check if the equality A+B=C holds. If it does, we print 1; otherwise, we continue checking in the next base until we reach base 16.",
+    "timeComplexity": "O(T * 15 * (|A| + |B| + |C|)) per test case, O(T * 15 * (|A| + |B| + |C|)) total.",
+    "spaceComplexity": "O(1) \u2014 the space used does not grow with the size of the input, as we only use a constant amount of space to store the maximum digit value, the current base, and the decimal equivalents of A, B, and C.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n#include <stdint.h>\n\nint charValue(char c){\n    if(c>='0' && c<='9') return c-'0';\n    return c-'a'+10;\n}\n\nuint64_t toVal(const char *s, int base){\n    uint64_t v=0;\n    for(; *s; ++s){\n        v = v*base + charValue(*s);\n    }\n    return v;\n}\n\nint main(){\n    int T; if(scanf(\"%d\",&T)!=1) return 0;\n    char line[30];\n    int answer=0;\n    for(int t=0;t<T;++t){\n        scanf(\"%s\",line);\n        char *p1=strchr(line,'+');\n        char *p2=strchr(line,'=');\n        *p1='\\0'; *p2='\\0';\n        char *A=line, *B=p1+1, *C=p2+1;\n        int maxd=0;\n        for(char *s=A;*s;++s) maxd = maxd>charValue(*s)?maxd:charValue(*s);\n        for(char *s=B;*s;++s) maxd = maxd>charValue(*s)?maxd:charValue(*s);\n        for(char *s=C;*s;++s) maxd = maxd>charValue(*s)?maxd:charValue(*s);\n        int minBase = maxd+1; if(minBase<2) minBase=2;\n        int ok=0;\n        for(int base=minBase; base<=16 && !ok; ++base){\n            uint64_t a=toVal(A,base), b=toVal(B,base), c=toVal(C,base);\n            if(a+b==c) ok=1;\n        }\n        answer+=ok;\n    }\n    printf(\"%d\\n\",answer);\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nint charVal(char c){\n    if(c>='0' && c<='9') return c-'0';\n    return c-'a'+10;\n}\n\nunsigned long long toVal(const string &s, int base){\n    unsigned long long v=0;\n    for(char c: s) v = v*base + charVal(c);\n    return v;\n}\n\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    string stmt; long long ans=0;\n    while(T--){\n        cin>>stmt;\n        size_t p1=stmt.find('+');\n        size_t p2=stmt.find('=');\n        string A=stmt.substr(0,p1);\n        string B=stmt.substr(p1+1,p2-p1-1);\n        string C=stmt.substr(p2+1);\n        int maxd=0;\n        for(char c: A) maxd=max(maxd, charVal(c));\n        for(char c: B) maxd=max(maxd, charVal(c));\n        for(char c: C) maxd=max(maxd, charVal(c));\n        int minBase=max(maxd+1,2);\n        bool ok=false;\n        for(int base=minBase; base<=16 && !ok; ++base){\n            unsigned long long a=toVal(A,base);\n            unsigned long long b=toVal(B,base);\n            unsigned long long c=toVal(C,base);\n            if(a+b==c) ok=true;\n        }\n        ans+=ok;\n    }\n    cout<<ans<<\"\\n\";\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    private static int charVal(char c){\n        if(c>='0' && c<='9') return c-'0';\n        return c-'a'+10;\n    }\n    private static long toVal(String s, int base){\n        long v=0;\n        for(int i=0;i<s.length();i++) v = v*base + charVal(s.charAt(i));\n        return v;\n    }\n    public static void main(String[] args) throws Exception{\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        int T = Integer.parseInt(br.readLine().trim());\n        long answer=0;\n        for(int t=0;t<T;t++){\n            String line = br.readLine().trim();\n            int p1 = line.indexOf('+');\n            int p2 = line.indexOf('=');\n            String A = line.substring(0,p1);\n            String B = line.substring(p1+1,p2);\n            String C = line.substring(p2+1);\n            int maxd=0;\n            for(char c: A.toCharArray()) maxd = Math.max(maxd, charVal(c));\n            for(char c: B.toCharArray()) maxd = Math.max(maxd, charVal(c));\n            for(char c: C.toCharArray()) maxd = Math.max(maxd, charVal(c));\n            int minBase = Math.max(maxd+1, 2);\n            boolean ok=false;\n            for(int base=minBase; base<=16 && !ok; base++){\n                long a = toVal(A, base);\n                long b = toVal(B, base);\n                long c = toVal(C, base);\n                if(a+b==c) ok=true;\n            }\n            if(ok) answer++;\n        }\n        System.out.println(answer);\n    }\n}",
+      "Python3": "import sys\n\ndef char_val(ch):\n    if '0' <= ch <= '9':\n        return ord(ch) - ord('0')\n    return ord(ch) - ord('a') + 10\n\ndef to_val(s, base):\n    v = 0\n    for ch in s:\n        v = v * base + char_val(ch)\n    return v\n\ndef solve():\n    data = sys.stdin.read().strip().splitlines()\n    if not data:\n        return\n    T = int(data[0])\n    ans = 0\n    for i in range(1, T+1):\n        stmt = data[i].strip()\n        p1 = stmt.find('+')\n        p2 = stmt.find('=')\n        A = stmt[:p1]\n        B = stmt[p1+1:p2]\n        C = stmt[p2+1:]\n        maxd = 0\n        for ch in A+B+C:\n            v = char_val(ch)\n            if v > maxd:\n                maxd = v\n        min_base = max(maxd + 1, 2)\n        ok = False\n        for base in range(min_base, 17):\n            if to_val(A, base) + to_val(B, base) == to_val(C, base):\n                ok = True\n                break\n        if ok:\n            ans += 1\n    print(ans)\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const lines = require('fs').readFileSync(0, 'utf-8').trim().split('\\n');\nlet i = 0;\nfunction charVal(ch) {\n  if (ch >= '0' && ch <= '9') return ch.charCodeAt(0) - 48;\n  return ch.charCodeAt(0) - 87; // 'a' -> 10\n}\nfunction toVal(str, base) {\n  let v = 0n;\n  for (let i = 0; i < str.length; i++) {\n    v = v * BigInt(base) + BigInt(charVal(str[i]));\n  }\n  return v;\n}\nlet T = parseInt(lines[i++], 10);\nlet answer = 0;\nfor (let t = 0; t < T; t++) {\n  const stmt = lines[i++].trim();\n  const p1 = stmt.indexOf('+');\n  const p2 = stmt.indexOf('=');\n  const A = stmt.slice(0, p1);\n  const B = stmt.slice(p1 + 1, p2);\n  const C = stmt.slice(p2 + 1);\n  let maxd = 0;\n  for (const ch of A + B + C) {\n    const v = charVal(ch);\n    if (v > maxd) maxd = v;\n  }\n  const minBase = Math.max(maxd + 1, 2);\n  let ok = false;\n  for (let base = minBase; base <= 16 && !ok; base++) {\n    if (toVal(A, base) + toVal(B, base) === toVal(C, base)) ok = true;\n  }\n  if (ok) answer++;\n}\nconsole.log(answer.toString());"
+    }
+  }
+}

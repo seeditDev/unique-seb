@@ -1,0 +1,129 @@
+{
+  "questionId": "Q8224",
+  "title": "Maximum Array Xor",
+  "slug": "maximum-array-xor",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Bit Manipulation | Greedy",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "XOR",
+      "Maximum Matching",
+      "Greedy Pairing",
+      "Math"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Bit Manipulation"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Value of an array AAA of length LLL is defined as the sum of (Ai⊕i)(A_i \\oplus i)(Ai​⊕i) for all 0≤i&lt;L0 \\leq i \\lt L0≤i&lt;L, where ⊕\\oplus⊕ denotes bitwise xor operation. **Note** that array indices start from zero.\n\nYou are given an integer NNN and an array AAA consisting of 2N2^N2N integers where Ai=iA_i = iAi​=i for all 0≤i&lt;2N0 \\leq i \\lt 2^N0≤i&lt;2N.\n\n**Example :**\n\n\nFor N=1N = 1N=1, you have an array AAA of length 21=22^1 = 221=2 and A=[0,1]A = [0, 1]A=[0,1].\nFor N=2N = 2N=2, you have an array AAA of length 22=42^2 = 422=4 and A=[0,1,2,3]A = [0, 1, 2, 3]A=[0,1,2,3].\nYou can do at most KKK operations on this array. In one operation, you can choose two indices iii and jjj (0≤i,j&lt;2N0 \\leq i, j \\lt 2^N0≤i,j&lt;2N) and swap AiA_iAi​ and AjA_jAj​ (i.e. AiA_iAi​ becomes AjA_jAj​ and vice versa).\n\nWhat is the maximum value of array AAA you can obtain after at most KKK operations?\n\n\nInput Format\n\nFirst line will contain TTT, number of testcases. Then the testcases follow.\nEach testcase contains a single line of input, two integers N,KN, KN,K.\n\n\nOutput Format\nFor each testcase, output in a single line the maximum value of array after doing at most KKK operations.",
+    "constraints": [
+      "1 <= T <= 10^5",
+      "1 <= N <= 30",
+      "0 <= K <= 10^9"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains two integers N and K separated by a space.",
+    "outputFormat": "For each test case output a single line containing the maximum possible value of the array after at most K swaps.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n2 0\n2 1\n10 100",
+        "output": "0\n6\n204600",
+        "explanation": "For N=2, M=4, M-1=3. With K=0 no swaps → 0. With K=1 we can swap a pair with xor 3, gain = 2*3=6. For N=10, M=1024, M-1=1023, K=100 gives 100*2*1023=204600."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n30 1000000000",
+        "expectedOutput": "1073741824",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case K exceeds possible pairs",
+        "input": "1\n5 100",
+        "expectedOutput": "9920",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n4 3",
+        "expectedOutput": "90",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n3 2",
+        "expectedOutput": "28",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Initially A[i] = i, so every term (A[i] xor i) is 0. Swapping positions i and j replaces the two zero contributions with (j xor i) + (i xor j) = 2 * (i xor j). To maximise the gain we want i xor j as large as possible. For numbers in [0, 2^N-1] the maximum xor is 2^N - 1, achieved by pairing each number with its bitwise complement (i ^ (2^N-1)). These pairs are disjoint and there are exactly 2^{N-1} of them. Therefore each useful swap can give a gain of 2 * (2^N - 1). With at most K swaps we can use at most min(K, 2^{N-1}) such optimal pairs. The answer is:\n    pairs = min(K, 2^{N-1})\n    result = pairs * 2 * (2^N - 1)\nAll calculations fit in 64‑bit signed integer.",
+    "timeComplexity": "O(T) – constant work per test case.",
+    "spaceComplexity": "O(1) besides input storage.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdint.h>\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    while(T--){\n        int N; long long K; scanf(\"%d %lld\", &N, &K);\n        long long M = 1LL << N; // 2^N\n        long long maxPairs = M >> 1; // 2^{N-1}\n        long long pairs = K < maxPairs ? K : maxPairs;\n        long long ans = pairs * 2LL * (M - 1);\n        printf(\"%lld\\n\", ans);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N; long long K; cin>>N>>K;\n        long long M = 1LL<<N; // 2^N\n        long long maxPairs = M>>1; // 2^{N-1}\n        long long pairs = min(K, maxPairs);\n        long long ans = pairs * 2LL * (M-1);\n        cout<<ans<<\"\\n\";\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder sb = new StringBuilder();\n        int T = Integer.parseInt(br.readLine().trim());\n        for(int t=0; t<T; t++){\n            StringTokenizer st = new StringTokenizer(br.readLine());\n            int N = Integer.parseInt(st.nextToken());\n            long K = Long.parseLong(st.nextToken());\n            long M = 1L << N; // 2^N\n            long maxPairs = M >> 1; // 2^{N-1}\n            long pairs = Math.min(K, maxPairs);\n            long ans = pairs * 2L * (M - 1);\n            sb.append(ans).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef main():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out = []\n    for _ in range(T):\n        N = int(next(it))\n        K = int(next(it))\n        M = 1 << N  # 2^N\n        max_pairs = M >> 1\n        pairs = K if K < max_pairs else max_pairs\n        ans = pairs * 2 * (M - 1)\n        out.append(str(ans))\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    main()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet results = [];\nfor(let t=0; t<T; t++){\n  const N = Number(input[idx++]);\n  const K = Number(input[idx++]);\n  const M = 1n << BigInt(N); // 2^N as BigInt\n  const maxPairs = M >> 1n; // 2^{N-1}\n  const pairs = K < Number(maxPairs) ? BigInt(K) : maxPairs;\n  const ans = pairs * 2n * (M - 1n);\n  results.push(ans.toString());\n}\nconsole.log(results.join('\\n'));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

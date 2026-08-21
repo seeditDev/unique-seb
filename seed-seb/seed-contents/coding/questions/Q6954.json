@@ -1,0 +1,130 @@
+{
+  "questionId": "Q6954",
+  "title": "Hamel Paths",
+  "slug": "hamel-paths",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Eulerian Path",
+      "Graph Traversal"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Graphs"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chefsberg consists of NNN islands numbered 111 through NNN connected by MMM bridges numbered 111 through MMM (in the order in which they are given in the input). Chefsberg was designed by the best coders of the world, and they decided to create the bridges in a way that makes Chefsberg extremely connected. In particular, it is always necessary to remove more than 333 bridges to disconnect Chefsberg.\n\nIn his free time, Suzumo keeps trying to find a way to visit all islands without crossing the same bridge twice (crossing it once in each direction is also forbidden).\n\nHelp Suzumo find a valid route. Remember that we are not in Königsberg, but in Chefsberg, so we don't want to cross each bridge, but visit each island. Also, we are not helping Hamilton, but Suzumo, so it is allowed to visit the same island multiple times.\n\nIt is guaranteed that under the given constraints, at least one valid route exists.",
+    "constraints": [
+      "2 ≤ T ≤ 64",
+      "2 ≤ N ≤ 64",
+      "1 ≤ M ≤ (64 choose 2)",
+      "1 ≤ u, v ≤ N",
+      "There can be multiple bridges between the same pair of islands",
+      "There is no bridge connecting an island to itself"
+    ],
+    "inputFormat": "The first line of the input contains a single integer T denoting the number of test cases. The first line of each test case contains two space-separated integers N and M denoting the number of islands and the number of bridges. Each of the following M lines contains two space-separated integers u and v representing a bidirectional bridge between islands u and v.",
+    "outputFormat": "For each test case, print a single line. This line should start with an integer s denoting the number of bridges in your chosen route, followed by s space-separated integers — the indices of the bridges in the order in which they should be crossed.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n8 16\n1 2\n1 5\n1 4\n1 4\n2 3\n2 3\n2 6\n3 7\n3 4\n4 8\n5 6\n5 6\n5 8\n6 7\n7 8\n7 8",
+        "output": "9 2 11 12 13 15 16 10 9 5",
+        "explanation": "The structure of Chefsberg is described in the picture above. The bridges used by the route are highlighted in yellow."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n2 1\n1 2",
+        "expectedOutput": "1 1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n64 2016\n1 2\n1 3\n1 4\n...\n64 63",
+        "expectedOutput": "2015 ... 2016",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n3 3\n1 2\n2 3\n3 1",
+        "expectedOutput": "3 1 2",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n5 7\n1 2\n1 3\n1 4\n2 5\n3 5\n4 5",
+        "expectedOutput": "6 1 2 3 4 5 6",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n6 10\n1 2\n1 3\n1 4\n2 5\n3 5\n4 5\n5 6",
+        "expectedOutput": "9 1 2 3 4 5 6 7 8 9",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use the concept of Eulerian paths. An Eulerian path is a path that visits every edge in a graph exactly once. Since the graph is extremely connected, we can find an Eulerian path by first finding an Eulerian circuit and then removing one edge from the circuit to get the path. We can use Hierholzer's algorithm to find the Eulerian circuit.",
+    "timeComplexity": "O(T * (M + N)) — where T is the number of test cases, M is the number of bridges, and N is the number of islands. The time complexity is dominated by the time it takes to find the Eulerian circuit for each test case.",
+    "spaceComplexity": "O(M + N) — where M is the number of bridges and N is the number of islands. The space complexity is dominated by the space needed to store the graph and the Eulerian circuit.",
+    "code": {
+      "C": "// COMPLETE, COMPILABLE C code\n// Uses correct I/O\n// Handles all T test cases\n#include <stdio.h>\n#include <stdlib.h>\n#define MAX_N 64\n#define MAX_M 2016\n\n// Function to find an Eulerian path in a graph\nvoid findEulerianPath(int **graph, int *degree, int N, int M) {\n    int *path = (int *)malloc(M * sizeof(int));\n    int pathLen = 0;\n    int *stack = (int *)malloc(N * sizeof(int));\n    int stackLen = 0;\n    int v = 0;\n    while (1) {\n        while (degree[v] > 0) {\n            stack[stackLen++] = v;\n            int u = -1;\n            for (int i = 0; i < N; i++) {\n                if (graph[v][i] > 0) {\n                    u = i;\n                    break;\n                }\n            }\n            degree[v]--;\n            degree[u]--;\n            graph[v][u]--;\n            graph[u][v]--;\n            v = u;\n        }\n        if (stackLen == 0) break;\n        path[pathLen++] = v;\n        v = stack[--stackLen];\n    }\n    printf(\"%d\", pathLen);\n    for (int i = 0; i < pathLen; i++) {\n        printf(\" %d\", path[i] + 1);\n    }\n    printf(\"\\n\");\n    free(path);\n    free(stack);\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int N, M;\n        scanf(\"%d %d\", &N, &M);\n        int **graph = (int **)malloc(N * sizeof(int *));\n        for (int i = 0; i < N; i++) {\n            graph[i] = (int *)malloc(N * sizeof(int));\n            for (int j = 0; j < N; j++) {\n                graph[i][j] = 0;\n            }\n        }\n        int *degree = (int *)malloc(N * sizeof(int));\n        for (int i = 0; i < N; i++) {\n            degree[i] = 0;\n        }\n        for (int i = 0; i < M; i++) {\n            int u, v;\n            scanf(\"%d %d\", &u, &v);\n            u--;\n            v--;\n            graph[u][v]++;\n            graph[v][u]++;\n            degree[u]++;\n            degree[v]++;\n        }\n        findEulerianPath(graph, degree, N, M);\n        for (int i = 0; i < N; i++) {\n            free(graph[i]);\n        }\n        free(graph);\n        free(degree);\n    }\n    return 0;\n}",
+      "C++": "// COMPLETE, COMPILABLE C++ code\n// Uses correct I/O\n// Handles all T test cases\n#include <iostream>\n#include <vector>\nusing namespace std;\n#define MAX_N 64\n#define MAX_M 2016\n\n// Function to find an Eulerian path in a graph\nvoid findEulerianPath(vector<vector<int>> &graph, vector<int> &degree, int N, int M) {\n    vector<int> path;\n    int v = 0;\n    while (1) {\n        while (degree[v] > 0) {\n            int u = -1;\n            for (int i = 0; i < N; i++) {\n                if (graph[v][i] > 0) {\n                    u = i;\n                    break;\n                }\n            }\n            degree[v]--;\n            degree[u]--;\n            graph[v][u]--;\n            graph[u][v]--;\n            v = u;\n        }\n        if (path.size() == 0) break;\n        path.push_back(v);\n        v = path.back();\n        path.pop_back();\n    }\n    cout << path.size();\n    for (int i = 0; i < path.size(); i++) {\n        cout << \" \" << path[i] + 1;\n    }\n    cout << endl;\n}\n\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        int N, M;\n        cin >> N >> M;\n        vector<vector<int>> graph(N, vector<int>(N, 0));\n        vector<int> degree(N, 0);\n        for (int i = 0; i < M; i++) {\n            int u, v;\n            cin >> u >> v;\n            u--;\n            v--;\n            graph[u][v]++;\n            graph[v][u]++;\n            degree[u]++;\n            degree[v]++;\n        }\n        findEulerianPath(graph, degree, N, M);\n    }\n    return 0;\n}",
+      "Java": "// COMPLETE, COMPILABLE Java code\n// Class MUST be named Main\n// Uses correct I/O\n// Handles all T test cases\nimport java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int T = scanner.nextInt();\n        while (T-- > 0) {\n            int N = scanner.nextInt();\n            int M = scanner.nextInt();\n            int[][] graph = new int[N][N];\n            int[] degree = new int[N];\n            for (int i = 0; i < M; i++) {\n                int u = scanner.nextInt() - 1;\n                int v = scanner.nextInt() - 1;\n                graph[u][v]++;\n                graph[v][u]++;\n                degree[u]++;\n                degree[v]++;\n            }\n            findEulerianPath(graph, degree, N, M);\n        }\n    }\n\n    public static void findEulerianPath(int[][] graph, int[] degree, int N, int M) {\n        int[] path = new int[M];\n        int pathLen = 0;\n        int[] stack = new int[N];\n        int stackLen = 0;\n        int v = 0;\n        while (true) {\n            while (degree[v] > 0) {\n                stack[stackLen++] = v;\n                int u = -1;\n                for (int i = 0; i < N; i++) {\n                    if (graph[v][i] > 0) {\n                        u = i;\n                        break;\n                    }\n                }\n                degree[v]--;\n                degree[u]--;\n                graph[v][u]--;\n                graph[u][v]--;\n                v = u;\n            }\n            if (stackLen == 0) break;\n            path[pathLen++] = v;\n            v = stack[--stackLen];\n        }\n        System.out.print(pathLen);\n        for (int i = 0; i < pathLen; i++) {\n            System.out.print(\" \" + (path[i] + 1));\n        }\n        System.out.println();\n    }\n}",
+      "Python3": "# COMPLETE, RUNNABLE Python3 code\n# Uses input() or sys.stdin\n# Handles all T test cases\nimport sys\ninput = sys.stdin.readline\n\ndef findEulerianPath(graph, degree, N, M):\n    path = []\n    v = 0\n    while True:\n        while degree[v] > 0:\n            u = -1\n            for i in range(N):\n                if graph[v][i] > 0:\n                    u = i\n                    break\n            degree[v] -= 1\n            degree[u] -= 1\n            graph[v][u] -= 1\n            graph[u][v] -= 1\n            v = u\n        if not path:\n            break\n        path.append(v)\n        v = path.pop()\n    print(len(path), end=' ')\n    for i in range(len(path)):\n        print(path[i] + 1, end=' ')\n    print()\n\nT = int(input())\nfor _ in range(T):\n    N, M = map(int, input().split())\n    graph = [[0] * N for _ in range(N)]\n    degree = [0] * N\n    for _ in range(M):\n        u, v = map(int, input().split())\n        u -= 1\n        v -= 1\n        graph[u][v] += 1\n        graph[v][u] += 1\n        degree[u] += 1\n        degree[v] += 1\n    findEulerianPath(graph, degree, N, M)",
+      "JavaScript": "// COMPLETE, RUNNABLE JavaScript code\n// Uses fs.readFileSync(0,'utf-8') — NEVER readline()\n// Handles all T test cases\nconst fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\n\nfunction findEulerianPath(graph, degree, N, M) {\n    let path = [];\n    let v = 0;\n    while (true) {\n        while (degree[v] > 0) {\n            let u = -1;\n            for (let i = 0; i < N; i++) {\n                if (graph[v][i] > 0) {\n                    u = i;\n                    break;\n                }\n            }\n            degree[v]--;\n            degree[u]--;\n            graph[v][u]--;\n            graph[u][v]--;\n            v = u;\n        }\n        if (path.length === 0) break;\n        path.push(v);\n        v = path.pop();\n    }\n    console.log(path.length + ' ' + path.map(x => x + 1).join(' '));\n}\n\nlet T = parseInt(input[idx++]);\nwhile (T--) {\n    let [N, M] = input[idx++].split(' ').map(x => parseInt(x));\n    let graph = Array(N).fill(0).map(() => Array(N).fill(0));\n    let degree = Array(N).fill(0);\n    for (let i = 0; i < M; i++) {\n        let [u, v] = input[idx++].split(' ').map(x => parseInt(x));\n        u--;\n        v--;\n        graph[u][v]++;\n        graph[v][u]++;\n        degree[u]++;\n        degree[v]++;\n    }\n    findEulerianPath(graph, degree, N, M);\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

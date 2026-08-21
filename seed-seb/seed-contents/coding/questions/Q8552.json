@@ -1,0 +1,130 @@
+{
+  "questionId": "Q8552",
+  "title": "Prime in a binary string",
+  "slug": "prime-in-a-binary-string",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings | Number Theory | Bit Manipulation",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Prime Numbers",
+      "Binary Representation",
+      "Sliding Window",
+      "Sieve of Eratosthenes",
+      "Precomputation"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Mathematics"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given a binary string SSS of length NNN. Your task is to check if there exists a substring of SSS which is the binary representation of a prime number.\n\nFormally, check if there exist integers LLL and RRR such that 1≤L≤R≤N1 \\leq L \\leq R \\leq N1≤L≤R≤N, and the substring SLSL+1SL+2…SRS_L S_{L+1} S_{L+2} \\ldots S_RSL​SL+1​SL+2​…SR​, when treated as a binary integer, is prime.\n\nPrint `\"Yes\"` if such a substring exists, and `\"No\"` if it doesn't.\n\n\nInput Format\n\nThe first line of input contains a single integer TTT, denoting the number of test cases. The description of TTT test cases follows.\nEach testcase consists of a single line of input, containing a binary string SSS.\n\n\nOutput Format\nFor each test case, output a single line containing one string — `\"Yes\"` or `\"No\"`, the answer to the problem.\n\n\nYou may print each character of the answer in uppercase or lowercase (for example, the strings \"yEs\", \"yes\", \"Yes\" and \"YES\" will all be treated as identical).",
+    "constraints": [
+      "1 ≤ T ≤ 2.5·10^4",
+      "1 ≤ |S| ≤ 10^5",
+      "Sum of |S| over all test cases ≤ 3·10^5"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Then T lines follow, each containing a binary string S (consisting only of characters '0' and '1').",
+    "outputFormat": "For each test case output a single line containing \"Yes\" if there exists a substring of S whose binary value is a prime number, otherwise output \"No\".",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\\n1\\n111\\n101101",
+        "output": "No\\nYes\\nYes",
+        "explanation": "Test case 1: only substring \"1\" → value 1 (not prime) → No.\\nTest case 2: substring \"11\" → value 3 (prime) → Yes.\\nTest case 3: substring \"1101\" → value 13 (prime) → Yes."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\\n0",
+        "expectedOutput": "No",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary (100 ones)",
+        "input": "1\\n1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111",
+        "expectedOutput": "Yes",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case with prime 2",
+        "input": "1\\n10",
+        "expectedOutput": "Yes",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\\n00101",
+        "expectedOutput": "Yes",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2 (no ones)",
+        "input": "1\\n0000",
+        "expectedOutput": "No",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "A prime larger than 2 is odd, therefore any prime binary representation must end with '1'. The value of a binary substring grows exponentially with its length, but we only need to examine substrings up to 20 bits because 2^20 = 1,048,576 and we can pre‑compute primality for all numbers in [0, 2^20). For each position i where S[i] = '1' we build the integer value of the substring S[i..j] incrementally for j = i … min(i+19, n‑1). If any of these values is prime we answer \"Yes\"; otherwise after scanning the whole string we answer \"No\". The primality table is built once with a linear sieve up to 2^20‑1.",
+    "timeComplexity": "O(total length × 20) ≈ O(6·10^6) for the whole input. Pre‑computation of the sieve is O(2^20 log log 2^20).",
+    "spaceComplexity": "O(2^20) ≈ 1 MiB for the prime table plus O(1) extra per test case.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n#include <stdbool.h>\n#define MAXV (1<<20)\nstatic bool isPrime[MAXV];\nvoid sieve(){\n    for(int i=2;i<MAXV;i++) isPrime[i]=true;\n    for(int p=2;p*p<MAXV;p++) if(isPrime[p])\n        for(int q=p*p;q<MAXV;q+=p) isPrime[q]=false;\n}\nint main(){\n    sieve();\n    int T; if(scanf(\"%d\",&T)!=1) return 0;\n    char s[100005];\n    while(T--){\n        scanf(\"%s\",s);\n        int n=strlen(s);\n        int ans=0;\n        for(int i=0;i<n && !ans;i++) if(s[i]=='1'){\n            int val=0;\n            for(int len=1;len<=20 && i+len<=n;len++){\n                val = (val<<1) + (s[i+len-1]-'0');\n                if(isPrime[val]){ ans=1; break; }\n            }\n        }\n        puts(ans?\"Yes\":\"No\");\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nconst int LIM = 1<<20;\nvector<bool> isPrime(LIM,false);\nvoid sieve(){\n    fill(isPrime.begin(), isPrime.end(), true);\n    isPrime[0]=isPrime[1]=false;\n    for(int p=2;p*p<LIM;++p) if(isPrime[p])\n        for(int q=p*p;q<LIM;q+=p) isPrime[q]=false;\n}\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    sieve();\n    int T; if(!(cin>>T)) return 0;\n    string s;\n    while(T--){\n        cin>>s;\n        int n=s.size();\n        bool ok=false;\n        for(int i=0;i<n && !ok;++i) if(s[i]=='1'){\n            int val=0;\n            for(int len=1;len<=20 && i+len<=n;++len){\n                val = (val<<1) + (s[i+len-1]-'0');\n                if(isPrime[val]){ ok=true; break; }\n            }\n        }\n        cout<<(ok?\"Yes\":\"No\")<<'\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    static final int LIM = 1<<20;\n    static boolean[] isPrime = new boolean[LIM];\n    static void sieve(){\n        Arrays.fill(isPrime, true);\n        isPrime[0]=isPrime[1]=false;\n        for(int p=2;p*p<LIM;++p) if(isPrime[p])\n            for(int q=p*p;q<LIM;q+=p) isPrime[q]=false;\n    }\n    public static void main(String[] args) throws Exception{\n        FastScanner fs = new FastScanner(System.in);\n        sieve();\n        int T = fs.nextInt();\n        StringBuilder out = new StringBuilder();\n        while(T-- > 0){\n            String s = fs.next();\n            int n = s.length();\n            boolean ok = false;\n            for(int i=0;i<n && !ok;i++) if(s.charAt(i)=='1'){\n                int val = 0;\n                for(int len=1; len<=20 && i+len<=n; ++len){\n                    val = (val<<1) + (s.charAt(i+len-1)-'0');\n                    if(isPrime[val]){ ok = true; break; }\n                }\n            }\n            out.append(ok?\"Yes\":\"No\").append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n    // fast scanner\n    static class FastScanner {\n        private final BufferedInputStream in;\n        private final byte[] buffer = new byte[1<<16];\n        private int ptr = 0, len = 0;\n        FastScanner(InputStream is){ in = new BufferedInputStream(is); }\n        private int readByte(){\n            if(ptr>=len){\n                try{ len = in.read(buffer); ptr = 0; }catch(IOException e){ return -1; }\n                if(len<=0) return -1;\n            }\n            return buffer[ptr++];\n        }\n        String next(){\n            StringBuilder sb = new StringBuilder();\n            int c;\n            while((c=readByte())!=-1 && c<=32);\n            while(c!=-1 && c>32){ sb.append((char)c); c=readByte(); }\n            return sb.toString();\n        }\n        int nextInt(){ return Integer.parseInt(next()); }\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys\nMAXV = 1<<20\nis_prime = [True]*MAXV\nis_prime[0]=is_prime[1]=False\nfor p in range(2,int(MAXV**0.5)+1):\n    if is_prime[p]:\n        step = p\n        start = p*p\n        for q in range(start, MAXV, step):\n            is_prime[q]=False\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data: return\n    t = int(data[0])\n    out = []\n    idx = 1\n    for _ in range(t):\n        s = data[idx]; idx+=1\n        n = len(s)\n        ok = False\n        for i,ch in enumerate(s):\n            if ch!='1':\n                continue\n            val = 0\n            for l in range(1,21):\n                if i+l>n: break\n                val = (val<<1) + (ord(s[i+l-1]) - 48)\n                if is_prime[val]:\n                    ok = True\n                    break\n            if ok:\n                break\n        out.append('Yes' if ok else 'No')\n    sys.stdout.write('\\n'.join(out))\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0,'utf-8').trim().split(/\\s+/);\nlet pos = 0;\nconst T = Number(input[pos++]);\nconst LIM = 1<<20;\nconst isPrime = new Uint8Array(LIM);\nfor(let i=2;i<LIM;i++) isPrime[i]=1;\nfor(let p=2;p*p<LIM;p++) if(isPrime[p]){\n    for(let q=p*p;q<LIM;q+=p) isPrime[q]=0;\n}\nlet out = [];\nfor(let tc=0; tc<T; tc++){\n    const s = input[pos++];\n    const n = s.length;\n    let ok = false;\n    for(let i=0;i<n && !ok;i++) if(s[i]==='1'){\n        let val = 0;\n        for(let len=1; len<=20 && i+len<=n; len++){\n            val = (val<<1) + (s.charCodeAt(i+len-1)-48);\n            if(isPrime[val]){ ok = true; break; }\n        }\n    }\n    out.push(ok?\"Yes\":\"No\");\n}\nconsole.log(out.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

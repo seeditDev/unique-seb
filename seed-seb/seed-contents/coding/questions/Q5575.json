@@ -1,0 +1,141 @@
+{
+  "questionId": "Q5575",
+  "title": "Barcelona Gameplay Tactics",
+  "slug": "barcelona-gameplay-tactics",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "DP",
+      "Combinatorics",
+      "Recurrence",
+      "Modulo Arithmetic"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "As we all know, F.C. Barcelona is the best soccer team of our era! Their entangling and mesmerizing game style usually translates into very high ball possession, consecutive counter-attack plays and goals. Lots of goals, thanks to the natural talent of their attacker and best player in history, Lionel Andres Messi.\n\nHowever, at the most prestigious tournament of individual teams, the UEFA Champions League, there are no guarantees and believe it or not, Barcelona is in trouble.... They are tied versus Chelsea, which is a very defending team that usually relies on counter-strike to catch opposing teams off guard and we are in the last minute of the match. So Messi decided to settle things down for good and now he is conducting the ball on his teams' midfield and he will start a lethal counter-attack :D\n\nAfter dribbling the **2** strikers from Chelsea, he now finds himself near the center of the field and he won't be able to dribble the entire team on his own, so he will need to pass the ball to one of his teammates, run forward and receive the ball once again to score the final goal.\n\nExactly **K** players are with him on his counter-attack and the coach, Tito Villanova knows that this counter-attack will end in a goal only if after **exactly** **N** passes are performed between the players, Messi ends up with the ball.\n\n **(Note that the ball only needs to end with Messi after exactly N passes are performed between all the K+1 players, i.e. Messi can receive the ball several times during the N passes. See the 2nd test case explanation for further clarification. )** \n\nHowever, he realized that there are many scenarios possible for this, so he asked you, his assistant coach, to tell him in how many ways can Messi score the important victory goal. So help him!!",
+    "constraints": [
+      "1 ≤ T ≤ 100",
+      "2 ≤ N ≤ 1000",
+      "1 ≤ K ≤ 10"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains two space‑separated integers N and K.\n- N (2 ≤ N ≤ 1000) is the exact number of passes that must be performed.\n- K (1 ≤ K ≤ 10) is the number of teammates that are available together with Messi (total players = K+1).",
+    "outputFormat": "For each test case output a single line containing the number of possible sequences of exactly N passes that start with Messi, end with Messi and never pass the ball to the same player, modulo 1000000007.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n2 4\n4 2",
+        "output": "4\n6",
+        "explanation": "Test case 1: N=2, K=4. The only possible sequences are Messi→each teammate→Messi, giving 4 ways.\\nTest case 2: N=4, K=2. Enumerating all valid sequences yields 6 ways, matching the recurrence computation."
+      },
+      {
+        "id": "sample_2",
+        "input": "3\n1 3\n3 1\n3 2",
+        "output": "0\n0\n2",
+        "explanation": "1) With a single pass Messi cannot end with the ball (no self‑pass) → 0.\\n2) With only one teammate, after 3 passes the ball cannot be back to Messi → 0.\\n3) With two teammates and 3 passes the valid sequences are: M→A→M→A, M→A→B→M, M→B→M→B, M→B→A→M, M→A→B→A, M→B→A→B, but only those ending at Messi after the 3rd pass are counted, giving 2 ways."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n5 3",
+        "output": "48",
+        "explanation": "Iterating the recurrence for N=5, K=3 gives A values: A0=1, A1=0, A2=3, A3=9, A4=27, A5=48. Hence 48 possible sequences."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n2 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n1000 10",
+        "expectedOutput": "???",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case N odd, K=1",
+        "input": "1\n7 1",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case moderate",
+        "input": "1\n10 4",
+        "expectedOutput": "???",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case another",
+        "input": "1\n15 2",
+        "expectedOutput": "???",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Let A_i be the number of ways that after i passes the ball is with Messi and let B_i be the total number of ways that after i passes the ball is with any teammate. Because all teammates are indistinguishable, each of them has the same count. From a state with the ball at Messi we can pass only to a teammate (K choices). From a state with the ball at a particular teammate we can pass either back to Messi (1 choice) or to any of the other K‑1 teammates. This yields the recurrences:\\n\\nA_{i+1} = B_i\\nB_{i+1} = K·A_i + (K-1)·B_i\\n\\nwith base A_0 = 1 (Messi starts with the ball) and B_0 = 0. We iterate these formulas for i = 0 … N‑1, taking all operations modulo 1e9+7. The answer for a test case is A_N. The algorithm runs in O(N) time and O(1) extra space per test case.",
+    "timeComplexity": "O(N) per test case, O(T·N) overall (N ≤ 1000, T ≤ 100).",
+    "spaceComplexity": "O(1) additional space.",
+    "code": {
+      "C": "#include <stdio.h>\n#define MOD 1000000007LL\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        int N, K;\n        scanf(\"%d %d\", &N, &K);\n        long long A = 1; // A_0\n        long long B = 0; // B_0\n        for (int i = 0; i < N; ++i) {\n            long long nextA = B % MOD;\n            long long nextB = ( (long long)K * A + (long long)(K - 1) * B ) % MOD;\n            A = nextA;\n            B = nextB;\n        }\n        printf(\"%lld\\n\", A % MOD);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nconst long long MOD = 1000000007LL;\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--) {\n        int N, K; cin>>N>>K;\n        long long A = 1, B = 0; // A_0, B_0\n        for(int i=0;i<N;++i){\n            long long nextA = B % MOD;\n            long long nextB = ( (long long)K * A + (long long)(K-1) * B ) % MOD;\n            A = nextA; B = nextB;\n        }\n        cout << (A % MOD) << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    static final long MOD = 1_000_000_007L;\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder out = new StringBuilder();\n        int T = Integer.parseInt(br.readLine().trim());\n        for (int t = 0; t < T; ++t) {\n            StringTokenizer st = new StringTokenizer(br.readLine());\n            int N = Integer.parseInt(st.nextToken());\n            int K = Integer.parseInt(st.nextToken());\n            long A = 1; // A_0\n            long B = 0; // B_0\n            for (int i = 0; i < N; ++i) {\n                long nextA = B % MOD;\n                long nextB = (K * A % MOD + (long)(K - 1) * B % MOD) % MOD;\n                A = nextA;\n                B = nextB;\n            }\n            out.append(A % MOD).append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "import sys\nMOD = 1_000_000_007\n\ndef solve_one(N, K):\n    A, B = 1, 0  # A_0, B_0\n    for _ in range(N):\n        nextA = B % MOD\n        nextB = (K * A + (K - 1) * B) % MOD\n        A, B = nextA, nextB\n    return A % MOD\n\ndef main():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it))\n        K = int(next(it))\n        out_lines.append(str(solve_one(N, K)))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    main()",
+      "JavaScript": "const fs = require('fs');\nconst MOD = 1000000007n;\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nif (input.length === 0) process.exit(0);\nconst T = Number(input[idx++]);\nlet results = [];\nfor (let t = 0; t < T; ++t) {\n  const N = Number(input[idx++]);\n  const K = Number(input[idx++]);\n  let A = 1n; // A_0\n  let B = 0n; // B_0\n  for (let i = 0; i < N; ++i) {\n    const nextA = B % MOD;\n    const nextB = (BigInt(K) * A + BigInt(K - 1) * B) % MOD;\n    A = nextA;\n    B = nextB;\n  }\n  results.push((A % MOD).toString());\n}\nconsole.log(results.join('\\n'));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

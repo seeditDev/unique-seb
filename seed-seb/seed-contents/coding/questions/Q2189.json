@@ -1,0 +1,118 @@
+{
+  "questionId": "Q2189",
+  "title": "Kayaks",
+  "slug": "kayaks",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Greedy",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "two\u2011pointer",
+      "bottleneck optimization",
+      "pairing",
+      "ratio sorting",
+      "Greedy"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Greedy Algorithms"
+    ]
+  },
+  "content": {
+    "problemStatement": "Suppose we have an even number of people going on an excursion, and we would like to fit them into two-seated kayaks. All kayaks are identical, weighing 20kg each. Each person is described by two parameters, their strength and weight. The speed of a kayak can be calculated as the sum of strengths of both persons sitting in it, divided by the total weight of the loaded kayak (i.e., the weight of the kayak plus the weight of both persons). We would like to choose the allocation of people to kayaks so as to maximize the speed at which the whole whole group can travel, assuming that the group travels at the speed of the slowest kayak in it.",
+    "constraints": [
+      "1 <= T <= 10",
+      "2 <= n <= 100000, n is even",
+      "50 <= w <= 100",
+      "50 <= s <= 100"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, the first line contains an integer n (even), the number of people. Then n lines follow, each containing two integers w and s \u2013 the weight (kg) and strength of a person.",
+    "outputFormat": "For each test case output a single line with the maximum possible speed of the group, i.e. the largest value of the minimal kayak speed that can be achieved by an optimal pairing. Print the answer with exactly 6 digits after the decimal point.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n4\n50 50\n50 60\n70 100\n100 60\n2\n50 50\n50 60",
+        "output": "0.842105\n0.916667",
+        "explanation": "First test case: after sorting by s/w we get (70,100),(50,60),(50,50),(100,60). Pairing extremes gives speeds 0.842105 and 0.916667, the minimum is 0.842105. Second test case: only one pair, speed = (50+60)/(20+50+50)=110/120=0.916667."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For a kayak containing persons i and j the speed is (s_i+s_j)/(20+w_i+w_j). The group speed is the minimum speed among all kayaks, therefore we have a classic bottleneck assignment problem. The optimal strategy is to sort the people by the ratio s/w in descending order and pair the strongest\u2011per\u2011weight person with the weakest\u2011per\u2011weight person, the second strongest with the second weakest, and so on. This pairing maximises the minimal ratio because any other crossing would create a pair with a strictly smaller speed. After sorting we compute the speed of each pair, keep the smallest, and output it.\nThe algorithm per test case:\n1. Read all people.\n2. Sort them by s_i * w_j > s_j * w_i (i.e. descending s/w).\n3. For i from 0 to n/2\u20111 compute speed_i = (s_i + s_{n\u20111\u2011i}) / (20 + w_i + w_{n\u20111\u2011i}).\n4. Answer = min_i speed_i.\nComplexities: sorting O(n log n), the scan O(n). Memory O(n).",
+    "timeComplexity": "O(n log n) per test case",
+    "spaceComplexity": "O(n) per test case",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\ntypedef struct {int w; int s;} Person;\n\nint cmp(const void *a, const void *b) {\n    const Person *p1 = (const Person *)a;\n    const Person *p2 = (const Person *)b;\n    long long left = (long long)p1->s * p2->w;\n    long long right = (long long)p2->s * p1->w;\n    if (left > right) return -1; // descending s/w\n    if (left < right) return 1;\n    return 0;\n}\n\nint main() {\n    int T; if (scanf(\"%d\", &T)!=1) return 0;\n    while (T--) {\n        int n; scanf(\"%d\", &n);\n        Person *a = (Person*)malloc(n * sizeof(Person));\n        for (int i=0;i<n;i++) scanf(\"%d %d\", &a[i].w, &a[i].s);\n        qsort(a, n, sizeof(Person), cmp);\n        double minSpeed = 1e100;\n        for (int i=0;i<n/2;i++) {\n            int w1 = a[i].w, s1 = a[i].s;\n            int w2 = a[n-1-i].w, s2 = a[n-1-i].s;\n            double speed = (s1 + s2) / (20.0 + w1 + w2);\n            if (speed < minSpeed) minSpeed = speed;\n        }\n        printf(\"%.6f\\n\", minSpeed);\n        free(a);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nstruct Person{int w,s;};\nint main(){ios::sync_with_stdio(false);cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0; while(T--){int n;cin>>n;vector<Person> a(n);\n        for(int i=0;i<n;i++)cin>>a[i].w>>a[i].s;\n        sort(a.begin(), a.end(), [](const Person& p1, const Person& p2){\n            return (long long)p1.s * p2.w > (long long)p2.s * p1.w; // descending s/w\n        });\n        double minSpeed = 1e100;\n        for(int i=0;i<n/2;i++){\n            double speed = (a[i].s + a[n-1-i].s) / (20.0 + a[i].w + a[n-1-i].w);\n            minSpeed = min(minSpeed, speed);\n        }\n        cout.setf(ios::fixed);cout<<setprecision(6)<<minSpeed<<\"\\n\";\n    }\n    return 0;}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    static class Person {\n        int w, s;\n        Person(int w, int s){this.w=w;this.s=s;}\n    }\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st = new StringTokenizer(br.readLine());\n        int T = Integer.parseInt(st.nextToken());\n        StringBuilder out = new StringBuilder();\n        for (int tc = 0; tc < T; tc++) {\n            int n = Integer.parseInt(br.readLine().trim());\n            Person[] arr = new Person[n];\n            for (int i = 0; i < n; i++) {\n                st = new StringTokenizer(br.readLine());\n                int w = Integer.parseInt(st.nextToken());\n                int s = Integer.parseInt(st.nextToken());\n                arr[i] = new Person(w, s);\n            }\n            Arrays.sort(arr, (p1, p2) -> Long.compare((long)p2.s * p1.w, (long)p1.s * p2.w)); // descending s/w\n            double minSpeed = Double.MAX_VALUE;\n            for (int i = 0; i < n/2; i++) {\n                double speed = (arr[i].s + arr[n-1-i].s) / (20.0 + arr[i].w + arr[n-1-i].w);\n                if (speed < minSpeed) minSpeed = speed;\n            }\n            out.append(String.format(Locale.US, \"%.6f\\n\", minSpeed));\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        n = int(next(it))\n        people = []\n        for _ in range(n):\n            w = int(next(it)); s = int(next(it))\n            people.append((w, s))\n        # sort by descending s/w using cross multiplication\n        people.sort(key=lambda x: -x[1]/x[0])  # safe because values are small\n        min_speed = float('inf')\n        for i in range(n//2):\n            w1, s1 = people[i]\n            w2, s2 = people[n-1-i]\n            speed = (s1 + s2) / (20.0 + w1 + w2)\n            if speed < min_speed:\n                min_speed = speed\n        out_lines.append(f\"{min_speed:.6f}\")\n    sys.stdout.write(\"\\n\".join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()",
+      "JavaScript": "const fs = require('fs');\nconst data = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nif (data.length === 0) process.exit(0);\nconst T = Number(data[idx++]);\nlet outputs = [];\nfor (let tc = 0; tc < T; tc++) {\n  const n = Number(data[idx++]);\n  let people = new Array(n);\n  for (let i = 0; i < n; i++) {\n    const w = Number(data[idx++]);\n    const s = Number(data[idx++]);\n    people[i] = [w, s];\n  }\n  // sort by descending s/w using cross multiplication to avoid floating errors\n  people.sort((a, b) => b[1] * a[0] - a[1] * b[0]);\n  let minSpeed = Infinity;\n  for (let i = 0; i < n / 2; i++) {\n    const w1 = people[i][0], s1 = people[i][1];\n    const w2 = people[n - 1 - i][0], s2 = people[n - 1 - i][1];\n    const speed = (s1 + s2) / (20 + w1 + w2);\n    if (speed < minSpeed) minSpeed = speed;\n  }\n  outputs.push(minSpeed.toFixed(6));\n}\nconsole.log(outputs.join('\\n'));"
+    }
+  }
+}

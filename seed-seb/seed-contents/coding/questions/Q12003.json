@@ -1,0 +1,119 @@
+{
+  "questionId": "Q12003",
+  "title": "0 and 1 Knapsack",
+  "slug": "0and1knapsack",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "0/1 Knapsack",
+      "Memoization"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "A thief wants to rob a store. He is carrying a bag of capacity W. The store has ‘n’ items. Its weight is given by the\n    ‘wt’ array and its value by the ‘val’ array. He can either include an item in its knapsack or exclude it but can’t\n    partially have it as a fraction. We need to find the maximum value of items that the thief can steal.",
+    "constraints": [
+      "1 <= n <= 10^3",
+      "1 <= W <= 10^4",
+      "1 <= wt[i] <= 10^4",
+      "1 <= val[i] <= 10^4"
+    ],
+    "inputFormat": "The first line contains the number of items 'n' and the capacity 'W' of the knapsack. The second line contains the weights of the items and the third line contains the values of the items.",
+    "outputFormat": "The maximum value that can be put in a knapsack of capacity W.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "1 1\n1\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "5 100\n10 20 30 40 50\n100 200 300 400 500",
+        "expectedOutput": "1000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": "3 3\n1 1 1\n1 1 1",
+        "expectedOutput": "3",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case / empty-like / negative if allowed",
+        "input": "0 10\n\n",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": "4 7\n1 3 4 5\n1 4 5 7",
+        "expectedOutput": "9",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Use memoization to store the results of subproblems and avoid redundant calculations.",
+    "timeComplexity": "O(n*W)",
+    "spaceComplexity": "O(n*W)",
+    "code": {
+      "C": "#include <stdio.h>\n\nint max(int a, int b) { return (a > b) ? a : b; }\n\nint knapSack(int W, int wt[], int val[], int n) {\n    int K[n + 1][W + 1];\n    for (int i = 0; i <= n; i++) {\n        for (int w = 0; w <= W; w++) {\n            if (i == 0 || w == 0)\n                K[i][w] = 0;\n            else if (wt[i-1] <= w)\n                K[i][w] = max(val[i-1] + K[i-1][w-wt[i-1]],  K[i-1][w]);\n            else\n                K[i][w] = K[i-1][w];\n        }\n    }\n    return K[n][W];\n}\n\nint main() {\n    int val[] = {60, 100, 120};\n    int wt[] = {10, 20, 30};\n    int W = 50;\n    int n = sizeof(val)/sizeof(val[0]);\n    printf(\"%d\\n\", knapSack(W, wt, val, n));\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\n// Class to solve 0/1 Knapsack using memoization\nclass Solution {\npublic:\n    // Function to compute maximum value\n    int knapSackUtil(int ind, int W, vector<int>& wt, \n                     vector<int>& val, vector<vector<int>>& dp) {\n        // Base case: if only one item left\n        if (ind == 0) {\n            if (wt[0] <= W) return val[0];\n            else return 0;\n        }\n        // If already computed return it\n        if (dp[ind][W] != -1) return dp[ind][W];\n        \n        // Exclude current item\n        int notTaken = knapSackUtil(ind - 1, W, wt, val, dp);\n        \n        // Include current item if possible\n        int taken = INT_MIN;\n        if (wt[ind] <= W) \n            taken = val[ind] + knapSackUtil(ind - 1, W - wt[ind], \n                                            wt, val, dp);\n        \n        // Store result in dp\n        return dp[ind][W] = max(notTaken, taken);\n    }\n\n    // Main function to call\n    int knapSack(int W, vector<int>& wt, vector<int>& val, int n) {\n        vector<vector<int>> dp(n, vector<int>(W + 1, -1));\n        return knapSackUtil(n - 1, W, wt, val, dp);\n    }\n};\n\n// Driver code\nint main() {\n    int n = 4, W = 7;\n    vector<int> wt = {1, 3, 4, 5};\n    vector<int> val = {1, 4, 5, 7};\n    Solution obj;\n    cout << obj.knapSack(W, wt, val, n) << endl;\n    return 0;\n}",
+      "Java": "import java.util.*;\n\n// Class to solve 0/1 Knapsack using memoization\nclass Solution {\n    // Function to compute maximum value\n    int knapSackUtil(int ind, int W, int[] wt, int[] val, int[][] dp) {\n        // Base case: if only one item left\n        if (ind == 0) {\n            if (wt[0] <= W) return val[0];\n            else return 0;\n        }\n        // If already computed return it\n        if (dp[ind][W] != -1) return dp[ind][W];\n        \n        // Exclude current item\n        int notTaken = knapSackUtil(ind - 1, W, wt, val, dp);\n        \n        // Include current item if possible\n        int taken = Integer.MIN_VALUE;\n        if (wt[ind] <= W) \n            taken = val[ind] + knapSackUtil(ind - 1, W - wt[ind], wt, val, dp);\n        \n        // Store result in dp\n        return dp[ind][W] = Math.max(notTaken, taken);\n    }\n\n    // Main function to call\n    int knapSack(int W, int[] wt, int[] val, int n) {\n        int[][] dp = new int[n][W + 1];\n        for (int[] row : dp) Arrays.fill(row, -1);\n        return knapSackUtil(n - 1, W, wt, val, dp);\n    }\n}\n\n// Driver class\npublic class Main {\n    public static void main(String[] args) {\n        int n = 4, W = 7;\n        int[] wt = {1, 3, 4, 5};\n        int[] val = {1, 4, 5, 7};\n        Solution obj = new Solution();\n        System.out.println(obj.knapSack(W, wt, val, n));\n    }\n}",
+      "Python3": "# Class to solve 0/1 Knapsack using memoization\nclass Solution:\n    # Function to compute maximum value\n    def knapSackUtil(self, ind, W, wt, val, dp):\n        # Base case: if only one item left\n        if ind == 0:\n            if wt[0] <= W:\n                return val[0]\n            else:\n                return 0\n        # If already computed return it\n        if dp[ind][W] != -1:\n            return dp[ind][W]\n        \n        # Exclude current item\n        notTaken = self.knapSackUtil(ind - 1, W, wt, val, dp)\n        \n        # Include current item if possible\n        taken = float('-inf')\n        if wt[ind] <= W:\n            taken = val[ind] + self.knapSackUtil(ind - 1, W - wt[ind], wt, val, dp)\n        \n        # Store result in dp\n        dp[ind][W] = max(notTaken, taken)\n        return dp[ind][W]\n\n    # Main function to call\n    def knapSack(self, W, wt, val, n):\n        dp = [[-1 for _ in range(W + 1)] for _ in range(n)]\n        return self.knapSackUtil(n - 1, W, wt, val, dp)\n\n# Driver code\nif __name__ == \"__main__\":\n    n, W = 4, 7\n    wt = [1, 3, 4, 5]\n    val = [1, 4, 5, 7]\n    obj = Solution()\n    print(obj.knapSack(W, wt, val, n))",
+      "JavaScript": "// Class to solve 0/1 Knapsack using memoization\nclass Solution {\n    // Function to compute maximum value\n    knapSackUtil(ind, W, wt, val, dp) {\n        // Base case: if only one item left\n        if (ind === 0) {\n            if (wt[0] <= W) return val[0];\n            else return 0;\n        }\n        // If already computed return it\n        if (dp[ind][W] !== -1) return dp[ind][W];\n        \n        // Exclude current item\n        let notTaken = this.knapSackUtil(ind - 1, W, wt, val, dp);\n        \n        // Include current item if possible\n        let taken = -Infinity;\n        if (wt[ind] <= W) {\n            taken = val[ind] + this.knapSackUtil(ind - 1, \n                                                 W - wt[ind], \n                                                 wt, val, dp);\n        }\n        \n        // Store result in dp\n        dp[ind][W] = Math.max(notTaken, taken);\n        return dp[ind][W];\n    }\n\n    // Main function to call\n    knapSack(W, wt, val, n) {\n        let dp = Array.from({ length: n }, \n                            () => Array(W + 1).fill(-1));\n        return this.knapSackUtil(n - 1, W, wt, val, dp);\n    }\n}\n\n// Driver code\nlet n = 4, W = 7;\nlet wt = [1, 3, 4, 5];\nlet val = [1, 4, 5, 7];\nlet obj = new Solution();\nconsole.log(obj.knapSack(W, wt, val, n));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

@@ -1,0 +1,136 @@
+{
+  "questionId": "Q6127",
+  "title": "Time measure",
+  "slug": "time-measure",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Geometry",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Clock Angle",
+      "Brute Force",
+      "Floating Point Comparison",
+      "Precomputation"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Ad-hoc & Implementation"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef is sitting in a very boring lecture, waiting for it to end. He has recently asked his friend about the time, and instead of the straightforward answer, his friend, being an absolute jerk, told him the absolute value of angle between hour and minute hands.\n\n\n\nBut that is obviously not what he wanted to know, so he asks you to help him, by writing down all valid values of time (in hours and minutes, both non-negative integers) from **midnight** (inclusive) to **noon** (not inclusive) which satisfy the information Chef's friend has provided. Keep in mind that a time value is considered valid if the angle between the clock's hands for that value and the angle Chef's friend has described differ by **less** than **1/120 degrees.**\n\n\nNote that the **movement of the minute hand influences the hour hand**. That is, every minute, it moves by 1/60th of the angular distance between two consecutive hour marks.",
+    "constraints": [
+      "1 ≤ T ≤ 100000",
+      "0 ≤ A ≤ 180",
+      "Only integer hour (0‑11) and minute (0‑59) values are considered.",
+      "Total output size ≤ 1 MiB."
+    ],
+    "inputFormat": "The first line contains an integer T (1 ≤ T ≤ 100000), the number of test cases. Each of the next T lines contains a real number A (0 ≤ A ≤ 180) given with at most a few decimal places – the absolute angle (in degrees) between the hour and minute hands as reported by Chef's friend.",
+    "outputFormat": "For each test case, output every time between 00:00 (inclusive) and 12:00 (exclusive) whose hour‑minute angle differs from A by strictly less than 1/120 degrees. Each valid time must be printed on its own line in the format \"hh:mm\" with leading zeros. Times for a test case are printed in chronological order. If a test case has no valid times, print nothing for that test case (i.e., produce no line).",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n0\n30",
+        "output": "00:00",
+        "explanation": "For A = 0° the only integer time between 00:00 and 12:00 where the smaller angle between the hands is 0° (within the tolerance) is 00:00. For A = 30° no integer minute yields an angle within 1/120° of 30°, so nothing is printed for the second test case."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n90",
+        "output": "03:00\n09:00",
+        "explanation": "At 03:00 the hour hand points at 90° and the minute hand at 0°, giving a 90° angle. At 09:00 the hour hand points at 270°, minute hand at 0°, the smaller angle is 360‑270 = 90°. Both satisfy the tolerance."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The clock has only 12·60 = 720 possible integer times. For each of them we can compute the smaller angle between the two hands:\n  hourAngle = 30·hour + 0.5·minute\n  minuteAngle = 6·minute\n  diff = |hourAngle - minuteAngle|\n  angle = min(diff, 360 - diff)\nThe required tolerance is ε = 1/120 degrees ≈ 0.008333°. A time is valid if |angle - A| < ε.\nBecause the set of possible times is tiny, we pre‑compute for every (hour, minute) pair its angle and store the three values (hour, minute, angle) in three parallel arrays of length 720. For each test case we simply scan the 720 entries and output those that satisfy the tolerance condition. The total work is O(720·T) ≈ 7.2·10⁷ operations in the worst case, easily fast enough. Memory usage is O(720).",
+    "timeComplexity": "O(720·T) ≈ O(T) per test file (constant factor 720).",
+    "spaceComplexity": "O(720) for the pre‑computed tables (negligible).",
+    "code": {
+      "C": "#include <stdio.h>\n#include <math.h>\n\nint main() {\n    const double EPS = 1.0/120.0; // tolerance\n    // pre‑compute angles for all 720 integer times\n    double angles[720];\n    int hrs[720];\n    int mins[720];\n    int idx = 0;\n    for (int h = 0; h < 12; ++h) {\n        for (int m = 0; m < 60; ++m) {\n            double hourAngle = 30.0 * h + 0.5 * m;\n            double minuteAngle = 6.0 * m;\n            double diff = fabs(hourAngle - minuteAngle);\n            if (diff > 180.0) diff = 360.0 - diff; // smaller angle\n            angles[idx] = diff;\n            hrs[idx] = h;\n            mins[idx] = m;\n            ++idx;\n        }\n    }\n\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        double A;\n        scanf(\"%lf\", &A);\n        for (int i = 0; i < 720; ++i) {\n            if (fabs(angles[i] - A) < EPS) {\n                printf(\"%02d:%02d\\n\", hrs[i], mins[i]);\n            }\n        }\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    const double EPS = 1.0/120.0; // tolerance\n    // pre‑compute\n    vector<double> ang; ang.reserve(720);\n    vector<int> hr, mn; hr.reserve(720); mn.reserve(720);\n    for (int h = 0; h < 12; ++h) {\n        for (int m = 0; m < 60; ++m) {\n            double hourAngle = 30.0 * h + 0.5 * m;\n            double minuteAngle = 6.0 * m;\n            double diff = fabs(hourAngle - minuteAngle);\n            if (diff > 180.0) diff = 360.0 - diff;\n            ang.push_back(diff);\n            hr.push_back(h);\n            mn.push_back(m);\n        }\n    }\n    int T; if(!(cin>>T)) return 0;\n    while (T--) {\n        double A; cin >> A;\n        for (size_t i = 0; i < ang.size(); ++i) {\n            if (fabs(ang[i] - A) < EPS) {\n                cout << setw(2) << setfill('0') << hr[i] << ':'\n                     << setw(2) << setfill('0') << mn[i] << '\\n';\n            }\n        }\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    private static final double EPS = 1.0/120.0; // tolerance\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder out = new StringBuilder();\n        // pre‑compute\n        double[] angle = new double[720];\n        int[] hour = new int[720];\n        int[] minute = new int[720];\n        int idx = 0;\n        for (int h = 0; h < 12; ++h) {\n            for (int m = 0; m < 60; ++m) {\n                double hourAngle = 30.0 * h + 0.5 * m;\n                double minuteAngle = 6.0 * m;\n                double diff = Math.abs(hourAngle - minuteAngle);\n                if (diff > 180.0) diff = 360.0 - diff;\n                angle[idx] = diff;\n                hour[idx] = h;\n                minute[idx] = m;\n                ++idx;\n            }\n        }\n        int T = Integer.parseInt(br.readLine().trim());\n        for (int t = 0; t < T; ++t) {\n            double A = Double.parseDouble(br.readLine().trim());\n            for (int i = 0; i < 720; ++i) {\n                if (Math.abs(angle[i] - A) < EPS) {\n                    out.append(String.format(\"%02d:%02d\\n\", hour[i], minute[i]));\n                }\n            }\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "import sys, math\n\ndef precompute():\n    angles = []\n    hrs = []\n    mins = []\n    for h in range(12):\n        for m in range(60):\n            hour_angle = 30.0 * h + 0.5 * m\n            minute_angle = 6.0 * m\n            diff = abs(hour_angle - minute_angle)\n            if diff > 180.0:\n                diff = 360.0 - diff\n            angles.append(diff)\n            hrs.append(h)\n            mins.append(m)\n    return angles, hrs, mins\n\nEPS = 1.0/120.0\nangles, hrs, mins = precompute()\n\ndata = sys.stdin.read().strip().split()\nif not data:\n    sys.exit()\nT = int(data[0])\nptr = 1\nout_lines = []\nfor _ in range(T):\n    A = float(data[ptr]); ptr += 1\n    for i in range(720):\n        if abs(angles[i] - A) < EPS:\n            out_lines.append(f\"{hrs[i]:02d}:{mins[i]:02d}\")\nprint('\\n'.join(out_lines))",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nif (input.length === 0) process.exit(0);\nconst EPS = 1.0/120.0;\n// pre‑compute angles for all 720 integer times\nconst angles = [];\nconst hrs = [];\nconst mins = [];\nfor (let h = 0; h < 12; ++h) {\n  for (let m = 0; m < 60; ++m) {\n    const hourAngle = 30.0 * h + 0.5 * m;\n    const minuteAngle = 6.0 * m;\n    let diff = Math.abs(hourAngle - minuteAngle);\n    if (diff > 180.0) diff = 360.0 - diff;\n    angles.push(diff);\n    hrs.push(h);\n    mins.push(m);\n  }\n}\nlet idx = 0;\nconst T = parseInt(input[idx++], 10);\nlet output = [];\nfor (let t = 0; t < T; ++t) {\n  const A = parseFloat(input[idx++]);\n  for (let i = 0; i < angles.length; ++i) {\n    if (Math.abs(angles[i] - A) < EPS) {\n      const hh = String(hrs[i]).padStart(2, '0');\n      const mm = String(mins[i]).padStart(2, '0');\n      output.push(`${hh}:${mm}`);\n    }\n  }\n}\nconsole.log(output.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

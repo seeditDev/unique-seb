@@ -1,0 +1,142 @@
+{
+  "questionId": "Q8485",
+  "title": "Sleepy Chef",
+  "slug": "sleepy-chef",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Greedy | Strings",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Greedy",
+      "Counting",
+      "Sliding Window"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Two Pointers & Sliding Window"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef has to work on a project for the next NNN hours. He is given a work plan to do this, which is given to you as a binary string SSS of length NNN. Si=1S_i = 1Si​=1 if Chef has to work on the project during the iii-th hour, and Si=0S_i = 0Si​=0 if Chef is free during the iii-th hour.\n\nChef would like to use some of his free time to take naps. He needs a minimum of KKK consecutive hours of free time to take a nap. What is the maximum number of naps that Chef can take during the next NNN hours?\n\nNote that it is allowed for one nap to immediately follow another, i.e, Chef can wake up from one nap and then immediately take another one (if he has enough free time to do so), and these will be counted as different naps.\n\n\nInput Format\n\nThe first line of input contains a single integer TTT, denoting the number of test cases. The description of TTT test cases follows.\nThe first line of each test case contains two space-separated integers NNN and KKK respectively.\nThe second line of each test case contains a binary string SSS of length NNN denoting Chef's work plan.\n\n\nOutput Format\n\nFor each test case, print a single line containing one integer — the maximum number of naps that Chef can take.",
+    "constraints": [
+      "1 <= T <= 10^5",
+      "1 <= N <= 10^5",
+      "1 <= K <= N",
+      "Sum of N over all test cases does not exceed 2·10^5",
+      "S consists only of characters '0' and '1'"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case consists of two lines: the first line has two integers N and K, the length of the binary string and the minimum consecutive free hours required for a nap. The second line contains a binary string S of length N, where '0' denotes a free hour and '1' denotes a working hour.",
+    "outputFormat": "For each test case, output a single integer on its own line – the maximum number of naps Chef can take.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n4 1\n1010\n4 2\n0100\n11 3\n00100000001",
+        "output": "2\n1\n2",
+        "explanation": "Test case 1: free blocks are at positions 2 and 4, each length 1, K=1 → 2 naps.\\nTest case 2: one free block of length 3 (positions 2-4), K=2 → floor(3/2)=1 nap.\\nTest case 3: free blocks of lengths 2 (positions 3-4) and 5 (positions 6-10), K=3 → floor(2/3)=0 + floor(5/3)=1, plus another nap can start at hour 8 because the remaining 2 free hours together with hour 11 (which is free) form another block of length 3, giving total 2 naps."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n5 2\n00100",
+        "output": "1",
+        "explanation": "The only zero block has length 3, floor(3/2)=1 nap."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n6 3\n000000",
+        "output": "2",
+        "explanation": "A single block of length 6 gives floor(6/3)=2 naps."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1\n0",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n15 3\n000000000000000",
+        "expectedOutput": "5",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case K larger than any block",
+        "input": "1\n5 4\n10101",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n10 2\n0010011100",
+        "expectedOutput": "3",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n12 3\n000100001000",
+        "expectedOutput": "3",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each test case scan the string once, counting the length of the current consecutive block of '0's. When a '1' or the end of the string is encountered, add floor(blockLength / K) to the answer because a nap occupies exactly K free hours and naps may follow each other without gaps. Reset the counter and continue. The sum over all blocks is the maximum possible number of naps.",
+    "timeComplexity": "O(N) per test case, where N is the length of the string. Overall O(total N) ≤ 2·10^5.",
+    "spaceComplexity": "O(1) besides the input string.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    while(T--){\n        int N, K; scanf(\"%d %d\", &N, &K);\n        static char s[200005]; scanf(\"%s\", s);\n        long long ans = 0; int cnt = 0;\n        for(int i=0;i<N;i++){\n            if(s[i]=='0') cnt++; else { ans += cnt / K; cnt = 0; }\n        }\n        ans += cnt / K;\n        printf(\"%lld\\n\", ans);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N, K; cin>>N>>K; string s; cin>>s;\n        long long ans=0; int cnt=0;\n        for(char c: s){\n            if(c=='0') cnt++; else { ans+=cnt/K; cnt=0; }\n        }\n        ans+=cnt/K;\n        cout<<ans<<\"\\n\";\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st = new StringTokenizer(br.readLine());\n        int T = Integer.parseInt(st.nextToken());\n        StringBuilder out = new StringBuilder();\n        while (T-- > 0) {\n            st = new StringTokenizer(br.readLine());\n            int N = Integer.parseInt(st.nextToken());\n            int K = Integer.parseInt(st.nextToken());\n            String s = br.readLine().trim();\n            long ans = 0;\n            int cnt = 0;\n            for (int i = 0; i < N; i++) {\n                if (s.charAt(i) == '0') cnt++; else { ans += cnt / K; cnt = 0; }\n            }\n            ans += cnt / K;\n            out.append(ans).append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef solve():\n    data = sys.stdin.read().split()\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it)); K = int(next(it))\n        s = next(it).strip()\n        ans = 0\n        cnt = 0\n        for ch in s:\n            if ch == '0':\n                cnt += 1\n            else:\n                ans += cnt // K\n                cnt = 0\n        ans += cnt // K\n        out_lines.append(str(ans))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet outputs = [];\nfor (let t = 0; t < T; t++) {\n  const N = Number(input[idx++]);\n  const K = Number(input[idx++]);\n  const s = input[idx++];\n  let ans = 0;\n  let cnt = 0;\n  for (let i = 0; i < N; i++) {\n    if (s[i] === '0') cnt++; else { ans += Math.floor(cnt / K); cnt = 0; }\n  }\n  ans += Math.floor(cnt / K);\n  outputs.push(String(ans));\n}\nconsole.log(outputs.join('\\n'));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "questionId": "Q1299",
+  "title": "ZigZag Traversal",
+  "slug": "zigzag-traversal",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graphs",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "Graphs",
+      "BFS",
+      "Zigzag Traversal"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Trees"
+    ]
+  },
+  "content": {
+    "problemStatement": "Given a binary tree, print the zigzag level order traversal of its nodes. (i.e., from left to right, then right to left for the next level and alternate between).\n\nFor example, the zigzag traversal of the following binary tree is: \n\n1 \n\n3 2 \n\n4 5\n\n\n\n\nOutput Format\nOutput on the L separate lines, NNN space separated integers - its nodes in the zigzag level order traversal of the given tree, where L is total no. of levels in the given tree.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 100000",
+      "1 <= node value <= 1000000",
+      "All node values are distinct"
+    ],
+    "inputFormat": "First line contains T, the number of test cases. For each test case, the first line contains an integer N, the number of nodes in the binary tree. The next N-1 lines each contain three space-separated values: parent_node child_node position, where position is either 'L' (left child) or 'R' (right child).",
+    "outputFormat": "For each test case, output L lines where L is the number of levels in the tree. Each line contains the node values of that level in zigzag order (left-to-right for the first level, right-to-left for the second, and so on), separated by a single space.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n5\n1 2 L\n1 3 R\n3 4 L\n3 5 R",
+        "output": "1\n3 2\n4 5",
+        "explanation": "The tree has root 1 with left child 2 and right child 3. Node 3 has children 4 (left) and 5 (right). Level 0: 1 (left-to-right). Level 1: nodes 2 and 3 printed right-to-left \u2192 3 2. Level 2: nodes 4 and 5 printed left-to-right \u2192 4 5."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n3\n1 2 L\n1 3 R",
+        "output": "1\n3 2",
+        "explanation": "Root 1 with children 2 (left) and 3 (right). Level 0: 1. Level 1 printed right-to-left gives 3 2."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n1",
+        "output": "1",
+        "explanation": "A single node tree. Only one level containing the root."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n100000\n1 2 L\n1 3 R\n3 4 L\n3 5 R",
+        "expectedOutput": "1\n3 2\n4 5",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n5\n1 2 L\n1 3 R\n2 4 L\n2 5 R",
+        "expectedOutput": "1\n3 2\n5 4",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n7\n1 2 L\n1 3 R\n2 4 L\n2 5 R\n3 6 L\n3 7 R",
+        "expectedOutput": "1\n3 2\n4 5 6 7",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "2\n5\n1 2 L\n1 3 R\n3 4 L\n3 5 R\n3\n1 2 L\n1 3 R",
+        "expectedOutput": "1\n3 2\n4 5\n1\n3 2",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we use a Breadth-First Search (BFS) approach. We start by creating a binary tree based on the given input. Then, we perform a level-order traversal of the tree, but with a twist: we alternate the direction of traversal at each level. This is achieved by using a queue to store the nodes at each level and then reversing the order of the nodes at each level when printing them.",
+    "timeComplexity": "O(T * N) per test case, O(T * N) total. The time complexity is linear with respect to the number of test cases and the number of nodes in the tree.",
+    "spaceComplexity": "O(N) \u2014 the dominant structure is the queue used for BFS, which can store up to N nodes in the worst case.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\ntypedef struct Node {\n    int val;\n    struct Node* left;\n    struct Node* right;\n} Node;\n\nNode* getNode(Node** map, int* used, int key) {\n    if (!used[key]) {\n        map[key] = (Node*)malloc(sizeof(Node));\n        map[key]->val = key;\n        map[key]->left = map[key]->right = NULL;\n        used[key] = 1;\n    }\n    return map[key];\n}\n\nint main() {\n    int T; if (scanf(\"%d\", &T)!=1) return 0;\n    while (T--) {\n        int N; scanf(\"%d\", &N);\n        // value range up to 1e6, allocate map accordingly\n        static Node* nodeMap[1000001];\n        static char used[1000001];\n        memset(nodeMap, 0, sizeof(nodeMap));\n        memset(used, 0, sizeof(used));\n        int childSeen[1000001] = {0};\n        Node* root = NULL;\n        for (int i = 0; i < N-1; ++i) {\n            int p, c; char pos;\n            scanf(\"%d %d %c\", &p, &c, &pos);\n            Node* parent = getNode(nodeMap, used, p);\n            Node* child  = getNode(nodeMap, used, c);\n            if (pos == 'L') parent->left = child; else parent->right = child;\n            childSeen[c] = 1;\n        }\n        // find root (node that never appeared as child)\n        for (int i = 0; i <= 1000000; ++i) {\n            if (used[i] && !childSeen[i]) { root = nodeMap[i]; break; }\n        }\n        // BFS zigzag\n        Node** q = (Node**)malloc(sizeof(Node*) * N);\n        int front = 0, rear = 0;\n        q[rear++] = root;\n        int leftToRight = 1;\n        while (front < rear) {\n            int sz = rear - front;\n            int* level = (int*)malloc(sizeof(int) * sz);\n            for (int i = 0; i < sz; ++i) {\n                Node* cur = q[front++];\n                int idx = leftToRight ? i : sz-1-i;\n                level[idx] = cur->val;\n                if (cur->left) q[rear++] = cur->left;\n                if (cur->right) q[rear++] = cur->right;\n            }\n            for (int i = 0; i < sz; ++i) {\n                if (i) printf(\" \");\n                printf(\"%d\", level[i]);\n            }\n            printf(\"\\n\");\n            free(level);\n            leftToRight = !leftToRight;\n        }\n        free(q);\n        // free nodes\n        for (int i = 0; i <= 1000000; ++i) if (used[i]) free(nodeMap[i]);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nstruct Node {\n    int val;\n    Node* left;\n    Node* right;\n    Node(int v): val(v), left(nullptr), right(nullptr) {}\n};\n\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(NULL);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N; cin>>N;\n        unordered_map<int, Node*> mp;\n        vector<int> childFlag(N*2+5,0); // enough size, will use map for existence\n        Node* root = nullptr;\n        for(int i=0;i<N-1;++i){\n            int p,c; char pos; cin>>p>>c>>pos;\n            if(mp.find(p)==mp.end()) mp[p]=new Node(p);\n            if(mp.find(c)==mp.end()) mp[c]=new Node(c);\n            if(pos=='L') mp[p]->left = mp[c]; else mp[p]->right = mp[c];\n            childFlag[c]=1;\n        }\n        for(auto &kv: mp){\n            if(!childFlag[kv.first]){ root = kv.second; break; }\n        }\n        queue<Node*> q; q.push(root);\n        bool leftToRight = true;\n        while(!q.empty()){\n            int sz = q.size();\n            vector<int> level(sz);\n            for(int i=0;i<sz;++i){\n                Node* cur = q.front(); q.pop();\n                int idx = leftToRight? i : sz-1-i;\n                level[idx]=cur->val;\n                if(cur->left) q.push(cur->left);\n                if(cur->right) q.push(cur->right);\n            }\n            for(int i=0;i<sz;++i){\n                if(i) cout<<' ';\n                cout<<level[i];\n            }\n            cout<<'\\n';\n            leftToRight=!leftToRight;\n        }\n        for(auto &kv: mp) delete kv.second;\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    static class Node {\n        int val;\n        Node left, right;\n        Node(int v){ val=v; }\n    }\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st = new StringTokenizer(br.readLine());\n        int T = Integer.parseInt(st.nextToken());\n        StringBuilder out = new StringBuilder();\n        while (T-- > 0) {\n            int N = Integer.parseInt(br.readLine().trim());\n            Map<Integer, Node> map = new HashMap<>();\n            Set<Integer> childSet = new HashSet<>();\n            for (int i = 0; i < N - 1; i++) {\n                st = new StringTokenizer(br.readLine());\n                int p = Integer.parseInt(st.nextToken());\n                int c = Integer.parseInt(st.nextToken());\n                char pos = st.nextToken().charAt(0);\n                Node parent = map.computeIfAbsent(p, k -> new Node(k));\n                Node child = map.computeIfAbsent(c, k -> new Node(k));\n                if (pos == 'L') parent.left = child; else parent.right = child;\n                childSet.add(c);\n            }\n            Node root = null;\n            for (int key : map.keySet()) {\n                if (!childSet.contains(key)) { root = map.get(key); break; }\n            }\n            Deque<Node> q = new ArrayDeque<>();\n            q.add(root);\n            boolean leftToRight = true;\n            while (!q.isEmpty()) {\n                int sz = q.size();\n                int[] level = new int[sz];\n                for (int i = 0; i < sz; i++) {\n                    Node cur = q.pollFirst();\n                    int idx = leftToRight ? i : sz - 1 - i;\n                    level[idx] = cur.val;\n                    if (cur.left != null) q.addLast(cur.left);\n                    if (cur.right != null) q.addLast(cur.right);\n                }\n                for (int i = 0; i < sz; i++) {\n                    if (i > 0) out.append(' ');\n                    out.append(level[i]);\n                }\n                out.append('\\n');\n                leftToRight = !leftToRight;\n            }\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "import sys\nfrom collections import deque\n\ndef solve():\n    data = sys.stdin.read().strip().splitlines()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it))\n        nodes = {}\n        child = set()\n        for _ in range(N-1):\n            p, c, pos = next(it).split()\n            p = int(p); c = int(c)\n            if p not in nodes:\n                nodes[p] = [None, None]  # left, right\n            if c not in nodes:\n                nodes[c] = [None, None]\n            if pos == 'L':\n                nodes[p][0] = c\n            else:\n                nodes[p][1] = c\n            child.add(c)\n        # find root\n        root = None\n        for v in nodes:\n            if v not in child:\n                root = v\n                break\n        q = deque([root])\n        left_to_right = True\n        while q:\n            sz = len(q)\n            level = [0]*sz\n            for i in range(sz):\n                cur = q.popleft()\n                idx = i if left_to_right else sz-1-i\n                level[idx] = cur\n                left, right = nodes[cur]\n                if left is not None:\n                    q.append(left)\n                if right is not None:\n                    q.append(right)\n            out_lines.append(' '.join(map(str, level)))\n            left_to_right = not left_to_right\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const lines = require('fs').readFileSync(0,'utf-8').trim().split('\\n');\nlet idx = 0;\nconst T = parseInt(lines[idx++]);\nlet output = [];\nfor (let t = 0; t < T; t++) {\n  const N = parseInt(lines[idx++]);\n  const nodes = new Map(); // value -> {left:null,right:null}\n  const childSet = new Set();\n  for (let i = 0; i < N - 1; i++) {\n    const [pStr, cStr, pos] = lines[idx++].trim().split(/\\s+/);\n    const p = parseInt(pStr), c = parseInt(cStr);\n    if (!nodes.has(p)) nodes.set(p, {left: null, right: null});\n    if (!nodes.has(c)) nodes.set(c, {left: null, right: null});\n    const parent = nodes.get(p);\n    if (pos === 'L') parent.left = c; else parent.right = c;\n    childSet.add(c);\n  }\n  let root = null;\n  for (let key of nodes.keys()) {\n    if (!childSet.has(key)) { root = key; break; }\n  }\n  let queue = [root];\n  let leftToRight = true;\n  while (queue.length) {\n    const sz = queue.length;\n    const level = new Array(sz);\n    for (let i = 0; i < sz; i++) {\n      const cur = queue.shift();\n      const idxPos = leftToRight ? i : sz - 1 - i;\n      level[idxPos] = cur;\n      const node = nodes.get(cur);\n      if (node.left !== null) queue.push(node.left);\n      if (node.right !== null) queue.push(node.right);\n    }\n    output.push(level.join(' '));\n    leftToRight = !leftToRight;\n  }\n}\nconsole.log(output.join('\\n'));\n"
+    }
+  }
+}

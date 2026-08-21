@@ -1,0 +1,81 @@
+{
+  "questionId": "SPRB12",
+  "title": "SecureZone Access Controller Project",
+  "slug": "sprb12",
+  "version": 1,
+  "createdAt": "2026-07-13",
+  "updatedAt": "2026-07-13",
+  "source": {
+    "platform": "CodeChef",
+    "courseSlug": "springboot",
+    "contestCode": "SECUFPY",
+    "module": "Security & Final Project",
+    "submodule": "Final Mini Project",
+    "contentType": "labs",
+    "originalUrl": "https://www.codechef.com/learn/course/springboot/SECUFPY/problems/SPRB12"
+  },
+  "metadata": {
+    "category": "Practice",
+    "difficulty": "Beginner",
+    "isPremium": false,
+    "tags": [
+      "python3"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Security & Final Project",
+      "Final Mini Project"
+    ],
+    "QBCategory": "CodeChef"
+  },
+  "content": {
+    "problemStatement": "**Hello Learners!** Welcome to the **SecureZone Access Controller Project** 🏢🌍\n\nIn this project, you will build the **Spring Boot Backend** for a corporate physical security system. This system ensures that employees are issued unique RFID cards and manages which highly restricted secure zones they are permitted to enter.  \\\nAn **RFID Card** cannot exist without an **Employee** owning it, and employees need flexible permissions to access various **Secure Zones** throughout the building.\n\nYour **task** is to **complete the backend logic** to map these entities correctly.\n\n---\n\n**Project Structure** \\\nYou are given **7 Java files** representing a **Layered Architecture**:\n  - **Entities (The Data Model):**\n    - `Employee.java` → The **Owning** entity, representing the staff member.\n    - `RfidCard.java` → The **Dependent** entity, representing the physical access card.\n    - `SecureZone.java` → The **Target** entity, representing the restricted rooms (e.g., Server Room).\n  - **Repositories (The Data Access Layer):** Interfaces that handle database operations.\n    - `EmployeeRepository.java`\n    - `RfidCardRepository.java`\n    - `SecureZoneRepository.java`\n      *(Note: The repositories are pre-configured for you in this project)*\n  - **Service (The Business Logic):**\n    - `AccessService.java` → Contains the logic to save entities, handle database lookups, and assign access rights.\n  - **Controller (The API Layer):**\n    - `AccessController.java` → Handles web requests to register employees, create zones, grant access, and terminate employees.\n\n**Project Dependencies** \\\nTo build this backend, your project is pre-configured with the following tools:\n- **Spring Web:** For building RESTful API endpoints and handling HTTP requests.\n- **Spring Data JPA:** For interacting with the database using Java objects instead of SQL.\n- **H2 Database:** An in-memory database that stores your data while the app is running.\n- **Lombok:** A library that automatically generates boilerplate code like Getters, Setters, and Constructors.\n\n---\n\n**Important Rules**\n- Do **NOT** change class names\n- Do **NOT** change method names\n- Complete the sections marked with **TODO**\n- The testing system relies on the existing structure\n\n**The Logic: ORM Relationships** \\\nThis project focuses on two core database relationships:\n1. **Employee ➔ RfidCard (One-to-One):** Strict lifecycle management. If an employee is deleted or their card is unlinked, the card must be destroyed automatically.\n2. **Employee ⟷ SecureZone (Many-to-Many):** Managed via a dedicated junction table.\n\n---\n\n**Database Access (H2 Console)** \\\nIf you want to visually check your tables and run SQL queries manually:\n1. Run the file named `consoleViewer.js` and paste the CodeChef browser URL. For more details, refer to the project demonstration video.\n  - Command to run the file:\n    ```default\n    node consoleViewer.js\n    ```\n2. Copy the URL printed in the output.\n3. Paste it into your browser to access the H2 Console.\n4. Write this JDBC URL `\"jdbc:h2:mem:securezonedb\"` and click **Connect** to see your live data tables (for more details, check `application.properties` file).\n\n---\n\n**Your Task:**\n1. **Complete the Entities**\n- **File:** `model/RfidCard.java`\n  - Mark this class as a JPA Entity.\n  - Configure the `id` field to be the Primary Key with Auto-Increment (`IDENTITY` strategy).\n  - Configure the `cardNumber` column to strictly be **UNIQUE** and **NOT null**.\n  - Implement a constructor that accepts `cardNumber` and `issueDate`.\n  - **Getters & Setters:** Generate these for all fields (manually or using Lombok annotations) so other classes can access the data.\n- **File:** `model/SecureZone.java`\n  - Mark this class as a JPA Entity so that JPA recognizes it as a database table.\n  - Configure the `id` field as the Primary Key with Auto-Increment.\n  - **Getters & Setters:** Generate these for all fields (manually or using Lombok annotations) so other classes can access the data.\n- **File:** `model/Employee.java`\n  - Mark this class as a JPA Entity so that JPA recognizes it as a database table.\n  - Configure the `id` field as the Primary Key with Auto-Increment.\n  - **Map the One-to-One Relationship:** Map the `rfidCard` field. You must configure `cascade` to ALL operations (so deleting the employee deletes the card), enable `orphanRemoval` (so unlinking a card deletes it), and name the Join Column `\"rfid_card_id\"`.\n  - **Map the Many-to-Many Relationship:** Map the `allowedZones` Set. Create a `@JoinTable` named `\"employee_zones\"`. Set the join column to `\"employee_id\"` and the inverse join column to `\"zone_id\"`.\n  - Initialize the `allowedZones` Set as a new `HashSet<>` to prevent null pointer exceptions. Complete the `addZone(SecureZone zone)` helper method to add the incoming zone to the Set.\n  - **Getters & Setters:** Generate these for all fields (manually or using Lombok annotations) so other classes can access the data. \\\n**Docs:** Guide to JPA Entities | Lombok @Getter & @Setter | @Id and @GeneratedValue\n\n2. **Configure the Repositories** (Code Provided) \\\n  **File:** `RfidCardRepository`, `EmployeeRepository`, `SecureZoneRepository`\n  - **Interface:** Define these as Interfaces (not classes).\n  - **Inheritance:** Extend the standard `JpaRepository` interface.\n  - **Generics:** Specify the Entity Type (e.g., `Employee`) and ID Type (e.g., `Long`).\n\n3. **Build the Service** \\\n  **File:** `service/AccessService.java`\n  - Add the correct Spring annotation to mark this class as a Service.\n  - Define the `EmployeeRepository` and `SecureZoneRepository` repositories as `private final` fields and initialize them via **Constructor Injection**.\n  - **Implement Entity Creation:** Complete `createEmployee()` and `createZone()` methods by calling the `.save()` method on their respective repositories.\n  - **Implement Access Granting Logic:**\n    - In `grantZoneAccess()` method, fetch the Employee and the SecureZone as `Optional` wrappers.\n    - Check if they are empty or not. If they are, throw a `RuntimeException`.\n    - Otherwise, extract the real objects from Optional wrappers.\n    - Use your `addZone()` helper method to link them, and save the Employee back to the database.\n  - **Implement Revocation Logic:**\n    - In `revokeEmployee()` method, call the repository to delete the employee by their ID. \\\n**Docs:** @Service Annotation | Constructor Dependency Injection | Spring Data CrudRepository Methods (save, findById) | Java Optional Class\n\n4. **Define the API Endpoints** \\\n  **File:** `controller/AccessController.java`\n    - Annotate the class to make it a **REST Controller** and define the base URL path as `\"/api\"`.\n    - Inject the `AccessService` via constructor injection.\n    - **Endpoint 1: Map the Registration Endpoint**\n      - **Method:** `addEmployee()`\n      - **Route:** Map to handle `POST` requests at `/employees`.\n      - **Input:** Extract the `Employee` object using `@RequestBody`.\n      - **Action:** Call the service and return the saved entity.\n    - **Endpoint 2: Map the Zone Creation Endpoint**\n      - **Method:** `addZone()`\n      - **Route:** Map to handle `POST` requests at `/zones`\n      - **Input:** Extract the `SecureZone` object using `@RequestBody`.\n      - **Action:** Call the service and return the saved entity.\n    - **Endpoint 3: Map the Access Authorization Endpoint**\n      - **Method:** `grantAccess()`\n      - **Route:** Map to handle `POST` requests at `/employees/{employeeId}/zones/{zoneId}`.\n      - **Input:** Extract both IDs using `@PathVariable`.\n      - **Action:** Call the service to link the employee and the zone.\n    - **Endpoint 4: Map the Termination Endpoint**\n      - **Method:** `removeEmployee()`\n      - **Route:** Map to handle `DELETE` requests at `/employees/{employeeId}`.\n      - **Input:** Extract the ID using `@PathVariable`.\n      - **Action:** Call the service deletion method to trigger the cascade delete. \\\n**Docs:** @RestController Annotation | Overview of @GetMapping, @PostMapping, @DeleteMapping | Spring @PathVariable | @RequestBody Annotation\n\n---\n\n**Expected Behaviour:** \\\nBefore submitting the project, ensure the **backend server is running**. If you make any changes to the code, you must **restart the server** for those changes to take effect.",
+    "constraints": [
+      "- $1 \\leq T \\leq 100$\n- $1 \\leq N \\leq 100$\n- $1 \\leq M \\leq N\\cdot(N-1)/2$\n- $1 \\leq u_i, v_i \\leq N$\n- $u_i \\neq v_i$ for each $1 \\leq i \\leq M$.\n- The sum of $N$ over all test cases won't exceed $100$."
+    ],
+    "inputFormat": "- The first line of input will contain a single integer $T$, denoting the number of test cases.\n- Each test case consists of multiple lines of input.\n    - The first line of each test case contains two space-separated integers $N$ and $M$ — the number of vertices and edges of the graph, respectively.\n    - The next $M$ lines describe the edges. The $i$-th of these $M$ lines contains two space-separated integers $u_i$ and $v_i$, denoting an edge between $u_i$ and $v_i$.",
+    "outputFormat": "For each test case, output on a new line the number of good subgraphs of $G$, modulo $10^9 + 7$.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "input": "",
+        "expectedOutput": "expected",
+        "weight": 100
+      }
+    ],
+    "totalTestCases": 1,
+    "totalWeight": 100
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      100
+    ],
+    "maxScore": 100
+  },
+  "judging": {
+    "timeLimitMs": 1000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // Write your C code here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your C++ code here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) {\n        // Write your Java code here\n    }\n}",
+    "Python3": "# Write your Python code here\n",
+    "JavaScript": "// Write your JavaScript code here\n",
+    "Go": "package main\n\nimport \"fmt\"\n\nfunc main() {\n    // Write your Go code here\n}",
+    "Rust": "fn main() {\n    // Write your Rust code here\n}",
+    "C#": "using System;\n\nclass Program {\n    static void Main() {\n        // Write your C# code here\n    }\n}",
+    "SQL": "-- Write your SQL query here\n"
+  }
+}

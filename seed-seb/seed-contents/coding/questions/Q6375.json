@@ -1,0 +1,129 @@
+{
+  "questionId": "Q6375",
+  "title": "Chef and Big Soccer",
+  "slug": "chef-and-big-soccer",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Dynamic Programming",
+      "Modular Arithmetic"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef is a big fan of soccer! He loves soccer so much, that he even invented soccer for his pet dogs! Here are the rules of the game:\n\n\nThere are **N** dogs numerated from **1** to **N** stay in a line, so dogs **i** and **i + 1** are adjacent. \nThere is a ball which dogs will pass around. Initially, dog **s** has the ball.\nA dog with ball can pass it to another dog. If the current pass-strength of dog is **x**, then it can pass the ball to either  dog **i - x** or dog **i + x** (provided such dog/s exist).\n\n\n\nTo make it even more exciting, Chef created an array **A** of **M** positive integers denoting pass strengths. In i-th pass, current pass-strength of the dog making the pass will be given by **Ai**.\nChef asks dogs to execute these **M** passes one by one. As stated before, dog **s** will make the first pass, then some other dog and so on till **M** passes.\n\n\n\nDogs quickly found out that there can be lot of possible sequences of passes which will end up with a dog having the ball. Now each dog asks your help in finding number of different pass sequences which result in this dog ending up ball. Two pass sequences are considered different if after some number of passes they lead the ball to different dogs. As the answer could be quite large, output it modulo **109 + 7 (1000000007)**.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 1000",
+      "1 <= M <= 1000",
+      "1 <= s <= N",
+      "1 <= Ai <= 1000"
+    ],
+    "inputFormat": "The first line contains an integer T denoting the number of test cases. Each test case consists of two lines. The first line contains three space-separated integers N, M, and s, where N is the number of dogs, M is the number of passes, and s is the initial dog with the ball. The second line contains M space-separated integers A1, A2, ..., AM, representing the pass strengths for each pass.",
+    "outputFormat": "For each test case, output a single line containing N space-separated integers, where the i-th integer represents the number of different valid pass sequences leading the ball to the i-th dog modulo 10^9 + 7.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n3 2 2\n1 2 \n3 3 3\n1 1 1\n3 1 1\n3",
+        "output": "1 0 1\n0 2 0\n0 0 0",
+        "explanation": "Explanation: Example case 1. Possible sequence for dog 1 is 2->3->1. Possible sequence for dog 3 is 2->1->3. Example case 2. Possible sequences for dog 2 are 3->2->1->2 and 3->2->3->2. Example case 3. There are no valid sequences for such input."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1 1\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n1000 1000 1000\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n3 2 2\n1 2",
+        "expectedOutput": "1 0 1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n5 3 3\n1 2 3",
+        "expectedOutput": "1 2 0 0 0",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n7 4 4\n2 3 1 4",
+        "expectedOutput": "0 0 0 2 0 0 0",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use dynamic programming to keep track of the number of ways the ball can reach each dog after each pass. We initialize a 2D array dp of size N x M, where dp[i][j] represents the number of ways the ball can reach dog i after j passes. We start by setting dp[s][0] = 1, since the ball is initially with dog s. Then, for each pass, we update the dp array by considering all possible next dogs that can receive the ball. We use modular arithmetic to avoid overflow.",
+    "timeComplexity": "O(T * N * M)",
+    "spaceComplexity": "O(N * M)",
+    "code": {
+      "C": "#include <stdio.h>\n#define MOD 1000000007\nint main() {\n    int T, N, M, s;\n    scanf(\"%d\", &T);\n    while (T--) {\n        scanf(\"%d %d %d\", &N, &M, &s);\n        s--;\n        int A[M];\n        for (int i = 0; i < M; i++) {\n            scanf(\"%d\", &A[i]);\n        }\n        int dp[N][M + 1];\n        for (int i = 0; i < N; i++) {\n            for (int j = 0; j <= M; j++) {\n                dp[i][j] = 0;\n            }\n        }\n        dp[s][0] = 1;\n        for (int j = 1; j <= M; j++) {\n            for (int i = 0; i < N; i++) {\n                if (dp[i][j - 1] > 0) {\n                    if (i - A[j - 1] >= 0) {\n                        dp[i - A[j - 1]][j] = (dp[i - A[j - 1]][j] + dp[i][j - 1]) % MOD;\n                    }\n                    if (i + A[j - 1] < N) {\n                        dp[i + A[j - 1]][j] = (dp[i + A[j - 1]][j] + dp[i][j - 1]) % MOD;\n                    }\n                }\n            }\n        }\n        for (int i = 0; i < N; i++) {\n            printf(\"%d \", dp[i][M]);\n        }\n        printf(\"\\n\");\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#define MOD 1000000007\nusing namespace std;\nint main() {\n    int T, N, M, s;\n    cin >> T;\n    while (T--) {\n        cin >> N >> M >> s;\n        s--;\n        int A[M];\n        for (int i = 0; i < M; i++) {\n            cin >> A[i];\n        }\n        int dp[N][M + 1];\n        for (int i = 0; i < N; i++) {\n            for (int j = 0; j <= M; j++) {\n                dp[i][j] = 0;\n            }\n        }\n        dp[s][0] = 1;\n        for (int j = 1; j <= M; j++) {\n            for (int i = 0; i < N; i++) {\n                if (dp[i][j - 1] > 0) {\n                    if (i - A[j - 1] >= 0) {\n                        dp[i - A[j - 1]][j] = (dp[i - A[j - 1]][j] + dp[i][j - 1]) % MOD;\n                    }\n                    if (i + A[j - 1] < N) {\n                        dp[i + A[j - 1]][j] = (dp[i + A[j - 1]][j] + dp[i][j - 1]) % MOD;\n                    }\n                }\n            }\n        }\n        for (int i = 0; i < N; i++) {\n            cout << dp[i][M] << \" \";\n        }\n        cout << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n        while (T-- > 0) {\n            int N = sc.nextInt();\n            int M = sc.nextInt();\n            int s = sc.nextInt() - 1;\n            int[] A = new int[M];\n            for (int i = 0; i < M; i++) {\n                A[i] = sc.nextInt();\n            }\n            int[][] dp = new int[N][M + 1];\n            for (int i = 0; i < N; i++) {\n                for (int j = 0; j <= M; j++) {\n                    dp[i][j] = 0;\n                }\n            }\n            dp[s][0] = 1;\n            final int MOD = 1000000007;\n            for (int j = 1; j <= M; j++) {\n                for (int i = 0; i < N; i++) {\n                    if (dp[i][j - 1] > 0) {\n                        if (i - A[j - 1] >= 0) {\n                            dp[i - A[j - 1]][j] = (dp[i - A[j - 1]][j] + dp[i][j - 1]) % MOD;\n                        }\n                        if (i + A[j - 1] < N) {\n                            dp[i + A[j - 1]][j] = (dp[i + A[j - 1]][j] + dp[i][j - 1]) % MOD;\n                        }\n                    }\n                }\n            }\n            for (int i = 0; i < N; i++) {\n                System.out.print(dp[i][M] + \" \");\n            }\n            System.out.println();\n        }\n    }\n}",
+      "Python3": "MOD = 1000000007\nfor _ in range(int(input())):\n    N, M, s = map(int, input().split())\n    s -= 1\n    A = list(map(int, input().split()))\n    dp = [[0] * (M + 1) for _ in range(N)]\n    dp[s][0] = 1\n    for j in range(1, M + 1):\n        for i in range(N):\n            if dp[i][j - 1] > 0:\n                if i - A[j - 1] >= 0:\n                    dp[i - A[j - 1]][j] = (dp[i - A[j - 1]][j] + dp[i][j - 1]) % MOD\n                if i + A[j - 1] < N:\n                    dp[i + A[j - 1]][j] = (dp[i + A[j - 1]][j] + dp[i][j - 1]) % MOD\n    print(*dp[i][M] for i in range(N))",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst readLine = () => input[idx++];\nconst readInt = () => parseInt(readLine());\nconst readInts = () => readLine().split(' ').map(x => parseInt(x));\nconst MOD = 1000000007;\nlet T = readInt();\nwhile (T-- > 0) {\n    let [N, M, s] = readInts();\n    s--;\n    let A = readInts();\n    let dp = Array(N).fill(0).map(() => Array(M + 1).fill(0));\n    dp[s][0] = 1;\n    for (let j = 1; j <= M; j++) {\n        for (let i = 0; i < N; i++) {\n            if (dp[i][j - 1] > 0) {\n                if (i - A[j - 1] >= 0) {\n                    dp[i - A[j - 1]][j] = (dp[i - A[j - 1]][j] + dp[i][j - 1]) % MOD;\n                }\n                if (i + A[j - 1] < N) {\n                    dp[i + A[j - 1]][j] = (dp[i + A[j - 1]][j] + dp[i][j - 1]) % MOD;\n                }\n            }\n        }\n    }\n    console.log(dp.map(x => x[M]).join(' '));\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

@@ -1,0 +1,119 @@
+{
+  "questionId": "Q11652",
+  "title": "Bertown Subway",
+  "slug": "C",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "$undefined",
+    "isPremium": true,
+    "tags": [
+      "Graph",
+      "Shortest Path",
+      "BFS"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Write a program for the coding challenge \"Bertown Subway\". Refer to SEED-IT description: https://codeforces.com/contest/884/problem/C",
+    "constraints": [
+      "1 <= n <= 100",
+      "1 <= m <= 100",
+      "The length of each station name is at most 10 characters"
+    ],
+    "inputFormat": "The first line contains an integer n, which is the number of stations. Then, n lines follow, each containing a string representing the name of a station. After that, an integer m is given, representing the number of queries. Then, m lines follow, each containing two strings representing the start and end stations of a query.",
+    "outputFormat": "For each query, print the minimum number of lines that need to be taken to get from the start station to the end station.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "1\nA\n1\nA A",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "5\nA\nB\nC\nD\nE\n5\nA B\nB C\nC D\nD E\nE A",
+        "expectedOutput": "1\n1\n1\n1\n2",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": "3\nA\nB\nC\n3\nA B\nB C\nC A",
+        "expectedOutput": "1\n1\n2",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case / empty-like / negative if allowed",
+        "input": "2\nA\nB\n1\nA A",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": "4\nA\nB\nC\nD\n4\nA B\nB C\nC D\nD A",
+        "expectedOutput": "1\n1\n1\n2",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a graph to represent the subway system. Each station is a node in the graph, and two nodes are connected by an edge if the corresponding stations are on the same line. We can then use a breadth-first search (BFS) algorithm to find the shortest path between two stations.",
+    "timeComplexity": "O(n + m)",
+    "spaceComplexity": "O(n)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#define MAX 100\n#define MAX_NAME 10\n\n// Define a structure to represent a station\ntypedef struct {\n    char name[MAX_NAME];\n    int lines[MAX];\n    int numLines;\n} Station;\n\n// Define a structure to represent a graph\ntypedef struct {\n    Station stations[MAX];\n    int numStations;\n} Graph;\n\n// Function to add a station to the graph\nvoid addStation(Graph *graph, char *name) {\n    strcpy(graph->stations[graph->numStations].name, name);\n    graph->stations[graph->numStations].numLines = 0;\n    graph->numStations++;\n}\n\n// Function to add a line to a station\nvoid addLine(Graph *graph, char *stationName, int line) {\n    for (int i = 0; i < graph->numStations; i++) {\n        if (strcmp(graph->stations[i].name, stationName) == 0) {\n            graph->stations[i].lines[graph->stations[i].numLines] = line;\n            graph->stations[i].numLines++;\n            return;\n        }\n    }\n}\n\n// Function to find the shortest path between two stations\nint shortestPath(Graph *graph, char *start, char *end) {\n    int visited[MAX] = {0};\n    int queue[MAX];\n    int front = 0, rear = 0;\n    int distance[MAX] = {0};\n\n    // Find the start station and add it to the queue\n    for (int i = 0; i < graph->numStations; i++) {\n        if (strcmp(graph->stations[i].name, start) == 0) {\n            queue[rear] = i;\n            visited[i] = 1;\n            distance[i] = 0;\n            rear++;\n            break;\n        }\n    }\n\n    while (front < rear) {\n        int current = queue[front];\n        front++;\n\n        // Check all neighboring stations\n        for (int i = 0; i < graph->stations[current].numLines; i++) {\n            for (int j = 0; j < graph->numStations; j++) {\n                if (graph->stations[j].lines[i] == graph->stations[current].lines[i] && !visited[j]) {\n                    queue[rear] = j;\n                    visited[j] = 1;\n                    distance[j] = distance[current] + 1;\n                    rear++;\n\n                    // If we found the end station, return the distance\n                    if (strcmp(graph->stations[j].name, end) == 0) {\n                        return distance[j];\n                    }\n                }\n            }\n        }\n    }\n\n    // If we didn't find the end station, return -1\n    return -1;\n}\n\nint main() {\n    Graph graph;\n    graph.numStations = 0;\n\n    int n;\n    scanf(\"%d\", &n);\n\n    for (int i = 0; i < n; i++) {\n        char name[MAX_NAME];\n        scanf(\"%s\", name);\n        addStation(&graph, name);\n    }\n\n    int m;\n    scanf(\"%d\", &m);\n\n    for (int i = 0; i < m; i++) {\n        char start[MAX_NAME], end[MAX_NAME];\n        scanf(\"%s %s\", start, end);\n        printf(\"%d\\n\", shortestPath(&graph, start, end));\n    }\n\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\n#include <queue>\n#include <string>\n#include <unordered_map>\nusing namespace std;\n\n// Define a structure to represent a station\nstruct Station {\n    string name;\n    vector<int> lines;\n};\n\n// Define a structure to represent a graph\nstruct Graph {\n    vector<Station> stations;\n    unordered_map<string, int> stationMap;\n};\n\n// Function to add a station to the graph\nvoid addStation(Graph &graph, string name) {\n    Station station;\n    station.name = name;\n    graph.stations.push_back(station);\n    graph.stationMap[name] = graph.stations.size() - 1;\n}\n\n// Function to add a line to a station\nvoid addLine(Graph &graph, string stationName, int line) {\n    graph.stations[graph.stationMap[stationName]].lines.push_back(line);\n}\n\n// Function to find the shortest path between two stations\nint shortestPath(Graph &graph, string start, string end) {\n    vector<bool> visited(graph.stations.size(), false);\n    queue<int> q;\n    vector<int> distance(graph.stations.size(), 0);\n\n    // Find the start station and add it to the queue\n    q.push(graph.stationMap[start]);\n    visited[graph.stationMap[start]] = true;\n    distance[graph.stationMap[start]] = 0;\n\n    while (!q.empty()) {\n        int current = q.front();\n        q.pop();\n\n        // Check all neighboring stations\n        for (int i = 0; i < graph.stations[current].lines.size(); i++) {\n            for (int j = 0; j < graph.stations.size(); j++) {\n                if (find(graph.stations[j].lines.begin(), graph.stations[j].lines.end(), graph.stations[current].lines[i]) != graph.stations[j].lines.end() && !visited[j]) {\n                    q.push(j);\n                    visited[j] = true;\n                    distance[j] = distance[current] + 1;\n\n                    // If we found the end station, return the distance\n                    if (graph.stations[j].name == end) {\n                        return distance[j];\n                    }\n                }\n            }\n        }\n    }\n\n    // If we didn't find the end station, return -1\n    return -1;\n}\n\nint main() {\n    Graph graph;\n\n    int n;\n    cin >> n;\n\n    for (int i = 0; i < n; i++) {\n        string name;\n        cin >> name;\n        addStation(graph, name);\n    }\n\n    int m;\n    cin >> m;\n\n    for (int i = 0; i < m; i++) {\n        string start, end;\n        cin >> start >> end;\n        cout << shortestPath(graph, start, end) << endl;\n    }\n\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\nimport java.util.Queue;\nimport java.util.LinkedList;\nimport java.util.HashMap;\nimport java.util.Map;\n\n// Define a class to represent a station\nclass Station {\n    String name;\n    int[] lines;\n    int numLines;\n\n    public Station(String name) {\n        this.name = name;\n        this.lines = new int[10];\n        this.numLines = 0;\n    }\n}\n\n// Define a class to represent a graph\nclass Graph {\n    Station[] stations;\n    Map<String, Integer> stationMap;\n    int numStations;\n\n    public Graph(int numStations) {\n        this.numStations = numStations;\n        this.stations = new Station[numStations];\n        this.stationMap = new HashMap<>();\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n\n        int n = scanner.nextInt();\n        Graph graph = new Graph(n);\n\n        for (int i = 0; i < n; i++) {\n            String name = scanner.next();\n            graph.stations[i] = new Station(name);\n            graph.stationMap.put(name, i);\n        }\n\n        int m = scanner.nextInt();\n\n        for (int i = 0; i < m; i++) {\n            String start = scanner.next();\n            String end = scanner.next();\n            System.out.println(shortestPath(graph, start, end));\n        }\n    }\n\n    public static int shortestPath(Graph graph, String start, String end) {\n        boolean[] visited = new boolean[graph.numStations];\n        Queue<Integer> queue = new LinkedList<>();\n        int[] distance = new int[graph.numStations];\n\n        // Find the start station and add it to the queue\n        queue.add(graph.stationMap.get(start));\n        visited[graph.stationMap.get(start)] = true;\n        distance[graph.stationMap.get(start)] = 0;\n\n        while (!queue.isEmpty()) {\n            int current = queue.poll();\n\n            // Check all neighboring stations\n            for (int i = 0; i < graph.stations[current].numLines; i++) {\n                for (int j = 0; j < graph.numStations; j++) {\n                    if (graph.stations[j].lines[i] == graph.stations[current].lines[i] && !visited[j]) {\n                        queue.add(j);\n                        visited[j] = true;\n                        distance[j] = distance[current] + 1;\n\n                        // If we found the end station, return the distance\n                        if (graph.stations[j].name.equals(end)) {\n                            return distance[j];\n                        }\n                    }\n                }\n            }\n        }\n\n        // If we didn't find the end station, return -1\n        return -1;\n    }\n}",
+      "Python3": "from collections import deque\nfrom typing import Dict, List\n\n# Define a class to represent a station\nclass Station:\n    def __init__(self, name: str):\n        self.name = name\n        self.lines = []\n\n# Define a class to represent a graph\nclass Graph:\n    def __init__(self, num_stations: int):\n        self.stations = [Station('') for _ in range(num_stations)]\n        self.station_map: Dict[str, int] = {}\n        self.num_stations = num_stations\n\n    def add_station(self, name: str):\n        for i in range(self.num_stations):\n            if self.stations[i].name == '':\n                self.stations[i].name = name\n                self.station_map[name] = i\n                break\n\n    def add_line(self, station_name: str, line: int):\n        self.stations[self.station_map[station_name]].lines.append(line)\n\n    def shortest_path(self, start: str, end: str) -> int:\n        visited = [False] * self.num_stations\n        queue = deque()\n        distance = [0] * self.num_stations\n\n        # Find the start station and add it to the queue\n        queue.append(self.station_map[start])\n        visited[self.station_map[start]] = True\n        distance[self.station_map[start]] = 0\n\n        while queue:\n            current = queue.popleft()\n\n            # Check all neighboring stations\n            for i in range(len(self.stations[current].lines)):\n                for j in range(self.num_stations):\n                    if self.stations[j].lines and self.stations[j].lines[i] == self.stations[current].lines[i] and not visited[j]:\n                        queue.append(j)\n                        visited[j] = True\n                        distance[j] = distance[current] + 1\n\n                        # If we found the end station, return the distance\n                        if self.stations[j].name == end:\n                            return distance[j]\n\n        # If we didn't find the end station, return -1\n        return -1\n\n# Read input\nnum_stations = int(input())\ngraph = Graph(num_stations)\n\nfor i in range(num_stations):\n    name = input()\n    graph.add_station(name)\n\nnum_queries = int(input())\n\nfor _ in range(num_queries):\n    start, end = input().split()\n    print(graph.shortest_path(start, end))",
+      "JavaScript": "const readline = require('readline');\n\n// Define a class to represent a station\nclass Station {\n    constructor(name) {\n        this.name = name;\n        this.lines = [];\n    }\n}\n\n// Define a class to represent a graph\nclass Graph {\n    constructor(numStations) {\n        this.stations = new Array(numStations);\n        this.stationMap = new Map();\n        this.numStations = numStations;\n    }\n\n    addStation(name) {\n        for (let i = 0; i < this.numStations; i++) {\n            if (this.stations[i] === undefined) {\n                this.stations[i] = new Station(name);\n                this.stationMap.set(name, i);\n                break;\n            }\n        }\n    }\n\n    addLine(stationName, line) {\n        this.stations[this.stationMap.get(stationName)].lines.push(line);\n    }\n\n    shortestPath(start, end) {\n        const visited = new Array(this.numStations).fill(false);\n        const queue = [];\n        const distance = new Array(this.numStations).fill(0);\n\n        // Find the start station and add it to the queue\n        queue.push(this.stationMap.get(start));\n        visited[this.stationMap.get(start)] = true;\n        distance[this.stationMap.get(start)] = 0;\n\n        while (queue.length > 0) {\n            const current = queue.shift();\n\n            // Check all neighboring stations\n            for (let i = 0; i < this.stations[current].lines.length; i++) {\n                for (let j = 0; j < this.numStations; j++) {\n                    if (this.stations[j].lines.includes(this.stations[current].lines[i]) && !visited[j]) {\n                        queue.push(j);\n                        visited[j] = true;\n                        distance[j] = distance[current] + 1;\n\n                        // If we found the end station, return the distance\n                        if (this.stations[j].name === end) {\n                            return distance[j];\n                        }\n                    }\n                }\n            }\n        }\n\n        // If we didn't find the end station, return -1\n        return -1;\n    }\n}\n\n// Read input\nconst rl = readline.createInterface({\n    input: process.stdin,\n    output: process.stdout\n});\n\nlet numStations;\nlet graph;\nlet numQueries;\nlet i = 0;\nlet input = [];\n\nrl.on('line', (line) => {\n    input.push(line);\n    i++;\n    if (i === 1) {\n        numStations = parseInt(line);\n        graph = new Graph(numStations);\n    } else if (i <= numStations + 1) {\n        if (i <= numStations) {\n            graph.addStation(line);\n        } else {\n            numQueries = parseInt(line);\n        }\n    } else if (i <= numStations + numQueries + 1) {\n        const [start, end] = line.split(' ');\n        console.log(graph.shortestPath(start, end));\n    }\n});"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

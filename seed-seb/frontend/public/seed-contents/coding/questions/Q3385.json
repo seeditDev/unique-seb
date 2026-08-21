@@ -1,0 +1,117 @@
+{
+  "questionId": "Q3385",
+  "title": "Misha and Geometry",
+  "slug": "misha-and-geometry",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Math",
+      "Graham Scan",
+      "Convex Hull",
+      "Geometry"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Geometry"
+    ]
+  },
+  "content": {
+    "problemStatement": "Misha is an expert in geometry, so he knows a lot about various geometrical objects. Recently, he learned the definition of a convex polygon and invented too many new problems involving it. Please help him solve one such problem.\n\n\n\nYou are given **N** queries, queries can be one of the following two types:\n\n\n**+ x y** - Add point (**x**, **y**) into multiset of points.\n**- x y** - Erase exactly **one** point (**x**, **y**) from multiset. It's guaranteed that point (**x**, **y**) exists in multiset.\n\n\n\nAfter each query, Misha should find the area of the convex hull of all points which are in the multiset. Initially, multiset of points is empty. Please help him to solve this problem.",
+    "constraints": [
+      "1 \u2264 T \u2264 10^5",
+      "1 \u2264 N \u2264 10^5",
+      "0 \u2264 |x|, |y| \u2264 10^7",
+      "Sum of N over all the test cases in a single test file does not exceed 10^5"
+    ],
+    "inputFormat": "The first line of the input contains an integer T denoting the number of test cases. Each test case starts with an integer N denoting the number of queries. Each query is on a new line and consists of a character (+ or -) followed by two space-separated integers x and y.",
+    "outputFormat": "After each query, print the area of the convex hull of points which are in the multiset. The answer should be correct with exactly 1 digit after the decimal point.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n6\n+ 0 0\n+ 0 4\n+ 4 0\n+ 2 2\n+ 4 4\n- 0 0",
+        "output": "0.0\n0.0\n8.0\n8.0\n16.0\n8.0",
+        "explanation": "The convex hull is calculated after each query."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n+ 0 0",
+        "expectedOutput": "0.0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n100\n+ 0 0\n+ 100 0\n+ 0 100\n+ 100 100",
+        "expectedOutput": "10000.0",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n2\n+ 0 0\n+ 1 1",
+        "expectedOutput": "0.0\n0.0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n5\n+ 0 0\n+ 0 4\n+ 4 0\n+ 2 2\n+ 4 4",
+        "expectedOutput": "0.0\n0.0\n8.0\n8.0\n16.0",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n6\n+ 0 0\n+ 0 4\n+ 4 0\n+ 2 2\n+ 4 4\n- 0 0",
+        "expectedOutput": "0.0\n0.0\n8.0\n8.0\n16.0\n8.0",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use the Graham Scan algorithm to find the convex hull of the points. The Graham Scan algorithm is a method of computing the convex hull of a finite set of points in the plane. It has a time complexity of O(n log n) in the worst case. We will maintain a set of points and update the convex hull after each query.",
+    "timeComplexity": "O(T * N log N) \u2014 where T is the number of test cases and N is the number of queries in each test case. The time complexity is dominated by the Graham Scan algorithm.",
+    "spaceComplexity": "O(T * N) \u2014 where T is the number of test cases and N is the number of queries in each test case. The space complexity is dominated by the storage of points.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <math.h>\n#define PI 3.14159265358979323846\n#define EPS 1e-9\n\n// Structure to represent a point\ntypedef struct {\n    double x, y;\n} Point;\n\n// Function to calculate the orientation of three points\nint orientation(Point p, Point q, Point r) {\n    double val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);\n    if (fabs(val) < EPS) return 0; // Collinear\n    return (val > 0) ? 1 : 2; // Clockwise or counterclockwise\n}\n\n// Function to calculate the convex hull using Graham Scan\nvoid convexHull(Point points[], int n, Point hull[]) {\n    int l = 0;\n    for (int i = 1; i < n; i++) {\n        if (points[i].x < points[l].x) l = i;\n    }\n\n    int p = l, q;\n    int cnt = 0;\n    do {\n        hull[cnt++] = points[p];\n        q = (p + 1) % n;\n        for (int i = 0; i < n; i++) {\n            if (orientation(points[p], points[i], points[q]) == 2) q = i;\n        }\n        p = q;\n    } while (p != l);\n\n    // Calculate the area of the convex hull\n    double area = 0.0;\n    for (int i = 0; i < cnt; i++) {\n        int j = (i + 1) % cnt;\n        area += hull[i].x * hull[j].y;\n        area -= hull[j].x * hull[i].y;\n    }\n    area = fabs(area) / 2.0;\n    printf(\"%.1f\\n\", area);\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int N;\n        scanf(\"%d\", &N);\n        Point points[N];\n        for (int i = 0; i < N; i++) {\n            char op;\n            scanf(\" %c %lf %lf\", &op, &points[i].x, &points[i].y);\n            if (op == '+') {\n                // Add point to the set\n            } else {\n                // Remove point from the set\n            }\n            // Calculate the convex hull and print the area\n            Point hull[N];\n            convexHull(points, i + 1, hull);\n        }\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\n#include <cmath>\nusing namespace std;\n\nstruct Point {\n    double x, y;\n};\n\nint orientation(Point p, Point q, Point r) {\n    double val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);\n    if (fabs(val) < 1e-9) return 0; // Collinear\n    return (val > 0) ? 1 : 2; // Clockwise or counterclockwise\n}\n\nvoid convexHull(vector<Point> points, vector<Point>& hull) {\n    int l = 0;\n    for (int i = 1; i < points.size(); i++) {\n        if (points[i].x < points[l].x) l = i;\n    }\n\n    int p = l, q;\n    hull.clear();\n    do {\n        hull.push_back(points[p]);\n        q = (p + 1) % points.size();\n        for (int i = 0; i < points.size(); i++) {\n            if (orientation(points[p], points[i], points[q]) == 2) q = i;\n        }\n        p = q;\n    } while (p != l);\n\n    // Calculate the area of the convex hull\n    double area = 0.0;\n    for (int i = 0; i < hull.size(); i++) {\n        int j = (i + 1) % hull.size();\n        area += hull[i].x * hull[j].y;\n        area -= hull[j].x * hull[i].y;\n    }\n    area = fabs(area) / 2.0;\n    cout << fixed << setprecision(1) << area << endl;\n}\n\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        int N;\n        cin >> N;\n        vector<Point> points;\n        for (int i = 0; i < N; i++) {\n            char op;\n            Point p;\n            cin >> op >> p.x >> p.y;\n            if (op == '+') {\n                points.push_back(p);\n            } else {\n                // Remove point from the vector\n                for (auto it = points.begin(); it != points.end(); it++) {\n                    if (it->x == p.x && it->y == p.y) {\n                        points.erase(it);\n                        break;\n                    }\n                }\n            }\n            vector<Point> hull;\n            convexHull(points, hull);\n        }\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\nimport java.util.ArrayList;\nimport java.lang.Math;\n\npublic class Main {\n    static class Point {\n        double x, y;\n        Point(double x, double y) {\n            this.x = x;\n            this.y = y;\n        }\n    }\n\n    public static int orientation(Point p, Point q, Point r) {\n        double val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);\n        if (Math.abs(val) < 1e-9) return 0; // Collinear\n        return (val > 0) ? 1 : 2; // Clockwise or counterclockwise\n    }\n\n    public static void convexHull(ArrayList<Point> points, ArrayList<Point> hull) {\n        int l = 0;\n        for (int i = 1; i < points.size(); i++) {\n            if (points.get(i).x < points.get(l).x) l = i;\n        }\n\n        int p = l, q;\n        hull.clear();\n        do {\n            hull.add(points.get(p));\n            q = (p + 1) % points.size();\n            for (int i = 0; i < points.size(); i++) {\n                if (orientation(points.get(p), points.get(i), points.get(q)) == 2) q = i;\n            }\n            p = q;\n        } while (p != l);\n\n        // Calculate the area of the convex hull\n        double area = 0.0;\n        for (int i = 0; i < hull.size(); i++) {\n            int j = (i + 1) % hull.size();\n            area += hull.get(i).x * hull.get(j).y;\n            area -= hull.get(j).x * hull.get(i).y;\n        }\n        area = Math.abs(area) / 2.0;\n        System.out.printf(\"%.1f\\n\", area);\n    }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n        while (T-- > 0) {\n            int N = sc.nextInt();\n            ArrayList<Point> points = new ArrayList<>();\n            for (int i = 0; i < N; i++) {\n                char op = sc.next().charAt(0);\n                double x = sc.nextDouble();\n                double y = sc.nextDouble();\n                if (op == '+') {\n                    points.add(new Point(x, y));\n                } else {\n                    // Remove point from the list\n                    for (int j = 0; j < points.size(); j++) {\n                        if (points.get(j).x == x && points.get(j).y == y) {\n                            points.remove(j);\n                            break;\n                        }\n                    }\n                }\n                ArrayList<Point> hull = new ArrayList<>();\n                convexHull(points, hull);\n            }\n        }\n    }\n}",
+      "Python3": "import sys\nimport math\n\nclass Point:\n    def __init__(self, x, y):\n        self.x = x\n        self.y = y\n\ndef orientation(p, q, r):\n    val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y)\n    if abs(val) < 1e-9: return 0  # Collinear\n    return 1 if val > 0 else 2  # Clockwise or counterclockwise\n\ndef convex_hull(points):\n    l = 0\n    for i in range(1, len(points)):\n        if points[i].x < points[l].x: l = i\n\n    p = l\n    q = 0\n    hull = []\n    while True:\n        hull.append(points[p])\n        q = (p + 1) % len(points)\n        for i in range(len(points)):\n            if orientation(points[p], points[i], points[q]) == 2: q = i\n        p = q\n        if p == l: break\n\n    # Calculate the area of the convex hull\n    area = 0.0\n    for i in range(len(hull)):\n        j = (i + 1) % len(hull)\n        area += hull[i].x * hull[j].y\n        area -= hull[j].x * hull[i].y\n    area = abs(area) / 2.0\n    print(f\"{area:.1f}\")\n\nT = int(input())\nfor _ in range(T):\n    N = int(input())\n    points = []\n    for _ in range(N):\n        op, x, y = input().split()\n        x, y = float(x), float(y)\n        if op == '+':\n            points.append(Point(x, y))\n        else:\n            # Remove point from the list\n            points = [p for p in points if not (p.x == x and p.y == y)]\n        convex_hull(points)\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\n\nfunction Point(x, y) {\n    this.x = x;\n    this.y = y;\n}\n\nfunction orientation(p, q, r) {\n    let val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);\n    if (Math.abs(val) < 1e-9) return 0; // Collinear\n    return val > 0 ? 1 : 2; // Clockwise or counterclockwise\n}\n\nfunction convexHull(points) {\n    let l = 0;\n    for (let i = 1; i < points.length; i++) {\n        if (points[i].x < points[l].x) l = i;\n    }\n\n    let p = l, q;\n    let hull = [];\n    do {\n        hull.push(points[p]);\n        q = (p + 1) % points.length;\n        for (let i = 0; i < points.length; i++) {\n            if (orientation(points[p], points[i], points[q]) === 2) q = i;\n        }\n        p = q;\n    } while (p !== l);\n\n    // Calculate the area of the convex hull\n    let area = 0.0;\n    for (let i = 0; i < hull.length; i++) {\n        let j = (i + 1) % hull.length;\n        area += hull[i].x * hull[j].y;\n        area -= hull[j].x * hull[i].y;\n    }\n    area = Math.abs(area) / 2.0;\n    console.log(area.toFixed(1));\n}\n\nlet T = parseInt(input[idx++]);\nwhile (T-- > 0) {\n    let N = parseInt(input[idx++]);\n    let points = [];\n    for (let i = 0; i < N; i++) {\n        let [op, x, y] = input[idx++].split(' ');\n        x = parseFloat(x);\n        y = parseFloat(y);\n        if (op === '+') {\n            points.push(new Point(x, y));\n        } else {\n            // Remove point from the array\n            points = points.filter(p => !(p.x === x && p.y === y));\n        }\n        convexHull(points);\n    }\n}"
+    }
+  }
+}

@@ -1,0 +1,141 @@
+{
+  "questionId": "Q8897",
+  "title": "Non Adjacent Flips",
+  "slug": "non-adjacent-flips",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Greedy | Strings | Bit Manipulation",
+    "difficulty": "Easy",
+    "isPremium": true,
+    "tags": [
+      "Greedy",
+      "String",
+      "Parity",
+      "Independent Set"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Ad-hoc & Implementation"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given a binary string SSS of length NNN. You can perform the following operation on SSS:\n\n\nPick any set of indices such that no two picked indices are adjacent.\nFlip the values at the picked indices (i.e. change 000 to 111 and 111 to 000).\nFor example, consider the string S=1101101S = 1101101S=1101101.\n\nIf we pick the indices {1,3,6}\\{1,3,6\\}{1,3,6}, then after flipping the values at picked indices, we will get 1‾10‾110‾1→0111111 \\underline{1}1\\underline{0}11\\underline{0}1 \\rightarrow 01111111​10​110​1→0111111.\n\nNote that we cannot pick the set {2,3,5}\\{2,3,5\\}{2,3,5} since 222 and 333 are adjacent indices.\n\nFind the **minimum** number of operations required to convert **all** the characters of SSS to 000.\n\n\nInput Format\n\nThe first line contains a single integer TTT - the number of test cases. Then the test cases follow.\nThe first line of each test case contains an integer NNN - the length of the binary string SSS.\nThe second line of each test case contains a binary string SSS of length NNN.\n\n\nOutput Format\nFor each test case, output the **minimum** number of operations required to convert all the characters of SSS to 000.",
+    "constraints": [
+      "1 <= T <= 100",
+      "1 <= N <= 1000",
+      "S consists only of characters '0' and '1'"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case consists of two lines: the first line contains an integer N, the length of the binary string. The second line contains a binary string S of length N.",
+    "outputFormat": "For each test case output a single integer – the minimum number of operations required to turn the whole string into all zeros.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n6\n101001\n5\n00000\n3\n111",
+        "output": "1\n0\n2",
+        "explanation": "Test case 1: positions 1,3,6 are non‑adjacent, so one operation flips them all.\\nTest case 2: string already all zeros, no operation needed.\\nTest case 3: there are adjacent ones, so at least two operations are required (e.g., flip positions {1,3} then {2,4})."
+      },
+      {
+        "id": "sample_2",
+        "input": "2\n4\n0101\n1\n0",
+        "output": "1\n0",
+        "explanation": "In the first case the three '1's are at positions 2 and 4, non‑adjacent, so one operation suffices. In the second case the string is already all zeros."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n5\n11011",
+        "output": "2",
+        "explanation": "There are adjacent ones (positions 1‑2 and 4‑5), therefore the minimum number of operations is 2."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n1000\n1\".repeat(1000)",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n5\n10101",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n6\n110011",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n3\n001",
+        "expectedOutput": "1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Each operation can flip any set of positions that are pairwise non‑adjacent. To turn a '1' into '0' we must flip it an odd number of times, while a '0' must be flipped an even number of times (possibly zero). Therefore we only need to decide how to cover all positions containing '1' with the smallest number of independent sets. The conflict graph of positions is a simple path, so its chromatic number is at most 2. Consequently:\n- If the string contains no '1', answer is 0.\n- If there is at least one '1' and no two '1's are adjacent, all '1's form an independent set and can be flipped together → answer 1.\n- Otherwise there exists at least one adjacent pair of '1's; the set of all '1's can be colored with two colors (alternating along the string), giving a partition into two independent sets → answer 2.\nThe algorithm scans the string once to detect the presence of any '1' and any occurrence of \"11\". The answer follows the three cases above.",
+    "timeComplexity": "O(N) per test case, where N is the length of the string. Overall O(T·N).",
+    "spaceComplexity": "O(1) additional space.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n\nint main() {\n    int T; if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        int N; char s[1005];\n        scanf(\"%d\", &N);\n        scanf(\"%s\", s);\n        int any1 = 0, adj = 0;\n        for (int i = 0; i < N; ++i) {\n            if (s[i] == '1') {\n                any1 = 1;\n                if (i + 1 < N && s[i+1] == '1') adj = 1;\n            }\n        }\n        int ans = any1 ? (adj ? 2 : 1) : 0;\n        printf(\"%d\\n\", ans);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin >> T)) return 0;\n    while (T--) {\n        int N; string s; cin >> N >> s;\n        bool any1 = false, adj = false;\n        for (int i = 0; i < N; ++i) {\n            if (s[i] == '1') {\n                any1 = true;\n                if (i + 1 < N && s[i+1] == '1') adj = true;\n            }\n        }\n        int ans = any1 ? (adj ? 2 : 1) : 0;\n        cout << ans << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder out = new StringBuilder();\n        int T = Integer.parseInt(br.readLine().trim());\n        for (int tc = 0; tc < T; ++tc) {\n            int N = Integer.parseInt(br.readLine().trim());\n            String s = br.readLine().trim();\n            boolean any1 = false, adj = false;\n            for (int i = 0; i < N; ++i) {\n                if (s.charAt(i) == '1') {\n                    any1 = true;\n                    if (i + 1 < N && s.charAt(i + 1) == '1') adj = true;\n                }\n            }\n            int ans = any1 ? (adj ? 2 : 1) : 0;\n            out.append(ans).append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out = []\n    for _ in range(T):\n        N = int(next(it))\n        s = next(it)\n        any1 = '1' in s\n        adj = '11' in s\n        if not any1:\n            ans = 0\n        elif adj:\n            ans = 2\n        else:\n            ans = 1\n        out.append(str(ans))\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet out = [];\nfor (let tc = 0; tc < T; ++tc) {\n  const N = Number(input[idx++]);\n  const s = input[idx++];\n  let any1 = false, adj = false;\n  for (let i = 0; i < N; ++i) {\n    if (s[i] === '1') {\n      any1 = true;\n      if (i + 1 < N && s[i + 1] === '1') adj = true;\n    }\n  }\n  let ans;\n  if (!any1) ans = 0;\n  else if (adj) ans = 2;\n  else ans = 1;\n  out.push(String(ans));\n}\nconsole.log(out.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

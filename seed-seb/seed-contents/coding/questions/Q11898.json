@@ -1,0 +1,130 @@
+{
+  "questionId": "Q11898",
+  "title": "String to Integer (atoi)",
+  "slug": "string-to-integer-atoi",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "String",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Parsing",
+      "Integer Conversion"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Implement the function myAtoi(s) which converts the given string s to a 32-bit signed integer (similar to the C/C++ atoi function).\n\n\n\nSteps to Implement:\n1. First, ignore any leading whitespace characters ' ' until the first non-whitespace character is found.\n\n2. Check the next character to determine the sign. If it’s a '-', the number should be negative. If it’s a '+', the number should be positive. If neither is found, assume the number is positive.\n\n3. Read the digits and convert them into a number. Stop reading once a non-digit character is encountered or the end of the string is reached. Leading zeros should be ignored during conversion.\n\n4. The result should be clamped within the 32-bit signed integer range: [-2147483648, 2147483647]. If the computed number is outside this range, return -2147483648 if the number is less than -2147483648, or return 2147483647 if the number is greater than 2147483647.\n\n5. Finally, return the computed number after applying all the above steps.",
+    "constraints": [
+      "0 <= s.length <= 200",
+      "s consists of English letters (both uppercase and lowercase), digits, ' ', '+', and '-'"
+    ],
+    "inputFormat": "A string s",
+    "outputFormat": "A 32-bit signed integer",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "s = \" -12345\"",
+        "output": "-12345",
+        "explanation": "Ignore leading whitespaces.  \nThe sign '-' is encountered, indicating the number is negative.  \nDigits 12345 are read and converted to -12345.\n\n**Example 2:**"
+      },
+      {
+        "id": "sample_2",
+        "input": "s = \"4193 with words\"",
+        "output": "4193",
+        "explanation": "Read the digits 4193 and stop when encountering the first non-digit character (w).\n        \n    \n\n\n**Disclaimer**: Here is the practice link to help you assess your knowledge better. It's highly recommend trying to solve it before looking at the solution."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "s = \"-2147483648\"",
+        "expectedOutput": "-2147483648",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "s = \"2147483647\"",
+        "expectedOutput": "2147483647",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform case",
+        "input": "s = \"12345\"",
+        "expectedOutput": "12345",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "s = \"   -00123a\"",
+        "expectedOutput": "-123",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": "s = \"  -12345abc\"",
+        "expectedOutput": "-12345",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Iterative parsing with overflow handling",
+    "timeComplexity": "O(n)",
+    "spaceComplexity": "O(1)",
+    "code": {
+      "C": "#include <stdio.h>\nint myAtoi(char * s) {\n    int sign = 1;\n    long long num = 0;\n    while (*s == ' ') s++;\n    if (*s == '-') { sign = -1; s++; }\n    else if (*s == '+') s++;\n    while (*s >= '0' && *s <= '9') {\n        num = num * 10 + (*s - '0');\n        if (num > 2147483647 && sign == 1) return 2147483647;\n        if (num > 2147483648 && sign == -1) return -2147483648;\n        s++;\n    }\n    return sign * num;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nconst int INT_MIN_VAL = -2147483648;\nconst int INT_MAX_VAL = 2147483647;\n\nint myAtoi(string s) {\n    int i = 0;\n    while (i < s.size() && s[i] == ' ') i++;\n    int sign = 1;\n    if (i < s.size() && (s[i] == '+' || s[i] == '-')) {\n        sign = (s[i] == '-') ? -1 : 1;\n        i++;\n    }\n    long long num = 0;\n    while (i < s.size() && isdigit(s[i])) {\n        num = num * 10 + (s[i] - '0');\n        if (sign * num <= INT_MIN_VAL) return INT_MIN_VAL;\n        if (sign * num >= INT_MAX_VAL) return INT_MAX_VAL;\n        i++;\n    }\n    return sign * num;\n}",
+      "Java": "public class Solution {\n    public int myAtoi(String s) {\n        int sign = 1;\n        long num = 0;\n        s = s.trim();\n        if (s.isEmpty()) return 0;\n        if (s.charAt(0) == '-') { sign = -1; s = s.substring(1); }\n        else if (s.charAt(0) == '+') s = s.substring(1);\n        for (char c : s.toCharArray()) {\n            if (Character.isDigit(c)) {\n                num = num * 10 + (c - '0');\n                if (num > 2147483647 && sign == 1) return 2147483647;\n                if (num > 2147483648 && sign == -1) return -2147483648;\n            } else break;\n        }\n        return (int) (sign * num);\n    }\n}",
+      "Python3": "def myAtoi(s: str) -> int:\n    s = s.lstrip()\n    if not s: return 0\n    sign = -1 if s[0] == '-' else 1\n    if s[0] in ['-', '+']:\n        s = s[1:]\n    num = 0\n    for c in s:\n        if c.isdigit():\n            num = num * 10 + int(c)\n            if num > 2**31 - 1 and sign == 1: return 2**31 - 1\n            if num > 2**31 and sign == -1: return -2**31\n        else:\n            break\n    return sign * num",
+      "JavaScript": "const myAtoi = (s) => {\n    let sign = 1;\n    let num = 0;\n    s = s.trim();\n    if (s[0] === '-') { sign = -1; s = s.substring(1); }\n    else if (s[0] === '+') s = s.substring(1);\n    for (let c of s) {\n        if (!isNaN(c)) {\n            num = num * 10 + parseInt(c);\n            if (num > 2147483647 && sign === 1) return 2147483647;\n            if (num > 2147483648 && sign === -1) return -2147483648;\n        } else break;\n    }\n    return sign * num;\n};"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

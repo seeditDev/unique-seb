@@ -1,0 +1,124 @@
+{
+  "questionId": "Q7903",
+  "title": "Fractions",
+  "slug": "fractions",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Number Theory",
+      "Divisibility",
+      "Chinese Remainder Theorem",
+      "Sieve of Eratosthenes"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Mathematics"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "For positive integers aaa and bbb, we say that a fraction ab\\frac{a}{b}ba​ is good if it is equal to mm+1\\frac{m}{m+1}m+1m​ for some positive integer mmm.\n\nYou are given an integer NNN. Find the number of pairs of integers i,ji, ji,j such that 1≤i,j≤N1 \\le i, j \\le N1≤i,j≤N and the fraction ii+1⋅j+1j\\frac{i}{i+1} \\cdot \\frac{j+1}{j}i+1i​⋅jj+1​ is good.",
+    "constraints": [
+      "1 ≤ T ≤ 10",
+      "1 ≤ N ≤ 1,000,000"
+    ],
+    "inputFormat": "The first line contains an integer T – the number of test cases. Each of the next T lines contains a single integer N (1 ≤ N ≤ 1,000,000).",
+    "outputFormat": "For each test case output a single line with one integer – the number of ordered pairs (i, j) (1 ≤ i, j ≤ N) such that (i/(i+1))·((j+1)/j) equals m/(m+1) for some positive integer m.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "5",
+        "output": "8",
+        "explanation": "Explanation:\nThe following eight pairs (i,j)(i, j)(i,j) give good fractions: (1,2)(1,2)(1,2), (1,3)(1,3)(1,3), (2,3)(2,3)(2,3), (2,4)(2,4)(2,4), (2,5)(2,5)(2,5), (3,4)(3,4)(3,4), (3,5)(3,5)(3,5) and (4,5)(4,5)(4,5)."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For a pair (i, j) let A = i·(j+1) and B = (i+1)·j. The fraction A/B equals m/(m+1) iff m = A/(B‑A) is a positive integer. Since B‑A = j‑i, the condition becomes:\n  • j > i (otherwise m ≤ 0), and\n  • (j‑i) divides i·(j+1).\nDefine d = j‑i (1 ≤ d ≤ N‑1) and write j = i + d. The condition turns into:\n  d | i·(i+d+1).\nBecause i·(i+d+1) ≡ (i mod d)·((i+1) mod d) (mod d), let r = i mod d. The condition is\n  r·(r+1) ≡ 0 (mod d).\nSince r and r+1 are coprime, every prime power p^e dividing d must divide either r or r+1. Hence for each distinct prime power of d we have two independent choices:\n  – r ≡ 0 (mod p^e)  or  – r ≡ -1 (mod p^e).\nBy the Chinese Remainder Theorem this yields exactly 2^{ω(d)} residues r (ω(d) = number of distinct prime factors of d) that satisfy the divisibility.\nFor each such residue r we count how many i (1 ≤ i ≤ N‑d) are congruent to r modulo d. The smallest i with residue r is:\n  first = d   if r = 0,\n  first = r   otherwise.\nIf first ≤ N‑d, the number of valid i is 1 + floor((N‑d‑first)/d).\nSumming this over all residues for every d gives the answer.\nAlgorithm steps for each test case:\n1. Build an SPF (smallest prime factor) array up to N using a linear sieve – O(N).\n2. For each d from 1 to N‑1:\n   a. Extract the distinct prime powers of d using the SPF array.\n   b. Generate all residues r that satisfy r·(r+1) ≡ 0 (mod d) by a recursive CRT combination of the two possibilities (0 or -1) for each prime power. The number of residues never exceeds 2^{ω(d)} ≤ 128 for N ≤ 10^6.\n   c. For each residue compute the contribution of i as described and add to the total.\n3. Output the total.\nThe overall complexity is O(N log log N) for the sieve plus Σ_d 2^{ω(d)} which is well below 2·10^7 for N = 10^6, easily fitting into the time limit. Memory consumption is O(N) for the SPF array.",
+    "timeComplexity": "O(N log log N) per test case (dominated by the linear sieve and the small‑constant work per d).",
+    "spaceComplexity": "O(N) – the SPF array and a few auxiliary vectors.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

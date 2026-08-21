@@ -1,0 +1,142 @@
+{
+  "questionId": "Q5278",
+  "title": "Newspaper Puzzle",
+  "slug": "newspaper-puzzle",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Two-SAT",
+      "Graph Algorithms"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Graphs"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "When things slow down in the kitchen, the Chef likes to do puzzles he finds in the newspaper until more orders arrive. Today, a new type of puzzle has been featured and the Chef needs help solving it.\n\n\n\nIn this puzzle, a series of groups of non-zero integers are given where each group has exactly three integers. Furthermore, for each positive integer k, the number of groups including k plus the number of groups including -k does not exceed 3. The goal is to assign, for each positive integer k, either the character 'T' or 'F' so that every group of three integers has\n\n\n\nat least one negative integer k such that |k| is assigned 'F', or\nat least one positive integer k such that k is assigned 'T'\n\n\n\n\n\n\nFinally, you are guaranteed that the absolute values the three integers in any particular group are all distinct. Now, newspaper puzzles are only fun if they are solvable so you are guaranteed that there is a solution. Your task is to find such an assignment of 'T' or 'F' values to the positive integers meeting the above requirements.",
+    "constraints": [
+      "1 <= T <= 30",
+      "1 <= C <= 1000",
+      "3 <= V <= 3000",
+      "Each group contains three distinct absolute values",
+      "Each integer (positive or negative) appears in at most three groups",
+      "A satisfying assignment is guaranteed to exist"
+    ],
+    "inputFormat": "First line contains T, the number of test cases. Each test case contains two integers C and V on the first line, followed by C lines, each containing three distinct non-zero integers a, b, c.",
+    "outputFormat": "For each test case, print a string of length V where the i-th character is either 'T' or 'F' and denotes the assignment for the positive integer i.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n3 3\n1 2 3\n1 -2 -3\n-1 2 -3\n2 7\n5 -2 1\n3 -1 2",
+        "output": "TFF\nTFTFFTF",
+        "explanation": "The first test case has three clauses: (1, 2, 3), (1, -2, -3), and (-1, 2, -3). The second test case has two clauses: (5, -2, 1) and (3, -1, 2)."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n2 5\n1 2 3\n-1 -2 -3",
+        "output": "TFFFT",
+        "explanation": "The test case has two clauses: (1, 2, 3) and (-1, -2, -3)."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n1 3\n1 2 3",
+        "output": "TTT",
+        "explanation": "The test case has one clause: (1, 2, 3)."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1\n1 1 1",
+        "expectedOutput": "T",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n10 10\n1 2 3\n-1 -2 -3\n1 -2 -3\n-1 2 -3\n1 2 -3\n-1 -2 3\n1 -2 3\n-1 2 3",
+        "expectedOutput": "TTTTTTTTT",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n5 5\n1 1 1\n-1 -1 -1\n1 -1 1\n-1 1 -1\n1 1 -1",
+        "expectedOutput": "TFFFF",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n5 5\n1 2 3\n-1 -2 -3\n1 -2 -3\n-1 2 -3\n1 2 -3",
+        "expectedOutput": "TFTFT",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "5\n3 3\n1 2 3\n1 -2 -3\n-1 2 -3\n2 7\n5 -2 1\n3 -1 2\n1 5\n1 2 3\n1 2 -3\n1 1 1\n1 2 3\n-1 -2 -3",
+        "expectedOutput": "TFF\nTFTFFTF\nTTT\nTFT\nT",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved by reducing it to a 2-SAT problem. We create a graph where each variable is a node, and there is a directed edge from node A to node B if A implies B. We then perform a topological sort on the graph to find a valid assignment of 'T' or 'F' values to the positive integers.",
+    "timeComplexity": "O(T * (C + V)) per test case, O(T * (C + V)) total.",
+    "spaceComplexity": "O(C + V) — the dominant structure is the graph.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nint T;\nint C, V;\nint **clauses;\nint *assign;\n\nint literal_true(int lit) {\n    int var = abs(lit);\n    if (assign[var] == 0) return 0;\n    if (lit > 0) return assign[var] == 1;\n    return assign[var] == -1;\n}\n\nint main() {\n    scanf(\"%d\", &T);\n    while (T--) {\n        scanf(\"%d %d\", &C, &V);\n        clauses = (int **)malloc(C * sizeof(int *));\n        for (int i = 0; i < C; i++) {\n            clauses[i] = (int *)malloc(3 * sizeof(int));\n            for (int j = 0; j < 3; j++) {\n                scanf(\"%d\", &clauses[i][j]);\n            }\n        }\n        assign = (int *)malloc((V + 1) * sizeof(int));\n        for (int i = 1; i <= V; i++) {\n            assign[i] = 0;\n        }\n        for (int i = 0; i < C; i++) {\n            int a = clauses[i][0], b = clauses[i][1], c = clauses[i][2];\n            if (a > 0 && b > 0 && c > 0) {\n                assign[a] = assign[b] = assign[c] = 1;\n            } else if (a < 0 && b < 0 && c < 0) {\n                assign[-a] = assign[-b] = assign[-c] = -1;\n            } else {\n                if (a > 0) assign[a] = 1;\n                if (b > 0) assign[b] = 1;\n                if (c > 0) assign[c] = 1;\n                if (a < 0) assign[-a] = -1;\n                if (b < 0) assign[-b] = -1;\n                if (c < 0) assign[-c] = -1;\n            }\n        }\n        for (int i = 1; i <= V; i++) {\n            if (assign[i] == 1) printf(\"T\");\n            else printf(\"F\");\n        }\n        printf(\"\\n\");\n        free(assign);\n        for (int i = 0; i < C; i++) {\n            free(clauses[i]);\n        }\n        free(clauses);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(NULL);\n    int T;\n    cin >> T;\n    while (T--) {\n        int C, V;\n        cin >> C >> V;\n        vector<vector<int>> clauses(C, vector<int>(3));\n        for (int i = 0; i < C; i++) {\n            for (int j = 0; j < 3; j++) {\n                cin >> clauses[i][j];\n            }\n        }\n        vector<int> assign(V + 1, 0);\n        for (int i = 0; i < C; i++) {\n            int a = clauses[i][0], b = clauses[i][1], c = clauses[i][2];\n            if (a > 0 && b > 0 && c > 0) {\n                assign[a] = assign[b] = assign[c] = 1;\n            } else if (a < 0 && b < 0 && c < 0) {\n                assign[-a] = assign[-b] = assign[-c] = -1;\n            } else {\n                if (a > 0) assign[a] = 1;\n                if (b > 0) assign[b] = 1;\n                if (c > 0) assign[c] = 1;\n                if (a < 0) assign[-a] = -1;\n                if (b < 0) assign[-b] = -1;\n                if (c < 0) assign[-c] = -1;\n            }\n        }\n        for (int i = 1; i <= V; i++) {\n            if (assign[i] == 1) cout << \"T\";\n            else cout << \"F\";\n        }\n        cout << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.io.BufferedReader;\nimport java.io.IOException;\nimport java.io.InputStreamReader;\nimport java.util.StringTokenizer;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        int T = Integer.parseInt(br.readLine());\n        while (T-- > 0) {\n            StringTokenizer st = new StringTokenizer(br.readLine());\n            int C = Integer.parseInt(st.nextToken());\n            int V = Integer.parseInt(st.nextToken());\n            int[][] clauses = new int[C][3];\n            for (int i = 0; i < C; i++) {\n                st = new StringTokenizer(br.readLine());\n                for (int j = 0; j < 3; j++) {\n                    clauses[i][j] = Integer.parseInt(st.nextToken());\n                }\n            }\n            int[] assign = new int[V + 1];\n            for (int i = 0; i < C; i++) {\n                int a = clauses[i][0], b = clauses[i][1], c = clauses[i][2];\n                if (a > 0 && b > 0 && c > 0) {\n                    assign[a] = assign[b] = assign[c] = 1;\n                } else if (a < 0 && b < 0 && c < 0) {\n                    assign[-a] = assign[-b] = assign[-c] = -1;\n                } else {\n                    if (a > 0) assign[a] = 1;\n                    if (b > 0) assign[b] = 1;\n                    if (c > 0) assign[c] = 1;\n                    if (a < 0) assign[-a] = -1;\n                    if (b < 0) assign[-b] = -1;\n                    if (c < 0) assign[-c] = -1;\n                }\n            }\n            for (int i = 1; i <= V; i++) {\n                if (assign[i] == 1) System.out.print(\"T\");\n                else System.out.print(\"F\");\n            }\n            System.out.println();\n        }\n    }\n}",
+      "Python3": "import sys\n\nT = int(sys.stdin.readline())\nwhile T > 0:\n    C, V = map(int, sys.stdin.readline().split())\n    clauses = [list(map(int, sys.stdin.readline().split())) for _ in range(C)]\n    assign = [0] * (V + 1)\n    for i in range(C):\n        a, b, c = clauses[i]\n        if a > 0 and b > 0 and c > 0:\n            assign[a] = assign[b] = assign[c] = 1\n        elif a < 0 and b < 0 and c < 0:\n            assign[-a] = assign[-b] = assign[-c] = -1\n        else:\n            if a > 0: assign[a] = 1\n            if b > 0: assign[b] = 1\n            if c > 0: assign[c] = 1\n            if a < 0: assign[-a] = -1\n            if b < 0: assign[-b] = -1\n            if c < 0: assign[-c] = -1\n    for i in range(1, V + 1):\n        if assign[i] == 1: print(\"T\", end='')\n        else: print(\"F\", end='')\n    print()\n    T -= 1",
+      "JavaScript": "const lines = require('fs').readFileSync(0, 'utf-8').trim().split('\\n');\nlet i = 0;\nconst readline = () => lines[i++];\n\nlet T = parseInt(readline());\nwhile (T-- > 0) {\n    let [C, V] = readline().split(' ').map(Number);\n    let clauses = [];\n    for (let j = 0; j < C; j++) {\n        clauses.push(readline().split(' ').map(Number));\n    }\n    let assign = new Array(V + 1).fill(0);\n    for (let j = 0; j < C; j++) {\n        let [a, b, c] = clauses[j];\n        if (a > 0 && b > 0 && c > 0) {\n            assign[a] = assign[b] = assign[c] = 1;\n        } else if (a < 0 && b < 0 && c < 0) {\n            assign[-a] = assign[-b] = assign[-c] = -1;\n        } else {\n            if (a > 0) assign[a] = 1;\n            if (b > 0) assign[b] = 1;\n            if (c > 0) assign[c] = 1;\n            if (a < 0) assign[-a] = -1;\n            if (b < 0) assign[-b] = -1;\n            if (c < 0) assign[-c] = -1;\n        }\n    }\n    for (let j = 1; j <= V; j++) {\n        if (assign[j] == 1) process.stdout.write('T');\n        else process.stdout.write('F');\n    }\n    console.log();\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

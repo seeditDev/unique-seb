@@ -1,0 +1,116 @@
+{
+  "questionId": "Q3338",
+  "title": "maximize the sum",
+  "slug": "maximize-the-sum",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Greedy",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "Maximization",
+      "Array Manipulation",
+      "Greedy"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Ad-hoc & Implementation"
+    ]
+  },
+  "content": {
+    "problemStatement": "You are given two integer arrays **A** and **B** each of size **N**. Let us define interaction of arrays **A** and **B** to be the sum of **A[i] * B[i]** for each **i** from **1** to **N**.\n\n\n\nYou want to maximize the value of interaction of the arrays. You are allowed to make at most **K** (possibly zero) operations of following kind.\n\n\n\nIn a single operation, you can increase or decrease any of the elements of array **A** by **1**.\n\n\n\nFind out the maximum value of interaction of the arrays that you can get.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 10^5",
+      "0 <= |A[i]|, |B[i]| <= 10^5",
+      "0 <= K <= 10^9"
+    ],
+    "inputFormat": "The first line of input contains a single integer T denoting the number of test cases. For each test case: The first line contains two space-separated integers N and K. The second line contains N space-separated integers denoting array A. The third line contains N space-separated integers denoting array B.",
+    "outputFormat": "For each test case, output a single integer denoting the maximum value of interaction of the arrays that you can get.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n2 2\n1 2\n-2 3\n3 5\n1 2 -3\n-2 3 -5",
+        "output": "10\n44",
+        "explanation": "Explanation: In the first example, you can increase the value of A[2] using two operations. Now, A would be [1, 4]. The value of interaction will be 1 * -2 + 4 * 3 = -2 + 12 = 10."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 0\n1\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n100000 1000000000\n100000\n100000",
+        "expectedOutput": "1000000000000000000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n5 0\n1 2 3 4 5\n-1 -2 -3 -4 -5",
+        "expectedOutput": "-55",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n10 10\n1 2 3 4 5 6 7 8 9 10\n-1 -2 -3 -4 -5 -6 -7 -8 -9 -10",
+        "expectedOutput": "-385",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n10 10\n10 9 8 7 6 5 4 3 2 1\n1 2 3 4 5 6 7 8 9 10",
+        "expectedOutput": "385",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To maximize the interaction of the arrays, we need to maximize the sum of A[i] * B[i] for each i from 1 to N. We can achieve this by increasing or decreasing the elements of array A by 1, up to K operations. We should prioritize increasing the elements of A that correspond to the largest elements of B, as this will result in the largest increase in the interaction sum. We can use a greedy approach to solve this problem, where we sort the elements of B in descending order and then increase the corresponding elements of A by 1, up to K operations.",
+    "timeComplexity": "O(T * N log N) \u2014 where T is the number of test cases and N is the size of the arrays. The sorting operation dominates the time complexity.",
+    "spaceComplexity": "O(N) \u2014 where N is the size of the arrays. We need to store the sorted elements of B and the modified elements of A.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nint compare(const void *a, const void *b) {\n    return (*(int*)b - *(int*)a);\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int N, K;\n        scanf(\"%d %d\", &N, &K);\n        int A[N], B[N];\n        for (int i = 0; i < N; i++) {\n            scanf(\"%d\", &A[i]);\n        }\n        for (int i = 0; i < N; i++) {\n            scanf(\"%d\", &B[i]);\n        }\n        int idx[N];\n        for (int i = 0; i < N; i++) {\n            idx[i] = i;\n        }\n        qsort(idx, N, sizeof(int), compare);\n        for (int i = 0; i < N; i++) {\n            if (K > 0 && B[idx[i]] > 0) {\n                int inc = (K < abs(A[idx[i]])) ? K : abs(A[idx[i]]);\n                A[idx[i]] += inc;\n                K -= inc;\n            } else if (K > 0 && B[idx[i]] < 0) {\n                int dec = (K < abs(A[idx[i]])) ? K : abs(A[idx[i]]);\n                A[idx[i]] -= dec;\n                K -= dec;\n            }\n        }\n        long long sum = 0;\n        for (int i = 0; i < N; i++) {\n            sum += (long long)A[i] * B[i];\n        }\n        printf(\"%lld\\n\", sum);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <algorithm>\nusing namespace std;\n\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        int N, K;\n        cin >> N >> K;\n        int A[N], B[N];\n        for (int i = 0; i < N; i++) {\n            cin >> A[i];\n        }\n        for (int i = 0; i < N; i++) {\n            cin >> B[i];\n        }\n        int idx[N];\n        for (int i = 0; i < N; i++) {\n            idx[i] = i;\n        }\n        sort(idx, idx + N, [](int a, int b) { return B[b] > B[a]; });\n        for (int i = 0; i < N; i++) {\n            if (K > 0 && B[idx[i]] > 0) {\n                int inc = (K < abs(A[idx[i]])) ? K : abs(A[idx[i]]);\n                A[idx[i]] += inc;\n                K -= inc;\n            } else if (K > 0 && B[idx[i]] < 0) {\n                int dec = (K < abs(A[idx[i]])) ? K : abs(A[idx[i]]);\n                A[idx[i]] -= dec;\n                K -= dec;\n            }\n        }\n        long long sum = 0;\n        for (int i = 0; i < N; i++) {\n            sum += (long long)A[i] * B[i];\n        }\n        cout << sum << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Arrays;\nimport java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n        while (T-- > 0) {\n            int N = sc.nextInt();\n            int K = sc.nextInt();\n            int[] A = new int[N];\n            int[] B = new int[N];\n            for (int i = 0; i < N; i++) {\n                A[i] = sc.nextInt();\n            }\n            for (int i = 0; i < N; i++) {\n                B[i] = sc.nextInt();\n            }\n            Integer[] idx = new Integer[N];\n            for (int i = 0; i < N; i++) {\n                idx[i] = i;\n            }\n            Arrays.sort(idx, (a, b) -> B[b] - B[a]);\n            for (int i = 0; i < N; i++) {\n                if (K > 0 && B[idx[i]] > 0) {\n                    int inc = (K < Math.abs(A[idx[i]])) ? K : Math.abs(A[idx[i]]);\n                    A[idx[i]] += inc;\n                    K -= inc;\n                } else if (K > 0 && B[idx[i]] < 0) {\n                    int dec = (K < Math.abs(A[idx[i]])) ? K : Math.abs(A[idx[i]]);\n                    A[idx[i]] -= dec;\n                    K -= dec;\n                }\n            }\n            long sum = 0;\n            for (int i = 0; i < N; i++) {\n                sum += (long) A[i] * B[i];\n            }\n            System.out.println(sum);\n        }\n    }\n}",
+      "Python3": "import sys\n\nT = int(input())\nfor _ in range(T):\n    N, K = map(int, input().split())\n    A = list(map(int, input().split()))\n    B = list(map(int, input().split()))\n    idx = sorted(range(N), key=lambda i: B[i], reverse=True)\n    for i in idx:\n        if K > 0 and B[i] > 0:\n            inc = min(K, abs(A[i]))\n            A[i] += inc\n            K -= inc\n        elif K > 0 and B[i] < 0:\n            dec = min(K, abs(A[i]))\n            A[i] -= dec\n            K -= dec\n    print(sum(a * b for a, b in zip(A, B)))",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\n\nfunction nextInt() {\n    return parseInt(lines[idx++]);\n}\n\nfunction nextIntArray() {\n    return lines[idx++].split(' ').map(x => parseInt(x));\n}\n\nlet T = nextInt();\nwhile (T-- > 0) {\n    let [N, K] = nextIntArray();\n    let A = nextIntArray();\n    let B = nextIntArray();\n    let idxArray = Array.from(Array(N).keys());\n    idxArray.sort((a, b) => B[b] - B[a]);\n    for (let i = 0; i < N; i++) {\n        if (K > 0 && B[idxArray[i]] > 0) {\n            let inc = (K < Math.abs(A[idxArray[i]])) ? K : Math.abs(A[idxArray[i]]);\n            A[idxArray[i]] += inc;\n            K -= inc;\n        } else if (K > 0 && B[idxArray[i]] < 0) {\n            let dec = (K < Math.abs(A[idxArray[i]])) ? K : Math.abs(A[idxArray[i]]);\n            A[idxArray[i]] -= dec;\n            K -= dec;\n        }\n    }\n    let sum = 0;\n    for (let i = 0; i < N; i++) {\n        sum += A[i] * B[i];\n    }\n    console.log(sum);\n}"
+    }
+  }
+}

@@ -1,0 +1,140 @@
+{
+  "questionId": "Q5051",
+  "title": "Validate an Employee ID for Payroll System",
+  "slug": "validate-an-employee-id-for-payroll-system",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Easy",
+    "isPremium": true,
+    "tags": [
+      "String Manipulation",
+      "Parsing",
+      "Uppercase Conversion",
+      "Digit Check"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Strings in Python"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "In this task, you are required to clean and validate an employee ID by removing unwanted spaces, converting it to uppercase, and checking if it contains only numeric characters.\n\n**Data Values**\n\n\n`employee_id = \"  e123\"`",
+    "constraints": [
+      "1 <= T <= 10",
+      "0 <= length of each employee ID <= 100"
+    ],
+    "inputFormat": "The first line contains an integer T (1 ≤ T ≤ 10), the number of test cases. Each of the next T lines contains a string representing an employee ID. The string may contain leading, trailing, or internal spaces.",
+    "outputFormat": "For each test case output two lines:\n1. The cleaned employee ID after removing all spaces and converting all letters to uppercase.\n2. \"True\" if the cleaned ID consists only of numeric characters, otherwise \"False\".",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n  e123",
+        "output": "E123\nFalse",
+        "explanation": "Spaces are removed, the remaining string \"e123\" is converted to uppercase \"E123\". It contains a non‑digit character, so the validation result is False."
+      },
+      {
+        "id": "sample_2",
+        "input": "2\n  00123\nABC456",
+        "output": "00123\nTrue\nABC456\nFalse",
+        "explanation": "First ID becomes \"00123\" (all digits) → True. Second ID stays \"ABC456\" (letters present) → False."
+      },
+      {
+        "id": "sample_3",
+        "input": "3\n   987\na b c\n12 34",
+        "output": "987\nTrue\nABC\nFalse\n1234\nTrue",
+        "explanation": "1) \"987\" → digits only. 2) \"a b c\" → \"abc\" → \"ABC\" → not all digits. 3) \"12 34\" → \"1234\" → all digits."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n",
+        "expectedOutput": "\nFalse",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n                                                  12345678901234567890123456789012345678901234567890",
+        "expectedOutput": "12345678901234567890123456789012345678901234567890\nTrue",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case - only spaces",
+        "input": "1\n    ",
+        "expectedOutput": "\nFalse",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1 - mixed letters and digits",
+        "input": "1\nAb 12 C3",
+        "expectedOutput": "AB12C3\nFalse",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2 - digits with spaces",
+        "input": "1\n  007  89 ",
+        "expectedOutput": "00789\nTrue",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each test case read the whole line (including spaces). Iterate over the characters, skip spaces, convert every other character to uppercase and append to a new string. After the cleaning step, check whether the resulting string is non‑empty and every character is a decimal digit. Print the cleaned string and the boolean result. The algorithm is linear in the length of the input string.",
+    "timeComplexity": "O(L) per test case, where L is the length of the raw input line (≤ 100). Overall O(T·L).",
+    "spaceComplexity": "O(L) for the cleaned string per test case.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <ctype.h>\n#include <string.h>\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    getchar(); // consume newline after T\n    char buf[256];\n    for (int tc = 0; tc < T; ++tc) {\n        if (!fgets(buf, sizeof(buf), stdin)) break;\n        size_t len = strlen(buf);\n        if (len && buf[len-1] == '\\n') buf[--len] = '\\0';\n        char cleaned[256];\n        int pos = 0;\n        for (size_t i = 0; i < len; ++i) {\n            if (buf[i] == ' ') continue;\n            cleaned[pos++] = toupper((unsigned char)buf[i]);\n        }\n        cleaned[pos] = '\\0';\n        int isNumeric = 1;\n        if (pos == 0) isNumeric = 0; // empty string is not numeric\n        for (int i = 0; i < pos && isNumeric; ++i) {\n            if (!isdigit((unsigned char)cleaned[i])) isNumeric = 0;\n        }\n        printf(\"%s\\n\", cleaned);\n        printf(isNumeric ? \"True\\n\" : \"False\\n\");\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T;\n    if(!(cin>>T)) return 0;\n    string line;\n    getline(cin, line); // consume endline after T\n    for(int tc=0; tc<T; ++tc){\n        getline(cin, line);\n        string cleaned;\n        for(char ch: line){\n            if(ch==' ') continue;\n            cleaned.push_back(toupper((unsigned char)ch));\n        }\n        bool numeric = !cleaned.empty();\n        for(char ch: cleaned){\n            if(!isdigit((unsigned char)ch)) { numeric = false; break; }\n        }\n        cout << cleaned << '\\n' << (numeric?\"True\":\"False\") << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        String first = br.readLine();\n        if (first == null) return;\n        int T = Integer.parseInt(first.trim());\n        for (int tc = 0; tc < T; ++tc) {\n            String line = br.readLine();\n            if (line == null) line = \"\";\n            StringBuilder sb = new StringBuilder();\n            for (char ch : line.toCharArray()) {\n                if (ch == ' ') continue;\n                sb.append(Character.toUpperCase(ch));\n            }\n            String cleaned = sb.toString();\n            boolean numeric = !cleaned.isEmpty();\n            for (int i = 0; i < cleaned.length() && numeric; ++i) {\n                if (!Character.isDigit(cleaned.charAt(i))) numeric = false;\n            }\n            System.out.println(cleaned);\n            System.out.println(numeric ? \"True\" : \"False\");\n        }\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys\n\ndef main():\n    data = sys.stdin.read().splitlines()\n    if not data:\n        return\n    T = int(data[0].strip())\n    lines = data[1:1+T]\n    for line in lines:\n        cleaned = ''.join(ch.upper() for ch in line if ch != ' ')\n        numeric = cleaned.isdigit() and len(cleaned) > 0\n        print(cleaned)\n        print('True' if numeric else 'False')\n\nif __name__ == \"__main__\":\n    main()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').split('\\n');\nlet idx = 0;\nconst T = parseInt((input[idx++] || '').trim(), 10);\nlet out = [];\nfor (let tc = 0; tc < T; ++tc) {\n  const line = input[idx++] ?? '';\n  let cleaned = '';\n  for (const ch of line) {\n    if (ch === ' ') continue;\n    cleaned += ch.toUpperCase();\n  }\n  const numeric = cleaned.length > 0 && /^[0-9]+$/.test(cleaned);\n  out.push(cleaned);\n  out.push(numeric ? 'True' : 'False');\n}\nconsole.log(out.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

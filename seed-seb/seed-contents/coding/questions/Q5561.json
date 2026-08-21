@@ -1,0 +1,138 @@
+{
+  "questionId": "Q5561",
+  "title": "Martial Arts",
+  "slug": "martial-arts",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Hungarian Algorithm",
+      "Optimization"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Flow & Matching"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef somehow strayed away from kitchen and got involved in martial arts. He isn't in the right shape to get into fights but he is qualified enough to be a coach in the local gym. He's just been put in charge of organizing an upcoming tournament.\n\n\nThere will be two teams of N fighters participating in the tournament. We will refer to the Chef's team as home team. The other one will be guest team. As the organizer, Chef has to assign all fighters to N fights. One contestant from each team will take part in a fight and the judges will award certain number of points to each fighter's team according to their performance. Team's final score is equivalent to the sum of points which the contestants earned in their fights. Chef has to assign every fighter to exactly one fight.\n\n\nChef knows all participants very well and wants to assign pairs in such way that will maximize the difference between home and guest team's score. Let's say that home team will score H and guest team G points. Chef wants to maximize H-G. If he can do that in multiple ways, he would then like to maximize H.\n\n\nHowever, he is not the only one with a hidden agenda. After the pairs are announced, guest coach can make up an excuse that one of his contestants got injured. This means that this contestant's fight won't take place and therefore won't contribute to team scores. When deciding whether to cancel some fight and which fight should that be, the guest coach has a similar goal as Chef. His primary goal is to maximize G-H and secondary to maximize G.\n\n\nChef is stunned by guest coach's tactic and asks for your help to organize fights optimally.",
+    "constraints": [
+      "1 <= N <= 100",
+      "0 <= Ai,j, Bi,j < 10^12"
+    ],
+    "inputFormat": "The first line contains a single integer N, the number of fighters in each team. The following N lines describe all possible pairings of contestants. Each line contains N elements of the form 'Ai,j:Bi,j' which means that home team would get Ai,j points and guest team Bi,j points if i-th contestant from home team fights against the j-th from guest team.",
+    "outputFormat": "The number of points H scored by home team and the number of points G scored by guest team in an optimally conducted tournament, separated by a single space.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n10:7 0:20 6:5\n5:5 0:10 8:10\n0:0 50:0 100:0",
+        "output": "18 17",
+        "explanation": "The optimal assignment is: (0, 0), (1, 2), (2, 1). The home team scores 10 + 8 + 0 = 18 points, and the guest team scores 7 + 10 + 0 = 17 points."
+      },
+      {
+        "id": "sample_2",
+        "input": "2\n10:5 20:10\n5:10 10:20",
+        "output": "30 15",
+        "explanation": "The optimal assignment is: (0, 0), (1, 1). The home team scores 10 + 20 = 30 points, and the guest team scores 5 + 10 = 15 points."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n10:5",
+        "output": "10 5",
+        "explanation": "The only possible assignment is: (0, 0). The home team scores 10 points, and the guest team scores 5 points."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved using the Hungarian Algorithm, which is used to find the optimal assignment in a weighted bipartite graph. The algorithm works by first initializing the cost matrix and then iteratively improving the assignment until an optimal solution is found.",
+    "timeComplexity": "O(N^3) per test case, O(T*N^3) total.",
+    "spaceComplexity": "O(N^2) — the dominant structure is the cost matrix.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#define MAXN 100\n#define INF 1e18\nint n;\nlong long cost[MAXN][MAXN];\nint u[MAXN], v[MAXN], p[MAXN];\nlong long way[MAXN];\nbool used[MAXN];\nvoid hungarian() {\n    for (int i = 0; i < n; i++) {\n        p[i] = -1;\n        u[i] = 0;\n        v[i] = 0;\n    }\n    for (int i = 0; i < n; i++) {\n        for (int j = 0; j < n; j++) {\n            way[j] = cost[i][j] - u[i] - v[j];\n            used[j] = false;\n        }\n        int j0 = 0;\n        while (true) {\n            used[j0] = true;\n            int i0 = p[j0];\n            if (i0 == -1) break;\n            int j1 = 0;\n            while (used[j1]) j1++;\n            long long delta = way[j1] - way[j0];\n            for (int j = 0; j < n; j++) {\n                if (used[j]) {\n                    way[j] -= delta;\n                } else {\n                    way[j] += delta;\n                }\n            }\n            j0 = j1;\n        }\n        do {\n            int j1 = 0;\n            while (used[j1]) j1++;\n            long long delta = way[j1];\n            for (int j = 0; j < n; j++) {\n                if (used[j]) {\n                    u[p[j]] += delta;\n                    v[j] -= delta;\n                } else {\n                    way[j] -= delta;\n                }\n            }\n        } while (true);\n    }\n    for (int i = 0; i < n; i++) {\n        for (int j = 0; j < n; j++) {\n            if (cost[i][j] - u[i] - v[j] == 0) {\n                p[j] = i;\n            }\n        }\n    }\n}\nint main() {\n    scanf(\"%d\", &n);\n    for (int i = 0; i < n; i++) {\n        for (int j = 0; j < n; j++) {\n            long long a, b;\n            scanf(\"%lld:%lld\", &a, &b);\n            cost[i][j] = b - a;\n        }\n    }\n    hungarian();\n    long long h = 0, g = 0;\n    for (int i = 0; i < n; i++) {\n        int j = p[i];\n        long long a, b;\n        a = -cost[j][i];\n        b = cost[j][i] + a;\n        h += a;\n        g += b;\n    }\n    printf(\"%lld %lld\\n\", h, g);\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\n#include <algorithm>\n#include <limits>\nusing namespace std;\nconst int MAXN = 100;\nconst long long INF = 1e18;\nint n;\nlong long cost[MAXN][MAXN];\nint u[MAXN], v[MAXN], p[MAXN];\nlong long way[MAXN];\nbool used[MAXN];\nvoid hungarian() {\n    for (int i = 0; i < n; i++) {\n        p[i] = -1;\n        u[i] = 0;\n        v[i] = 0;\n    }\n    for (int i = 0; i < n; i++) {\n        for (int j = 0; j < n; j++) {\n            way[j] = cost[i][j] - u[i] - v[j];\n            used[j] = false;\n        }\n        int j0 = 0;\n        while (true) {\n            used[j0] = true;\n            int i0 = p[j0];\n            if (i0 == -1) break;\n            int j1 = 0;\n            while (used[j1]) j1++;\n            long long delta = way[j1] - way[j0];\n            for (int j = 0; j < n; j++) {\n                if (used[j]) {\n                    way[j] -= delta;\n                } else {\n                    way[j] += delta;\n                }\n            }\n            j0 = j1;\n        }\n        do {\n            int j1 = 0;\n            while (used[j1]) j1++;\n            long long delta = way[j1];\n            for (int j = 0; j < n; j++) {\n                if (used[j]) {\n                    u[p[j]] += delta;\n                    v[j] -= delta;\n                } else {\n                    way[j] -= delta;\n                }\n            }\n        } while (true);\n    }\n    for (int i = 0; i < n; i++) {\n        for (int j = 0; j < n; j++) {\n            if (cost[i][j] - u[i] - v[j] == 0) {\n                p[j] = i;\n            }\n        }\n    }\n}\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(NULL);\n    cin >> n;\n    for (int i = 0; i < n; i++) {\n        for (int j = 0; j < n; j++) {\n            long long a, b;\n            cin >> a >> b;\n            cost[i][j] = b - a;\n        }\n    }\n    hungarian();\n    long long h = 0, g = 0;\n    for (int i = 0; i < n; i++) {\n        int j = p[i];\n        long long a, b;\n        a = -cost[j][i];\n        b = cost[j][i] + a;\n        h += a;\n        g += b;\n    }\n    cout << h << \" \" << g << endl;\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    static final int MAXN = 100;\n    static final long INF = 1e18;\n    static int n;\n    static long[][] cost = new long[MAXN][MAXN];\n    static int[] u = new int[MAXN], v = new int[MAXN], p = new int[MAXN];\n    static long[] way = new long[MAXN];\n    static boolean[] used = new boolean[MAXN];\n    public static void hungarian() {\n        for (int i = 0; i < n; i++) {\n            p[i] = -1;\n            u[i] = 0;\n            v[i] = 0;\n        }\n        for (int i = 0; i < n; i++) {\n            for (int j = 0; j < n; j++) {\n                way[j] = cost[i][j] - u[i] - v[j];\n                used[j] = false;\n            }\n            int j0 = 0;\n            while (true) {\n                used[j0] = true;\n                int i0 = p[j0];\n                if (i0 == -1) break;\n                int j1 = 0;\n                while (used[j1]) j1++;\n                long delta = way[j1] - way[j0];\n                for (int j = 0; j < n; j++) {\n                    if (used[j]) {\n                        way[j] -= delta;\n                    } else {\n                        way[j] += delta;\n                    }\n                }\n                j0 = j1;\n            }\n            do {\n                int j1 = 0;\n                while (used[j1]) j1++;\n                long delta = way[j1];\n                for (int j = 0; j < n; j++) {\n                    if (used[j]) {\n                        u[p[j]] += delta;\n                        v[j] -= delta;\n                    } else {\n                        way[j] -= delta;\n                    }\n                }\n            } while (true);\n        }\n        for (int i = 0; i < n; i++) {\n            for (int j = 0; j < n; j++) {\n                if (cost[i][j] - u[i] - v[j] == 0) {\n                    p[j] = i;\n                }\n            }\n        }\n    }\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        n = scanner.nextInt();\n        for (int i = 0; i < n; i++) {\n            for (int j = 0; j < n; j++) {\n                long a = scanner.nextLong();\n                long b = scanner.nextLong();\n                cost[i][j] = b - a;\n                scanner.next();\n            }\n        }\n        hungarian();\n        long h = 0, g = 0;\n        for (int i = 0; i < n; i++) {\n            int j = p[i];\n            long a, b;\n            a = -cost[j][i];\n            b = cost[j][i] + a;\n            h += a;\n            g += b;\n        }\n        System.out.println(h + \" \" + g);\n    }\n}",
+      "Python3": "import sys\nMAXN = 100\nINF = 1e18\nn = int(input())\ncost = [[0 for _ in range(n)] for _ in range(n)]\nu = [0 for _ in range(n)]\nv = [0 for _ in range(n)]\np = [-1 for _ in range(n)]\nway = [0 for _ in range(n)]\nused = [False for _ in range(n)]\ndef hungarian():\n    global n, cost, u, v, p, way, used\n    for i in range(n):\n        p[i] = -1\n        u[i] = 0\n        v[i] = 0\n    for i in range(n):\n        for j in range(n):\n            way[j] = cost[i][j] - u[i] - v[j]\n            used[j] = False\n        j0 = 0\n        while True:\n            used[j0] = True\n            i0 = p[j0]\n            if i0 == -1: break\n            j1 = 0\n            while used[j1]: j1 += 1\n            delta = way[j1] - way[j0]\n            for j in range(n):\n                if used[j]:\n                    way[j] -= delta\n                else:\n                    way[j] += delta\n            j0 = j1\n        while True:\n            j1 = 0\n            while used[j1]: j1 += 1\n            delta = way[j1]\n            for j in range(n):\n                if used[j]:\n                    u[p[j]] += delta\n                    v[j] -= delta\n                else:\n                    way[j] -= delta\n            if not used[j1]: break\n    for i in range(n):\n        for j in range(n):\n            if cost[i][j] - u[i] - v[j] == 0:\n                p[j] = i\nhungarian()\nh = 0\ng = 0\nfor i in range(n):\n    j = p[i]\n    a = -cost[j][i]\n    b = cost[j][i] + a\n    h += a\n    g += b\nprint(h, g)\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst n = parseInt(input[idx++]);\nconst cost = [];\nfor (let i = 0; i < n; i++) {\n    cost.push(input[idx++].split(' ').map(x => x.split(':').map(y => parseInt(y))));\n}\nconst u = new Array(n).fill(0);\nconst v = new Array(n).fill(0);\nconst p = new Array(n).fill(-1);\nconst way = new Array(n).fill(0);\nconst used = new Array(n).fill(false);\nfunction hungarian() {\n    for (let i = 0; i < n; i++) {\n        p[i] = -1;\n        u[i] = 0;\n        v[i] = 0;\n    }\n    for (let i = 0; i < n; i++) {\n        for (let j = 0; j < n; j++) {\n            way[j] = cost[i][j][1] - cost[i][j][0] - u[i] - v[j];\n            used[j] = false;\n        }\n        let j0 = 0;\n        while (true) {\n            used[j0] = true;\n            let i0 = p[j0];\n            if (i0 == -1) break;\n            let j1 = 0;\n            while (used[j1]) j1++;\n            let delta = way[j1] - way[j0];\n            for (let j = 0; j < n; j++) {\n                if (used[j]) {\n                    way[j] -= delta;\n                } else {\n                    way[j] += delta;\n                }\n            }\n            j0 = j1;\n        }\n        do {\n            let j1 = 0;\n            while (used[j1]) j1++;\n            let delta = way[j1];\n            for (let j = 0; j < n; j++) {\n                if (used[j]) {\n                    u[p[j]] += delta;\n                    v[j] -= delta;\n                } else {\n                    way[j] -= delta;\n                }\n            }\n        } while (true);\n    }\n    for (let i = 0; i < n; i++) {\n        for (let j = 0; j < n; j++) {\n            if (cost[i][j][1] - cost[i][j][0] - u[i] - v[j] == 0) {\n                p[j] = i;\n            }\n        }\n    }\n}\nhungarian();\nlet h = 0;\nlet g = 0;\nfor (let i = 0; i < n; i++) {\n    let j = p[i];\n    let a = -cost[j][i][1] + cost[j][i][0];\n    let b = cost[j][i][1] - a;\n    h += a;\n    g += b;\n}\nconsole.log(h + ' ' + g);\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

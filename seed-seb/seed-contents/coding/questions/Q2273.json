@@ -1,0 +1,128 @@
+{
+  "questionId": "Q2273",
+  "title": "One Dimensional Game of Life",
+  "slug": "one-dimensional-game-of-life",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "Simulation",
+      "One-dimensional array",
+      "Strings",
+      "Game of Life"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Ad-hoc & Implementation"
+    ]
+  },
+  "content": {
+    "problemStatement": "In Conway's Game of Life, cells in a grid are used to simulate biological cells.\nEach cell is considered to be either alive or dead.\nAt each step of the simulation\neach cell's current status and number of living neighbors is used to determine the status\nof the cell during the following step of the simulation.\n\nIn this one-dimensional version, there are N cells numbered 0 through N-1.\nThe number of cells does not change at any point in the simulation.\nEach cell i is adjacent to cells i-1 and i+1.\nHere, the indices are taken modulo N meaning cells 0 and N-1 are also adjacent to eachother.\nAt each step of the simulation, cells with exactly one living neighbor change their status\n(alive cells become dead, dead cells become alive).\nFor example, if we represent dead cells with a '0' and living cells with a '1', consider\nthe state with 8 cells:\n\n\n01100101Cells 0 and 6 have two living neighbors.\nCells 1, 2, 3, and 4 have one living neighbor.\nCells 5 and 7 have no living neighbors.\n\n00011101Given some state of the game, your task is to determine the state immediately preceding it.\nIn some cases there may be more than one answer or no possible answer.",
+    "constraints": [
+      "1 <= T <= 100",
+      "3 <= N <= 50",
+      "N is the number of cells in the game"
+    ],
+    "inputFormat": "First line contains T, the number of test cases. Each test case contains a single string of '0's and '1's representing the state of the game.",
+    "outputFormat": "For each test case, print the state of the game that precedes the given state. If there is no possible solution, print 'No solution'. If there are multiple possible solutions, print 'Multiple solutions'.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4\n00011101\n000\n000001\n11110",
+        "output": "01100101\nMultiple solutions\nNo solution\n10010",
+        "explanation": "For the first test case, the state '01100101' can reach the state '00011101' in one step. For the second test case, there are multiple states that can reach the state '000' in one step. For the third test case, there is no state that can reach the state '000001' in one step. For the fourth test case, the state '10010' can reach the state '11110' in one step."
+      },
+      {
+        "id": "sample_2",
+        "input": "2\n101\n110",
+        "output": "Multiple solutions\nNo solution",
+        "explanation": "For the first test case, there are multiple states that can reach the state '101' in one step. For the second test case, there is no state that can reach the state '110' in one step."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n111",
+        "output": "No solution",
+        "explanation": "There is no state that can reach the state '111' in one step."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n000",
+        "expectedOutput": "Multiple solutions",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n111111111111111",
+        "expectedOutput": "No solution",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n000000",
+        "expectedOutput": "Multiple solutions",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n101010",
+        "expectedOutput": "No solution",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "5\n00011101\n000\n000001\n11110\n101",
+        "expectedOutput": "01100101\nMultiple solutions\nNo solution\n10010\nMultiple solutions",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved by iterating over all possible states of the game and checking if the given state can be reached in one step. This can be done by generating all possible states of the game and then checking if the given state can be reached by applying the rules of the game to each state.",
+    "timeComplexity": "O(T * 2^N) per test case, O(T * 2^N) total. The time complexity is exponential due to the need to generate all possible states of the game.",
+    "spaceComplexity": "O(N) \u2014 the dominant structure is the string used to store the state of the game.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n#define MAX 55\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        char s[MAX];\n        scanf(\"%s\", s);\n        int n = strlen(s);\n        int count = 0;\n        char ans[MAX];\n        for (int i = 0; i < (1 << n); i++) {\n            char temp[MAX];\n            for (int j = 0; j < n; j++) {\n                temp[j] = (i & (1 << j)) ? '1' : '0';\n            }\n            temp[n] = '\\0';\n            int flag = 1;\n            for (int j = 0; j < n; j++) {\n                int cnt = 0;\n                if (j > 0 && temp[j - 1] == '1') cnt++;\n                if (j < n - 1 && temp[j + 1] == '1') cnt++;\n                if (j == 0 && temp[n - 1] == '1') cnt++;\n                if (j == n - 1 && temp[0] == '1') cnt++;\n                if ((temp[j] == '1' && cnt != 1) || (temp[j] == '0' && cnt == 1)) {\n                    flag = 0;\n                    break;\n                }\n            }\n            if (flag) {\n                if (count == 1) {\n                    printf(\"Multiple solutions\\n\");\n                    break;\n                }\n                strcpy(ans, temp);\n                count++;\n            }\n        }\n        if (count == 0) printf(\"No solution\\n\");\n        else if(count > 1) printf(\"Multiple solutions\\n\");\n        else printf(\"%s\\n\", ans);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <string>\nusing namespace std;\n#define MAX 55\n\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        string s;\n        cin >> s;\n        int n = s.size();\n        int count = 0;\n        string ans;\n        for (int i = 0; i < (1 << n); i++) {\n            string temp;\n            for (int j = 0; j < n; j++) {\n                temp += (i & (1 << j)) ? '1' : '0';\n            }\n            int flag = 1;\n            for (int j = 0; j < n; j++) {\n                int cnt = 0;\n                if (j > 0 && temp[j - 1] == '1') cnt++;\n                if (j < n - 1 && temp[j + 1] == '1') cnt++;\n                if (j == 0 && temp[n - 1] == '1') cnt++;\n                if (j == n - 1 && temp[0] == '1') cnt++;\n                if ((temp[j] == '1' && cnt != 1) || (temp[j] == '0' && cnt == 1)) {\n                    flag = 0;\n                    break;\n                }\n            }\n            if (flag) {\n                if (count == 1) {\n                    cout << \"Multiple solutions\" << endl;\n                    break;\n                }\n                ans = temp;\n                count++;\n            }\n        }\n        if (count == 0) cout << \"No solution\" << endl;\n        else if(count > 1) cout << \"Multiple solutions\" << endl;\n        else cout << ans << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n        while (T-- > 0) {\n            String s = sc.next();\n            int n = s.length();\n            int count = 0;\n            String ans = \"\";\n            for (int i = 0; i < (1 << n); i++) {\n                StringBuilder temp = new StringBuilder();\n                for (int j = 0; j < n; j++) {\n                    temp.append((i & (1 << j)) == 0 ? '0' : '1');\n                }\n                int flag = 1;\n                for (int j = 0; j < n; j++) {\n                    int cnt = 0;\n                    if (j > 0 && temp.charAt(j - 1) == '1') cnt++;\n                    if (j < n - 1 && temp.charAt(j + 1) == '1') cnt++;\n                    if (j == 0 && temp.charAt(n - 1) == '1') cnt++;\n                    if (j == n - 1 && temp.charAt(0) == '1') cnt++;\n                    if ((temp.charAt(j) == '1' && cnt != 1) || (temp.charAt(j) == '0' && cnt == 1)) {\n                        flag = 0;\n                        break;\n                    }\n                }\n                if (flag) {\n                    if (count == 1) {\n                        System.out.println(\"Multiple solutions\");\n                        break;\n                    }\n                    ans = temp.toString();\n                    count++;\n                }\n            }\n            if (count == 0) System.out.println(\"No solution\");\n            else if(count > 1) System.out.println(\"Multiple solutions\");\n            else System.out.println(ans);\n        }\n    }\n}",
+      "Python3": "import sys\nfor _ in range(int(input())):\n    s = input()\n    n = len(s)\n    count = 0\n    ans = \"\"\n    for i in range(1 << n):\n        temp = [(i & (1 << j)) != 0 for j in range(n)]\n        flag = 1\n        for j in range(n):\n            cnt = 0\n            if j > 0 and temp[j - 1]: cnt += 1\n            if j < n - 1 and temp[j + 1]: cnt += 1\n            if j == 0 and temp[n - 1]: cnt += 1\n            if j == n - 1 and temp[0]: cnt += 1\n            if (temp[j] and cnt != 1) or (not temp[j] and cnt == 1):\n                flag = 0\n                break\n        if flag:\n            if count == 1:\n                print(\"Multiple solutions\")\n                break\n            ans = ''.join(['1' if x else '0' for x in temp])\n            count += 1\n    if count == 0:\n        print(\"No solution\")\n    elif count > 1:\n        print(\"Multiple solutions\")\n    else:\n        print(ans)",
+      "JavaScript": "const lines = require('fs').readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst readLine = () => lines[idx++];\nconst readInt = () => parseInt(readLine());\nconst readString = () => readLine();\nlet T = readInt();\nwhile (T-- > 0) {\n    let s = readString();\n    let n = s.length;\n    let count = 0;\n    let ans = '';\n    for (let i = 0; i < (1 << n); i++) {\n        let temp = '';\n        for (let j = 0; j < n; j++) {\n            temp += (i & (1 << j)) ? '1' : '0';\n        }\n        let flag = 1;\n        for (let j = 0; j < n; j++) {\n            let cnt = 0;\n            if (j > 0 && temp[j - 1] == '1') cnt++;\n            if (j < n - 1 && temp[j + 1] == '1') cnt++;\n            if (j == 0 && temp[n - 1] == '1') cnt++;\n            if (j == n - 1 && temp[0] == '1') cnt++;\n            if ((temp[j] == '1' && cnt != 1) || (temp[j] == '0' && cnt == 1)) {\n                flag = 0;\n                break;\n            }\n        }\n        if (flag) {\n            if (count == 1) {\n                console.log('Multiple solutions');\n                break;\n            }\n            ans = temp;\n            count++;\n        }\n    }\n    if (count == 0) console.log('No solution');\n    else if(count > 1) console.log('Multiple solutions');\n    else console.log(ans);\n}"
+    }
+  }
+}

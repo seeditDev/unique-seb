@@ -1,0 +1,118 @@
+{
+  "questionId": "Q11772",
+  "title": "Print Longest Increasing Subsequence",
+  "slug": "printlongestincreasingsubsequence",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Longest Increasing Subsequence",
+      "Dynamic Programming",
+      "Lexicographically Smallest"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "**Problem Description: **Given an array of n integers arr, return the Longest Increasing Subsequence (LIS) that is index-wise lexicographically smallest.\n\nThe Longest Increasing Subsequence (LIS) is the longest subsequence where all elements are in strictly increasing order.\n\nA subsequence A1 is index-wise lexicographically smaller than another subsequence A2 if, at the first position where A1 and A2 differ, the element in A1 appears earlier in the array than corresponding element in A2.\n\n\n\n\n\n\n\n\n    \n        \n            **\n                    Examples\n                **\n            <",
+    "constraints": [
+      "1 <= n <= 10^5",
+      "1 <= arr[i] <= 10^9"
+    ],
+    "inputFormat": "The input is an array of integers.",
+    "outputFormat": "The output is the longest increasing subsequence as a list of integers.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "[1]",
+        "expectedOutput": "[1]",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "[1, 2, 3, 4, 5, 6, 7, 8, 9]",
+        "expectedOutput": "[1, 2, 3, 4, 5, 6, 7, 8, 9]",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": "[5, 5, 5, 5, 5]",
+        "expectedOutput": "[5]",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case / empty-like / negative if allowed",
+        "input": "[]",
+        "expectedOutput": "[]",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": "[10, 9, 2, 5, 3, 7, 101, 18]",
+        "expectedOutput": "[2, 3, 7, 18]",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Use dynamic programming to find the longest increasing subsequence and then reconstruct the subsequence.",
+    "timeComplexity": "O(n^2)",
+    "spaceComplexity": "O(n)",
+    "code": {
+      "C": "#include <stdio.h>\n\nint main() {\n    int n;\n    printf(\"Enter the number of elements: \");\n    scanf(\"%d\", &n);\n    int arr[n];\n    printf(\"Enter the elements: \");\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &arr[i]);\n    }\n    int dp[n];\n    int prev[n];\n    for (int i = 0; i < n; i++) {\n        dp[i] = 1;\n        prev[i] = -1;\n    }\n    for (int i = 1; i < n; i++) {\n        for (int j = 0; j < i; j++) {\n            if (arr[j] < arr[i] && dp[j] + 1 > dp[i]) {\n                dp[i] = dp[j] + 1;\n                prev[i] = j;\n            }\n        }\n    }\n    int maxLen = 0;\n    int maxIndex = 0;\n    for (int i = 0; i < n; i++) {\n        if (dp[i] > maxLen) {\n            maxLen = dp[i];\n            maxIndex = i;\n        }\n    }\n    printf(\"LIS: \");\n    while (maxIndex != -1) {\n        printf(\"%d \", arr[maxIndex]);\n        maxIndex = prev[maxIndex];\n    }\n    printf(\"\\n\");\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\n// Solution class for LIS with reconstruction using DP\nclass Solution {\npublic:\n    // Function to return the LIS as a sequence (vector)\n    vector<int> longestIncreasingSubsequence(vector<int> &nums) {\n        int n = nums.size();\n\n        // DP array to store length of LIS ending at each index\n        vector<int> dp(n, 1);\n\n        // Array to store previous index of LIS element for reconstruction\n        vector<int> prev(n, -1);\n\n        // Compute LIS length for each index\n        for (int i = 1; i < n; i++) {\n            for (int j = 0; j < i; j++) {\n                if (nums[j] < nums[i] && dp[j] + 1 > dp[i]) {\n                    // Update dp[i] and store previous index\n                    dp[i] = dp[j] + 1;\n                    prev[i] = j;\n                }\n            }\n        }\n\n        // Find the index of maximum LIS length\n        int maxLen = 0, maxIndex = 0;\n        for (int i = 0; i < n; i++) {\n            if (dp[i] > maxLen) {\n                maxLen = dp[i];\n                maxIndex = i;\n            }\n        }\n\n        // Reconstruct LIS sequence\n        vector<int> lisSeq;\n        int curr = maxIndex;\n        while (curr != -1) {\n            lisSeq.push_back(nums[curr]);\n            curr = prev[curr];\n        }\n\n        // Reverse sequence as it was built backwards\n        reverse(lisSeq.begin(), lisSeq.end());\n\n        return lisSeq;\n    }\n};\n\nint main() {\n    vector<int> nums = {10, 9, 2, 5, 3, 7, 101, 18};\n\n    Solution sol;\n    vector<int> lis = sol.longestIncreasingSubsequence(nums);\n\n    cout << \"LIS: \";\n    for (int x : lis) cout << x << \" \";\n    cout << endl;\n\n    return 0;\n}",
+      "Java": "import java.util.*;\n\nclass Solution {\n    // Function to return the LIS as a list\n    public List<Integer> longestIncreasingSubsequence(int[] nums) {\n        int n = nums.length;\n\n        // DP array to store length of LIS ending at each index\n        int[] dp = new int[n];\n\n        // Array to store previous index of LIS element for reconstruction\n        int[] prev = new int[n];\n\n        Arrays.fill(dp, 1);\n        Arrays.fill(prev, -1);\n\n        // Compute LIS length for each index\n        for (int i = 1; i < n; i++) {\n            for (int j = 0; j < i; j++) {\n                if (nums[j] < nums[i] && dp[j] + 1 > dp[i]) {\n                    // Update dp[i] and store previous index\n                    dp[i] = dp[j] + 1;\n                    prev[i] = j;\n                }\n            }\n        }\n\n        // Find the index of maximum LIS length\n        int maxLen = 0, maxIndex = 0;\n        for (int i = 0; i < n; i++) {\n            if (dp[i] > maxLen) {\n                maxLen = dp[i];\n                maxIndex = i;\n            }\n        }\n\n        // Reconstruct LIS sequence\n        List<Integer> lisSeq = new ArrayList<>();\n        int curr = maxIndex;\n        while (curr != -1) {\n            lisSeq.add(nums[curr]);\n            curr = prev[curr];\n        }\n\n        // Reverse sequence as it was built backwards\n        Collections.reverse(lisSeq);\n\n        return lisSeq;\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        int[] nums = {10, 9, 2, 5, 3, 7, 101, 18};\n\n        Solution sol = new Solution();\n        List<Integer> lis = sol.longestIncreasingSubsequence(nums);\n\n        System.out.print(\"LIS: \");\n        for (int x : lis) System.out.print(x + \" \");\n        System.out.println();\n    }\n}",
+      "Python3": "from typing import List\n\nclass Solution:\n    # Function to return the LIS as a list\n    def longestIncreasingSubsequence(self, nums: List[int]) -> List[int]:\n        n = len(nums)\n        \n        # DP array to store length of LIS ending at each index\n        dp = [1] * n\n        \n        # Array to store previous index of LIS element for reconstruction\n        prev = [-1] * n\n        \n        # Compute LIS length for each index\n        for i in range(1, n):\n            for j in range(i):\n                if nums[j] < nums[i] and dp[j] + 1 > dp[i]:\n                    # Update dp[i] and store previous index\n                    dp[i] = dp[j] + 1\n                    prev[i] = j\n        \n        # Find the index of maximum LIS length\n        max_len = 0\n        max_index = 0\n        for i in range(n):\n            if dp[i] > max_len:\n                max_len = dp[i]\n                max_index = i\n        \n        # Reconstruct LIS sequence\n        lis_seq = []\n        curr = max_index\n        while curr != -1:\n            lis_seq.append(nums[curr])\n            curr = prev[curr]\n        \n        # Reverse sequence as it was built backwards\n        lis_seq.reverse()\n        return lis_seq\n\nif __name__ == \"__main__\":\n    nums = [10, 9, 2, 5, 3, 7, 101, 18]\n    sol = Solution()\n    lis = sol.longestIncreasingSubsequence(nums)\n    print(\"LIS:\", *lis)",
+      "JavaScript": "class Solution {\n    // Function to return the LIS as an array\n    longestIncreasingSubsequence(nums) {\n        const n = nums.length;\n\n        // DP array to store length of LIS ending at each index\n        const dp = new Array(n).fill(1);\n\n        // Array to store previous index of LIS element for reconstruction\n        const prev = new Array(n).fill(-1);\n\n        // Compute LIS length for each index\n        for (let i = 1; i < n; i++) {\n            for (let j = 0; j < i; j++) {\n                if (nums[j] < nums[i] && dp[j] + 1 > dp[i]) {\n                    // Update dp[i] and store previous index\n                    dp[i] = dp[j] + 1;\n                    prev[i] = j;\n                }\n            }\n        }\n\n        // Find the index of maximum LIS length\n        let maxLen = 0;\n        let maxIndex = 0;\n        for (let i = 0; i < n; i++) {\n            if (dp[i] > maxLen) {\n                maxLen = dp[i];\n                maxIndex = i;\n            }\n        }\n\n        // Reconstruct LIS sequence\n        let lisSeq = [];\n        let curr = maxIndex;\n        while (curr !== -1) {\n            lisSeq.push(nums[curr]);\n            curr = prev[curr];\n        }\n\n        // Reverse sequence as it was built backwards\n        lisSeq.reverse();\n        return lisSeq;\n    }\n}\n\n// Driver code\nconst nums = [10, 9, 2, 5, 3, 7, 101, 18];\n\nconst sol = new Solution();\nconst lis = sol.longestIncreasingSubsequence(nums);\nconsole.log(\"LIS:\", lis.join(\" \"));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

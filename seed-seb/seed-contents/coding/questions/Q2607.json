@@ -1,0 +1,119 @@
+{
+  "questionId": "Q2607",
+  "title": "Final Battle of Chef",
+  "slug": "final-battle-of-chef",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graphs",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Graphs",
+      "DFS",
+      "BFS",
+      "Simulation",
+      "Subtree Query",
+      "Euler Tour"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Data Structures"
+    ]
+  },
+  "content": {
+    "problemStatement": "Chef declared war on Byteland. Chefs best scientist Pramod has designed a new Fighter Plane which can fly with Speed of Light!! So none of the defence forces of Byteland can defeat or defend it.\n\nByteland has a structure of a tree with **N** cities connected by **N-1** bidirectional roads. Each city has index between (**1**, **N**) (inclusive) and no two cities have same index. The capital city of Byteland has index **1**. The distance between two cities is the number of roads in the path from one to other.\n\nIf the plane drops a bomb on a city **A**, with damage value **X** then the damage done to a city **B** will be floor(**X/2d**) where **d** is the distance between **A** and **B**, note that as the distance of **A** from itself is **0**, the damage done to **A** will be floor(**X/20**) = **X**.\n\nEach city has a certain wealth **Wi** in it, if it is damaged by a value of **X** then its wealth is reduced by **X**. On a day if the wealth of a city becomes less than or equal to zero then it is considered Economically Dead.\n\nYour task is to write a program that keeps track of the bombings done by the plane and answer the queries asked by the chef. The chef has a total of **Q** queries for you. There are two types of queries.\n\n1) Chef gives you two integers **A** and **X**, which means that the plane drops a bomb on the city with index **A** with damage value **X**. A bomb can also be dropped on economically dead city.\n2) Chef gives you an integer **A** and you need to print the number of cities that are economically dead which have **A** in the path from the capital to them.\n(See explanation for better understanding)",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 1000",
+      "1 <= Q <= 1000",
+      "1 <= Wi <= 1000",
+      "1 <= X <= 1000",
+      "1 <= A <= N"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case:\n- The first line contains an integer N, the number of cities.\n- The next N lines each contain an integer Wi, the initial wealth of city i (1\u2011indexed).\n- The next N\u20111 lines each contain two integers u v, denoting a bidirectional road between cities u and v.\n- The next line contains an integer Q, the number of queries.\n- The next Q lines describe the queries. Each line starts with an integer type.\n  * If type = 1, two more integers A X follow \u2013 a bomb is dropped on city A with damage value X.\n  * If type = 2, one more integer A follows \u2013 you must output the number of economically dead cities whose path from the capital (city 1) to them contains city A (i.e., A is an ancestor of the city in the rooted tree with root 1).",
+    "outputFormat": "For each query of type 2, output a single line containing the required count.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4\n2\n5\n5\n2\n1 2\n2 3\n3 4\n4\n1 3 4\n2 2\n1 2 2\n2 1",
+        "output": "1\n3",
+        "explanation": "The sample input represents a graph with 4 cities and 3 roads. The first query of type 1 drops a bomb on city 3 with damage value 4. The second query of type 2 asks for the number of cities that are economically dead and have city 2 in the path from the capital to them. The third query of type 1 drops a bomb on city 2 with damage value 2. The fourth query of type 2 asks for the number of cities that are economically dead and have city 1 in the path from the capital to them."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Root the tree at the capital (city 1) and run a DFS once to obtain for every city its entry (tin) and exit (tout) times in an Euler tour. A city u is an ancestor of v iff tin[u] <= tin[v] <= tout[u].\n\nMaintain two arrays:\n- wealth[i] \u2013 current wealth (may become negative).\n- dead[i] \u2013 boolean flag, true the first time wealth[i] <= 0.\n\nFor a bomb query (type 1) on city A with value X we perform a BFS from A. For a node at distance d the damage is floor(X / 2^d). When the damage becomes 0 we stop expanding that branch because deeper nodes will also receive 0. For every visited node we subtract the damage from its wealth and, if it crosses zero for the first time, mark it dead.\n\nFor a query of type 2 we simply iterate over all cities, count those with dead[i] == true and tin[A] <= tin[i] <= tout[A]. With N \u2264 1000 this O(N) scan per query is fast enough (overall O(N\u00b7Q) \u2264 10^6).\n\nThe algorithm therefore consists of:\n1. Build adjacency list.\n2. DFS to compute tin, tout and depth.\n3. Process queries using the BFS simulation and the ancestor test.\n\nTime Complexity: O(N + Q\u00b7(N + BFS)) \u2248 O(N\u00b7Q) in the worst case, which is \u2264 10^6 for the given limits.\nSpace Complexity: O(N) for the tree, Euler times, wealth and dead arrays.",
+    "timeComplexity": "O(N\u00b7Q) in the worst case (N \u2264 1000, Q \u2264 1000).",
+    "spaceComplexity": "O(N) for adjacency list, Euler tour timestamps, wealth and dead flags.",
+    "code": {
+      "C": "// COMPLETE, COMPILABLE C code\n#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdbool.h>\n\n#define MAXN 1005\n#define MAXQ 1005\n\nint N, Q;\nint wealth[MAXN];\nbool dead[MAXN];\nint tin[MAXN], tout[MAXN];\nint timer;\nint parent[MAXN];\nint depthArr[MAXN];\nint adj[MAXN][MAXN];\nint deg[MAXN];\n\nvoid dfs(int u, int p) {\n    tin[u] = ++timer;\n    parent[u] = p;\n    for (int i = 0; i < deg[u]; ++i) {\n        int v = adj[u][i];\n        if (v == p) continue;\n        depthArr[v] = depthArr[u] + 1;\n        dfs(v, u);\n    }\n    tout[u] = timer;\n}\n\nint main() {\n    int T; \n    if (scanf(\"%d\", &T)!=1) return 0;\n    while (T--) {\n        scanf(\"%d\", &N);\n        for (int i = 1; i <= N; ++i) {\n            scanf(\"%d\", &wealth[i]);\n            dead[i] = false;\n            deg[i] = 0;\n        }\n        for (int i = 0; i < N-1; ++i) {\n            int u, v; scanf(\"%d %d\", &u, &v);\n            adj[u][deg[u]++] = v;\n            adj[v][deg[v]++] = u;\n        }\n        timer = 0;\n        depthArr[1] = 0;\n        dfs(1, 0);\n        scanf(\"%d\", &Q);\n        while (Q--) {\n            int type; scanf(\"%d\", &type);\n            if (type == 1) {\n                int A, X; scanf(\"%d %d\", &A, &X);\n                // BFS queue\n                int qnode[MAXN];\n                int qdist[MAXN];\n                int head = 0, tail = 0;\n                qnode[tail] = A; qdist[tail++] = 0;\n                int visited[MAXN] = {0};\n                visited[A] = 1;\n                while (head < tail) {\n                    int u = qnode[head];\n                    int d = qdist[head++];\n                    int dmg = X >> d; // X / 2^d\n                    if (dmg == 0) continue; // no further effect\n                    wealth[u] -= dmg;\n                    if (!dead[u] && wealth[u] <= 0) dead[u] = true;\n                    for (int i = 0; i < deg[u]; ++i) {\n                        int v = adj[u][i];\n                        if (!visited[v]) {\n                            visited[v] = 1;\n                            qnode[tail] = v;\n                            qdist[tail++] = d + 1;\n                        }\n                    }\n                }\n            } else if (type == 2) {\n                int A; scanf(\"%d\", &A);\n                int cnt = 0;\n                for (int i = 1; i <= N; ++i) {\n                    if (dead[i] && tin[A] <= tin[i] && tin[i] <= tout[A]) cnt++;\n                }\n                printf(\"%d\\n\", cnt);\n            }\n        }\n    }\n    return 0;\n}\n",
+      "C++": "// COMPLETE, COMPILABLE C++ code\n#include <bits/stdc++.h>\nusing namespace std;\n\nconst int MAXN = 1005;\nint N, Q;\nint wealth[MAXN];\nbool dead[MAXN];\nint tin[MAXN], tout[MAXN];\nint timer;\nvector<int> adj[MAXN];\n\nvoid dfs(int u, int p) {\n    tin[u] = ++timer;\n    for (int v : adj[u]) if (v != p) {\n        dfs(v, u);\n    }\n    tout[u] = timer;\n}\n\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        cin>>N;\n        for(int i=1;i<=N;++i){\n            cin>>wealth[i];\n            dead[i]=false;\n            adj[i].clear();\n        }\n        for(int i=0;i<N-1;++i){\n            int u,v;cin>>u>>v;\n            adj[u].push_back(v);\n            adj[v].push_back(u);\n        }\n        timer=0; dfs(1,0);\n        cin>>Q;\n        while(Q--){\n            int type;cin>>type;\n            if(type==1){\n                int A,X;cin>>A>>X;\n                queue<pair<int,int>> q;\n                vector<char> vis(N+1,0);\n                q.emplace(A,0);\n                vis[A]=1;\n                while(!q.empty()){\n                    auto [u,d]=q.front();q.pop();\n                    int dmg = X>>d; // floor division by 2^d\n                    if(dmg==0) continue;\n                    wealth[u]-=dmg;\n                    if(!dead[u] && wealth[u]<=0) dead[u]=true;\n                    for(int v:adj[u]) if(!vis[v]){\n                        vis[v]=1;\n                        q.emplace(v,d+1);\n                    }\n                }\n            }else{ // type 2\n                int A;cin>>A;\n                int cnt=0;\n                for(int i=1;i<=N;++i){\n                    if(dead[i] && tin[A]<=tin[i] && tin[i]<=tout[A]) ++cnt;\n                }\n                cout<<cnt<<\"\\n\";\n            }\n        }\n    }\n    return 0;\n}\n",
+      "Java": ""
+    }
+  }
+}

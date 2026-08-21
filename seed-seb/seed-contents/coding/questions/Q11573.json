@@ -1,0 +1,120 @@
+{
+  "questionId": "Q11573",
+  "title": "1-Trees and Queries",
+  "slug": "E",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Graphs",
+    "difficulty": "$undefined",
+    "isPremium": true,
+    "tags": [
+      "Trees",
+      "Graph Traversal",
+      "Queries"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Write a program for the coding challenge \"1-Trees and Queries\". Refer to SEED-IT description: https://codeforces.com/contest/1304/problem/E",
+    "constraints": [
+      "1 <= T <= 100",
+      "2 <= n <= 10^5",
+      "1 <= q <= 10^5",
+      "1 <= edge nodes <= n"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Then for each test case: The first line contains two integers n and q, the number of nodes and the number of queries. The next line contains n-1 integers, the edges of the tree. The next q lines contain two integers, the nodes for each query.",
+    "outputFormat": "For each query, print the number of nodes that are at most one edge away from both nodes in the query.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "1\n2 1\n1 2\n1 2",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "1\n10 5\n1 2 3 4 5 6 7 8 9\n1 2\n1 3\n1 4\n1 5\n1 6",
+        "expectedOutput": "5\n6\n7\n8\n9",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": "1\n5 3\n1 2 3 4 5\n1 2\n1 3\n1 4",
+        "expectedOutput": "3\n4\n4",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n4 2\n1 2 3 4\n1 3\n2 4",
+        "expectedOutput": "2\n2",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": "1\n7 4\n1 2 3 4 5 6 7\n1 2\n1 3\n1 4\n1 5",
+        "expectedOutput": "3\n4\n5\n6",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Use a depth-first search (DFS) to traverse the tree and calculate the number of nodes that are at most one edge away from both nodes in each query.",
+    "timeComplexity": "O(T * (n + q))",
+    "spaceComplexity": "O(n)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#define MAX_N 100005\nint tree[MAX_N];\nint visited[MAX_N];\nint dfs(int node, int target) {\n    if (visited[node]) return 0;\n    visited[node] = 1;\n    if (node == target) return 1;\n    for (int i = 0; i < tree[node]; i++) {\n        int child = tree[node * (i + 1)];\n        if (dfs(child, target)) return 1;\n    }\n    return 0;\n}\nint main() {\n    int T, n, q;\n    scanf(\"%d\", &T);\n    while (T--) {\n        scanf(\"%d %d\", &n, &q);\n        for (int i = 0; i < n - 1; i++) {\n            int u, v;\n            scanf(\"%d %d\", &u, &v);\n            tree[u] = v;\n        }\n        for (int i = 0; i < q; i++) {\n            int u, v;\n            scanf(\"%d %d\", &u, &v);\n            int count = 0;\n            for (int j = 1; j <= n; j++) {\n                if (dfs(j, u) && dfs(j, v)) count++;\n            }\n            printf(\"%d\\n\", count);\n        }\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\nusing namespace std;\nconst int MAX_N = 100005;\nvector<int> tree[MAX_N];\nbool visited[MAX_N];\nint dfs(int node, int target) {\n    if (visited[node]) return 0;\n    visited[node] = true;\n    if (node == target) return 1;\n    for (int child : tree[node]) {\n        if (dfs(child, target)) return 1;\n    }\n    return 0;\n}\nint main() {\n    int T, n, q;\n    cin >> T;\n    while (T--) {\n        cin >> n >> q;\n        for (int i = 0; i < n - 1; i++) {\n            int u, v;\n            cin >> u >> v;\n            tree[u].push_back(v);\n        }\n        for (int i = 0; i < q; i++) {\n            int u, v;\n            cin >> u >> v;\n            int count = 0;\n            for (int j = 1; j <= n; j++) {\n                if (dfs(j, u) && dfs(j, v)) count++;\n            }\n            cout << count << endl;\n        }\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\nimport java.util.ArrayList;\npublic class Main {\n    static final int MAX_N = 100005;\n    static ArrayList<Integer>[] tree = new ArrayList[MAX_N];\n    static boolean[] visited = new boolean[MAX_N];\n    public static int dfs(int node, int target) {\n        if (visited[node]) return 0;\n        visited[node] = true;\n        if (node == target) return 1;\n        for (int child : tree[node]) {\n            if (dfs(child, target) == 1) return 1;\n        }\n        return 0;\n    }\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int T = scanner.nextInt();\n        while (T-- > 0) {\n            int n = scanner.nextInt();\n            int q = scanner.nextInt();\n            for (int i = 0; i < n - 1; i++) {\n                int u = scanner.nextInt();\n                int v = scanner.nextInt();\n                if (tree[u] == null) tree[u] = new ArrayList<>();\n                tree[u].add(v);\n            }\n            for (int i = 0; i < q; i++) {\n                int u = scanner.nextInt();\n                int v = scanner.nextInt();\n                int count = 0;\n                for (int j = 1; j <= n; j++) {\n                    if (dfs(j, u) == 1 && dfs(j, v) == 1) count++;\n                }\n                System.out.println(count);\n            }\n        }\n    }\n}",
+      "Python3": "import sys\nMAX_N = 100005\ntree = [[] for _ in range(MAX_N)]\nvisited = [False] * MAX_N\ndef dfs(node, target):\n    if visited[node]: return 0\n    visited[node] = True\n    if node == target: return 1\n    for child in tree[node]:\n        if dfs(child, target): return 1\n    return 0\n\ndef main():\n    T = int(sys.stdin.readline())\n    for _ in range(T):\n        n, q = map(int, sys.stdin.readline().split())\n        for _ in range(n - 1):\n            u, v = map(int, sys.stdin.readline().split())\n            tree[u].append(v)\n        for _ in range(q):\n            u, v = map(int, sys.stdin.readline().split())\n            count = 0\n            for j in range(1, n + 1):\n                if dfs(j, u) and dfs(j, v): count += 1\n            print(count)\nif __name__ == '__main__':\n    main()",
+      "JavaScript": "const readline = require('readline');\nconst rl = readline.createInterface({\n    input: process.stdin,\n    output: process.stdout\n});\nconst lines = [];\nrl.on('line', (input) => {\n    lines.push(input);\n});\nrl.on('close', () => {\n    let l = 0;\n    const T = +lines[l++];\n    for (let i = 0; i < T; i++) {\n        const [n, q] = lines[l++].trim().split(' ').map(Number);\n        const tree = Array.from({ length: n + 1 }, () => []);\n        for (let j = 0; j < n - 1; j++) {\n            const [u, v] = lines[l++].trim().split(' ').map(Number);\n            tree[u].push(v);\n        }\n        for (let j = 0; j < q; j++) {\n            const [u, v] = lines[l++].trim().split(' ').map(Number);\n            let count = 0;\n            const visited = Array.from({ length: n + 1 }, () => false);\n            for (let k = 1; k <= n; k++) {\n                if (dfs(k, u, tree, visited) && dfs(k, v, tree, visited)) count++;\n            }\n            console.log(count);\n        }\n    }\n});\nfunction dfs(node, target, tree, visited) {\n    if (visited[node]) return false;\n    visited[node] = true;\n    if (node === target) return true;\n    for (const child of tree[node]) {\n        if (dfs(child, target, tree, visited)) return true;\n    }\n    return false;\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

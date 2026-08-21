@@ -1,0 +1,127 @@
+{
+  "questionId": "Q7970",
+  "title": "Partition Ways",
+  "slug": "partition-ways",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming | Number Theory | Fast Fourier Transform",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "DP on prefixes",
+      "Probability",
+      "Inclusion‑Exclusion",
+      "NTT",
+      "Modular arithmetic"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Mathematics"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Let's define a function P(A)P(A)P(A) for a sequence AAA as the number of ways to divide AAA into contiguous subsequences such that each element of AAA belongs to exactly one of these subsequences and the sum of elements of each subsequence is between LLL and RRR inclusive.\n\nFor each integer nnn between 111 and NNN inclusive, solve the following problem: Consider a random sequence AAA with length nnn where each element is an integer between 111 and KKK chosen uniformly randomly and independently. Find the expected value of P(A)P(A)P(A).\n\nFor each valid nnn, it can be proved that the expected value can be expressed as a fraction P/QP / QP/Q, where PPP and QQQ are positive integers and QQQ is coprime with 998,244,353998,244,353998,244,353. You should compute P⋅Q−1P \\cdot Q^{-1}P⋅Q−1 modulo 998,244,353998,244,353998,244,353, where Q−1Q^{-1}Q−1 is the multiplicative inverse of QQQ modulo 998,244,353998,244,353998,244,353.",
+    "constraints": [
+      "1 ≤ T ≤ 20",
+      "1 ≤ N ≤ 5·10^5 (sum of N over all test cases ≤ 5·10^5)",
+      "1 ≤ L ≤ R ≤ K ≤ 10^6 (sum of K over all test cases ≤ 10^6)",
+      "All calculations are performed modulo MOD = 998244353, which is a prime suitable for NTT."
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains four integers N, K, L and R (1 ≤ N ≤ 5·10^5, 1 ≤ L ≤ R ≤ K ≤ 10^6).",
+    "outputFormat": "For each test case output a single line with N space‑separated integers. The i‑th integer (1‑based) is the expected value of P(A) for a random sequence of length i, expressed as P·Q⁻¹ modulo 998244353, where the expectation is taken over all K^i possible sequences and Q⁻¹ is the modular inverse of Q modulo 998244353.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n2 2 1 2",
+        "output": "1 748683266",
+        "explanation": "Explanation:\nExample case 1: For n=1n = 1n=1, we have P([1])=P([2])=1P([1]) = P([2]) = 1P([1])=P([2])=1 and P(A)=0P(A) = 0P(A)=0 for any other sequence. Hence, the expected value is 2/2=12 / 2 = 12/2=1.\nFor n=2n = 2n=2, there are four valid sequences [1,1][1,1][1,1], [1,2][1,2][1,2], [2,1][2,1][2,1] and [2,2][2,2][2,2]. Each of them can be split into one-element subsequences. In addition, [1,1][1,1][1,1] can be left unchanged (split into only one subsequence), so P([1,1])=2P([1,1]) = 2P([1,1])=2. The expected value is (2+1+1+1)/4=5/4=748,683,266(2+1+1+1) / 4 = 5/4 = 748,683,266(2+1+1+1)/4=5/4=748,683,266."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For a fixed length n let f[n] be the expected number of valid partitions of a random sequence of length n.  The empty sequence has exactly one partition, therefore f[0] = 1.\n\nConsider the first block of a partition.  If its length is len (1 ≤ len ≤ n) then the remaining part has length n‑len and contributes f[n‑len] in expectation.  The first block is valid iff the sum of its len elements lies in [L, R].  Because the elements are independent and uniformly distributed, the probability that a random block of length len is valid is\n\n    p[len] = ( number of integer solutions of x1+…+x_len ∈ [L,R] with 1 ≤ xi ≤ K ) / K^len.\n\nHence\n\n    f[n] = Σ_{len=1..n} f[n‑len] · p[len]   (mod MOD).\n\nThe recurrence is a convolution of the sequences f and p, therefore all f[1…N] can be obtained by a single convolution if we know p[1…N].  The values p[len] are independent of n, they only depend on K, L and R.\n\n**Computing p[len]**\nWrite yi = xi‑1, then 0 ≤ yi ≤ K‑1 and Σ yi = S where S = sum‑len.  The number of solutions for a fixed S is the coefficient of (1 + x + … + x^{K‑1})^{len} at x^S.  Let\n\n    G(x) = 1 + x + … + x^{K‑1}  (degree K‑1).\n\nThe polynomial G(x)^{len} contains the counts for all possible S.  We need the sum of coefficients for S ranging from L‑len to R‑len (values outside the range are ignored).  Consequently\n\n    cnt[len] = Σ_{S = L‑len}^{R‑len} [x^S] G(x)^{len}.\n\nAll cnt[len] for 1 ≤ len ≤ N can be obtained by repeatedly squaring G(x) using NTT while truncating the degree to R (any term > R is irrelevant).  The exponentiation is performed by binary exponentiation on the exponent len, storing the intermediate polynomials for each power of two.  While building the powers we also keep a prefix‑sum array of coefficients so that cnt[len] can be read in O(1).\n\n**Algorithm per test case**\n1. Build the base polynomial G(x) = 1 + x + … + x^{K‑1} (size R+1).  Pad to the next power of two and pre‑compute its NTT.\n2. Using binary exponentiation compute the polynomials P_pow[bit] = G(x)^{2^bit} (truncated to degree R) for all bits needed (⌈log2 N⌉ ≤ 19).  Each multiplication is an NTT of size ≤ 2·R.\n3. For each len from 1 to N obtain the coefficient array of G(x)^{len} by multiplying the appropriate P_pow[bit] where the binary representation of len has a 1.  While doing this we also keep a running prefix‑sum of the coefficients so that cnt[len] = pref[R‑len] – pref[max(-1, L‑len‑1)].\n4. Compute p[len] = cnt[len] * inv(K)^len mod MOD, where inv(K) is the modular inverse of K.\n5. Finally compute f[0]=1 and for i=1…N use the convolution recurrence f[i] = Σ_{len=1..i} f[i‑len]·p[len].  This is again a convolution of the already known sequences f and p, which can be performed in O(N log N) by a single NTT.\n6. Output f[1] … f[N].\n\nAll operations are performed modulo MOD = 998244353, which is a suitable modulus for NTT (primitive root = 3).\n\n**Correctness proof sketch**\n*Lemma 1* – For any fixed length len, the probability that a random block of len elements has sum in [L,R] equals cnt[len] / K^len.  This follows directly from counting the number of integer tuples (x1,…,x_len) with the required bounds; each tuple is equally likely (K^len possibilities).\n*Lemma 2* – The expected number of partitions of a random sequence of length n satisfies the recurrence f[n] = Σ_{len=1..n} f[n‑len]·p[len].  The first block of a partition can be any length len; the event that the first block is valid is independent of the rest of the sequence, therefore the expectation factorises.\n*Lemma 3* – The sequence {cnt[len]} can be obtained from the coefficients of G(x)^{len}.  By the substitution yi = xi‑1 the generating function of the shifted variables is exactly G(x)^{len}, and the coefficient of x^S counts the solutions with Σ yi = S.\n*Lemma 4* – Truncating all polynomials to degree R does not affect any cnt[len] for len ≤ N, because any term with degree > R corresponds to a sum larger than R, which is never counted.\n*Lemma 5* – The convolution step in (5) yields the exact values of f[1…N] because the recurrence of Lemma 2 is a linear convolution.\n*Theorem* – The algorithm outputs, for every 1 ≤ n ≤ N, the expected value of P(A) modulo MOD.  By Lemma 1 the computed p[len] are the exact probabilities, Lemma 2 gives the correct recurrence, Lemma 3–4 guarantee that the computed cnt[len] are exact, and Lemma 5 shows that solving the recurrence by convolution yields the exact f[n].  All arithmetic is performed modulo a prime, and modular inverses exist because MOD is prime and K is not a multiple of MOD (K ≤ 10^6 < MOD).  Hence the produced numbers equal P·Q⁻¹ mod MOD, which is the required output.",
+    "timeComplexity": "O(R log R log N + N log N) per test case.  R ≤ K ≤ 10^6, N ≤ 5·10^5, so the program easily fits within the limits.",
+    "spaceComplexity": "O(R) for the NTT buffers and O(N) for the final answer arrays.",
+    "code": {
+      "C": ""
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

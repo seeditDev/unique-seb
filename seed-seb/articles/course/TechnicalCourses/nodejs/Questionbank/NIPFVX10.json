@@ -1,0 +1,82 @@
+{
+  "questionId": "NIPFVX10",
+  "title": "Basic Database Connection Management",
+  "slug": "nipfvx10",
+  "version": 1,
+  "createdAt": "2026-07-13",
+  "updatedAt": "2026-07-13",
+  "source": {
+    "platform": "SEED-IT",
+    "courseSlug": "nodejs",
+    "contestCode": "KVHFAE",
+    "module": "Database Integration",
+    "submodule": "MongoDB Setup",
+    "contentType": "mcq",
+    "originalUrl": "https://www.codechef.com/learn/course/nodejs/KVHFAE/problems/NIPFVX10"
+  },
+  "metadata": {
+    "category": "Concept",
+    "difficulty": "Beginner",
+    "isPremium": false,
+    "tags": [
+      "javascript"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Database Integration",
+      "MongoDB Setup"
+    ],
+    "QBCategory": "SEED-IT"
+  },
+  "content": {
+    "problemStatement": "Welcome! In the previous lesson, \"Connecting to MongoDB with Mongoose,\" you learned how to establish an initial connection from your Node.js application to your MongoDB database using `mongoose.connect()`. That's like making the first phone call to the database.\n\nNow, let's talk about managing that phone line. It's not enough to just connect; a robust application needs to know the status of its database connection, handle any issues, and close it gracefully. This is what basic database connection management is all about.\n\n**Why Manage the Connection?**\n\nImagine you call a friend. You wouldn't hang up and redial for every sentence you want to say, right? Similarly:\n\n1.  **Efficiency:** We want to establish the database connection once when our application starts and reuse that same connection for all database requests. Constantly opening and closing connections is inefficient.\n2.  **Awareness & Reliability:** What if the database server isn't available when your app starts? Or what if the connection drops while your app is running? We need to be aware of these events to handle them, perhaps by logging an error or alerting an administrator.\n\n**The `mongoose.connection` Object: Your Connection Hub**\n\nMongoose provides a special object, `mongoose.connection`, that represents the default connection to MongoDB. This object is an **event emitter**, similar to how an HTTP server emits 'request' events (which you learned about in \"HTTP Servers\") or how other parts of Node.js use events (as seen in \"Asynchronous JavaScript Basics\").\n\nThis `mongoose.connection` object will emit different events based on the state of our database connection. We can listen for these events to manage our connection.\n\n**Listening to Connection Events**\n\nAfter you call `mongoose.connect()`, you can start listening to events on `mongoose.connection`. Here are the most common ones for basic management:\n\n1.  **`open` Event:**\n    *   This event fires **once** when the connection to MongoDB is successfully established.\n    *   It's a great place to log a success message or to ensure your database is ready before starting other parts of your application, like your Express server.\n\n    ```javascript\n    // Assuming you have already called mongoose.connect('your_mongodb_uri', {...});\n\n    const db = mongoose.connection;\n\n    db.once('open', () => {\n      console.log(\"Successfully connected to MongoDB!\");\n      // You might start your Express app here if it depends on the DB being ready\n      // For example:\n      // app.listen(3000, () => {\n      //   console.log(\"Server started and connected to DB\");\n      // });\n    });\n    ```\n    *Notice we use `db.once('open', ...)` because this event typically only needs to be handled the first time the connection opens.*\n\n2.  **`error` Event:**\n    *   This event fires if an error occurs during the initial connection attempt or if an error happens on an established connection that causes it to break.\n    *   It's crucial to listen for this event to log errors and understand if something went wrong with your database communication.\n\n    ```javascript\n    // (Continuing from above)\n    db.on('error', (error) => {\n      console.error(\"MongoDB connection error:\", error);\n      // In a real application, you might want to try to gracefully shut down\n      // or implement a retry mechanism (though retries are more advanced).\n    });\n    ```\n    *We use `db.on('error', ...)` because errors can occur multiple times.*\n\n3.  **`disconnected` Event:**\n    *   This event fires if the Mongoose connection to MongoDB is lost for any reason after it was initially established.\n    *   This helps you know if your application can no longer communicate with the database.\n\n    ```javascript\n    // (Continuing from above)\n    db.on('disconnected', () => {\n      console.log(\"MongoDB disconnected!\");\n    });\n    ```\n\n**Closing the Connection Gracefully**\n\nWhen your Node.js application shuts down (e.g., when you press `Ctrl+C` in the terminal or during a server deployment process), it's good practice to explicitly close the MongoDB connection. This allows MongoDB to clean up resources.\n\nYou can do this using `mongoose.connection.close()`:\n\n```javascript\n// To close the connection (e.g., when the app is shutting down)\n// mongoose.connection.close(() => {\n//   console.log('Mongoose default connection disconnected through app termination');\n//   process.exit(0); // Exit the Node.js process\n// });\n\n// A common pattern to handle Ctrl+C (SIGINT signal)\nprocess.on('SIGINT', async () => {\n  try {\n    await mongoose.connection.close();\n    console.log('MongoDB connection closed successfully due to application termination.');\n    process.exit(0);\n  } catch (err) {\n    console.error('Error closing MongoDB connection:', err);\n    process.exit(1);\n  }\n});\n```\nThis `SIGINT` handler ensures that if you stop your application with `Ctrl+C`, it attempts to close the database connection first.\n\n**Summary**\n\nBasic database connection management with Mongoose involves:\n1.  Connecting once when your application starts using `mongoose.connect()`.\n2.  Using the `mongoose.connection` object to listen for events like `open`, `error`, and `disconnected`.\n3.  Handling these events appropriately (e.g., logging, starting your server on `open`).\n4.  Gracefully closing the connection using `mongoose.connection.close()` when your application shuts down.\n\nBy managing your connection, you make your application more robust, efficient, and easier to debug when database communication issues arise! In the upcoming lessons, we'll dive into \"Mongoose Fundamentals\" to see how to define data structures and interact with the database using this managed connection.",
+    "constraints": [
+      "Time Limit: 1s",
+      "Memory Limit: 256MB"
+    ],
+    "inputFormat": "Standard input",
+    "outputFormat": "Standard output",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "input": "",
+        "expectedOutput": "expected",
+        "weight": 100
+      }
+    ],
+    "totalTestCases": 1,
+    "totalWeight": 100
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      100
+    ],
+    "maxScore": 100
+  },
+  "judging": {
+    "timeLimitMs": 1000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // Write your C code here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your C++ code here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) {\n        // Write your Java code here\n    }\n}",
+    "Python3": "# Write your Python code here\n",
+    "JavaScript": "// Write your JavaScript code here\n",
+    "Go": "package main\n\nimport \"fmt\"\n\nfunc main() {\n    // Write your Go code here\n}",
+    "Rust": "fn main() {\n    // Write your Rust code here\n}",
+    "C#": "using System;\n\nclass Program {\n    static void Main() {\n        // Write your C# code here\n    }\n}",
+    "SQL": "-- Write your SQL query here\n"
+  }
+}

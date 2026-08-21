@@ -1,0 +1,134 @@
+{
+  "questionId": "Q9612",
+  "title": "Equal Elements",
+  "slug": "equal-elements",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Arrays | Greedy",
+    "difficulty": "Easy",
+    "isPremium": true,
+    "tags": [
+      "Frequency Counting",
+      "Greedy"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Data Structures"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given an array AAA of size NNN. In one operation, you can do the following:\n\n\nSelect indices iii and jjj (i≠j)(i\\neq j)(i=j) and set Ai=AjA_i = A_jAi​=Aj​.\nFind the **minimum** number of operations required to make all elements of the array **equal**.\n\n\nInput Format\n\nThe first line of input will contain a single integer TTT, denoting the number of test cases.\nEach test case consists of multiple lines of input.\n\nThe first line of each test case contains an integer NNN — the size of the array.\nThe next line contains NNN space-separated integers, denoting the array AAA.\n\n\n\n\nOutput Format\nFor each test case, output on a new line, the **minimum** number of operations required to make all elements of the array **equal**.",
+    "constraints": [
+      "1 ≤ T ≤ 1000",
+      "1 ≤ N ≤ 2·10^5",
+      "1 ≤ Ai ≤ N",
+      "The sum of N over all test cases does not exceed 2·10^5"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, the first line contains an integer N, the size of the array. The second line contains N space‑separated integers A1, A2, …, AN.",
+    "outputFormat": "For each test case output a single line containing the minimum number of operations required to make all array elements equal.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\\n3\\n1 2 3\\n4\\n2 2 3 1\\n4\\n3 1 2 4",
+        "output": "2\\n2\\n3",
+        "explanation": "For each test case the answer is N minus the frequency of the most common element.\\nTest1: max frequency =1, answer=3-1=2.\\nTest2: max frequency =2, answer=4-2=2.\\nTest3: all distinct, max frequency =1, answer=4-1=3."
+      },
+      {
+        "id": "sample_2",
+        "input": "2\\n5\\n7 7 7 7 7\\n6\\n1 2 2 3 3 3",
+        "output": "0\\n3",
+        "explanation": "First case all elements already equal → 0 operations.\\nSecond case max frequency =3 (value 3), answer=6-3=3."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\\n1\\n1",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary (compact)",
+        "input": "1\\n15\\n5 5 5 5 5 5 5 1 2 3 4 6 7 8 9",
+        "expectedOutput": "8",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case – all distinct",
+        "input": "1\\n5\\n1 2 3 4 5",
+        "expectedOutput": "4",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\\n6\\n1 1 2 2 2 3",
+        "expectedOutput": "3",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\\n8\\n4 4 4 4 5 5 6 6",
+        "expectedOutput": "4",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "In one operation we can copy the value of any element to another position. To minimise the number of operations we should keep the value that already appears most frequently (the mode) and change every other element to this value. Each operation changes exactly one element, therefore the answer for a test case is N minus the maximum frequency of any value in the array.\nAlgorithm per test case:\n1. Read N and the array.\n2. Count frequencies of each value (using a hash map or sorting).\n3. Determine the largest frequency maxFreq.\n4. Output N - maxFreq.\nThe algorithm is linear in N for each test case.",
+    "timeComplexity": "O(N) per test case (overall O(total N)).",
+    "spaceComplexity": "O(K) where K is the number of distinct values (≤ N).",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nint cmp(const void *a, const void *b) {\n    int x = *(const int *)a;\n    int y = *(const int *)b;\n    return x - y;\n}\n\nint main() {\n    int T; if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        int N; scanf(\"%d\", &N);\n        int *arr = (int *)malloc(N * sizeof(int));\n        for (int i = 0; i < N; ++i) scanf(\"%d\", &arr[i]);\n        qsort(arr, N, sizeof(int), cmp);\n        int maxFreq = 0, curFreq = 0, prev = 0;\n        for (int i = 0; i < N; ++i) {\n            if (i == 0 || arr[i] != prev) {\n                curFreq = 1;\n                prev = arr[i];\n            } else {\n                ++curFreq;\n            }\n            if (curFreq > maxFreq) maxFreq = curFreq;\n        }\n        printf(\"%d\\n\", N - maxFreq);\n        free(arr);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--) {\n        int N; cin>>N;\n        unordered_map<int,int> freq;\n        int x, maxFreq=0;\n        for(int i=0;i<N;++i){\n            cin>>x;\n            maxFreq = max(maxFreq, ++freq[x]);\n        }\n        cout << N - maxFreq << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder out = new StringBuilder();\n        int T = Integer.parseInt(br.readLine().trim());\n        while (T-- > 0) {\n            int N = Integer.parseInt(br.readLine().trim());\n            StringTokenizer st = new StringTokenizer(br.readLine());\n            HashMap<Integer,Integer> freq = new HashMap<>();\n            int maxFreq = 0;\n            for (int i = 0; i < N; ++i) {\n                int val = Integer.parseInt(st.nextToken());\n                int cnt = freq.getOrDefault(val, 0) + 1;\n                freq.put(val, cnt);\n                if (cnt > maxFreq) maxFreq = cnt;\n            }\n            out.append(N - maxFreq).append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys\nfrom collections import Counter\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it))\n        arr = [int(next(it)) for _ in range(N)]\n        freq = Counter(arr)\n        max_freq = max(freq.values())\n        out_lines.append(str(N - max_freq))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet outputs = [];\nfor (let t = 0; t < T; ++t) {\n  const N = Number(input[idx++]);\n  const freq = new Map();\n  let maxFreq = 0;\n  for (let i = 0; i < N; ++i) {\n    const val = Number(input[idx++]);\n    const cnt = (freq.get(val) || 0) + 1;\n    freq.set(val, cnt);\n    if (cnt > maxFreq) maxFreq = cnt;\n  }\n  outputs.push(String(N - maxFreq));\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

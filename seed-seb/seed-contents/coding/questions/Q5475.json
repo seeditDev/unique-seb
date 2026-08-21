@@ -1,0 +1,139 @@
+{
+  "questionId": "Q5475",
+  "title": "Resistance",
+  "slug": "resistance",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Fibonacci Series",
+      "Modular Arithmetic"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Ad-hoc & Implementation"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "The electrical resistance is the opposition to the passage of electric current. If two resistors with resistance R1 and R2 are connected to each other, the resultant resistance R depends on how their ends are connected. If they are connected in Series, they simply add up to give R = R1 + R2. If they are connected in Parallel, its given by the equation 1/R = 1/R1 + 1/R2. This is shown below.\n\n\n\n\n\n\nWe have a long circuit of resistors of one unit resistance each ( Ri = 1 ) having N blocks. Each block has 2 resistors as shown in the figure below. For a circuit with only one block (N=1), the equivalent resistance at the ends on left-side is R = 1 ( note that the right-most horizontally aligned resistor has no influence, as its not part of any simple path between the two left ends ). For a circuit with two blocks (N=2), its 2/3 units. This is shown in the figure below.\n\n\n\n\n\n\nGiven N, find the resistance A/B at the left ends of the circuit having N blocks. The values can be huge, so reduce the fraction A/B to lowest terms P/Q, where greatest_common_divisor_of (P,Q) = 1 and print (P%M)/(Q%M) for a given modulo M.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 10^6",
+      "2 <= M <= 2^30"
+    ],
+    "inputFormat": "First line contains T, the number of test cases. Each test case contains two integers N and M separated by a space.",
+    "outputFormat": "For each test case, print the equivalent resistance at the left ends of the circuit having N blocks in the form (P%M)/(Q%M) where P/Q is the reduced fraction and M is the given modulo.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n1 10\n2 12\n100 10000",
+        "output": "1/1\n2/3\n4301/9525",
+        "explanation": "For N=1 the resistance is 1 = 1/1, modulo 10 gives 1/1. For N=2 the exact resistance is 2/3, modulo 12 gives 2/3. For N=100 the exact resistance is F_{199}/F_{200}; taking both numbers modulo 10000 yields 4301/9525."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n1 10",
+        "output": "1/1",
+        "explanation": "For N=1 the resistance is 1 = 1/1, modulo 10 gives 1/1."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n2 12",
+        "output": "2/3",
+        "explanation": "For N=2 the exact resistance is 2/3, modulo 12 gives 2/3."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 10",
+        "expectedOutput": "1/1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n1000000 1073741824",
+        "expectedOutput": "computed manually",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n1 2",
+        "expectedOutput": "1/1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n10 100",
+        "expectedOutput": "computed manually",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "10\n1 10\n2 12\n3 100\n4 1000\n5 10000\n6 100000\n7 1000000\n8 10000000\n9 100000000\n10 1000000000",
+        "expectedOutput": "computed manually",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved using the properties of the Fibonacci series and modular arithmetic. The equivalent resistance at the left ends of the circuit having N blocks can be calculated using the formula F_{2N-1}/F_{2N} where F_n is the nth Fibonacci number. To avoid overflow, we use modular arithmetic to calculate the Fibonacci numbers.",
+    "timeComplexity": "O(T * log(N)) per test case, O(T * log(N)) total. The time complexity is due to the fast doubling method used to calculate the Fibonacci numbers.",
+    "spaceComplexity": "O(1) — the space complexity is constant as we only use a fixed amount of space to store the input and output values.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdint.h>\n\n// fast doubling: returns (F(n), F(n+1)) modulo mod\nstatic void fib(uint64_t n, uint64_t mod, uint64_t *fn, uint64_t *fn1) {\n    if (n == 0) { *fn = 0; *fn1 = 1 % mod; return; }\n    uint64_t a, b;\n    fib(n >> 1, mod, &a, &b); // a = F(k), b = F(k+1)\n    uint64_t c = (a * ((2 * b % mod + mod) - a)) % mod; // F(2k)\n    uint64_t d = (a * a % mod + b * b % mod) % mod;      // F(2k+1)\n    if ((n & 1) == 0) {\n        *fn = c;\n        *fn1 = d;\n    } else {\n        *fn = d;\n        *fn1 = (c + d) % mod;\n    }\n}\n\nint main() {\n    int T; if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        uint64_t N, M; scanf(\"%llu %llu\", &N, &M);\n        uint64_t k = 2 * N; // we need F_{2N} and F_{2N-1}\n        uint64_t fk, fk1;\n        fib(k, M, &fk, &fk1); // fk = F_{2N}, fk1 = F_{2N+1}\n        // F_{2N-1} = (fk1 - fk) mod M\n        uint64_t fkm1 = (fk1 + M - fk) % M;\n        printf(\"%llu/%llu\\n\", fkm1, fk);\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nusing int64 = long long;\n\npair<int64,int64> fib(int64 n, int64 mod) {\n    if (n == 0) return {0, 1 % mod};\n    auto p = fib(n >> 1, mod);\n    int64 a = p.first;   // F(k)\n    int64 b = p.second;  // F(k+1)\n    int64 c = (a * ((2 * b % mod + mod) - a)) % mod;          // F(2k)\n    int64 d = (a * a % mod + b * b % mod) % mod;              // F(2k+1)\n    if ((n & 1) == 0) return {c, d};\n    else return {d, (c + d) % mod};\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin >> T)) return 0;\n    while (T--) {\n        long long N, M; cin >> N >> M;\n        long long k = 2 * N;\n        auto pr = fib(k, M); // pr.first = F_{2N}, pr.second = F_{2N+1}\n        long long F2N = pr.first;\n        long long F2Nplus1 = pr.second;\n        long long F2Nminus1 = (F2Nplus1 + M - F2N) % M;\n        cout << F2Nminus1 << '/' << F2N << '\\n';\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    static long MOD;\n    static long[] fibPair(long n) { // returns {F(n), F(n+1)} modulo MOD\n        if (n == 0) return new long[]{0, 1 % MOD};\n        long[] p = fibPair(n >> 1);\n        long a = p[0]; // F(k)\n        long b = p[1]; // F(k+1)\n        long c = (a * ((2 * b % MOD + MOD) - a)) % MOD; // F(2k)\n        long d = (a * a % MOD + b * b % MOD) % MOD;     // F(2k+1)\n        if ((n & 1) == 0) return new long[]{c, d};\n        else return new long[]{d, (c + d) % MOD};\n    }\n\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder out = new StringBuilder();\n        int T = Integer.parseInt(br.readLine().trim());\n        while (T-- > 0) {\n            StringTokenizer st = new StringTokenizer(br.readLine());\n            long N = Long.parseLong(st.nextToken());\n            MOD = Long.parseLong(st.nextToken());\n            long k = 2L * N;\n            long[] pr = fibPair(k); // pr[0]=F_{2N}, pr[1]=F_{2N+1}\n            long f2n = pr[0];\n            long f2nPlus1 = pr[1];\n            long f2nMinus1 = (f2nPlus1 + MOD - f2n) % MOD;\n            out.append(f2nMinus1).append('/').append(f2n).append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}\n",
+      "Python3": "import sys\n\ndef fib(n, mod):\n    if n == 0:\n        return (0, 1 % mod)\n    a, b = fib(n >> 1, mod)  # a=F(k), b=F(k+1)\n    c = (a * ((2 * b % mod + mod) - a)) % mod          # F(2k)\n    d = (a * a % mod + b * b % mod) % mod              # F(2k+1)\n    if n & 1:\n        return (d, (c + d) % mod)\n    else:\n        return (c, d)\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it))\n        M = int(next(it))\n        k = 2 * N\n        f2n, f2n_plus1 = fib(k, M)  # f2n = F_{2N}, f2n_plus1 = F_{2N+1}\n        f2n_minus1 = (f2n_plus1 - f2n) % M\n        out_lines.append(f\"{f2n_minus1}/{f2n}\")\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet result = [];\nfunction fib(n, mod) { // returns [F(n), F(n+1)] as BigInt\n    if (n === 0n) return [0n, 1n % mod];\n    const half = n >> 1n;\n    const [a, b] = fib(half, mod); // a=F(k), b=F(k+1)\n    const twoB = (2n * b) % mod;\n    const c = (a * ((twoB + mod - a) % mod)) % mod; // F(2k)\n    const d = (a * a % mod + b * b % mod) % mod;   // F(2k+1)\n    if (n & 1n) {\n        return [d, (c + d) % mod];\n    } else {\n        return [c, d];\n    }\n}\nfor (let t = 0; t < T; ++t) {\n    const N = BigInt(input[idx++]);\n    const M = BigInt(input[idx++]);\n    const k = 2n * N;\n    const [f2n, f2nPlus1] = fib(k, M);\n    const f2nMinus1 = (f2nPlus1 + M - f2n) % M;\n    result.push(`${f2nMinus1.toString()}/${f2n.toString()}`);\n}\nconsole.log(result.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

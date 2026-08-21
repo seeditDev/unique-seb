@@ -1,0 +1,127 @@
+{
+  "questionId": "Q2436",
+  "title": "Lucky Balance",
+  "slug": "lucky-balance",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Modular Arithmetic",
+      "Strings",
+      "Balanced Strings",
+      "Dynamic Programming"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Combinatorics & Probability"
+    ]
+  },
+  "content": {
+    "problemStatement": "Chef has the string **s** of length **n** consisted of digits **4** and **7**.\nThe string **s** is called balanced\nif there exits such integer **x** (**1** \u2264 **x** \u2264 **n**) that the number of digits **4** in substring **s[1; x)** is equal to the number of digits **7** in substring **s(x; n]**,\nwhere **s[1; x)** is the substring from the **1**st digit to (**x-1**)th digit of **s**, and **s(x; n]** is the substring from the (**x+1**)th digit to **n**th digit of **s**.\nFor example, **s = 747474** is a balanced string, because **s[1; 4) = 747** has one **4** and **s(4; 6] = 74** has one **7**.\nNote that **x** can be **1** or **n** and **s[1; 1)** and **s(n; n]** denote an empty string.\n\n\n\nIn one turn Chef can choose any pair of consecutive digits and swap them.\nFind for Chef the total number of different balanced string that can be obtained from string **s** using any (even 0) number of turns.\nPrint the result modulo **1000000007**.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= n <= 5000"
+    ],
+    "inputFormat": "First line contains T, the number of test cases. Each test case contains a string s of length n consisted of digits 4 and 7.",
+    "outputFormat": "For each test case, print the total number of different balanced strings that can be obtained from string s using any (even 0) number of turns, modulo 1000000007.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n47\n4477",
+        "output": "1\n4",
+        "explanation": "For the first test case, there is only one way to balance the string: '47'. For the second test case, there are four ways: '4477', '4747', '7447', '7474'."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n777",
+        "output": "0",
+        "explanation": "There is no way to balance the string '777'."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n444",
+        "output": "0",
+        "explanation": "There is no way to balance the string '444'."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n4",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n447777444",
+        "expectedOutput": "20",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n7777777",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n474747",
+        "expectedOutput": "6",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "5\n47\n4477\n777\n444\n474747",
+        "expectedOutput": "1\n4\n0\n0\n6",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved by using dynamic programming to calculate the number of ways to arrange the digits 4 and 7 in the string s. We can use a 2D array dp where dp[i][j] represents the number of ways to arrange i digits 4 and j digits 7. We can then calculate the total number of different balanced strings by iterating over all possible positions in the string and checking if the number of digits 4 in the left substring is equal to the number of digits 7 in the right substring.",
+    "timeComplexity": "O(T * n^2) per test case, O(T * n^2) total.",
+    "spaceComplexity": "O(n^2) \u2014 the dominant structure is the 2D array dp.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n#define MOD 1000000007\n\nint countBalancedStrings(char *s) {\n    int n = strlen(s);\n    int count4 = 0, count7 = 0;\n    for (int i = 0; i < n; i++) {\n        if (s[i] == '4') count4++;\n        else count7++;\n    }\n\n    int dp[n + 1][n + 1];\n    memset(dp, 0, sizeof(dp));\n    dp[0][0] = 1;\n\n    for (int i = 1; i <= n; i++) {\n        for (int j = 0; j <= i; j++) {\n            if (j > 0) dp[i][j] = (dp[i][j] + dp[i - 1][j - 1]) % MOD;\n            if (j < i) dp[i][j] = (dp[i][j] + dp[i - 1][j]) % MOD;\n        }\n    }\n\n    int result = 0;\n    for (int i = 0; i < n; i++) {\n        int left4 = 0, left7 = 0;\n        for (int j = 0; j < i; j++) {\n            if (s[j] == '4') left4++;\n            else left7++;\n        }\n        int right4 = count4 - left4, right7 = count7 - left7;\n        if (left4 <= right7 && left7 <= right4) {\n            result = (result + dp[i][left4] * dp[n - i - 1][left7] % MOD) % MOD;\n        }\n    }\n    return result;\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        char s[5005];\n        scanf(\"%s\", s);\n        printf(\"%d\\n\", countBalancedStrings(s));\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <string>\nusing namespace std;\n#define MOD 1000000007\n\nint countBalancedStrings(string s) {\n    int n = s.length();\n    int count4 = 0, count7 = 0;\n    for (int i = 0; i < n; i++) {\n        if (s[i] == '4') count4++;\n        else count7++;\n    }\n\n    int dp[n + 1][n + 1];\n    memset(dp, 0, sizeof(dp));\n    dp[0][0] = 1;\n\n    for (int i = 1; i <= n; i++) {\n        for (int j = 0; j <= i; j++) {\n            if (j > 0) dp[i][j] = (dp[i][j] + dp[i - 1][j - 1]) % MOD;\n            if (j < i) dp[i][j] = (dp[i][j] + dp[i - 1][j]) % MOD;\n        }\n    }\n\n    int result = 0;\n    for (int i = 0; i < n; i++) {\n        int left4 = 0, left7 = 0;\n        for (int j = 0; j < i; j++) {\n            if (s[j] == '4') left4++;\n            else left7++;\n        }\n        int right4 = count4 - left4, right7 = count7 - left7;\n        if (left4 <= right7 && left7 <= right4) {\n            result = (result + dp[i][left4] * dp[n - i - 1][left7] % MOD) % MOD;\n        }\n    }\n    return result;\n}\n\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        string s;\n        cin >> s;\n        cout << countBalancedStrings(s) << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    static final int MOD = 1000000007;\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n        while (T-- > 0) {\n            String s = sc.next();\n            System.out.println(countBalancedStrings(s));\n        }\n    }\n\n    public static int countBalancedStrings(String s) {\n        int n = s.length();\n        int count4 = 0, count7 = 0;\n        for (int i = 0; i < n; i++) {\n            if (s.charAt(i) == '4') count4++;\n            else count7++;\n        }\n\n        int[][] dp = new int[n + 1][n + 1];\n        dp[0][0] = 1;\n\n        for (int i = 1; i <= n; i++) {\n            for (int j = 0; j <= i; j++) {\n                if (j > 0) dp[i][j] = (dp[i][j] + dp[i - 1][j - 1]) % MOD;\n                if (j < i) dp[i][j] = (dp[i][j] + dp[i - 1][j]) % MOD;\n            }\n        }\n\n        int result = 0;\n        for (int i = 0; i < n; i++) {\n            int left4 = 0, left7 = 0;\n            for (int j = 0; j < i; j++) {\n                if (s.charAt(j) == '4') left4++;\n                else left7++;\n            }\n            int right4 = count4 - left4, right7 = count7 - left7;\n            if (left4 <= right7 && left7 <= right4) {\n                result = (result + (int)((long)dp[i][left4] * dp[n - i - 1][left7] % MOD)) % MOD;\n            }\n        }\n        return result;\n    }\n}",
+      "Python3": "def count_balanced_strings(s):\n    n = len(s)\n    count4 = s.count('4')\n    count7 = s.count('7')\n\n    dp = [[0] * (n + 1) for _ in range(n + 1)]\n    dp[0][0] = 1\n\n    for i in range(1, n + 1):\n        for j in range(i + 1):\n            if j > 0:\n                dp[i][j] = (dp[i][j] + dp[i - 1][j - 1]) % 1000000007\n            if j < i:\n                dp[i][j] = (dp[i][j] + dp[i - 1][j]) % 1000000007\n\n    result = 0\n    for i in range(n):\n        left4 = s[:i].count('4')\n        left7 = s[:i].count('7')\n        right4 = count4 - left4\n        right7 = count7 - left7\n        if left4 <= right7 and left7 <= right4:\n            result = (result + dp[i][left4] * dp[n - i - 1][left7] % 1000000007) % 1000000007\n    return result\n\nT = int(input())\nfor _ in range(T):\n    s = input()\n    print(count_balanced_strings(s))",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst readline = () => lines[idx++];\n\nfunction countBalancedStrings(s) {\n    const n = s.length;\n    let count4 = 0, count7 = 0;\n    for (let i = 0; i < n; i++) {\n        if (s[i] === '4') count4++;\n        else count7++;\n    }\n\n    const dp = Array(n + 1).fill(0).map(() => Array(n + 1).fill(0));\n    dp[0][0] = 1;\n\n    for (let i = 1; i <= n; i++) {\n        for (let j = 0; j <= i; j++) {\n            if (j > 0) dp[i][j] = (dp[i][j] + dp[i - 1][j - 1]) % 1000000007;\n            if (j < i) dp[i][j] = (dp[i][j] + dp[i - 1][j]) % 1000000007;\n        }\n    }\n\n    let result = 0;\n    for (let i = 0; i < n; i++) {\n        let left4 = 0, left7 = 0;\n        for (let j = 0; j < i; j++) {\n            if (s[j] === '4') left4++;\n            else left7++;\n        }\n        let right4 = count4 - left4, right7 = count7 - left7;\n        if (left4 <= right7 && left7 <= right4) {\n            result = (result + dp[i][left4] * dp[n - i - 1][left7] % 1000000007) % 1000000007;\n        }\n    }\n    return result;\n}\n\nconst T = parseInt(readline());\nfor (let i = 0; i < T; i++) {\n    const s = readline();\n    console.log(countBalancedStrings(s));\n}"
+    }
+  }
+}

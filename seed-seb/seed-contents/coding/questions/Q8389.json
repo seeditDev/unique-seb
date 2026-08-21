@@ -1,0 +1,139 @@
+{
+  "questionId": "Q8389",
+  "title": "Exactly N plus 1 Values",
+  "slug": "exactly-n-plus-1-values",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Constructive Algorithms",
+      "Greedy",
+      "Big Integer"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Constructive Algorithms"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given a positive integer NNN. You have to print exactly N+1N + 1N+1 positive integers\nsatisfying the following conditions:\n\n\nExactly one value should appear twice, all the remaining values should appear only once.\nSum of all these values should be equal to 2N2^N2N.\nYou have to print the values in non-decreasing order. If there are multiple solutions, you can print any of them.\n\n\nInput Format\n\nThe first line of the input contains a single integer TTT denoting the number of test cases. The description of TTT test cases follows.\nThe first and only line of each test case contains a single integer NNN.\n\n\nOutput Format\nFor each test case, print a single line containing N+1N + 1N+1 positive integers in non-decreasing order that satisfy the given conditions. If there are multiple solutions, you may print any of them.",
+    "constraints": [
+      "1 ≤ T ≤ 60",
+      "1 ≤ N ≤ 60"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains a single integer N (1 ≤ N ≤ 60).",
+    "outputFormat": "For each test case output a single line with N+1 positive integers in non‑decreasing order. Exactly one value must appear twice, all other values appear once, and the sum of all numbers must be 2^N.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n3\n4",
+        "output": "1 2 2 3\n1 2 3 3 7",
+        "explanation": "For N=3 the construction gives d=2, S=8-2-3=3, sequence 1 2 2 3. For N=4 we get d=3, S=16-3-6=7, sequence 1 2 3 3 7. Both sequences are non‑decreasing, contain exactly one duplicate, and sum to 2^N."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n1",
+        "output": "1 1",
+        "explanation": "When N=1 we need two numbers whose sum is 2. The only possible multiset with exactly one duplicate is {1,1}."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n5",
+        "output": "1 2 3 4 4 18",
+        "explanation": "N=5 → d=4, sum_{1..4}=10, 2^5=32, S=32-4-10=18. Sequence 1 2 3 4 4 18 satisfies all conditions."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1",
+        "expectedOutput": "1 1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "small N",
+        "input": "1\n2",
+        "expectedOutput": "1 1 2",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "medium N",
+        "input": "1\n6",
+        "expectedOutput": "1 2 3 4 5 5 44",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "1\n1",
+        "expectedOutput": "1 1",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "1\n1",
+        "expectedOutput": "1 1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For N = 1 the only possible multiset is {1,1}. For N ≥ 2 we construct the set as follows: let d = N‑1 (the value that will be duplicated). The distinct numbers are 1,2,…,N‑1 and an extra large number S. The total sum must be 2^N, therefore:\n    S = 2^N – d – sum_{i=1}^{N-1} i\n      = 2^N – (N‑1) – (N‑1)·N/2.\nBecause 2^N grows much faster than the quadratic term, S is always a positive integer larger than N‑1, guaranteeing a strictly increasing order. The final sequence is:\n    1 2 … N‑2 d d S\nwhich satisfies all conditions. The algorithm runs in O(N) per test case and uses O(1) extra space.\nAll five language implementations follow the same logic, using 64‑bit integers (or BigInt in JavaScript) to hold 2^N (which fits in 64 bits for N ≤ 60).",
+    "timeComplexity": "O(N) per test case (building the output list).",
+    "spaceComplexity": "O(N) for the output list; O(1) auxiliary space.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdint.h>\n\nint main() {\n    int T; if (scanf(\"%d\", &T)!=1) return 0;\n    while (T--) {\n        long long N; scanf(\"%lld\", &N);\n        if (N == 1) {\n            printf(\"1 1\\n\");\n            continue;\n        }\n        long long d = N - 1;\n        long long sum_first = (N - 1) * N / 2; // sum 1..N-1\n        long long pow2 = 1LL << N; // 2^N, N<=60 fits in 64‑bit\n        long long S = pow2 - d - sum_first;\n        // output 1..N-2, then d twice, then S\n        for (long long i = 1; i <= N - 2; ++i) {\n            printf(\"%lld \", i);\n        }\n        printf(\"%lld %lld %lld\\n\", d, d, S);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        long long N; cin>>N;\n        if(N==1){\n            cout<<\"1 1\\n\";\n            continue;\n        }\n        long long d = N-1;\n        long long sum_first = (N-1)*N/2; // 1+...+N-1\n        long long pow2 = 1LL<<N; // 2^N\n        long long S = pow2 - d - sum_first;\n        for(long long i=1;i<=N-2;++i) cout<<i<<' ';\n        cout<<d<<' '<<d<<' '<<S<<\"\\n\";\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder out = new StringBuilder();\n        int T = Integer.parseInt(br.readLine().trim());\n        for (int tc = 0; tc < T; ++tc) {\n            long N = Long.parseLong(br.readLine().trim());\n            if (N == 1) {\n                out.append(\"1 1\\n\");\n                continue;\n            }\n            long d = N - 1;\n            long sumFirst = (N - 1) * N / 2; // 1..N-1\n            long pow2 = 1L << N; // 2^N, N<=60 fits in long\n            long S = pow2 - d - sumFirst;\n            for (long i = 1; i <= N - 2; ++i) out.append(i).append(' ');\n            out.append(d).append(' ').append(d).append(' ').append(S).append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it))\n        if N == 1:\n            out_lines.append('1 1')\n            continue\n        d = N - 1\n        sum_first = (N - 1) * N // 2\n        pow2 = 1 << N\n        S = pow2 - d - sum_first\n        seq = [str(i) for i in range(1, N - 1)] + [str(d), str(d), str(S)]\n        out_lines.append(' '.join(seq))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet out = [];\nfor (let t = 0; t < T; ++t) {\n  const N = Number(input[idx++]);\n  if (N === 1) {\n    out.push('1 1');\n    continue;\n  }\n  const d = N - 1;\n  const sumFirst = BigInt(N - 1) * BigInt(N) / 2n; // 1..N-1\n  const pow2 = 1n << BigInt(N); // 2^N as BigInt\n  const S = pow2 - BigInt(d) - sumFirst;\n  // build sequence using normal numbers for the small part and BigInt for S\n  let parts = [];\n  for (let i = 1; i <= N - 2; ++i) parts.push(i.toString());\n  parts.push(d.toString(), d.toString(), S.toString());\n  out.push(parts.join(' '));\n}\nconsole.log(out.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "questionId": "Q2974",
+  "title": "Sereja and Salesman",
+  "slug": "sereja-and-salesman",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graphs",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Connected Permutations",
+      "Graphs",
+      "Graph Theory",
+      "Permutations"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Combinatorics & Probability"
+    ]
+  },
+  "content": {
+    "problemStatement": "Sereja has an undirected graph on **N** vertices. There are edges between all but **M** pairs of vertices.\n\n\nA permutation **p** on the vertices of the graph is represented as **p[1], p[2], \u2026 , p[N]** such that for all **i**, **p[i]** is a vertex of the graph. A permutation is called connected if there is an edge between vertices **p[i]** and **p[i+1]** for all natural numbers **i** less than **N**. Sereja wants to know the number of connected permutations on the graph vertices.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 10^5",
+      "0 <= M <= 7"
+    ],
+    "inputFormat": "The first line contains a single integer T, denoting the number of test cases. Each test case starts with a line containing two integers N and M, where N is the number of vertices and M is the number of pairs of vertices that are not connected by an edge. The next M lines contain pairs of indices of vertices that are not connected by an edge.",
+    "outputFormat": "For each test case, print the number of connected permutations on the graph vertices modulo 10^9 + 7.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n4 3\n1 2\n2 3\n3 4\n2 1\n1 2",
+        "output": "2\n0",
+        "explanation": "For the first test case, there are two connected permutations: [1, 3, 2, 4] and [4, 2, 3, 1]. For the second test case, there are no connected permutations."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n5 0",
+        "output": "120",
+        "explanation": "For this test case, there are 5! = 120 connected permutations since all vertices are connected."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n2 1\n1 2",
+        "output": "0",
+        "explanation": "For this test case, there are no connected permutations since the only pair of vertices is not connected."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 0",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n10 7",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n5 0",
+        "expectedOutput": "120",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n4 3\n1 2\n2 3\n3 4",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "2\n3 0\n4 2\n1 2\n2 3",
+        "expectedOutput": "6\n0",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a brute force approach by generating all possible permutations of the vertices and checking if each permutation is connected. A permutation is connected if there is an edge between each pair of adjacent vertices in the permutation. We can use a recursive function to generate all permutations and check if each permutation is connected.",
+    "timeComplexity": "O(N! * M) per test case, O(T * N! * M) total. The time complexity is high due to the brute force approach.",
+    "spaceComplexity": "O(N) \u2014 the dominant structure is the recursion stack.",
+    "code": {
+      "C": "// COMPLETE, COMPILABLE C code\n#include <stdio.h>\n#include <stdlib.h>\n#define MOD 1000000007\n\nint factorial(int n) {\n    int result = 1;\n    for (int i = 2; i <= n; i++) {\n        result = (result * i) % MOD;\n    }\n    return result;\n}\n\nint is_connected(int* permutation, int n, int** edges, int m) {\n    for (int i = 0; i < n - 1; i++) {\n        int found = 0;\n        for (int j = 0; j < m; j++) {\n            if ((permutation[i] == edges[j][0] && permutation[i + 1] == edges[j][1]) || (permutation[i] == edges[j][1] && permutation[i + 1] == edges[j][0])) {\n                found = 1;\n                break;\n            }\n        }\n        if (!found) return 0;\n    }\n    return 1;\n}\n\nint main() {\n    int t;\n    scanf(\"%d\", &t);\n    while (t--) {\n        int n, m;\n        scanf(\"%d %d\", &n, &m);\n        int** edges = (int**)malloc(m * sizeof(int*));\n        for (int i = 0; i < m; i++) {\n            edges[i] = (int*)malloc(2 * sizeof(int));\n            scanf(\"%d %d\", &edges[i][0], &edges[i][1]);\n        }\n        int* permutation = (int*)malloc(n * sizeof(int));\n        for (int i = 0; i < n; i++) permutation[i] = i + 1;\n        int count = 0;\n        do {\n            if (is_connected(permutation, n, edges, m)) count = (count + 1) % MOD;\n        } while (next_permutation(permutation, permutation + n));\n        printf(\"%d\\n\", count);\n        for (int i = 0; i < m; i++) free(edges[i]);\n        free(edges);\n        free(permutation);\n    }\n    return 0;\n}",
+      "C++": "// COMPLETE, COMPILABLE C++ code\n#include <iostream>\n#include <algorithm>\nusing namespace std;\n#define MOD 1000000007\n\nint factorial(int n) {\n    int result = 1;\n    for (int i = 2; i <= n; i++) {\n        result = (result * i) % MOD;\n    }\n    return result;\n}\n\nbool is_connected(int* permutation, int n, pair<int, int>* edges, int m) {\n    for (int i = 0; i < n - 1; i++) {\n        bool found = false;\n        for (int j = 0; j < m; j++) {\n            if ((permutation[i] == edges[j].first && permutation[i + 1] == edges[j].second) || (permutation[i] == edges[j].second && permutation[i + 1] == edges[j].first)) {\n                found = true;\n                break;\n            }\n        }\n        if (!found) return false;\n    }\n    return true;\n}\n\nint main() {\n    int t;\n    cin >> t;\n    while (t--) {\n        int n, m;\n        cin >> n >> m;\n        pair<int, int>* edges = new pair<int, int>[m];\n        for (int i = 0; i < m; i++) cin >> edges[i].first >> edges[i].second;\n        int* permutation = new int[n];\n        for (int i = 0; i < n; i++) permutation[i] = i + 1;\n        int count = 0;\n        do {\n            if (is_connected(permutation, n, edges, m)) count = (count + 1) % MOD;\n        } while (next_permutation(permutation, permutation + n));\n        cout << count << endl;\n        delete[] edges;\n        delete[] permutation;\n    }\n    return 0;\n}",
+      "Java": "// COMPLETE, COMPILABLE Java code\nimport java.util.Scanner;\npublic class Main {\n    static final int MOD = 1000000007;\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int t = scanner.nextInt();\n        while (t-- > 0) {\n            int n = scanner.nextInt();\n            int m = scanner.nextInt();\n            int[][] edges = new int[m][2];\n            for (int i = 0; i < m; i++) {\n                edges[i][0] = scanner.nextInt();\n                edges[i][1] = scanner.nextInt();\n            }\n            int[] permutation = new int[n];\n            for (int i = 0; i < n; i++) permutation[i] = i + 1;\n            int count = 0;\n            do {\n                if (isConnected(permutation, n, edges, m)) count = (count + 1) % MOD;\n            } while (nextPermutation(permutation));\n            System.out.println(count);\n        }\n    }\n    public static boolean isConnected(int[] permutation, int n, int[][] edges, int m) {\n        for (int i = 0; i < n - 1; i++) {\n            boolean found = false;\n            for (int j = 0; j < m; j++) {\n                if ((permutation[i] == edges[j][0] && permutation[i + 1] == edges[j][1]) || (permutation[i] == edges[j][1] && permutation[i + 1] == edges[j][0])) {\n                    found = true;\n                    break;\n                }\n            }\n            if (!found) return false;\n        }\n        return true;\n    }\n    public static boolean nextPermutation(int[] permutation) {\n        int i = permutation.length - 2;\n        while (i >= 0 && permutation[i] >= permutation[i + 1]) i--;\n        if (i < 0) return false;\n        int j = permutation.length - 1;\n        while (j > i && permutation[j] <= permutation[i]) j--;\n        int temp = permutation[i];\n        permutation[i] = permutation[j];\n        permutation[j] = temp;\n        int left = i + 1;\n        int right = permutation.length - 1;\n        while (left < right) {\n            temp = permutation[left];\n            permutation[left] = permutation[right];\n            permutation[right] = temp;\n            left++;\n            right--;\n        }\n        return true;\n    }\n}",
+      "Python3": "# COMPLETE, RUNNABLE Python3 code\nimport itertools\nMOD = 1000000007\n\ndef is_connected(permutation, n, edges, m):\n    for i in range(n - 1):\n        found = False\n        for j in range(m):\n            if (permutation[i] == edges[j][0] and permutation[i + 1] == edges[j][1]) or (permutation[i] == edges[j][1] and permutation[i + 1] == edges[j][0]):\n                found = True\n                break\n        if not found: return False\n    return True\n\ndef main():\n    t = int(input())\n    for _ in range(t):\n        n, m = map(int, input().split())\n        edges = [list(map(int, input().split())) for _ in range(m)]\n        permutation = list(range(1, n + 1))\n        count = 0\n        for p in itertools.permutations(permutation):\n            if is_connected(p, n, edges, m): count = (count + 1) % MOD\n        print(count)\nif __name__ == '__main__':\n    main()",
+      "JavaScript": "// COMPLETE, RUNNABLE JavaScript code\nconst fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst MOD = 1000000007;\n\nfunction is_connected(permutation, n, edges, m) {\n    for (let i = 0; i < n - 1; i++) {\n        let found = false;\n        for (let j = 0; j < m; j++) {\n            if ((permutation[i] == edges[j][0] && permutation[i + 1] == edges[j][1]) || (permutation[i] == edges[j][1] && permutation[i + 1] == edges[j][0])) {\n                found = true;\n                break;\n            }\n        }\n        if (!found) return false;\n    }\n    return true;\n}\n\nfunction next_permutation(permutation) {\n    let i = permutation.length - 2;\n    while (i >= 0 && permutation[i] >= permutation[i + 1]) i--;\n    if (i < 0) return false;\n    let j = permutation.length - 1;\n    while (j > i && permutation[j] <= permutation[i]) j--;\n    let temp = permutation[i];\n    permutation[i] = permutation[j];\n    permutation[j] = temp;\n    let left = i + 1;\n    let right = permutation.length - 1;\n    while (left < right) {\n        temp = permutation[left];\n        permutation[left] = permutation[right];\n        permutation[right] = temp;\n        left++;\n        right--;\n    }\n    return true;\n}\n\nfunction main() {\n    let t = parseInt(input[idx++]);\n    while (t-- > 0) {\n        let [n, m] = input[idx++].split(' ').map(Number);\n        let edges = [];\n        for (let i = 0; i < m; i++) {\n            edges.push(input[idx++].split(' ').map(Number));\n        }\n        let permutation = Array.from({ length: n }, (_, i) => i + 1);\n        let count = 0;\n        do {\n            if (is_connected(permutation, n, edges, m)) count = (count + 1) % MOD;\n        } while (next_permutation(permutation));\n        console.log(count);\n    }\n}\nmain();"
+    }
+  }
+}

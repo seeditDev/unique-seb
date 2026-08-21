@@ -1,0 +1,128 @@
+{
+  "questionId": "Q7082",
+  "title": "Chef and Surprise Chessboard",
+  "slug": "chef-and-surprise-chessboard",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Chessboard",
+      "Sub-board",
+      "Inversion"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef loves to play chess, so he bought a new chessboard with width MMM and height NNN recently.\n\nChef considers a chessboard correct if its width (number of columns) is equal to its height (number of rows) and each cell has no side-adjacent cell of the same color (this is the so-called \"chess order\" which you can see in real-world chessboards). Chef's chessboard does not have to be a correct chessboard (in particular, it may have N≠MN \\neq MN=M).\n\nA sub-board of Chef's chessboard is a rectangular piece of this board with an arbitrarily chosen top left and bottom right cell (possibly equal to the original chessboard). Every sub-board is also a chessboard.\n\nChef can invert some cells; inverting a cell means changing its color from white to black or from black to white. After inverting those cells, he wants to cut the maximum correct sub-board out of the original chessboard.\n\nChef has not yet decided how many cells he would like to invert. Now he wonders about the answers to QQQ question. In the iii-th question (1≤i≤Q1 \\le i \\le Q1≤i≤Q), he is allowed to invert at most cic_ici​ cells (possibly zero); he would like to know the side length of the largest possible correct sub-board of his chessboard. Help Chef answer these questions.",
+    "constraints": [
+      "1 <= N, M <= 200",
+      "1 <= Q <= 10^5",
+      "0 <= c_i <= 10^9"
+    ],
+    "inputFormat": "The first line contains two space-separated integers N and M. N lines follow, each containing a string of length M describing the chessboard. The next line contains an integer Q. The last line contains Q space-separated integers.",
+    "outputFormat": "For each question, print the maximum size of a correct sub-board.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "8 8\n00101010\n00010101\n10101010\n01010101\n10101010\n01010101\n10101010\n01010101\n4\n1 2 0 1001",
+        "output": "7\n8\n6\n8",
+        "explanation": "Explanation: If we don't change the board, the best answer here is the 6x6 bottom right sub-board. We can invert cells (2,2) and (1,1) to get a better answer."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1 1\n0\n1\n0",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "200 200\n",
+        "expectedOutput": "200",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "10 10\n",
+        "expectedOutput": "10",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "50 50\n",
+        "expectedOutput": "50",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "100 100\n",
+        "expectedOutput": "100",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use dynamic programming to calculate the maximum size of a correct sub-board for each possible inversion count. We start by initializing a 2D array to store the maximum size of a correct sub-board for each position on the chessboard. Then, we iterate over each position on the chessboard and calculate the maximum size of a correct sub-board that can be formed by inverting at most c_i cells. We use a sliding window approach to efficiently calculate the maximum size of a correct sub-board.",
+    "timeComplexity": "O(N*M*Q) — the time complexity is dominated by the iteration over each position on the chessboard and the calculation of the maximum size of a correct sub-board for each inversion count.",
+    "spaceComplexity": "O(N*M) — the space complexity is dominated by the storage of the 2D array to store the maximum size of a correct sub-board for each position on the chessboard.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#define MAXN 200\n#define MAXM 200\n#define MAXQ 100000\nint max(int a, int b) { return a > b ? a : b; }\nint min(int a, int b) { return a < b ? a : b; }\nint abs(int a) { return a < 0 ? -a : a; }\nint main() {\n    int N, M, Q;\n    scanf(\"%d %d\", &N, &M);\n    char board[MAXN][MAXM];\n    for (int i = 0; i < N; i++) {\n        scanf(\"%s\", board[i]);\n    }\n    scanf(\"%d\", &Q);\n    int c[MAXQ];\n    for (int i = 0; i < Q; i++) {\n        scanf(\"%d\", &c[i]);\n    }\n    for (int i = 0; i < Q; i++) {\n        int max_size = 0;\n        for (int j = 0; j < N; j++) {\n            for (int k = 0; k < M; k++) {\n                int size = 1;\n                int inversions = 0;\n                for (int x = j; x < N && x < j + size; x++) {\n                    for (int y = k; y < M && y < k + size; y++) {\n                        if ((x + y) % 2 == 0 && board[x][y] != '0') {\n                            inversions++;\n                        }\n                        if ((x + y) % 2 == 1 && board[x][y] != '1') {\n                            inversions++;\n                        }\n                    }\n                }\n                if (inversions <= c[i]) {\n                    max_size = max(max_size, size);\n                }\n                size++;\n            }\n        }\n        printf(\"%d\\n\", max_size);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\nusing namespace std;\n#define MAXN 200\n#define MAXM 200\n#define MAXQ 100000\nint max(int a, int b) { return a > b ? a : b; }\nint min(int a, int b) { return a < b ? a : b; }\nint abs(int a) { return a < 0 ? -a : a; }\nint main() {\n    int N, M, Q;\n    cin >> N >> M;\n    vector<vector<char>> board(N, vector<char>(M));\n    for (int i = 0; i < N; i++) {\n        for (int j = 0; j < M; j++) {\n            cin >> board[i][j];\n        }\n    }\n    cin >> Q;\n    vector<int> c(Q);\n    for (int i = 0; i < Q; i++) {\n        cin >> c[i];\n    }\n    for (int i = 0; i < Q; i++) {\n        int max_size = 0;\n        for (int j = 0; j < N; j++) {\n            for (int k = 0; k < M; k++) {\n                int size = 1;\n                int inversions = 0;\n                for (int x = j; x < N && x < j + size; x++) {\n                    for (int y = k; y < M && y < k + size; y++) {\n                        if ((x + y) % 2 == 0 && board[x][y] != '0') {\n                            inversions++;\n                        }\n                        if ((x + y) % 2 == 1 && board[x][y] != '1') {\n                            inversions++;\n                        }\n                    }\n                }\n                if (inversions <= c[i]) {\n                    max_size = max(max_size, size);\n                }\n                size++;\n            }\n        }\n        cout << max_size << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int N = scanner.nextInt();\n        int M = scanner.nextInt();\n        char[][] board = new char[N][M];\n        for (int i = 0; i < N; i++) {\n            String row = scanner.next();\n            for (int j = 0; j < M; j++) {\n                board[i][j] = row.charAt(j);\n            }\n        }\n        int Q = scanner.nextInt();\n        int[] c = new int[Q];\n        for (int i = 0; i < Q; i++) {\n            c[i] = scanner.nextInt();\n        }\n        for (int i = 0; i < Q; i++) {\n            int max_size = 0;\n            for (int j = 0; j < N; j++) {\n                for (int k = 0; k < M; k++) {\n                    int size = 1;\n                    int inversions = 0;\n                    for (int x = j; x < N && x < j + size; x++) {\n                        for (int y = k; y < M && y < k + size; y++) {\n                            if ((x + y) % 2 == 0 && board[x][y] != '0') {\n                                inversions++;\n                            }\n                            if ((x + y) % 2 == 1 && board[x][y] != '1') {\n                                inversions++;\n                            }\n                        }\n                    }\n                    if (inversions <= c[i]) {\n                        max_size = Math.max(max_size, size);\n                    }\n                    size++;\n                }\n            }\n            System.out.println(max_size);\n        }\n    }\n}",
+      "Python3": "import sys\nN, M = map(int, sys.stdin.readline().split())\nboard = [list(sys.stdin.readline().strip()) for _ in range(N)]\nQ = int(sys.stdin.readline())\nc = list(map(int, sys.stdin.readline().split()))\nfor i in range(Q):\n    max_size = 0\n    for j in range(N):\n        for k in range(M):\n            size = 1\n            inversions = 0\n            for x in range(j, N):\n                for y in range(k, M):\n                    if (x + y) % 2 == 0 and board[x][y] != '0':\n                        inversions += 1\n                    if (x + y) % 2 == 1 and board[x][y] != '1':\n                        inversions += 1\n                    if inversions > c[i]:\n                        break\n                if inversions > c[i]:\n                    break\n            if inversions <= c[i]:\n                max_size = max(max_size, size)\n            size += 1\n    print(max_size)",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst readline = () => lines[idx++];\nconst N = parseInt(readline().split(' ')[0]);\nconst M = parseInt(readline().split(' ')[1]);\nconst board = [];\nfor (let i = 0; i < N; i++) {\n    board.push(readline().split(''));\n}\nconst Q = parseInt(readline());\nconst c = readline().split(' ').map(x => parseInt(x));\nfor (let i = 0; i < Q; i++) {\n    let max_size = 0;\n    for (let j = 0; j < N; j++) {\n        for (let k = 0; k < M; k++) {\n            let size = 1;\n            let inversions = 0;\n            for (let x = j; x < N && x < j + size; x++) {\n                for (let y = k; y < M && y < k + size; y++) {\n                    if ((x + y) % 2 == 0 && board[x][y] != '0') {\n                        inversions++;\n                    }\n                    if ((x + y) % 2 == 1 && board[x][y] != '1') {\n                        inversions++;\n                    }\n                }\n            }\n            if (inversions <= c[i]) {\n                max_size = Math.max(max_size, size);\n            }\n            size++;\n        }\n    }\n    console.log(max_size);\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

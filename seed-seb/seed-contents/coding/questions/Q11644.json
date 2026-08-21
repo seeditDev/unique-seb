@@ -1,0 +1,119 @@
+{
+  "questionId": "Q11644",
+  "title": "Appleman and Tree",
+  "slug": "B",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "$undefined",
+    "isPremium": true,
+    "tags": [
+      "Tree",
+      "Distance",
+      "Graph Theory"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Write a program for the coding challenge \"Appleman and Tree\". Refer to SEED-IT description: https://codeforces.com/contest/461/problem/B",
+    "constraints": [
+      "2 <= n <= 10^5",
+      "1 <= m <= 10^5",
+      "1 <= u, v <= n"
+    ],
+    "inputFormat": "The first line contains an integer n, which is the number of nodes in the tree. Then n-1 lines follow, each containing two integers u and v, which are the nodes connected by an edge. After that, one line contains an integer m, which is the number of queries. Then m lines follow, each containing two integers u and v, which are the nodes for which we need to find the distance.",
+    "outputFormat": "For each query, print the distance between the nodes u and v.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "2\n1 2\n1\n1 2",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "10\n1 2\n1 3\n1 4\n1 5\n1 6\n1 7\n1 8\n1 9\n1 10\n10\n1 2\n1 3\n1 4\n1 5\n1 6\n1 7\n1 8\n1 9\n1 10",
+        "expectedOutput": "1\n1\n1\n1\n1\n1\n1\n1\n1\n1",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": "5\n1 2\n1 3\n1 4\n1 5\n5\n1 1\n2 2\n3 3\n4 4\n5 5",
+        "expectedOutput": "0\n0\n0\n0\n0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "5\n1 2\n2 3\n3 4\n4 5\n5\n1 5\n1 4\n1 3\n1 2\n1 1",
+        "expectedOutput": "4\n3\n2\n1\n0",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": "7\n1 2\n1 3\n2 4\n2 5\n3 6\n3 7\n10\n1 2\n1 3\n1 4\n1 5\n1 6\n1 7\n2 4\n2 5\n3 6\n3 7",
+        "expectedOutput": "1\n1\n2\n2\n2\n2\n1\n1\n1\n1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Use a tree traversal algorithm (e.g., DFS or BFS) to calculate the distance between each pair of nodes.",
+    "timeComplexity": "O(n + m)",
+    "spaceComplexity": "O(n)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#define MAX 100001\nint n, m;\ntypedef struct Node {\n    int val;\n    struct Node* next;\n} Node;\nNode* adj[MAX];\nvoid addEdge(int u, int v) {\n    Node* newNode = (Node*) malloc(sizeof(Node));\n    newNode->val = v;\n    newNode->next = adj[u];\n    adj[u] = newNode;\n}\nint dfs(int u, int v, int* visited) {\n    if (u == v) return 0;\n    visited[u] = 1;\n    Node* temp = adj[u];\n    int min = -1;\n    while (temp) {\n        if (!visited[temp->val]) {\n            int dist = dfs(temp->val, v, visited);\n            if (dist != -1) {\n                if (min == -1 || dist + 1 < min) min = dist + 1;\n            }\n        }\n        temp = temp->next;\n    }\n    return min;\n}\nint main() {\n    scanf(\"%d\", &n);\n    for (int i = 0; i < n - 1; i++) {\n        int u, v;\n        scanf(\"%d %d\", &u, &v);\n        addEdge(u, v);\n        addEdge(v, u);\n    }\n    scanf(\"%d\", &m);\n    for (int i = 0; i < m; i++) {\n        int u, v;\n        scanf(\"%d %d\", &u, &v);\n        int* visited = (int*) calloc(n + 1, sizeof(int));\n        printf(\"%d\\n\", dfs(u, v, visited));\n        free(visited);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\nusing namespace std;\nconst int MAX = 100001;\nvector<int> adj[MAX];\nvoid addEdge(int u, int v) {\n    adj[u].push_back(v);\n    adj[v].push_back(u);\n}\nint dfs(int u, int v, bool* visited) {\n    if (u == v) return 0;\n    visited[u] = true;\n    int min = -1;\n    for (int i = 0; i < adj[u].size(); i++) {\n        if (!visited[adj[u][i]]) {\n            int dist = dfs(adj[u][i], v, visited);\n            if (dist != -1) {\n                if (min == -1 || dist + 1 < min) min = dist + 1;\n            }\n        }\n    }\n    return min;\n}\nint main() {\n    int n, m;\n    cin >> n;\n    for (int i = 0; i < n - 1; i++) {\n        int u, v;\n        cin >> u >> v;\n        addEdge(u, v);\n    }\n    cin >> m;\n    for (int i = 0; i < m; i++) {\n        int u, v;\n        cin >> u >> v;\n        bool* visited = new bool[n + 1];\n        for (int j = 0; j <= n; j++) visited[j] = false;\n        cout << dfs(u, v, visited) << endl;\n        delete[] visited;\n    }\n    return 0;\n}",
+      "Java": "import java.util.ArrayList;\nimport java.util.Scanner;\npublic class Main {\n    static final int MAX = 100001;\n    static ArrayList<Integer>[] adj = new ArrayList[MAX];\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int n = scanner.nextInt();\n        for (int i = 0; i < MAX; i++) adj[i] = new ArrayList<>();\n        for (int i = 0; i < n - 1; i++) {\n            int u = scanner.nextInt();\n            int v = scanner.nextInt();\n            adj[u].add(v);\n            adj[v].add(u);\n        }\n        int m = scanner.nextInt();\n        for (int i = 0; i < m; i++) {\n            int u = scanner.nextInt();\n            int v = scanner.nextInt();\n            boolean[] visited = new boolean[n + 1];\n            System.out.println(dfs(u, v, visited));\n        }\n    }\n    public static int dfs(int u, int v, boolean[] visited) {\n        if (u == v) return 0;\n        visited[u] = true;\n        int min = -1;\n        for (int i = 0; i < adj[u].size(); i++) {\n            if (!visited[adj[u].get(i)]) {\n                int dist = dfs(adj[u].get(i), v, visited);\n                if (dist != -1) {\n                    if (min == -1 || dist + 1 < min) min = dist + 1;\n                }\n            }\n        }\n        return min;\n    }\n}",
+      "Python3": "from collections import defaultdict\n\ndef addEdge(adj, u, v):\n    adj[u].append(v)\n    adj[v].append(u)\n\ndef dfs(adj, u, v, visited):\n    if u == v: return 0\n    visited[u] = True\n    min_dist = float('inf')\n    for neighbor in adj[u]:\n        if not visited[neighbor]:\n            dist = dfs(adj, neighbor, v, visited)\n            if dist != -1:\n                min_dist = min(min_dist, dist + 1)\n    if min_dist == float('inf'): return -1\n    return min_dist\n\nn = int(input())\nadj = defaultdict(list)\nfor _ in range(n - 1):\n    u, v = map(int, input().split())\n    addEdge(adj, u, v)\nm = int(input())\nfor _ in range(m):\n    u, v = map(int, input().split())\n    visited = [False] * (n + 1)\n    print(dfs(adj, u, v, visited))",
+      "JavaScript": "const readline = require('readline');\nconst rl = readline.createInterface({\n    input: process.stdin,\n    output: process.stdout\n});\nlet input = [];\nrl.on('line', function(line) {\n    input.push(line);\n}).on('close', function() {\n    let n = +input[0];\n    let adj = Array.from({length: n + 1}, () => []);\n    for (let i = 1; i < n; i++) {\n        let [u, v] = input[i].split(' ').map(Number);\n        adj[u].push(v);\n        adj[v].push(u);\n    }\n    let m = +input[n];\n    for (let i = n + 1; i < input.length; i++) {\n        let [u, v] = input[i].split(' ').map(Number);\n        let visited = new Array(n + 1).fill(false);\n        console.log(dfs(adj, u, v, visited));\n    }\n    function dfs(adj, u, v, visited) {\n        if (u == v) return 0;\n        visited[u] = true;\n        let min = Infinity;\n        for (let neighbor of adj[u]) {\n            if (!visited[neighbor]) {\n                let dist = dfs(adj, neighbor, v, visited);\n                if (dist != -1) {\n                    min = Math.min(min, dist + 1);\n                }\n            }\n        }\n        return min == Infinity ? -1 : min;\n    }\n});"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

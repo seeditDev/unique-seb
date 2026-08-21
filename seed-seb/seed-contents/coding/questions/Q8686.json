@@ -1,0 +1,130 @@
+{
+  "questionId": "Q8686",
+  "title": "Reverse the Segment",
+  "slug": "reverse-the-segment",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Data Structures",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Linked List",
+      "Two Pointers",
+      "In‑place Reversal"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Linked Lists"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given the head of a singly linked list AAA of length NNN. The values in the list are A1,A2,…,ANA_1, A_2, \\ldots, A_NA1​,A2​,…,AN​ respectively. You are also given two integers LLL and RRR. You need to reverse the nodes of the list from position LLL to position RRR.\n\n**Function Description**You are given a function named **`reverseSegment`** that you must complete.\n\nThe function receives the following parameters:\n\n\n**`head`** – the head pointer of a singly linked list\n**`L`** – the starting position of the segment to be reversed (1-indexed)\n**`R`** – the ending position of the segment to be reversed (1-indexed)\nThe linked list contains `N` nodes, and you need to reverse only the nodes from position **L** to **R**, while keeping the rest of the list unchanged.\n\nThe function must **return the head** of the linked list **after reversing the segment** between positions `L` and `R`.\n\nThe input and output formats given below are only if you want to test using custom inputs",
+    "constraints": [
+      "1 <= T <= 100",
+      "1 <= N <= 100000",
+      "1 <= L <= R <= N",
+      "1 <= Ai <= 10^9",
+      "Sum of N over all test cases does not exceed 2·10^5"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, the first line contains three integers N, L and R. The second line contains N space‑separated integers denoting the values of the linked list from head to tail.",
+    "outputFormat": "For each test case output a single line with N space‑separated integers representing the linked list after reversing the segment from position L to R (1‑indexed).",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4\n6 2 5\n1 2 3 4 5 6\n4 1 3\n1 2 3 4\n5 3 5\n10 4 3 6 7\n3 1 3\n5 6 4",
+        "output": "1 5 4 3 2 6\n3 2 1 4\n10 4 7 6 3\n4 6 5",
+        "explanation": "Each test case reverses the specified segment using the in‑place linked‑list algorithm described in the approach."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1 1\n42",
+        "expectedOutput": "42",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n15 1 15\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15",
+        "expectedOutput": "15 14 13 12 11 10 9 8 7 6 5 4 3 2 1",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case L=R",
+        "input": "1\n5 3 3\n5 4 3 2 1",
+        "expectedOutput": "5 4 3 2 1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n8 3 6\n10 20 30 40 50 60 70 80",
+        "expectedOutput": "10 20 60 50 40 30 70 80",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n9 2 8\n9 8 7 6 5 4 3 2 1",
+        "expectedOutput": "9 2 3 4 5 6 7 8 1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each test case we build the singly linked list from the input array. Using a dummy node we locate the node just before position L (pre) and the L‑th node (start). Then we iteratively move the node after start to the front of the sub‑list (standard in‑place reversal) for (R‑L) steps. Finally we reconnect the reversed part with the rest of the list and output the values by traversing from the (possibly new) head.",
+    "timeComplexity": "O(N) per test case – each node is visited a constant number of times.",
+    "spaceComplexity": "O(1) extra besides the input array and the linked list nodes.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\ntypedef struct Node { long long val; struct Node *next; } Node;\n\nNode* newNode(long long v){ Node* n = (Node*)malloc(sizeof(Node)); n->val=v; n->next=NULL; return n; }\n\nNode* reverseSegment(Node* head, int L, int R){\n    Node dummy; dummy.next=head; Node *pre=&dummy;\n    for(int i=1;i<L;i++) pre=pre->next;\n    Node *start=pre->next;\n    for(int i=0;i<R-L;i++){\n        Node *tmp=start->next;\n        start->next=tmp->next;\n        tmp->next=pre->next;\n        pre->next=tmp;\n    }\n    return dummy.next;\n}\n\nint main(){\n    int T; if(scanf(\"%d\",&T)!=1) return 0;\n    while(T--){\n        int N,L,R; scanf(\"%d %d %d\",&N,&L,&R);\n        Node *head=NULL,*tail=NULL;\n        for(int i=0;i<N;i++){\n            long long x; scanf(\"%lld\",&x);\n            Node* nd=newNode(x);\n            if(!head) head=tail=nd; else {tail->next=nd; tail=nd;}\n        }\n        head=reverseSegment(head,L,R);\n        for(Node* cur=head; cur; cur=cur->next){\n            printf(\"%lld\",cur->val);\n            if(cur->next) printf(\" \");\n        }\n        printf(\"\\n\");\n        // free list (omitted for brevity)\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nstruct Node{ long long val; Node* next; Node(long long v):val(v),next(nullptr){} };\nNode* reverseSegment(Node* head,int L,int R){\n    Node dummy(0); dummy.next=head; Node* pre=&dummy;\n    for(int i=1;i<L;i++) pre=pre->next;\n    Node* start=pre->next;\n    for(int i=0;i<R-L;i++){\n        Node* tmp=start->next;\n        start->next=tmp->next;\n        tmp->next=pre->next;\n        pre->next=tmp;\n    }\n    return dummy.next;\n}\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N,L,R; cin>>N>>L>>R;\n        Node *head=nullptr,*tail=nullptr;\n        for(int i=0;i<N;i++){\n            long long x; cin>>x;\n            Node* nd=new Node(x);\n            if(!head) head=tail=nd; else {tail->next=nd; tail=nd;}\n        }\n        head=reverseSegment(head,L,R);\n        for(Node* cur=head; cur; cur=cur->next){\n            cout<<cur->val;\n            if(cur->next) cout<<' ';\n        }\n        cout<<'\\n';\n        // memory cleanup omitted\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    static class Node {\n        long val; Node next;\n        Node(long v){ val=v; }\n    }\n    static Node reverseSegment(Node head,int L,int R){\n        Node dummy=new Node(0); dummy.next=head;\n        Node pre=dummy;\n        for(int i=1;i<L;i++) pre=pre.next;\n        Node start=pre.next;\n        for(int i=0;i<R-L;i++){\n            Node tmp=start.next;\n            start.next=tmp.next;\n            tmp.next=pre.next;\n            pre.next=tmp;\n        }\n        return dummy.next;\n    }\n    public static void main(String[] args) throws Exception{\n        BufferedReader br=new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st=new StringTokenizer(br.readLine());\n        int T=Integer.parseInt(st.nextToken());\n        StringBuilder out=new StringBuilder();\n        while(T-- > 0){\n            st=new StringTokenizer(br.readLine());\n            int N=Integer.parseInt(st.nextToken());\n            int L=Integer.parseInt(st.nextToken());\n            int R=Integer.parseInt(st.nextToken());\n            st=new StringTokenizer(br.readLine());\n            Node head=null, tail=null;\n            for(int i=0;i<N;i++){\n                long x=Long.parseLong(st.nextToken());\n                Node nd=new Node(x);\n                if(head==null) head=tail=nd; else {tail.next=nd; tail=nd;}\n            }\n            head=reverseSegment(head,L,R);\n            for(Node cur=head; cur!=null; cur=cur.next){\n                out.append(cur.val);\n                if(cur.next!=null) out.append(' ');\n            }\n            out.append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}\n",
+      "Python3": "import sys\n\ndef reverse_segment(head, L, R):\n    dummy = Node(0)\n    dummy.next = head\n    pre = dummy\n    for _ in range(1, L):\n        pre = pre.next\n    start = pre.next\n    for _ in range(R - L):\n        tmp = start.next\n        start.next = tmp.next\n        tmp.next = pre.next\n        pre.next = tmp\n    return dummy.next\n\nclass Node:\n    __slots__ = ('val', 'next')\n    def __init__(self, v):\n        self.val = v\n        self.next = None\n\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it)); L = int(next(it)); R = int(next(it))\n        head = tail = None\n        for _ in range(N):\n            x = int(next(it))\n            nd = Node(x)\n            if head is None:\n                head = tail = nd\n            else:\n                tail.next = nd\n                tail = nd\n        head = reverse_segment(head, L, R)\n        vals = []\n        cur = head\n        while cur:\n            vals.append(str(cur.val))\n            cur = cur.next\n        out_lines.append(' '.join(vals))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nfunction Node(v){ this.val=v; this.next=null; }\nfunction reverseSegment(head, L, R){\n    const dummy = new Node(0);\n    dummy.next = head;\n    let pre = dummy;\n    for(let i=1;i<L;i++) pre = pre.next;\n    let start = pre.next;\n    for(let i=0;i<R-L;i++){\n        const tmp = start.next;\n        start.next = tmp.next;\n        tmp.next = pre.next;\n        pre.next = tmp;\n    }\n    return dummy.next;\n}\nconst T = Number(input[idx++]);\nlet outputs = [];\nfor(let t=0;t<T;t++){\n    const N = Number(input[idx++]);\n    const L = Number(input[idx++]);\n    const R = Number(input[idx++]);\n    let head=null, tail=null;\n    for(let i=0;i<N;i++){\n        const nd = new Node(Number(input[idx++]));\n        if(!head){head=tail=nd;} else {tail.next=nd; tail=nd;}\n    }\n    head = reverseSegment(head, L, R);\n    const vals = [];\n    for(let cur=head; cur; cur=cur.next) vals.push(String(cur.val));\n    outputs.push(vals.join(' '));\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

@@ -1,0 +1,129 @@
+{
+  "questionId": "Q6140",
+  "title": "Adding Up Sequences of Towers",
+  "slug": "adding-up-sequences-of-towers",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math | Dynamic Programming | Recursion",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Prime Numbers",
+      "Modular Arithmetic",
+      "Recursive Functions"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Mathematics"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given an array **A** consisting of prime numbers greater than 4.\n\nFun( Sequence S )\n{\n`    if ( S has only 1 element )    return A[S[1]]\n\n    X = S[2...last element]\n\n    return power( A[S[1]] , Fun(X) )\n`\n}\n\n\n\n\nwhere **power(A, B)** returns **AB**, and **A** is **1**-indexed.\n\n\n\nFun(S) :\n\nNow you need to find the **sum** of the values returned by **Fun(S)** for every distinct sequence **S**.\n\nEach element of **S** is an integer from **1** to **N**. Thus, there are **NN** possible sequences in all. As the values can be large, return it modulo **M**.",
+    "constraints": [
+      "1 <= T <= 1000",
+      "2 <= N <= 10^5",
+      "2 <= M <= 5000",
+      "Ai is a prime number greater than 4 and less than 10^6"
+    ],
+    "inputFormat": "The first line contains the number of test cases T. Each test case consists of two lines. The first line contains two space-separated integers N and M. The second line contains N space-separated integers of the array A.",
+    "outputFormat": "For each test case, output the sum of the values returned by Fun(S) for every distinct sequence S modulo M.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4\n2 23\n7 11\n4 89\n5 7 13 11\n4 90\n5 5 5 5\n4 100\n5 11 7 17",
+        "output": "10\n27\n80\n64",
+        "explanation": "For each test case, we calculate the sum of the values returned by Fun(S) for every distinct sequence S."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n2 10\n7 11",
+        "expectedOutput": "8",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n10 100\n7 11 13 17 19 23 29 31 37 41",
+        "expectedOutput": "64",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n5 100\n5 5 5 5 5",
+        "expectedOutput": "80",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n4 100\n5 7 11 13",
+        "expectedOutput": "27",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n3 100\n7 11 13",
+        "expectedOutput": "10",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we need to calculate the sum of the values returned by Fun(S) for every distinct sequence S. We can use a recursive approach to calculate Fun(S) for each sequence. We also need to use modular arithmetic to avoid overflow.",
+    "timeComplexity": "O(T * N * 2^N) — because we have T test cases, and for each test case, we have N elements in the array A, and we generate all possible sequences of these elements, which is 2^N.",
+    "spaceComplexity": "O(N) — because we need to store the recursive call stack, which can go up to a depth of N in the worst case.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nlong long power(long long a, long long b, long long m) {\n    long long res = 1;\n    while (b > 0) {\n        if (b & 1)\n            res = (res * a) % m;\n        a = (a * a) % m;\n        b >>= 1;\n    }\n    return res;\n}\n\nlong long fun(long long* A, int* S, int len, int N, long long M) {\n    if (len == 1)\n        return A[S[0]];\n    long long res = power(A[S[0]], fun(A, S + 1, len - 1, N, M), M);\n    return res;\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int N, M;\n        scanf(\"%d %d\", &N, &M);\n        long long* A = (long long*)malloc(N * sizeof(long long));\n        for (int i = 0; i < N; i++)\n            scanf(\"%lld\", &A[i]);\n        long long sum = 0;\n        for (int mask = 1; mask < (1 << N); mask++) {\n            int len = 0;\n            int* S = (int*)malloc(N * sizeof(int));\n            for (int i = 0; i < N; i++) {\n                if (mask & (1 << i)) {\n                    S[len] = i;\n                    len++;\n                }\n            }\n            sum = (sum + fun(A, S, len, N, M)) % M;\n            free(S);\n        }\n        printf(\"%lld\\n\", sum);\n        free(A);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\nusing namespace std;\n\nlong long power(long long a, long long b, long long m) {\n    long long res = 1;\n    while (b > 0) {\n        if (b & 1)\n            res = (res * a) % m;\n        a = (a * a) % m;\n        b >>= 1;\n    }\n    return res;\n}\n\nlong long fun(long long* A, int* S, int len, int N, long long M) {\n    if (len == 1)\n        return A[S[0]];\n    long long res = power(A[S[0]], fun(A, S + 1, len - 1, N, M), M);\n    return res;\n}\n\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        int N, M;\n        cin >> N >> M;\n        long long* A = new long long[N];\n        for (int i = 0; i < N; i++)\n            cin >> A[i];\n        long long sum = 0;\n        for (int mask = 1; mask < (1 << N); mask++) {\n            int len = 0;\n            int* S = new int[N];\n            for (int i = 0; i < N; i++) {\n                if (mask & (1 << i)) {\n                    S[len] = i;\n                    len++;\n                }\n            }\n            sum = (sum + fun(A, S, len, N, M)) % M;\n            delete[] S;\n        }\n        cout << sum << endl;\n        delete[] A;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    public static long power(long a, long b, long m) {\n        long res = 1;\n        while (b > 0) {\n            if (b % 2 == 1)\n                res = (res * a) % m;\n            a = (a * a) % m;\n            b >>= 1;\n        }\n        return res;\n    }\n\n    public static long fun(long[] A, int[] S, int len, int N, long M) {\n        if (len == 1)\n            return A[S[0]];\n        long res = power(A[S[0]], fun(A, Arrays.copyOfRange(S, 1, len), len - 1, N, M), M);\n        return res;\n    }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n        while (T-- > 0) {\n            int N = sc.nextInt();\n            long M = sc.nextLong();\n            long[] A = new long[N];\n            for (int i = 0; i < N; i++)\n                A[i] = sc.nextLong();\n            long sum = 0;\n            for (int mask = 1; mask < (1 << N); mask++) {\n                int len = 0;\n                int[] S = new int[N];\n                for (int i = 0; i < N; i++) {\n                    if ((mask & (1 << i)) > 0) {\n                        S[len] = i;\n                        len++;\n                    }\n                }\n                sum = (sum + fun(A, S, len, N, M)) % M;\n            }\n            System.out.println(sum);\n        }\n    }\n}",
+      "Python3": "def power(a, b, m):\n    res = 1\n    while b > 0:\n        if b % 2 == 1:\n            res = (res * a) % m\n        a = (a * a) % m\n        b >>= 1\n    return res\n\ndef fun(A, S, len, N, M):\n    if len == 1:\n        return A[S[0]]\n    res = power(A[S[0]], fun(A, S[1:], len - 1, N, M), M)\n    return res\n\ndef main():\n    T = int(input())\n    for _ in range(T):\n        N, M = map(int, input().split())\n        A = list(map(int, input().split()))\n        sum = 0\n        for mask in range(1, 1 << N):\n            len = 0\n            S = []\n            for i in range(N):\n                if mask & (1 << i):\n                    S.append(i)\n                    len += 1\n            sum = (sum + fun(A, S, len, N, M)) % M\n        print(sum)\nmain()",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nfunction power(a, b, m) {\n    let res = 1;\n    while (b > 0) {\n        if (b % 2 == 1)\n            res = (res * a) % m;\n        a = (a * a) % m;\n        b = Math.floor(b / 2);\n    }\n    return res;\n}\nfunction fun(A, S, len, N, M) {\n    if (len == 1)\n        return A[S[0]];\n    let res = power(A[S[0]], fun(A, S.slice(1), len - 1, N, M), M);\n    return res;\n}\nfunction main() {\n    let T = +lines[idx++];\n    while (T-- > 0) {\n        let [N, M] = lines[idx++].trim().split(' ').map(Number);\n        let A = lines[idx++].trim().split(' ').map(Number);\n        let sum = 0;\n        for (let mask = 1; mask < (1 << N); mask++) {\n            let len = 0;\n            let S = [];\n            for (let i = 0; i < N; i++) {\n                if (mask & (1 << i)) {\n                    S.push(i);\n                    len++;\n                }\n            }\n            sum = (sum + fun(A, S, len, N, M)) % M;\n        }\n        console.log(sum);\n    }\n}\nmain();"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

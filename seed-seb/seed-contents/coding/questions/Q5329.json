@@ -1,0 +1,129 @@
+{
+  "questionId": "Q5329",
+  "title": "Distribute idlis Equally",
+  "slug": "distribute-idlis-equally",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Greedy | Simulation | Sorting",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Greedy",
+      "Multiset",
+      "Simulation",
+      "Array"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Ad-hoc & Implementation"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Did you know that Chwee kueh, a cuisine of Singapore, means water rice cake ? Its a variety of the most popular South Indian savory cake, only that we call it here idli :). The tastiest idlis are made in Chennai, by none other than our famous chef, Dexter Murugan. Being very popular, he is flown from Marina to Miami, to serve idlis in the opening ceremony of icpc world finals ( which is happening right now ! ).\n\n\nThere are **N** students and they are initially served with some idlis. Some of them are angry because they got less idlis than some other. Dexter decides to redistribute the idlis so they all get equal number of idlis finally. He recollects his father's code, \"Son, if you ever want to redistribute idlis, follow this method. While there are two persons with unequal number of idlis, repeat the following step. Select two persons A and B,  A having the maximum and B having the minimum number of idlis, currently. If there are multiple ways to select A (similarly B), select any one randomly. Let A and B have P and Q number of idlis respectively and R = ceil( ( P - Q ) / 2 ), Transfer R idlis from A to B.\"\n\n\nGiven the initial number of idlis served to each student, find the number of times Dexter has to repeat the above step. If he can not distribute idlis equally by following the above method, print -1.\n\n\nNotes ceil(x) is the smallest integer that is not less than x.",
+    "constraints": [
+      "1 ≤ T ≤ 20",
+      "1 ≤ N ≤ 3000",
+      "0 ≤ A[i] ≤ N"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case: the first line contains an integer N (1 ≤ N ≤ 3000). The second line contains N integers A[i] (0 ≤ A[i] ≤ N) separated by spaces, representing the initial number of idlis each student has.",
+    "outputFormat": "For each test case output a single line containing the number of steps required to make all students have the same number of idlis using the described procedure, or -1 if it is impossible.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n4\n1 2 2 3\n2\n1 2\n7\n1 2 3 4 5 6 7",
+        "output": "1\n-1\n3",
+        "explanation": "Case 1: max=3, min=1, R=1 → {2,2,2,2} in one step.\\nCase 2: sum=3 not divisible by 2 → impossible.\\nCase 3: steps are 3 as described in the statement."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary (compact)",
+        "input": "1\n15\n15 15 15 15 15 15 15 15 15 15 15 15 15 15 15",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case with odd difference",
+        "input": "1\n2\n0 2",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\\n5\\n0 1 2 3 4",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "1\n1\n0",
+        "expectedOutput": "0",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each test case first check if the total number of idlis S is divisible by N. If not, equal distribution is impossible → output -1. Otherwise the target each student must finally have is target = S / N. The described operation always reduces the difference between the current maximum and minimum. We can simulate the process: repeatedly find the current maximum P and minimum Q, compute R = ceil((P‑Q)/2) = (P‑Q+1)/2, move R from the max holder to the min holder, and count the step. The loop stops when all values become equal (max == min). Because each step strictly reduces the range, the loop finishes in O(number of steps) which is bounded by a small multiple of N for the given limits. The simulation runs in O(N·steps) ≤ O(N²) in the worst case, well within the limits (N ≤ 3000).",
+    "timeComplexity": "O(N·steps) per test case, worst‑case O(N²) (N ≤ 3000).",
+    "spaceComplexity": "O(N) to store the array of idlis.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdbool.h>\n\nint main(){\n    int T; if(scanf(\"%d\",&T)!=1) return 0;\n    while(T--){\n        int N; scanf(\"%d\",&N);\n        int a[3005]; long long sum=0;\n        for(int i=0;i<N;i++){ scanf(\"%d\",&a[i]); sum+=a[i]; }\n        if(sum % N != 0){\n            printf(\"-1\\n\");\n            continue;\n        }\n        int steps=0;\n        while(true){\n            int maxIdx=0, minIdx=0;\n            for(int i=1;i<N;i++){\n                if(a[i]>a[maxIdx]) maxIdx=i;\n                if(a[i]<a[minIdx]) minIdx=i;\n            }\n            if(a[maxIdx]==a[minIdx]) break; // all equal\n            int P=a[maxIdx], Q=a[minIdx];\n            int R = (P - Q + 1) / 2; // ceil((P-Q)/2)\n            a[maxIdx] = P - R;\n            a[minIdx] = Q + R;\n            steps++;\n        }\n        printf(\"%d\\n\",steps);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N; cin>>N;\n        vector<int> a(N);\n        long long sum=0;\n        for(int &x:a){cin>>x; sum+=x;}\n        if(sum%N){ cout<<-1<<\"\\n\"; continue; }\n        int steps=0;\n        multiset<int> ms(a.begin(), a.end());\n        while(true){\n            int mn=*ms.begin();\n            int mx=*ms.rbegin();\n            if(mn==mx) break;\n            ms.erase(ms.find(mx));\n            ms.erase(ms.find(mn));\n            int R = (mx - mn + 1)/2; // ceil\n            int newMx = mx - R;\n            int newMn = mn + R;\n            ms.insert(newMx);\n            ms.insert(newMn);\n            steps++;\n        }\n        cout<<steps<<\"\\n\";\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st;\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder out = new StringBuilder();\n        while (T-- > 0) {\n            int N = Integer.parseInt(br.readLine().trim());\n            st = new StringTokenizer(br.readLine());\n            int[] a = new int[N];\n            long sum = 0;\n            for (int i = 0; i < N; i++) { a[i] = Integer.parseInt(st.nextToken()); sum += a[i]; }\n            if (sum % N != 0) { out.append(-1).append('\\n'); continue; }\n            TreeMap<Integer,Integer> map = new TreeMap<>();\n            for (int v : a) map.merge(v,1,Integer::sum);\n            int steps = 0;\n            while (true) {\n                int mn = map.firstKey();\n                int mx = map.lastKey();\n                if (mn == mx) break;\n                // remove one occurrence of mx and mn\n                dec(map,mx);\n                dec(map,mn);\n                int R = (mx - mn + 1) / 2; // ceil\n                int newMx = mx - R;\n                int newMn = mn + R;\n                map.merge(newMx,1,Integer::sum);\n                map.merge(newMn,1,Integer::sum);\n                steps++;\n            }\n            out.append(steps).append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n    private static void dec(TreeMap<Integer,Integer> map, int key){\n        int cnt = map.get(key);\n        if (cnt == 1) map.remove(key);\n        else map.put(key,cnt-1);\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it))\n        a = [int(next(it)) for _ in range(N)]\n        total = sum(a)\n        if total % N != 0:\n            out_lines.append('-1')\n            continue\n        steps = 0\n        while True:\n            mn = min(a)\n            mx = max(a)\n            if mn == mx:\n                break\n            R = (mx - mn + 1) // 2  # ceil\n            # replace one occurrence of mx and mn\n            # find indices\n            imx = a.index(mx)\n            imn = a.index(mn)\n            a[imx] = mx - R\n            a[imn] = mn + R\n            steps += 1\n        out_lines.append(str(steps))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet outputs = [];\nfor (let t = 0; t < T; t++) {\n  const N = Number(input[idx++]);\n  let a = new Array(N);\n  let sum = 0;\n  for (let i = 0; i < N; i++) { a[i] = Number(input[idx++]); sum += a[i]; }\n  if (sum % N !== 0) { outputs.push('-1'); continue; }\n  let steps = 0;\n  while (true) {\n    let mn = Math.min(...a);\n    let mx = Math.max(...a);\n    if (mn === mx) break;\n    const R = Math.floor((mx - mn + 1) / 2); // ceil\n    const imx = a.indexOf(mx);\n    const imn = a.indexOf(mn);\n    a[imx] = mx - R;\n    a[imn] = mn + R;\n    steps++;\n  }\n  outputs.push(String(steps));\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

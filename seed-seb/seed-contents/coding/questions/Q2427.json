@@ -1,0 +1,128 @@
+{
+  "questionId": "Q2427",
+  "title": "Count of Maximum",
+  "slug": "count-of-maximum",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Arrays",
+    "difficulty": "Easy",
+    "isPremium": false,
+    "tags": [
+      "Hash Map",
+      "Frequency Count",
+      "Arrays"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Data Structures"
+    ]
+  },
+  "content": {
+    "problemStatement": "Given an array AAA of length NNN, your task is to find the element which repeats in the array the maximum number of times, along with its exact frequency count.\n\nIf there is a tie (i.e multiple elements have the same maximum frequency), you must choose the **smallest** element among them.\n\nFunction DeclarationFunction NamemostFrequentmostFrequentmostFrequent \u2013 This function processes the array and finds the required element and its count.\n\nParametersNNN : An integer representing the length of the array AAA.\n\nAAA : An array (or list) of NNN integers.\n\nReturn ValueReturns an array/pair of two integers:\n\n\nThe most frequent element (the smallest one in case of a tie).\nIts corresponding frequency count.",
+    "constraints": [
+      "1 <= T <= 100",
+      "1 <= N <= 10^5",
+      "1 <= A[i] <= 10^9",
+      "The sum of N over all test cases does not exceed 2 * 10^5"
+    ],
+    "inputFormat": "First line contains T, the number of test cases. Each test case contains two lines: the first line contains a single integer N, representing the length of the array, and the second line contains N space-separated integers representing the elements of array A.",
+    "outputFormat": "For each test case, print two space-separated integers on a new line: the chosen element followed by its frequency count.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n5\n1 2 3 2 5\n6\n1 2 2 1 1 2",
+        "output": "2 2\n1 3",
+        "explanation": "In the first case, 2 occurs twice whereas all other elements occur only once. In the second case, both 1 and 2 occur 3 times but 1 is smaller than 2."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n4\n1 2 2 3",
+        "output": "2 2",
+        "explanation": "2 occurs twice, which is the maximum frequency. 1 and 3 occur once."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n3\n1 1 1",
+        "output": "1 3",
+        "explanation": "1 occurs 3 times, which is the maximum frequency."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n1",
+        "expectedOutput": "1 1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n10\n1 2 3 4 5 6 7 8 9 10",
+        "expectedOutput": "1 1",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n5\n1 1 1 1 1",
+        "expectedOutput": "1 5",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n5\n2 2 2 3 3",
+        "expectedOutput": "2 3",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "2\n5\n1 2 3 2 5\n6\n1 2 2 1 1 2",
+        "expectedOutput": "2 2\n1 3",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a hash map to store the frequency of each element in the array. Then, we can iterate through the hash map to find the element with the maximum frequency. If there are multiple elements with the same maximum frequency, we choose the smallest one.",
+    "timeComplexity": "O(N) per test case, O(T * N) total. The hash map operations (insertion and lookup) take constant time on average.",
+    "spaceComplexity": "O(N) \u2014 the dominant structure is the hash map used to store the frequency of each element.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nint compare(const void* a, const void* b) {\n    int int_a = *(const int*)a;\n    int int_b = *(const int*)b;\n    if (int_a < int_b) return -1;\n    if (int_a > int_b) return 1;\n    return 0;\n}\n\nint* mostFrequent(int N, int* A) {\n    // Sort the array first\n    qsort(A, N, sizeof(int), compare);\n    \n    int max_freq = 0;\n    int best_elem = -1;\n    \n    int current_freq = 1;\n    int current_elem = A[0];\n    \n    for (int i = 1; i < N; i++) {\n        if (A[i] == current_elem) {\n            current_freq++;\n        } else {\n            // Update max_freq. Strict '>' ensures we keep the smallest element in a tie\n            if (current_freq > max_freq) {\n                max_freq = current_freq;\n                best_elem = current_elem;\n            }\n            current_elem = A[i];\n            current_freq = 1;\n        }\n    }\n    \n    // Final check for the last group of elements in the array\n    if (current_freq > max_freq) {\n        max_freq = current_freq;\n        best_elem = current_elem;\n    }\n    \n    int* result = (int*)malloc(2 * sizeof(int));\n    result[0] = best_elem;\n    result[1] = max_freq;\n    return result;\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    for (int t = 0; t < T; t++) {\n        int N;\n        scanf(\"%d\", &N);\n        int* A = (int*)malloc(N * sizeof(int));\n        for (int i = 0; i < N; i++) {\n            scanf(\"%d\", &A[i]);\n        }\n        int* result = mostFrequent(N, A);\n        printf(\"%d %d\\n\", result[0], result[1]);\n        free(A);\n        free(result);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <unordered_map>\n#include <algorithm>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(NULL);\n    int T;\n    cin >> T;\n    for (int t = 0; t < T; t++) {\n        int N;\n        cin >> N;\n        int* A = new int[N];\n        for (int i = 0; i < N; i++) {\n            cin >> A[i];\n        }\n        unordered_map<int, int> freq;\n        int max_freq = 0;\n        int best_elem = 2e9; // Initialize larger than 10^9\n        \n        // Build frequency map\n        for (int i = 0; i < N; i++) {\n            freq[A[i]]++;\n        }\n        \n        // Find the most frequent and smallest element\n        for (const auto& pair : freq) {\n            int num = pair.first;\n            int count = pair.second;\n            \n            if (count > max_freq) {\n                max_freq = count;\n                best_elem = num;\n            } else if (count == max_freq && num < best_elem) {\n                best_elem = num;\n            }\n        }\n        \n        cout << best_elem << \" \" << max_freq << endl;\n        delete[] A;\n    }\n    return 0;\n}",
+      "Java": "import java.util.HashMap;\nimport java.util.Map;\nimport java.util.Scanner;\n\npublic class Main {\n    public static int[] mostFrequent(int N, int[] A) {\n        Map<Integer, Integer> freq = new HashMap<>();\n        int maxFreq = 0;\n        int bestElem = Integer.MAX_VALUE;\n        \n        for (int i = 0; i < N; i++) {\n            int num = A[i];\n            freq.put(num, freq.getOrDefault(num, 0) + 1);\n        }\n        \n        for (Map.Entry<Integer, Integer> entry : freq.entrySet()) {\n            int count = entry.getValue();\n            int num = entry.getKey();\n            \n            if (count > maxFreq) {\n                maxFreq = count;\n                bestElem = num;\n            } else if (count == maxFreq && num < bestElem) {\n                bestElem = num;\n            }\n        }\n        \n        return new int[]{bestElem, maxFreq};\n    }\n\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int T = scanner.nextInt();\n        for (int t = 0; t < T; t++) {\n            int N = scanner.nextInt();\n            int[] A = new int[N];\n            for (int i = 0; i < N; i++) {\n                A[i] = scanner.nextInt();\n            }\n            int[] result = mostFrequent(N, A);\n            System.out.println(result[0] + \" \" + result[1]);\n        }\n        scanner.close();\n    }\n}",
+      "Python3": "from collections import Counter\n\ndef mostFrequent(N, A):\n    counts = Counter(A)\n    max_freq = max(counts.values())\n    \n    # Filter all elements that have the maximum frequency, then find the minimum\n    best_elem = min(num for num, count in counts.items() if count == max_freq)\n    \n    return [best_elem, max_freq]\n\nimport sys\nT = int(sys.stdin.readline())\nfor t in range(T):\n    N = int(sys.stdin.readline())\n    A = list(map(int, sys.stdin.readline().split()))\n    result = mostFrequent(N, A)\n    print(result[0], result[1])",
+      "JavaScript": "const lines = require('fs').readFileSync(0,'utf-8').trim().split('\\n');\nlet i=0;\n\nfunction mostFrequent(N, A) {\n    let freq = new Map();\n    let maxFreq = 0;\n    let bestElem = Infinity;\n    \n    // Build frequency map\n    for (let i = 0; i < N; i++) {\n        let num = A[i];\n        let count = (freq.get(num) || 0) + 1;\n        freq.set(num, count);\n    }\n    \n    // Find the most frequent and smallest element\n    for (let [num, count] of freq.entries()) {\n        if (count > maxFreq) {\n            maxFreq = count;\n            bestElem = num;\n        } else if (count === maxFreq && num < bestElem) {\n            bestElem = num;\n        }\n    }\n    \n    return [bestElem, maxFreq];\n}\n\nlet T = parseInt(lines[i++]);\nfor (let t = 0; t < T; t++) {\n    let N = parseInt(lines[i++]);\n    let A = lines[i++].trim().split(' ').map(Number);\n    let result = mostFrequent(N, A);\n    console.log(result[0], result[1]);\n}"
+    }
+  }
+}

@@ -1,0 +1,187 @@
+{
+  "questionId": "Q11975",
+  "title": "Right/Left View of BT",
+  "slug": "binary-tree-right-side-view",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Trees",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Binary Tree",
+      "Right View"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Assuming standing on the right side of a binary tree and given its root, return the values of the nodes visible, arranged from top to bottom.",
+    "constraints": [
+      "1 <= Number of nodes in the tree <= 10^4",
+      "1 <= Node value <= 10^4"
+    ],
+    "inputFormat": "The input is the root of a binary tree.",
+    "outputFormat": "The output is a list of integers representing the right view of the binary tree.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": {
+          "root": {
+            "data": 1,
+            "left": null,
+            "right": null
+          }
+        },
+        "expectedOutput": [
+          1
+        ],
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": {
+          "root": {
+            "data": 1,
+            "left": {
+              "data": 2,
+              "left": null,
+              "right": null
+            },
+            "right": {
+              "data": 3,
+              "left": null,
+              "right": null
+            }
+          }
+        },
+        "expectedOutput": [
+          1,
+          3
+        ],
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": {
+          "root": {
+            "data": 1,
+            "left": {
+              "data": 1,
+              "left": null,
+              "right": null
+            },
+            "right": {
+              "data": 1,
+              "left": null,
+              "right": null
+            }
+          }
+        },
+        "expectedOutput": [
+          1,
+          1
+        ],
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case / empty-like / negative if allowed",
+        "input": {
+          "root": null
+        },
+        "expectedOutput": [],
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": {
+          "root": {
+            "data": 1,
+            "left": {
+              "data": 2,
+              "left": {
+                "data": 4,
+                "left": null,
+                "right": null
+              },
+              "right": null
+            },
+            "right": {
+              "data": 3,
+              "left": null,
+              "right": {
+                "data": 5,
+                "left": null,
+                "right": null
+              }
+            }
+          }
+        },
+        "expectedOutput": [
+          1,
+          3,
+          5
+        ],
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Level Order Traversal",
+    "timeComplexity": "O(N)",
+    "spaceComplexity": "O(N)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\n// Define the structure for a tree node\ntypedef struct Node {\n    int data;\n    struct Node* left;\n    struct Node* right;\n} Node;\n\n// Function to create a new node\nNode* newNode(int data) {\n    Node* node = (Node*) malloc(sizeof(Node));\n    node->data = data;\n    node->left = node->right = NULL;\n    return node;\n}\n\n// Function to get the right view of the tree\nvoid rightView(Node* root) {\n    if (root == NULL) return;\n\n    // Create a queue and enqueue the root node\n    Node** queue = (Node**) malloc(sizeof(Node*));\n    int front = 0, rear = 0;\n    queue[rear++] = root;\n\n    while (front < rear) {\n        int size = rear - front;\n        Node* lastNode = queue[front + size - 1];\n        printf(\"%d \", lastNode->data);\n\n        for (int i = front; i < front + size; i++) {\n            Node* node = queue[i];\n            if (node->left) queue[rear++] = node->left;\n            if (node->right) queue[rear++] = node->right;\n        }\n        front += size;\n    }\n}\n\nint main() {\n    Node* root = newNode(1);\n    root->left = newNode(2);\n    root->right = newNode(3);\n    root->left->left = newNode(4);\n    root->right->right = newNode(5);\n\n    rightView(root);\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\n// Structure for a binary tree node\nstruct Node {\n    int data;\n    Node* left;\n    Node* right;\n    \n    Node(int val) {\n        data = val;\n        left = right = NULL;\n    }\n};\n\nclass Solution {\npublic:\n    // Function to return level order traversal\n    vector<vector<int>> levelOrder(Node* root) {\n        // Initialize the final 2D vector\n        vector<vector<int>> ans;\n\n        // If the tree is empty, return empty vector\n        if (!root) return ans;\n\n        // Create a queue to hold tree nodes\n        queue<Node*> q;\n\n        // Start with the root node\n        q.push(root);\n\n        // Loop until queue is empty\n        while (!q.empty()) {\n            // Get the number of nodes at the current level\n            int size = q.size();\n\n            // Vector to store current level nodes\n            vector<int> level;\n\n            // Process all nodes at the current level\n            for (int i = 0; i < size; i++) {\n                // Get the front node from the queue\n                Node* node = q.front();\n                q.pop();\n\n                // Add its data to the level vector\n                level.push_back(node->data);\n\n                // Enqueue left child if exists\n                if (node->left) q.push(node->left);\n\n                // Enqueue right child if exists\n                if (node->right) q.push(node->right);\n            }\n\n            // Add current level to the answer\n            ans.push_back(level);\n        }\n\n        return ans;\n    }\n\n    // Function to return the right view\n    vector<int> rightView(Node* root) {\n        // Get the level order traversal\n        vector<vector<int>> levels = levelOrder(root);\n\n        // Vector to store right view\n        vector<int> right;\n\n        // Pick last element of each level\n        for (auto& level : levels) {\n            right.push_back(level.back());\n        }\n\n        return right;\n    }\n};\n\n// Driver code\nint main() {\n    // Manually create the binary tree\n    Node* root = new Node(1);\n    root->left = new Node(2);\n    root->right = new Node(3);\n    root->left->left = new Node(4);\n    root->right->right = new Node(5);\n\n    Solution obj;\n\n    // Get level order traversal\n    vector<vector<int>> levelOrder = obj.levelOrder(root);\n    cout << \"Level Order Traversal:\\n\";\n    for (auto& level : levelOrder) {\n        for (int val : level) cout << val << \" \";\n        cout << \"\\n\";\n    }\n\n    // Get right view\n    vector<int> right = obj.rightView(root);\n    cout << \"Right View: \";\n    for (int val : right) cout << val << \" \";\n    cout << \"\\n\";\n\n    return 0;\n}",
+      "Java": "import java.util.*;\n\n// Class representing tree nodes\nclass Node {\n    int data;\n    Node left, right;\n\n    Node(int val) {\n        data = val;\n        left = right = null;\n    }\n}\n\n// Solution class\nclass Solution {\n\n    // Function to perform level order traversal\n    public List<List<Integer>> levelOrder(Node root) {\n        // Final result list\n        List<List<Integer>> ans = new ArrayList<>();\n\n        // Return empty list if tree is empty\n        if (root == null) return ans;\n\n        // Queue to store nodes during traversal\n        Queue<Node> q = new LinkedList<>();\n\n        // Add root node to the queue\n        q.offer(root);\n\n        // Loop while queue is not empty\n        while (!q.isEmpty()) {\n            // Number of nodes at current level\n            int size = q.size();\n\n            // List to store values of current level\n            List<Integer> level = new ArrayList<>();\n\n            // Traverse all nodes at this level\n            for (int i = 0; i < size; i++) {\n                // Remove node from queue\n                Node node = q.poll();\n\n                // Add its data to current level\n                level.add(node.data);\n\n                // Add left child if exists\n                if (node.left != null) q.offer(node.left);\n\n                // Add right child if exists\n                if (node.right != null) q.offer(node.right);\n            }\n\n            // Add this level to result\n            ans.add(level);\n        }\n\n        return ans;\n    }\n\n    // Function to get right view from level order\n    public List<Integer> rightView(Node root) {\n        List<List<Integer>> levels = levelOrder(root);\n        List<Integer> right = new ArrayList<>();\n\n        for (List<Integer> level : levels) {\n            right.add(level.get(level.size() - 1));\n        }\n\n        return right;\n    }\n}\n\n// Driver class with main function\npublic class Main {\n    public static void main(String[] args) {\n        // Build sample binary tree\n        Node root = new Node(1);\n        root.left = new Node(2);\n        root.right = new Node(3);\n        root.left.left = new Node(4);\n        root.right.right = new Node(5);\n\n        // Create solution object\n        Solution sol = new Solution();\n\n        // Get and print level order\n        List<List<Integer>> levelOrder = sol.levelOrder(root);\n        System.out.println(\"Level Order Traversal:\");\n        for (List<Integer> level : levelOrder) {\n            for (int val : level) System.out.print(val + \" \");\n            System.out.println();\n        }\n\n        // Print right view\n        System.out.println(\"Right View: \" + sol.rightView(root));\n    }\n}",
+      "Python3": "from collections import deque\n\n# Definition of tree node\nclass Node:\n    def __init__(self, val):\n        self.data = val\n        self.left = None\n        self.right = None\n\nclass Solution:\n\n    # Function to perform level order traversal\n    def levelOrder(self, root):\n        # Final 2D result list\n        ans = []\n\n        # Return empty if tree is empty\n        if not root:\n            return ans\n\n        # Create queue for BFS\n        q = deque()\n        q.append(root)\n\n        # Loop until queue is empty\n        while q:\n            # Get number of nodes at current level\n            size = len(q)\n\n            # List to hold current level values\n            level = []\n\n            # Process all nodes at this level\n            for _ in range(size):\n                # Pop node from queue\n                node = q.popleft()\n\n                # Store its value\n                level.append(node.data)\n\n                # Add left child if exists\n                if node.left:\n                    q.append(node.left)\n\n                # Add right child if exists\n                if node.right:\n                    q.append(node.right)\n\n            # Append this level to answer\n            ans.append(level)\n\n        return ans\n\n    # Function to return right view\n    def rightView(self, root):\n        levels = self.levelOrder(root)\n        return [level[-1] for level in levels]\n\n# Driver code\nif __name__ == \"__main__\":\n    # Build tree manually\n    root = Node(1)\n    root.left = Node(2)\n    root.right = Node(3)\n    root.left.left = Node(4)\n    root.right.right = Node(5)\n\n    # Create solution instance\n    sol = Solution()\n\n    # Get and print level order\n    print(\"Level Order Traversal:\")\n    for level in sol.levelOrder(root):\n        print(level)\n\n    # Print right view\n    print(\"Right View:\", sol.rightView(root))",
+      "JavaScript": "// Node structure\nclass Node {\n    constructor(data) {\n        this.data = data;\n        this.left = null;\n        this.right = null;\n    }\n}\n\nclass Solution {\n\n    // Function to perform level order traversal\n    levelOrder(root) {\n        // Array to store result\n        let ans = [];\n\n        // Return empty array if root is null\n        if (!root) return ans;\n\n        // Queue for level order traversal\n        let q = [root];\n\n        // Loop until queue is empty\n        while (q.length > 0) {\n            // Get current level size\n            let size = q.length;\n\n            // Array to store current level\n            let level = [];\n\n            // Process all nodes in this level\n            for (let i = 0; i < size; i++) {\n                // Remove node from front of queue\n                let node = q.shift();\n\n                // Add its data to level array\n                level.push(node.data);\n\n                // Add left child if exists\n                if (node.left) q.push(node.left);\n\n                // Add right child if exists\n                if (node.right) q.push(node.right);\n            }\n\n            // Add level to final result\n            ans.push(level);\n        }\n\n        return ans;\n    }\n\n    // Function to get right view\n    rightView(root) {\n        let levels = this.levelOrder(root);\n        return levels.map(level => level[level.length - 1]);\n    }\n}\n\n// Driver code\nlet root = new Node(1);\nroot.left = new Node(2);\nroot.right = new Node(3);\nroot.left.left = new Node(4);\nroot.right.right = new Node(5);\n\nlet sol = new Solution();\n\nconsole.log(\"Level Order Traversal:\");\nconsole.log(sol.levelOrder(root));\n\nconsole.log(\"Right View:\", sol.rightView(root));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

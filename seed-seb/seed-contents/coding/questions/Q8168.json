@@ -1,0 +1,140 @@
+{
+  "questionId": "Q8168",
+  "title": "Password",
+  "slug": "password",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Implementation",
+      "String processing"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Ad-hoc & Implementation"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef is planning to setup a secure password for his Codechef account. For a password to be secure the following conditions should be satisfied:\n\n\n\nPassword must contain at least one lower case letter [a−z][a-z][a−z];\n\n\n\n\nPassword must contain at least one upper case letter [A−Z] strictly inside (first or the last character won’t be considered)\n\n\n\n\nPassword must contain at least one digit [0−9][0-9][0−9] strictly inside;\n\n\n\n\nPassword must contain at least one special character from the set {\\{{ '@', '#', '%', '&amp;', '?' }\\}} strictly inside;\n\n\n\n\nPassword must be at least 101010 characters in length, but it can be longer.\n\n\n\nChef has generated several strings and now wants you to check whether the passwords are secure based on the above criteria. Please help Chef in doing so.",
+    "constraints": [
+      "1 <= T <= 10^5",
+      "1 <= |S| <= 200",
+      "Sum of |S| over all test cases <= 10^6",
+      "S contains only characters from [a-z], [A-Z], [0-9], {'@','#','%','&','?'}"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains a string S representing a candidate password. The string consists only of lowercase letters, uppercase letters, digits, and the special characters '@', '#', '%', '&', '?'.",
+    "outputFormat": "For each test case output a single line containing \"YES\" if the password satisfies all security conditions, otherwise output \"NO\".",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\\n#cookOff#P1\\nU@code4CHEFINA\\ngR3@tPWD",
+        "output": "NO\nYES\nNO",
+        "explanation": "Case 1: The only digit '1' is at the last position, so digit is not strictly inside. Case 2: All required characters appear inside and length >=10. Case 3: Length is 8 (<10), so condition fails."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\naB1@cdefgh",
+        "output": "YES",
+        "explanation": "Length is 10, contains lowercase, uppercase 'B' at position 1, digit '1' at position 2, special '@' at position 3 – all inside requirements satisfied."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\nAbcdefghij",
+        "output": "NO",
+        "explanation": "No digit, no special character, and the only uppercase 'A' is at the first position, so inside‑uppercase condition fails."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\naB2#cdefgh",
+        "expectedOutput": "YES",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\nZ5@a\".repeat(196)",
+        "expectedOutput": "YES",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\nabcdefgh1@Z",
+        "expectedOutput": "NO",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\nAB12@CDEFGH",
+        "expectedOutput": "NO",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n@aB1#cdefg",
+        "expectedOutput": "YES",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each password we scan the characters once and maintain five boolean flags: hasLower (anywhere), hasUpperInside (uppercase not at first or last position), hasDigitInside, hasSpecialInside, and lengthOk (|S| >= 10). While scanning we update the flags according to the character and its index. After the scan we output YES if all flags are true, otherwise NO. This runs in O(|S|) per test case and O(1) extra memory.",
+    "timeComplexity": "O(total length of all strings) which is ≤ 10^6",
+    "spaceComplexity": "O(1) besides the input storage",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n#include <stdbool.h>\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0; \n    char buf[210];\n    // consume newline after T\n    fgets(buf, sizeof(buf), stdin);\n    while(T--){\n        if(!fgets(buf, sizeof(buf), stdin)) break;\n        size_t len = strlen(buf);\n        if(len && buf[len-1]=='\\n') buf[--len]='\\0';\n        bool hasLower=false, hasUpperInside=false, hasDigitInside=false, hasSpecialInside=false;\n        bool lengthOk = len>=10;\n        for(size_t i=0;i<len;i++){\n            char c=buf[i];\n            if('a'<=c && c<='z') hasLower=true;\n            if(i!=0 && i!=len-1){\n                if('A'<=c && c<='Z') hasUpperInside=true;\n                if('0'<=c && c<='9') hasDigitInside=true;\n                if(c=='@' || c=='#' || c=='%' || c=='&' || c=='?') hasSpecialInside=true;\n            }\n        }\n        if(hasLower && hasUpperInside && hasDigitInside && hasSpecialInside && lengthOk) printf(\"YES\\n\");\n        else printf(\"NO\\n\");\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    string s;\n    while(T--){\n        cin>>s;\n        int n=s.size();\n        bool hasLower=false, hasUpperInside=false, hasDigitInside=false, hasSpecialInside=false;\n        bool lengthOk = n>=10;\n        for(int i=0;i<n;i++){\n            char c=s[i];\n            if('a'<=c && c<='z') hasLower=true;\n            if(i!=0 && i!=n-1){\n                if('A'<=c && c<='Z') hasUpperInside=true;\n                if('0'<=c && c<='9') hasDigitInside=true;\n                if(c=='@' || c=='#' || c=='%' || c=='&' || c=='?') hasSpecialInside=true;\n            }\n        }\n        if(hasLower && hasUpperInside && hasDigitInside && hasSpecialInside && lengthOk) cout<<\"YES\\n\";\n        else cout<<\"NO\\n\";\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder out = new StringBuilder();\n        for(int t=0; t<T; t++){\n            String s = br.readLine();\n            int n = s.length();\n            boolean hasLower=false, hasUpperInside=false, hasDigitInside=false, hasSpecialInside=false;\n            boolean lengthOk = n>=10;\n            for(int i=0;i<n;i++){\n                char c = s.charAt(i);\n                if(c>='a' && c<='z') hasLower=true;\n                if(i!=0 && i!=n-1){\n                    if(c>='A' && c<='Z') hasUpperInside=true;\n                    if(c>='0' && c<='9') hasDigitInside=true;\n                    if(c=='@' || c=='#' || c=='%' || c=='&' || c=='?') hasSpecialInside=true;\n                }\n            }\n            if(hasLower && hasUpperInside && hasDigitInside && hasSpecialInside && lengthOk) out.append(\"YES\\n\");\n            else out.append(\"NO\\n\");\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef is_secure(s: str) -> bool:\n    n = len(s)\n    if n < 10:\n        return False\n    has_lower = any('a' <= ch <= 'z' for ch in s)\n    has_upper_inside = any('A' <= s[i] <= 'Z' for i in range(1, n-1))\n    has_digit_inside = any('0' <= s[i] <= '9' for i in range(1, n-1))\n    specials = {'@', '#', '%', '&', '?'}\n    has_special_inside = any(s[i] in specials for i in range(1, n-1))\n    return has_lower and has_upper_inside and has_digit_inside and has_special_inside\n\ndef main():\n    data = sys.stdin.read().splitlines()\n    if not data:\n        return\n    t = int(data[0])\n    out = []\n    for i in range(1, t+1):\n        s = data[i].strip()\n        out.append('YES' if is_secure(s) else 'NO')\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    main()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst T = parseInt(input[idx++], 10);\nlet res = [];\nconst specials = new Set(['@', '#', '%', '&', '?']);\nfor (let t = 0; t < T; t++) {\n  const s = input[idx++] || '';\n  const n = s.length;\n  let hasLower = false, hasUpperInside = false, hasDigitInside = false, hasSpecialInside = false;\n  if (n >= 10) {\n    for (let i = 0; i < n; i++) {\n      const c = s[i];\n      if (c >= 'a' && c <= 'z') hasLower = true;\n      if (i !== 0 && i !== n - 1) {\n        if (c >= 'A' && c <= 'Z') hasUpperInside = true;\n        if (c >= '0' && c <= '9') hasDigitInside = true;\n        if (specials.has(c)) hasSpecialInside = true;\n      }\n    }\n  }\n  if (hasLower && hasUpperInside && hasDigitInside && hasSpecialInside && n >= 10) res.push('YES');\n  else res.push('NO');\n}\nconsole.log(res.join('\\n'));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

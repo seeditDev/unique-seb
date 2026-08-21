@@ -1,0 +1,126 @@
+{
+  "questionId": "Q5675",
+  "title": "Sequence Transmission",
+  "slug": "sequence-transmission",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming | Bit Manipulation",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Prefix Sum",
+      "Fenwick Tree",
+      "Modulo",
+      "Bitmask"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "**WARNING: This problem has large input / output files. Use of faster I/O methods is recommended.**\n\nChef has encrypted the super secret recipe for his bitsoup into a sequence of **N** unsigned integers **A1**, **A2**, ... **AN**. Each of these are **M bit integers** - meaning, their binary representation will only have at most **M** bits.\n\nChef is now transmitting this recipe to the Sous Chef. He **partitions the sequence** into several **disjoint**, **contiguous** groups and sends them one by one. Each partition may contain one or more integers which are contiguous in the sequence. Chef can partition a sequence of **N** integers in many ways, but the receiving program of the Sous Chef has a constraint.\n\nFor each group of integers it receives, let **S** represent the sum of the integers in the group. The receiver program only accepts the group of integers if the **Mth least significant bit** of **S** is **0**. See the explanation section for clarity.\n\nChef wants to know how many ways exist to partition the recipe such that the Sous Chef can receive it completely.",
+    "constraints": [
+      "1 ≤ T ≤ 10",
+      "1 ≤ N ≤ 200000",
+      "1 ≤ M ≤ 18",
+      "1 ≤ Ai < 2^M"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case:\n- The first line contains two integers N and M.\n- The second line contains N space‑separated integers A1 … AN.\nAll Ai satisfy 1 ≤ Ai < 2^M.",
+    "outputFormat": "For each test case output a single line containing the number of valid partitions modulo 1000000009.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4\n6 10\n4 4 4 4 4 4\n6 3\n4 4 4 4 4 4\n5 8\n1 1 1 1 128\n7 4\n4 5 6 7 8 9 10",
+        "output": "32\n4\n0\n3",
+        "explanation": "The first test case has 6 numbers, each with 10 bits. The sum of all numbers is 24, which has the 10th bit as 0. Therefore, any partitioning way is valid, and there are 32 ways to partition the sequence. The second test case has 6 numbers, each with 3 bits. The sum of each partition must have the 3rd bit as 0. There are 4 ways to partition the sequence: {{4,4},{4,4},{4,4}}, {{4,4},{4,4,4,4}}, {{4,4,4,4},{4,4}}, and {{4,4,4,4,4,4}}. The third test case has 5 numbers, each with 8 bits. The number 128 has the 8th bit as 1, so it cannot be in any partition. Therefore, there are 0 ways to partition the sequence. The fourth test case has 7 numbers, each with 4 bits. The sum of each partition must have the 4th bit as 0. There are 3 ways to partition the sequence: {{4},{5},{6},{7,8,9,10}}, {{4},{5},{6,7,8},{9,10}}, and {{4,5,6,7,8,9,10}}."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Let MODV = 2^M and HALF = 2^{M-1}. For a segment (l..r) its sum S satisfies the required condition iff (S mod MODV) < HALF. Using prefix sums P[i] = (A1+…+Ai) mod MODV, the sum of a segment (j+1..i) is (P[i] - P[j] + MODV) % MODV. The condition becomes:\n    (P[i] - P[j] + MODV) % MODV < HALF.\nFor a fixed i this means P[j] must lie in the interval [P[i] - HALF + 1, P[i]] (cyclically modulo MODV). Hence the number of ways to end a valid partition at i is the sum of dp[j] over all j whose prefix value lies in that interval.\nWe maintain a Fenwick tree (Binary Indexed Tree) of size MODV where at index x we store the total dp values of positions with prefix value x. For each i we:\n1. Update the current prefix P[i].\n2. Query the Fenwick tree for the sum over the required interval (handling wrap‑around). This sum is dp[i].\n3. Add dp[i] to the tree at position P[i].\nInitialize dp[0]=1 and insert it at prefix 0. The answer is dp[N].\nThe algorithm runs in O(N log 2^M) = O(N·M) time and O(2^M) memory, easily fast for the given limits.",
+    "timeComplexity": "O(N·M) per test case (M ≤ 18, so effectively O(N)).",
+    "spaceComplexity": "O(2^M) for the Fenwick tree (≤ 262144 integers) plus O(1) extra.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#define MOD 1000000009\n\ntypedef long long ll;\n\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

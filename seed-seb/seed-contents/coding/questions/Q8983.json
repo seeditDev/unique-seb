@@ -1,0 +1,129 @@
+{
+  "questionId": "Q8983",
+  "title": "Closest Vowels",
+  "slug": "closest-vowels",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Easy",
+    "isPremium": true,
+    "tags": [
+      "Counting",
+      "Modular Arithmetic",
+      "Precomputation"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Ad-hoc & Implementation"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef considers a string consisting of lowercase English alphabets beautiful if **all** the characters of the string are **vowels**.\n\nChef has a string SSS consisting of lowercase English alphabets, of length NNN. He wants to convert SSS into a beautiful string TTT. In order to do so, Chef does the following operation on **every** character of the string:\n\n\nIf the character is a **consonant**, change the character to its **closest vowel**.\nIf the character is a **vowel**, don't change it.\nChef realizes that the final string TTT is not unique. Chef wonders, what is the total number of **distinct** beautiful strings TTT that can be obtained by performing the given operations on the string SSS.\n\nSince the answer can be huge, print it modulo 109+710^9 + 7109+7.\n\nNote:\n\n\nThere are 262626 characters in the English alphabet. Five of these characters are vowels: `a`, `e`, `i`, `o`, and `u`. The remaining 212121 characters are consonants.\nThe closest vowel to a consonant is the vowel that is least distant from that consonant. For example, the distance between the characters `d` and `e` is 111 while the distance between the characters `d` and `a` is 333.\nThe distance between the characters `z` and `a` is 252525 and **not** 111.\n\nInput Format\n\nThe first line of input will contain an integer TTT — the number of test cases. The description of TTT test cases follows.\nThe first line of each test case contains an integer NNN, denoting the length of the string SSS.\nThe second line of each test case contains a string SSS consisting of lowercase English alphabets.\n\n\nOutput Format\nFor each test case, output the total number of **distinct** beautiful strings TTT that can be obtained by performing the given operations on the string SSS, modulo 109+710^9 + 7109+7.",
+    "constraints": [
+      "1 <= T <= 1000",
+      "1 <= N <= 100000",
+      "Sum of N over all test cases does not exceed 100000",
+      "S contains only lowercase English letters"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case consists of two lines: the first line contains an integer N, the length of the string S; the second line contains the string S of length N, consisting of lowercase English letters.",
+    "outputFormat": "For each test case output a single line containing the number of distinct beautiful strings that can be obtained, modulo 1000000007.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4\n5\naeiou\n5\nabcde\n8\nstarters\n8\ncodechef",
+        "output": "1\n2\n4\n4",
+        "explanation": "Test case 1: all characters are vowels → only one possible string.\nTest case 2: only 'c' is ambiguous → 2 possibilities.\nTest case 3: 'r' appears twice and is ambiguous → 2^2 = 4 possibilities.\nTest case 4: 'c' appears twice and is ambiguous → 2^2 = 4 possibilities."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\na",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum compact length with all ambiguous letters",
+        "input": "1\n15\ncglrcglrcglrcgl",
+        "expectedOutput": "32768",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "no ambiguous consonants",
+        "input": "1\n13\nbdfhjpnstvwyz",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "mixed string",
+        "input": "1\n5\nabcgz",
+        "expectedOutput": "4",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "repeated ambiguous letter",
+        "input": "1\n4\nrrrr",
+        "expectedOutput": "16",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "A vowel stays unchanged. For a consonant we look for the vowel(s) with the smallest alphabetic distance. Only the consonants c, g, l and r have two equally‑close vowels, therefore each occurrence of one of these four letters gives two possible choices, all other letters give exactly one choice. The total number of distinct beautiful strings equals 2^{k}, where k is the total number of occurrences of {c,g,l,r} in the given string. We pre‑compute the set of ambiguous letters, count them for each test case and compute 2^{k} modulo 1e9+7 using fast exponentiation.",
+    "timeComplexity": "O(N) per test case (single scan of the string).",
+    "spaceComplexity": "O(1) besides the input string.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n#define MOD 1000000007LL\n\nlong long modPow(long long base, long long exp) {\n    long long res = 1;\n    while (exp) {\n        if (exp & 1) res = (res * base) % MOD;\n        base = (base * base) % MOD;\n        exp >>= 1;\n    }\n    return res;\n}\n\nint main() {\n    int T; if (scanf(\"%d\", &T)!=1) return 0;\n    while (T--) {\n        int N; scanf(\"%d\", &N);\n        char s[100005]; scanf(\"%s\", s);\n        long long cnt = 0;\n        for (int i = 0; i < N; ++i) {\n            char c = s[i];\n            if (c=='c' || c=='g' || c=='l' || c=='r') cnt++;\n        }\n        printf(\"%lld\\n\", modPow(2, cnt));\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nconst long long MOD = 1000000007LL;\nlong long modPow(long long a, long long e){\n    long long r=1;\n    while(e){\n        if(e&1) r=r*a%MOD;\n        a=a*a%MOD;\n        e>>=1;\n    }\n    return r;\n}\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N; string S; cin>>N>>S;\n        long long cnt=0;\n        for(char c: S) if(c=='c'||c=='g'||c=='l'||c=='r') ++cnt;\n        cout<<modPow(2,cnt) <<\"\\n\";\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    static final long MOD = 1_000_000_007L;\n    static long modPow(long a, long e) {\n        long r = 1;\n        while (e > 0) {\n            if ((e & 1) == 1) r = (r * a) % MOD;\n            a = (a * a) % MOD;\n            e >>= 1;\n        }\n        return r;\n    }\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder out = new StringBuilder();\n        for (int t = 0; t < T; ++t) {\n            int N = Integer.parseInt(br.readLine().trim());\n            String S = br.readLine().trim();\n            long cnt = 0;\n            for (int i = 0; i < S.length(); ++i) {\n                char c = S.charAt(i);\n                if (c == 'c' || c == 'g' || c == 'l' || c == 'r') cnt++;\n            }\n            out.append(modPow(2, cnt)).append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys\nMOD = 1000000007\n\ndef mod_pow(a, e):\n    r = 1\n    while e:\n        if e & 1:\n            r = r * a % MOD\n        a = a * a % MOD\n        e >>= 1\n    return r\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out = []\n    amb = set('cglr')\n    for _ in range(T):\n        N = int(next(it))\n        S = next(it)\n        cnt = sum(1 for ch in S if ch in amb)\n        out.append(str(mod_pow(2, cnt)))\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst MOD = 1000000007n;\nconst input = fs.readFileSync(0, 'utf8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet results = [];\nconst amb = new Set(['c','g','l','r']);\nfunction modPow(base, exp) {\n  let b = BigInt(base);\n  let e = BigInt(exp);\n  let res = 1n;\n  while (e > 0n) {\n    if (e & 1n) res = (res * b) % MOD;\n    b = (b * b) % MOD;\n    e >>= 1n;\n  }\n  return res;\n}\nfor (let t = 0; t < T; ++t) {\n  const N = Number(input[idx++]);\n  const S = input[idx++];\n  let cnt = 0;\n  for (const ch of S) if (amb.has(ch)) ++cnt;\n  results.push(modPow(2, cnt).toString());\n}\nconsole.log(results.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

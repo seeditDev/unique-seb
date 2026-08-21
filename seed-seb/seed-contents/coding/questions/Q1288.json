@@ -1,0 +1,129 @@
+{
+  "questionId": "Q1288",
+  "title": "Diameter of the tree",
+  "slug": "diameter-of-the-tree",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Graphs",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "Graphs",
+      "Two BFS",
+      "Tree",
+      "DFS",
+      "Diameter"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Trees"
+    ]
+  },
+  "content": {
+    "problemStatement": "Given an undirected connected tree with **N** nodes, numbered from **1** to **N**, and rooted at node **1**, find the length of the diameter of the tree (**Note:** Diameter of a tree is the longest path between any two nodes. There can be more than one diameter of a tree with the same length).\n\nFor example, in the following tree, length of the tree's diameter is 4. (one of the diameters is 5-2-1-4-7)\n\n\n\n\nInput Format\n\nThe first line of the input contains a single intege NNN \u2014 the number of nodes.\nThe next N\u22121N - 1N\u22121 lines describe the edges. The iii-th of these N\u22121N - 1N\u22121 lines contains two space-separated integers uiu_iui\u200b and viv_ivi\u200b, denoting a bidirectional edge between uiu_iui\u200b and viv_ivi\u200b.\n\n\nOutput Format\n\nOutput on the single line, the length of the diameter of given tree.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 100000",
+      "The given graph for each test case is a connected tree."
+    ],
+    "inputFormat": "First line contains an integer T, the number of test cases. For each test case: first line contains an integer N, the number of nodes in the tree. The next N-1 lines each contain two space-separated integers u and v denoting an undirected edge between nodes u and v.",
+    "outputFormat": "For each test case, output a single line containing the length (in edges) of the diameter of the given tree.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\\n7\\n1 2\\n1 4\\n2 5\\n2 3\\n2 6\\n4 7\\n",
+        "output": "4",
+        "explanation": "The farthest node from 1 is 5 (distance 2). Starting from 5, the farthest node is 7 with distance 4, so the diameter length is 4."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\\n5\\n1 2\\n1 3\\n2 4\\n3 5\\n",
+        "output": "3",
+        "explanation": "The longest path is 4-2-1-3-5, which contains 3 edges."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\\n3\\n1 2\\n2 3\\n",
+        "output": "2",
+        "explanation": "The only path 1-2-3 has length 2."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\\n1\\n",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary (compact)",
+        "input": "1\\n15\\n1 2\\n2 3\\n3 4\\n4 5\\n5 6\\n6 7\\n7 8\\n8 9\\n9 10\\n10 11\\n11 12\\n12 13\\n13 14\\n14 15\\n",
+        "expectedOutput": "14",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case (star)",
+        "input": "1\\n6\\n1 2\\n1 3\\n1 4\\n1 5\\n1 6\\n",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case (diameter not through root)",
+        "input": "1\\n7\\n1 2\\n2 3\\n3 4\\n4 5\\n2 6\\n6 7\\n",
+        "expectedOutput": "5",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "1\\n1\\n",
+        "expectedOutput": "0",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The diameter of a tree can be found with two depth\u2011first (or breadth\u2011first) searches. First, start from any node (e.g., node 1) and compute distances to all nodes; the farthest node found (call it X) is one endpoint of a diameter. Then start a second DFS/BFS from X; the maximum distance reached in this second traversal equals the length of the diameter. This works because in a tree the longest path must have an endpoint that is farthest from any arbitrary start node. The algorithm runs in O(N) time per test case and uses O(N) memory for the adjacency list and distance array.",
+    "timeComplexity": "O(N) per test case, O(\u03a3N) over all test cases.",
+    "spaceComplexity": "O(N) per test case for adjacency list and distance array.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\ntypedef struct Edge {int to; struct Edge* next;} Edge;\n\nvoid addEdge(Edge** head, int u, int v) {\n    Edge* e = (Edge*)malloc(sizeof(Edge));\n    e->to = v; e->next = head[u]; head[u] = e;\n    e = (Edge*)malloc(sizeof(Edge));\n    e->to = u; e->next = head[v]; head[v] = e;\n}\n\nvoid dfs(int node, int parent, int depth, int* dist, Edge** head) {\n    dist[node] = depth;\n    for (Edge* e = head[node]; e; e = e->next) {\n        if (e->to != parent) dfs(e->to, node, depth + 1, dist, head);\n    }\n}\n\nint main() {\n    int T; if (scanf(\"%d\", &T)!=1) return 0;\n    while (T--) {\n        int N; scanf(\"%d\", &N);\n        Edge** head = (Edge**)calloc(N + 1, sizeof(Edge*));\n        for (int i = 0; i < N - 1; ++i) {\n            int u, v; scanf(\"%d %d\", &u, &v);\n            addEdge(head, u, v);\n        }\n        int* dist = (int*)malloc((N + 1) * sizeof(int));\n        dfs(1, 0, 0, dist, head);\n        int far = 1;\n        for (int i = 2; i <= N; ++i) if (dist[i] > dist[far]) far = i;\n        dfs(far, 0, 0, dist, head);\n        int diameter = 0;\n        for (int i = 1; i <= N; ++i) if (dist[i] > diameter) diameter = dist[i];\n        printf(\"%d\\n\", diameter);\n        for (int i = 1; i <= N; ++i) {\n            Edge* e = head[i];\n            while (e) { Edge* nxt = e->next; free(e); e = nxt; }\n        }\n        free(head);\n        free(dist);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nvoid dfs(int u, int p, int d, vector<int>& dist, const vector<vector<int>>& adj) {\n    dist[u] = d;\n    for (int v : adj[u]) if (v != p) dfs(v, u, d + 1, dist, adj);\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin >> T)) return 0;\n    while (T--) {\n        int N; cin >> N;\n        vector<vector<int>> adj(N + 1);\n        for (int i = 0; i < N - 1; ++i) {\n            int u, v; cin >> u >> v;\n            adj[u].push_back(v);\n            adj[v].push_back(u);\n        }\n        vector<int> dist(N + 1, -1);\n        dfs(1, 0, 0, dist, adj);\n        int far = 1;\n        for (int i = 2; i <= N; ++i) if (dist[i] > dist[far]) far = i;\n        fill(dist.begin(), dist.end(), -1);\n        dfs(far, 0, 0, dist, adj);\n        int diameter = *max_element(dist.begin() + 1, dist.end());\n        cout << diameter << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    static void dfs(int u, int p, int d, int[] dist, List<Integer>[] adj) {\n        dist[u] = d;\n        for (int v : adj[u]) if (v != p) dfs(v, u, d + 1, dist, adj);\n    }\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st = new StringTokenizer(br.readLine());\n        int T = Integer.parseInt(st.nextToken());\n        StringBuilder sb = new StringBuilder();\n        while (T-- > 0) {\n            int N = Integer.parseInt(br.readLine().trim());\n            List<Integer>[] adj = new ArrayList[N + 1];\n            for (int i = 1; i <= N; i++) adj[i] = new ArrayList<>();\n            for (int i = 0; i < N - 1; i++) {\n                st = new StringTokenizer(br.readLine());\n                int u = Integer.parseInt(st.nextToken());\n                int v = Integer.parseInt(st.nextToken());\n                adj[u].add(v);\n                adj[v].add(u);\n            }\n            int[] dist = new int[N + 1];\n            Arrays.fill(dist, -1);\n            dfs(1, 0, 0, dist, adj);\n            int far = 1;\n            for (int i = 2; i <= N; i++) if (dist[i] > dist[far]) far = i;\n            Arrays.fill(dist, -1);\n            dfs(far, 0, 0, dist, adj);\n            int diameter = 0;\n            for (int i = 1; i <= N; i++) if (dist[i] > diameter) diameter = dist[i];\n            sb.append(diameter).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef dfs(u, p, d, dist, adj):\n    dist[u] = d\n    for v in adj[u]:\n        if v != p:\n            dfs(v, u, d + 1, dist, adj)\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it))\n        adj = [[] for _ in range(N + 1)]\n        for _ in range(N - 1):\n            u = int(next(it)); v = int(next(it))\n            adj[u].append(v)\n            adj[v].append(u)\n        dist = [-1] * (N + 1)\n        dfs(1, 0, 0, dist, adj)\n        far = max(range(1, N + 1), key=lambda i: dist[i])\n        dist = [-1] * (N + 1)\n        dfs(far, 0, 0, dist, adj)\n        diameter = max(dist[1:])\n        out_lines.append(str(diameter))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst data = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/).map(Number);\nlet idx = 0;\nconst T = data[idx++];\nlet outputs = [];\nfunction dfs(u, p, d, dist, adj) {\n    dist[u] = d;\n    for (const v of adj[u]) if (v !== p) dfs(v, u, d + 1, dist, adj);\n}\nfor (let t = 0; t < T; ++t) {\n    const N = data[idx++];\n    const adj = Array.from({ length: N + 1 }, () => []);\n    for (let i = 0; i < N - 1; ++i) {\n        const u = data[idx++];\n        const v = data[idx++];\n        adj[u].push(v);\n        adj[v].push(u);\n    }\n    let dist = new Array(N + 1).fill(-1);\n    dfs(1, 0, 0, dist, adj);\n    let far = 1;\n    for (let i = 2; i <= N; ++i) if (dist[i] > dist[far]) far = i;\n    dist = new Array(N + 1).fill(-1);\n    dfs(far, 0, 0, dist, adj);\n    let diameter = 0;\n    for (let i = 1; i <= N; ++i) if (dist[i] > diameter) diameter = dist[i];\n    outputs.push(String(diameter));\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  }
+}

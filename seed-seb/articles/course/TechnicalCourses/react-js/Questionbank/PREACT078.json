@@ -1,0 +1,81 @@
+{
+  "questionId": "PREACT078",
+  "title": "Forward-Ref in React",
+  "slug": "preact078",
+  "version": 1,
+  "createdAt": "2026-07-13",
+  "updatedAt": "2026-07-13",
+  "source": {
+    "platform": "SEED-IT",
+    "courseSlug": "react-js",
+    "contestCode": "CREACT017",
+    "module": "Component API Design",
+    "submodule": "The Spectrum of Components",
+    "contentType": "labs",
+    "originalUrl": "https://www.codechef.com/learn/course/react-js/CREACT017/problems/PREACT078"
+  },
+  "metadata": {
+    "category": "Practice",
+    "difficulty": "Beginner",
+    "isPremium": false,
+    "tags": [
+      "javascript"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Component API Design",
+      "The Spectrum of Components"
+    ],
+    "QBCategory": "SEED-IT"
+  },
+  "content": {
+    "problemStatement": "In React, the `ref` system gives you a powerful way to directly interact with specific DOM elements. It's incredibly useful for certain cases where declarative approaches fall short. We already cover about `ref` [here](https://www.codechef.com/learn/course/react-js/CREACT013/problems/PREACT050). \n\nNow let’s imagine we built a custom component to “package” an input with some extra fancy styles or labels. Let’s call this custom component `InputWithLabel`.\n\n```jsx\nfunction InputWithLabel({ label, ...props }) {\n  return (\n    \n      {label}\n      \n    \n  );\n}\n```\n\nWe want to use it like this:\n\n```jsx\nfunction App() {\n  const usernameRef = useRef(null);\n\n  useEffect(() => {\n    usernameRef.current.focus(); // ❌ breaks!\n  }, []);\n\n  return ;\n}\n```\n\nIn our IDE, this code is already written. You can run the code, and in App.jsx, simply uncomment the 10th line: `// console.log(usernameRef);` and check the `usernameRef.current` value in our console\\\nOops it is null, code doesn't work as expected. But why is usernameRef.current null/undefined?\n\n\n\n**The issue with `ref` on custom components (in React 18 and earlier)**\n\nIn versions of React before 19, a `ref` only works on **native elements** like ``, ``, or ``. When you apply a `ref` to your own custom component (like `InputWithLabel`), React treats it differently — it gives you a reference to the **component function itself**, not the real DOM node inside.\n\nFunction components like `InputWithLabel` don’t have any `.focus()` method — so calling it throws an error.\n\n\n#### How to solve it: `React.forwardRef`\n\nTo make a custom component accept a `ref` and forward it to one of its inner DOM elements, we use `React.forwardRef`.\\\nHere’s how we fix the `InputWithLabel` component:\n\n```jsx\nimport React from 'react';\n\nconst InputWithLabel = React.forwardRef(function InputWithLabel({ label, ...rest }, ref) {\n  return (\n    \n      {label}\n      \n    \n  );\n});\n```\n\nNow the `ref` is passed into this component as a second argument, and we decide where to forward it. Here, we’re forwarding it to the `` inside.\n\nAnd back in the main app:\n\n```jsx\nfunction App() {\n  const usernameRef = useRef(null);\n\n  useEffect(() => {\n    usernameRef.current.focus(); // ✅ works!\n  }, []);\n\n  return ;\n}\n```\n\nAnd boom — now everything works as expected!\n\n\n**Why not make this the default behavior?**\n\nYou might wonder: if this is such a common thing, why doesn’t React just make it default?\n\nWell, in earlier versions of React, `ref` could be used to get entire class-based component instances — and changing how refs behave by default would have broken a lot of old code. Instead, React decided to require **explicit opt-in** using `forwardRef`.\n\nBut good news…\n\n#### In React 19: Refs Just Work™️\n\nReact 19 improves this! With the new version, you can **pass a `ref` just like any other prop**, without needing `forwardRef`. Much simpler!\\\nHere’s how your component would look in React 19:\n\n```jsx\nfunction InputWithLabel({ label, ref, ...props }) {\n  return (\n    \n      {label}\n      \n    \n  );\n}\n```\n\nAnd then you use it like so:\n\n```jsx\n\n```\n\nDone. No `forwardRef`. No confusion. Everything works out of the box.\n\n**Important:** This will only work in **React 19** and **newer**. But we are using **React 18**, as you can see in our `package.json` file.\n\n#### Task \nWhen you run the code, you'll notice that it doesn't focus on the input field as expected.\\\nYour task is to **fix this issue in the code provided in our IDE.**\n- We are using **React 18**, and the current implementation is not compatible.\n- Use what you've learned in this lesson to update and correct the code.\n- After making the necessary changes, submit the code and test it to ensure it works correctly.\n\n\n\n#### One more thing: Combining with `React.memo`\n\nSometimes, you might also want to make your component “smart” — meaning it should skip re-rendering if the props haven't really changed. This is a performance trick using `React.memo`.\n\nYou can **combine** `memo` and `forwardRef` like this:\n\n```jsx\nconst FancyInput = React.memo(\n  React.forwardRef(function FancyInput({ label, ...props }, ref) {\n    return (\n      \n        {label}\n        \n      \n    );\n  })\n);\n```\n\nThe order matters:\n- First wrap it in `React.forwardRef` to allow ref passing.\n- Then wrap it in `React.memo` to prevent unnecessary rendering.\n\nThis concept might seem technical, but once you’ve used it once or twice, it becomes second nature. Just remember the goal: `ref` is your tool for talking directly to the DOM — and sometimes you need a little help to make sure it gets passed along the chain.",
+    "constraints": [
+      "- $1 \\leq T \\leq 100$\n- $1 \\leq N \\leq 100$\n- $1 \\leq M \\leq N\\cdot(N-1)/2$\n- $1 \\leq u_i, v_i \\leq N$\n- $u_i \\neq v_i$ for each $1 \\leq i \\leq M$.\n- The sum of $N$ over all test cases won't exceed $100$."
+    ],
+    "inputFormat": "- The first line of input will contain a single integer $T$, denoting the number of test cases.\n- Each test case consists of multiple lines of input.\n    - The first line of each test case contains two space-separated integers $N$ and $M$ — the number of vertices and edges of the graph, respectively.\n    - The next $M$ lines describe the edges. The $i$-th of these $M$ lines contains two space-separated integers $u_i$ and $v_i$, denoting an edge between $u_i$ and $v_i$.",
+    "outputFormat": "For each test case, output on a new line the number of good subgraphs of $G$, modulo $10^9 + 7$.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "input": "",
+        "expectedOutput": "expected",
+        "weight": 100
+      }
+    ],
+    "totalTestCases": 1,
+    "totalWeight": 100
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      100
+    ],
+    "maxScore": 100
+  },
+  "judging": {
+    "timeLimitMs": 1000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // Write your C code here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your C++ code here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) {\n        // Write your Java code here\n    }\n}",
+    "Python3": "# Write your Python code here\n",
+    "JavaScript": "// Write your JavaScript code here\n",
+    "Go": "package main\n\nimport \"fmt\"\n\nfunc main() {\n    // Write your Go code here\n}",
+    "Rust": "fn main() {\n    // Write your Rust code here\n}",
+    "C#": "using System;\n\nclass Program {\n    static void Main() {\n        // Write your C# code here\n    }\n}",
+    "SQL": "-- Write your SQL query here\n"
+  }
+}

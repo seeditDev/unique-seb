@@ -1,0 +1,171 @@
+{
+  "questionId": "Q11799",
+  "title": "Word ladder I",
+  "slug": "word-ladder",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Breadth-First Search",
+      "Word Ladder"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Given are the two distinct words startWord and targetWord, and a list denoting\n    wordList of unique words of equal lengths. Find the length of the shortest transformation sequence from startWord to\n    targetWord..",
+    "constraints": [
+      "1 <= wordList.length <= 5 * 10^4",
+      "1 <= startWord.length, targetWord.length, word.length <= 10",
+      "startWord, targetWord, and all words in wordList consist of lowercase English letters.",
+      "startWord is not equal to targetWord.",
+      "All the strings in the wordList along with the startWord and targetWord are unique."
+    ],
+    "inputFormat": "The input will contain three parameters: startWord (string), targetWord (string), and wordList (array of strings).",
+    "outputFormat": "The output will be an integer representing the length of the shortest transformation sequence from startWord to targetWord.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": {
+          "startWord": "a",
+          "targetWord": "b",
+          "wordList": [
+            "a",
+            "b"
+          ]
+        },
+        "expectedOutput": 2,
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": {
+          "startWord": "aaaaaa",
+          "targetWord": "bbbbbb",
+          "wordList": [
+            "aaaaaa",
+            "aaaaab",
+            "aaaaba",
+            "aaabaa",
+            "aabaaa",
+            "abaaaa",
+            "baaaaa",
+            "bbbbbb"
+          ]
+        },
+        "expectedOutput": 6,
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": {
+          "startWord": "hit",
+          "targetWord": "cog",
+          "wordList": [
+            "hot",
+            "dot",
+            "dog",
+            "lot",
+            "log",
+            "cog"
+          ]
+        },
+        "expectedOutput": 5,
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case / empty-like / negative if allowed",
+        "input": {
+          "startWord": "hit",
+          "targetWord": "cog",
+          "wordList": [
+            "hot",
+            "dot",
+            "dog",
+            "lot",
+            "log"
+          ]
+        },
+        "expectedOutput": 0,
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": {
+          "startWord": "der",
+          "targetWord": "dfs",
+          "wordList": [
+            "des",
+            "der",
+            "dfr",
+            "dgt",
+            "dfs"
+          ]
+        },
+        "expectedOutput": 4,
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Use a breadth-first search (BFS) algorithm to explore all possible transformations from the startWord.",
+    "timeComplexity": "O(N * M^2)",
+    "spaceComplexity": "O(N * M)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdbool.h>\n\n// Structure for queue node\ntypedef struct Node {\n    char word[11];\n    int steps;\n    struct Node* next;\n} Node;\n\n// Function to create a new queue node\nNode* createNode(char* word, int steps) {\n    Node* newNode = (Node*)malloc(sizeof(Node));\n    strcpy(newNode->word, word);\n    newNode->steps = steps;\n    newNode->next = NULL;\n    return newNode;\n}\n\n// Function to check if a word is in the word list\nbool isWordInList(char* word, char** wordList, int wordListSize) {\n    for (int i = 0; i < wordListSize; i++) {\n        if (strcmp(word, wordList[i]) == 0) {\n            return true;\n        }\n    }\n    return false;\n}\n\n// Function to calculate the length of the shortest transformation sequence\nint wordLadderLength(char* startWord, char* targetWord, char** wordList, int wordListSize) {\n    Node* front = createNode(startWord, 1);\n    Node* rear = front;\n    bool* visited = (bool*)calloc(wordListSize, sizeof(bool));\n\n    while (front != NULL) {\n        char* word = front->word;\n        int steps = front->steps;\n        front = front->next;\n\n        if (strcmp(word, targetWord) == 0) {\n            return steps;\n        }\n\n        for (int i = 0; i < strlen(word); i++) {\n            char original = word[i];\n            for (char ch = 'a'; ch <= 'z'; ch++) {\n                word[i] = ch;\n                if (isWordInList(word, wordList, wordListSize)) {\n                    Node* newNode = createNode(word, steps + 1);\n                    rear->next = newNode;\n                    rear = newNode;\n                }\n            }\n            word[i] = original;\n        }\n    }\n    return 0;\n}\n\nint main() {\n    char* wordList[] = {\"des\", \"der\", \"dfr\", \"dgt\", \"dfs\"};\n    char* startWord = \"der\";\n    char* targetWord = \"dfs\";\n    int wordListSize = sizeof(wordList) / sizeof(wordList[0]);\n\n    printf(\"%d\\n\", wordLadderLength(startWord, targetWord, wordList, wordListSize));\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nclass Solution {\npublic:\n    // Function to calculate the shortest transformation sequence length\n    int wordLadderLength(string startWord, string targetWord, vector<string>& wordList) {\n        // Queue for BFS storing {current word, steps taken}\n        queue<pair<string, int>> q;\n        q.push({startWord, 1});\n\n        // Set for quick lookup and deletion\n        unordered_set<string> st(wordList.begin(), wordList.end());\n        st.erase(startWord);\n\n        while (!q.empty()) {\n            string word = q.front().first;\n            int steps = q.front().second;\n            q.pop();\n\n            // If target word is found, return steps\n            if (word == targetWord) return steps;\n\n            // Try changing every character in the current word\n            for (int i = 0; i < word.size(); i++) {\n                char original = word[i];\n                for (char ch = 'a'; ch <= 'z'; ch++) {\n                    word[i] = ch;\n                    if (st.find(word) != st.end()) {\n                        st.erase(word);\n                        q.push({word, steps + 1});\n                    }\n                }\n                word[i] = original;\n            }\n        }\n        // If no sequence exists\n        return 0;\n    }\n};\n\nint main() {\n    vector<string> wordList = {\"des\", \"der\", \"dfr\", \"dgt\", \"dfs\"};\n    string startWord = \"der\";\n    string targetWord = \"dfs\";\n\n    Solution obj;\n    cout << obj.wordLadderLength(startWord, targetWord, wordList) << endl;\n    return 0;\n}",
+      "Java": "import java.util.*;\n\nclass Solution {\n    // Function to calculate the shortest transformation sequence length\n    public int wordLadderLength(String startWord, String targetWord, List<String> wordList) {\n        Queue<Pair<String, Integer>> q = new LinkedList<>();\n        q.add(new Pair<>(startWord, 1));\n\n        Set<String> st = new HashSet<>(wordList);\n        st.remove(startWord);\n\n        while (!q.isEmpty()) {\n            String word = q.peek().getKey();\n            int steps = q.peek().getValue();\n            q.poll();\n\n            // If target word is found\n            if (word.equals(targetWord)) return steps;\n\n            // Try changing every character\n            for (int i = 0; i < word.length(); i++) {\n                char[] arr = word.toCharArray();\n                char original = arr[i];\n                for (char ch = 'a'; ch <= 'z'; ch++) {\n                    arr[i] = ch;\n                    String newWord = new String(arr);\n                    if (st.contains(newWord)) {\n                        st.remove(newWord);\n                        q.add(new Pair<>(newWord, steps + 1));\n                    }\n                }\n                arr[i] = original;\n            }\n        }\n        return 0;\n    }\n}\n\n// Utility class to simulate pair in Java\nclass Pair<K, V> {\n    private K key;\n    private V value;\n    public Pair(K key, V value) {\n        this.key = key;\n        this.value = value;\n    }\n    public K getKey() { return key; }\n    public V getValue() { return value; }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        List<String> wordList = Arrays.asList(\"des\", \"der\", \"dfr\", \"dgt\", \"dfs\");\n        String startWord = \"der\";\n        String targetWord = \"dfs\";\n\n        Solution obj = new Solution();\n        System.out.println(obj.wordLadderLength(startWord, targetWord, wordList));\n    }\n}",
+      "Python3": "from collections import deque\n\nclass Solution:\n    # Function to calculate the shortest transformation sequence length\n    def wordLadderLength(self, startWord, targetWord, wordList):\n        q = deque([(startWord, 1)])\n        st = set(wordList)\n        if startWord in st:\n            st.remove(startWord)\n\n        while q:\n            word, steps = q.popleft()\n\n            # If target word is found\n            if word == targetWord:\n                return steps\n\n            # Try changing every character\n            for i in range(len(word)):\n                original = word[i]\n                for ch in \"abcdefghijklmnopqrstuvwxyz\":\n                    newWord = word[:i] + ch + word[i+1:]\n                    if newWord in st:\n                        st.remove(newWord)\n                        q.append((newWord, steps + 1))\n        return 0\n\nif __name__ == \"__main__\":\n    wordList = [\"des\", \"der\", \"dfr\", \"dgt\", \"dfs\"]\n    startWord = \"der\"\n    targetWord = \"dfs\"\n    obj = Solution()\n    print(obj.wordLadderLength(startWord, targetWord, wordList))",
+      "JavaScript": "class Solution {\n    // Function to calculate the shortest transformation sequence length\n    wordLadderLength(startWord, targetWord, wordList) {\n        let q = [[startWord, 1]];\n        let st = new Set(wordList);\n        st.delete(startWord);\n\n        while (q.length > 0) {\n            let [word, steps] = q.shift();\n\n            // If target word is found\n            if (word === targetWord) return steps;\n\n            // Try changing every character\n            for (let i = 0; i < word.length; i++) {\n                for (let ch = 97; ch <= 122; ch++) {\n                    let newWord = word.substring(0, i) + String.fromCharCode(ch) + word.substring(i + 1);\n                    if (st.has(newWord)) {\n                        st.delete(newWord);\n                        q.push([newWord, steps + 1]);\n                    }\n                }\n            }\n        }\n        return 0;\n    }\n}\n\n// Driver code\nconst wordList = [\"des\", \"der\", \"dfr\", \"dgt\", \"dfs\"];\nconst startWord = \"der\";\nconst targetWord = \"dfs\";\n\nconst obj = new Solution();\nconsole.log(obj.wordLadderLength(startWord, targetWord, wordList));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

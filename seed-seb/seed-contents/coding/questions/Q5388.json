@@ -1,0 +1,139 @@
+{
+  "questionId": "Q5388",
+  "title": "Permute Digits",
+  "slug": "permute-digits",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Permutations",
+      "Base Conversion"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given three positive integers **A**, **B** and **C** written in base **X &lt;= 10** without leading zeros. In how many ways you can permute the digits of **A** and permute the digits of **B** such that their sum will be equal to **C** (in base **X** of course)? Leading zeros after permutation are allowed. So for example for **A=101** written in some base all possible ways to permute its digits are: **011, 101, 110**.\n\n\n\n**Remark.** For positive integer **A** and base **X &gt;= 2** the digits of **A** in base **X** are uniquely determined by the equality **A = Ak * Xk + Ak-1 * Xk - 1 + ... + A1 * X + A0 ** and inequalities **0 &lt;= A0, A1, ..., Ak &lt; X** and **Ak &gt; 0 **. Then **A** is written as **0...0AkAk-1...A1A0** in base **X**. Here an arbitrary non-negative number of leading zeros is allowed. If there are no leading zeros we say that **A** is written in canonical form.",
+    "constraints": [
+      "1 <= T <= 10",
+      "2 <= X <= 10",
+      "1 <= len(A), len(B), len(C) <= 80/X"
+    ],
+    "inputFormat": "First line contains T, the number of test cases. Each test case contains four space-separated positive integers X, A, B, and C, where A, B, C are written in base X without leading zeros.",
+    "outputFormat": "For each test case, print a single line containing the number of possible permutations of digits of A and B such that their sum is equal to C.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "5\n2 10 10 11\n3 2 2 11\n10 101 12 23\n10 10 100 1000\n10 43716 70251864 71130699",
+        "output": "2\n1\n1\n0\n4",
+        "explanation": "For each test case, we generate all permutations of A and B, convert them to base X, and check if their sum equals C."
+      },
+      {
+        "id": "sample_2",
+        "input": "2\n2 1 1 10\n3 1 2 10",
+        "output": "2\n1",
+        "explanation": "For the first test case, the permutations of A and B are (1, 1) and (1, 1), which sum to 10 in base 2. For the second test case, the permutations of A and B are (1, 2) and (2, 1), which sum to 10 in base 3."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n10 123 456 579",
+        "output": "0",
+        "explanation": "There are no permutations of A and B that sum to C in base 10."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n2 1 1 10",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n10 9999999999999999999 9999999999999999999 19999999999999999998",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n2 11 11 110",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n10 123 456 579",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "5\n2 10 10 11\n3 2 2 11\n10 101 12 23\n10 10 100 1000\n10 43716 70251864 71130699",
+        "expectedOutput": "2\n1\n1\n0\n4",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved by generating all permutations of the digits of A and B, converting them to base X, and checking if their sum equals C. We can use a recursive approach to generate all permutations.",
+    "timeComplexity": "O(T * (len(A)!) * (len(B)!)) per test case, O(T * (len(A)!) * (len(B)!)) total.",
+    "spaceComplexity": "O(len(A) + len(B)) — for storing the permutations.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n// Function to swap two characters\nvoid swap(char *a, char *b) {\n    char temp = *a;\n    *a = *b;\n    *b = temp;\n}\n\n// Function to generate all permutations of a string\nvoid permute(char *str, int left, int right) {\n    if (left == right)\n        printf(\"%s\\n\", str);\n    else {\n        for (int i = left; i <= right; i++) {\n            swap((str + left), (str + i));\n            permute(str, left + 1, right);\n            swap((str + left), (str + i)); // backtrack\n        }\n    }\n}\n\n// Function to convert a number from base X to decimal\nint baseToDecimal(char *num, int base) {\n    int decimal = 0;\n    int power = 1;\n    for (int i = strlen(num) - 1; i >= 0; i--) {\n        decimal += (num[i] - '0') * power;\n        power *= base;\n    }\n    return decimal;\n}\n\n// Function to check if the sum of two numbers equals a third number\nint checkSum(char *A, char *B, char *C, int X) {\n    int sum = baseToDecimal(A, X) + baseToDecimal(B, X);\n    return sum == baseToDecimal(C, X);\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int X;\n        char A[100], B[100], C[100];\n        scanf(\"%d %s %s %s\", &X, A, B, C);\n        int count = 0;\n        int lenA = strlen(A);\n        int lenB = strlen(B);\n        permute(A, 0, lenA - 1);\n        permute(B, 0, lenB - 1);\n        // Convert to base X and check sum\n        if (checkSum(A, B, C, X))\n            count++;\n        printf(\"%d\\n\", count);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <string>\n#include <algorithm>\nusing namespace std;\n\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        int X;\n        string A, B, C;\n        cin >> X >> A >> B >> C;\n        int count = 0;\n        sort(A.begin(), A.end());\n        sort(B.begin(), B.end());\n        do {\n            do {\n                // Convert to base X and check sum\n                int sum = stoi(A, 0, X) + stoi(B, 0, X);\n                if (sum == stoi(C, 0, X))\n                    count++;\n            } while (next_permutation(B.begin(), B.end()));\n        } while (next_permutation(A.begin(), A.end()));\n        cout << count << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n        while (T-- > 0) {\n            int X = sc.nextInt();\n            String A = sc.next();\n            String B = sc.next();\n            String C = sc.next();\n            int count = 0;\n            permute(A, 0, A.length() - 1);\n            permute(B, 0, B.length() - 1);\n            // Convert to base X and check sum\n            if (checkSum(A, B, C, X))\n                count++;\n            System.out.println(count);\n        }\n    }\n    public static void permute(String str, int left, int right) {\n        if (left == right)\n            System.out.println(str);\n        else {\n            for (int i = left; i <= right; i++) {\n                String swapped = swap(str, left, i);\n                permute(swapped, left + 1, right);\n            }\n        }\n    }\n    public static String swap(String str, int pos1, int pos2) {\n        char[] charArray = str.toCharArray();\n        char temp = charArray[pos1];\n        charArray[pos1] = charArray[pos2];\n        charArray[pos2] = temp;\n        return String.valueOf(charArray);\n    }\n    public static boolean checkSum(String A, String B, String C, int X) {\n        int sum = Integer.parseInt(A, X) + Integer.parseInt(B, X);\n        return sum == Integer.parseInt(C, X);\n    }\n}",
+      "Python3": "import sys\nimport itertools\n\ndef permute(s):\n    return [''.join(p) for p in itertools.permutations(s)]\n\ndef base_to_decimal(num, base):\n    decimal = 0\n    power = 1\n    for i in range(len(num) - 1, -1, -1):\n        decimal += int(num[i]) * power\n        power *= base\n    return decimal\n\ndef check_sum(A, B, C, X):\n    sum = base_to_decimal(A, X) + base_to_decimal(B, X)\n    return sum == base_to_decimal(C, X)\n\ndef main():\n    T = int(sys.stdin.readline().strip())\n    for _ in range(T):\n        X, A, B, C = sys.stdin.readline().strip().split()\n        X = int(X)\n        count = 0\n        perms_A = permute(A)\n        perms_B = permute(B)\n        for a in perms_A:\n            for b in perms_B:\n                if check_sum(a, b, C, X):\n                    count += 1\n        print(count)\nif __name__ == '__main__':\n    main()",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nfunction readline() {\n    return lines[idx++];\n}\nfunction permute(str) {\n    if (str.length === 1) return [str];\n    const result = [];\n    for (let i = 0; i < str.length; i++) {\n        const rest = str.slice(0, i) + str.slice(i + 1);\n        for (const p of permute(rest)) {\n            result.push(str[i] + p);\n        }\n    }\n    return result;\n}\nfunction baseToDecimal(num, base) {\n    let decimal = 0;\n    let power = 1;\n    for (let i = num.length - 1; i >= 0; i--) {\n        decimal += parseInt(num[i]) * power;\n        power *= base;\n    }\n    return decimal;\n}\nfunction checkSum(A, B, C, X) {\n    let sum = baseToDecimal(A, X) + baseToDecimal(B, X);\n    return sum === baseToDecimal(C, X);\n}\nfunction main() {\n    const T = parseInt(readline());\n    for (let i = 0; i < T; i++) {\n        const [X, A, B, C] = readline().split(' ');\n        const perms_A = permute(A);\n        const perms_B = permute(B);\n        let count = 0;\n        for (const a of perms_A) {\n            for (const b of perms_B) {\n                if (checkSum(a, b, C, parseInt(X)))\n                    count++;\n            }\n        }\n        console.log(count);\n    }\n}\nmain();"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

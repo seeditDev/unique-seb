@@ -1,0 +1,128 @@
+{
+  "questionId": "Q6222",
+  "title": "Chef and Tetris",
+  "slug": "chef-and-tetris",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Dynamic Programming",
+      "Array Manipulation"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Constructive Algorithms"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef loves Tetris. He keeps on playing Tetris all the time. Today Chef's mother wanted to him play something else and brought an array for her son. That is why Chef now decided to play Tetris with arrays. Here are the rules of the game:\n\n\n\nChef has an array **A** consisting of **N** positive integers. This is a base array. \nChef has an array **B** consisting of **N** positive integers. He placed this array directly above the array **A**. Imagine that array **B** is falling on array **A**, such that number **Bi** is directly above the number **Ai** initially.\nIf element **Bi** falls on **Ai**, **Ai** gets increased by **Bi**. \nEach element **Bi** can be dropped by Chef on either **Ai-1**, **Ai** or **Ai+1**.\nChef can't drop element out of array (for example he can't drop **B0** on **A-1**). \nChef wants all the elements of array **A** to become equal, and looking for the biggest possible value he can get. \n\n\n\nPlease help Chef in enjoying the game!!",
+    "constraints": [
+      "1 ≤ T ≤ 5",
+      "1 ≤ N ≤ 10^4",
+      "1 ≤ Ai ≤ 10^6",
+      "1 ≤ Bi ≤ 10^6"
+    ],
+    "inputFormat": "The first line of the input contains an integer T denoting the number of test cases. The description of T test cases follows. The first line of each test case contains a single integer N denoting the number of elements in both arrays. The second line contains N space-separated integers B1, B2, ..., BN denoting the elements of the falling array. The third line contains N space-separated integers A1, A2, ..., AN denoting the elements of the base array.",
+    "outputFormat": "For each test case, output a single line containing the biggest integer Chef can get for all elements of array A or -1 if it is impossible.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n1\n10\n20\n4\n15 7 10 10\n6 14 21 1\n3\n1 100 3\n1 2 3",
+        "output": "30\n21\n-1",
+        "explanation": "Explanation:\nExample case 1.\nThe only option in first example is to make 10 fall on 20. As we have only one element condition of equality is satisfied. \n\nExample case 2.\nHere Chef makes 15 fall on 6, 7 fall on 14, an then both elements with value 10 should fall on 1. Then all elements will become 21.\n\nExample case 3.\nThere is no way for Chef to make all elements of a base array equal."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n10\n20",
+        "expectedOutput": "30",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n10000\n1000000\n1000000",
+        "expectedOutput": "-1",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n2\n1 1\n1 1",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n5\n1 2 3 4 5\n1 2 3 4 5",
+        "expectedOutput": "-1",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n10\n1 2 3 4 5 6 7 8 9 10\n1 2 3 4 5 6 7 8 9 10",
+        "expectedOutput": "-1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use dynamic programming to try all possible ways of dropping the elements of array B onto array A and keep track of the maximum value that can be achieved for all elements of array A to be equal. We will use a recursive approach with memoization to optimize the solution.",
+    "timeComplexity": "O(T * N * 3^N) — explain: per query is O(N * 3^N), total is O(T * N * 3^N)",
+    "spaceComplexity": "O(N) — explain: we need to store the memoization table of size N",
+    "code": {
+      "C": "// COMPLETE, COMPILABLE C code\n#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#define MAXN 10005\n#define INF 0x3f3f3f3f\n\nint max(int a, int b) { return a > b ? a : b; }\n\nint dp[MAXN][MAXN];\nint a[MAXN], b[MAXN];\n\nint dfs(int i, int j) {\n    if (i == -1) return 0;\n    if (dp[i][j] != -1) return dp[i][j];\n    int res = -INF;\n    for (int k = max(0, j - 1); k <= min(j + 1, i); k++) {\n        res = max(res, dfs(i - 1, k) + b[i] + a[k]);\n    }\n    return dp[i][j] = res;\n}\n\nint main() {\n    int t;\n    scanf(\"%d\", &t);\n    while (t--) {\n        int n;\n        scanf(\"%d\", &n);\n        for (int i = 0; i < n; i++) scanf(\"%d\", &b[i]);\n        for (int i = 0; i < n; i++) scanf(\"%d\", &a[i]);\n        memset(dp, -1, sizeof(dp));\n        int ans = dfs(n - 1, 0);\n        printf(\"%d\\n\", ans);\n    }\n    return 0;\n}",
+      "C++": "// COMPLETE, COMPILABLE C++ code\n#include <iostream>\n#include <vector>\n#include <algorithm>\n#include <cstring>\nusing namespace std;\n#define MAXN 10005\n#define INF 0x3f3f3f3f\n\nint max(int a, int b) { return a > b ? a : b; }\n\nint dp[MAXN][MAXN];\nint a[MAXN], b[MAXN];\n\nint dfs(int i, int j) {\n    if (i == -1) return 0;\n    if (dp[i][j] != -1) return dp[i][j];\n    int res = -INF;\n    for (int k = max(0, j - 1); k <= min(j + 1, i); k++) {\n        res = max(res, dfs(i - 1, k) + b[i] + a[k]);\n    }\n    return dp[i][j] = res;\n}\n\nint main() {\n    int t;\n    cin >> t;\n    while (t--) {\n        int n;\n        cin >> n;\n        for (int i = 0; i < n; i++) cin >> b[i];\n        for (int i = 0; i < n; i++) cin >> a[i];\n        memset(dp, -1, sizeof(dp));\n        int ans = dfs(n - 1, 0);\n        cout << ans << endl;\n    }\n    return 0;\n}",
+      "Java": "// COMPLETE, COMPILABLE Java code\nimport java.util.Scanner;\npublic class Main {\n    static final int MAXN = 10005;\n    static final int INF = 0x3f3f3f3f;\n    static int[][] dp = new int[MAXN][MAXN];\n    static int[] a = new int[MAXN], b = new int[MAXN];\n\n    static int max(int a, int b) { return a > b ? a : b; }\n\n    static int dfs(int i, int j) {\n        if (i == -1) return 0;\n        if (dp[i][j] != -1) return dp[i][j];\n        int res = -INF;\n        for (int k = Math.max(0, j - 1); k <= Math.min(j + 1, i); k++) {\n            res = max(res, dfs(i - 1, k) + b[i] + a[k]);\n        }\n        return dp[i][j] = res;\n    }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int t = sc.nextInt();\n        while (t-- > 0) {\n            int n = sc.nextInt();\n            for (int i = 0; i < n; i++) b[i] = sc.nextInt();\n            for (int i = 0; i < n; i++) a[i] = sc.nextInt();\n            for (int i = 0; i < MAXN; i++) {\n                for (int j = 0; j < MAXN; j++) {\n                    dp[i][j] = -1;\n                }\n            }\n            int ans = dfs(n - 1, 0);\n            System.out.println(ans);\n        }\n    }\n}",
+      "Python3": "# COMPLETE, RUNNABLE Python3 code\nimport sys\ninput = sys.stdin.readline\n\nMAXN = 10005\nINF = 0x3f3f3f3f\ndp = [[-1] * MAXN for _ in range(MAXN)]\na = [0] * MAXN\nb = [0] * MAXN\n\ndef max(a, b):\n    return a if a > b else b\n\ndef dfs(i, j):\n    if i == -1:\n        return 0\n    if dp[i][j] != -1:\n        return dp[i][j]\n    res = -INF\n    for k in range(max(0, j - 1), min(j + 1, i) + 1):\n        res = max(res, dfs(i - 1, k) + b[i] + a[k])\n    dp[i][j] = res\n    return res\n\nt = int(input())\nwhile t > 0:\n    n = int(input())\n    b[:n] = map(int, input().split())\n    a[:n] = map(int, input().split())\n    for i in range(MAXN):\n        for j in range(MAXN):\n            dp[i][j] = -1\n    ans = dfs(n - 1, 0)\n    print(ans)\n    t -= 1",
+      "JavaScript": "// COMPLETE, RUNNABLE JavaScript code\nconst fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst input = () => lines[idx++];\n\nconst MAXN = 10005;\nconst INF = 0x3f3f3f3f;\nconst dp = Array(MAXN).fill(0).map(() => Array(MAXN).fill(-1));\nconst a = Array(MAXN).fill(0);\nconst b = Array(MAXN).fill(0);\n\nfunction max(a, b) {\n    return a > b ? a : b;\n}\n\nfunction dfs(i, j) {\n    if (i === -1) return 0;\n    if (dp[i][j] !== -1) return dp[i][j];\n    let res = -INF;\n    for (let k = Math.max(0, j - 1); k <= Math.min(j + 1, i); k++) {\n        res = max(res, dfs(i - 1, k) + b[i] + a[k]);\n    }\n    dp[i][j] = res;\n    return res;\n}\n\nlet t = parseInt(input());\nwhile (t-- > 0) {\n    let n = parseInt(input());\n    b.slice(0, n).map((_, i) => parseInt(input().split(' ')[i]));\n    a.slice(0, n).map((_, i) => parseInt(input().split(' ')[i]));\n    for (let i = 0; i < MAXN; i++) {\n        for (let j = 0; j < MAXN; j++) {\n            dp[i][j] = -1;\n        }\n    }\n    let ans = dfs(n - 1, 0);\n    console.log(ans);\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

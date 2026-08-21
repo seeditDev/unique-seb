@@ -1,0 +1,100 @@
+{
+  "questionId": "Q4184",
+  "title": "Minimum Cost Walk",
+  "slug": "minimum-cost-walk",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-12",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Dijkstra",
+      "Shortest Paths",
+      "Steiner Tree",
+      "Priority Queue"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Graphs"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Consider a weighted, undirected and connected graph with **N** nodes, numbered 1 to **N**, and **M** edges. Find the minimum cost of any walk from node **S** to node **T** , via node **V** (visiting node **V** is compulsory) , where cost of a walk is the sum of weights of distinct edges occurring in the walk. This means that even if an edge occurs multiple times in a walk, its weight is added only once to the cost of the walk.\n\n\n\n**Warning:** Large input data, use faster methods for Input.",
+    "constraints": [
+      "1 <= T <= 5",
+      "1 <= N <= 100000",
+      "N-1 <= M <= min(100000, N*(N-1)/2)",
+      "1 <= S, T, V <= N",
+      "1 <= a, b <= N",
+      "1 <= c <= 10^9"
+    ],
+    "inputFormat": "First line contains T, the number of test cases. Each test case consists of two lines followed by M edge lines. The first line of a test case contains two integers N and M. The second line contains three integers S, T and V. Then M lines follow, each containing three integers a, b and c denoting an undirected edge between a and b with weight c.",
+    "outputFormat": "For each test case, print a single line containing the minimum possible cost of a walk from S to T that visits V (edges counted only once).",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n4 3\n1 3 4\n1 2 1\n2 3 2\n2 4 3\n4 3\n1 1 4\n1 2 1\n2 3 2\n2 4 3",
+        "output": "6\n4",
+        "explanation": ""
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 1
+      }
+    ],
+    "totalTestCases": 1,
+    "totalWeight": 1
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      1
+    ],
+    "maxScore": 1
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The cost of a walk is the sum of weights of distinct edges used. For three required vertices S, V and T the optimal walk can be transformed into a tree that connects the three vertices. In any undirected weighted graph the minimum weight tree connecting three terminals is a Steiner tree of size three. It is known that for three terminals the optimal Steiner tree can be rooted at some vertex X and consists of the three shortest paths X‑S, X‑V and X‑T. Therefore the answer equals min_{X in V} (dist(S,X)+dist(V,X)+dist(T,X)). We run Dijkstra from S, V and T to obtain all‑pairs shortest distances to every vertex, then scan all vertices to find the minimum sum. Each Dijkstra runs in O((N+M) log N) using a binary heap, so the total per test case is O((N+M) log N) time and O(N+M) memory.",
+    "timeComplexity": "O((N+M) log N) per test case",
+    "spaceComplexity": "O(N+M)",
+    "code": {
+      "C": "",
+      "C++": "",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    static class Edge {\n        int to;\n        long w;\n        Edge(int to, long w) { this.to = to; this.w = w; }\n    }\n    static class Node {\n        int v;\n        long dist;\n        Node(int v, long dist) { this.v = v; this.dist = dist; }\n    }\n    static class FastScanner {\n        private final InputStream in;\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        FastScanner(InputStream in) { this.in = in; }\n        private int read() throws IOException {\n            if (ptr >= len) {\n                len = in.read(buffer);\n                ptr = 0;\n                if (len <= 0) return -1;\n            }\n            return buffer[ptr++];\n        }\n        Integer nextInt() throws IOException {\n            int c, sign = 1, val = 0;\n            do {\n                c = read();\n                if (c == -1) return null;\n            } while (c <= ' ');\n            if (c == '-') { sign = -1; c = read(); }\n            while (c > ' ') {\n                val = val * 10 + (c - '0');\n                c = read();\n            }\n            return val * sign;\n        }\n        Long nextLong() throws IOException {\n            int c, sign = 1;\n            long val = 0;\n            do {\n                c = read();\n                if (c == -1) return null;\n            } while (c <= ' ');\n            if (c == '-') { sign = -1; c = read(); }\n            while (c > ' ') {\n                val = val * 10 + (c - '0');\n                c = read();\n            }\n            return val * sign;\n        }\n    }\n    static final long INF = Long.MAX_VALUE / 4;\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner(System.in);\n        Integer tObj = fs.nextInt();\n        if (tObj == null) return; // no input\n        int T = tObj;\n        StringBuilder sb = new StringBuilder();\n        while (T-- > 0) {\n            int N = fs.nextInt();\n            int M = fs.nextInt();\n            int S = fs.nextInt() - 1;\n            int V = fs.nextInt() - 1;\n            int Tt = fs.nextInt() - 1;\n            @SuppressWarnings(\"unchecked\")\n            List<Edge>[] adj = new ArrayList[N];\n            for (int i = 0; i < N; i++) adj[i] = new ArrayList<>();\n            for (int i = 0; i < M; i++) {\n                int a = fs.nextInt() - 1;\n                int b = fs.nextInt() - 1;\n                long c = fs.nextLong();\n                adj[a].add(new Edge(b, c));\n                adj[b].add(new Edge(a, c));\n            }\n            int[] terminals = new int[]{S, V, Tt};\n            int K = 3;\n            int fullMask = (1 << K) - 1; // 7\n            long[][] dp = new long[fullMask + 1][N];\n            for (int mask = 0; mask <= fullMask; mask++) {\n                Arrays.fill(dp[mask], INF);\n            }\n            for (int i = 0; i < K; i++) {\n                dp[1 << i][terminals[i]] = 0;\n            }\n            // DP over subsets\n            for (int mask = 1; mask <= fullMask; mask++) {\n                // combine smaller subsets\n                for (int sub = (mask - 1) & mask; sub > 0; sub = (sub - 1) & mask) {\n                    int other = mask ^ sub;\n                    if (other == 0) continue;\n                    for (int v = 0; v < N; v++) {\n                        long cand = dp[sub][v] + dp[other][v];\n                        if (cand < dp[mask][v]) dp[mask][v] = cand;\n                    }\n                }\n                // Dijkstra to propagate distances for this mask\n                PriorityQueue<Node> pq = new PriorityQueue<>(Comparator.comparingLong(a -> a.dist));\n                for (int v = 0; v < N; v++) {\n                    if (dp[mask][v] < INF) {\n                        pq.offer(new Node(v, dp[mask][v]));\n                    }\n                }\n                while (!pq.isEmpty()) {\n                    Node cur = pq.poll();\n                    if (cur.dist != dp[mask][cur.v]) continue;\n                    for (Edge e : adj[cur.v]) {\n                        long nd = cur.dist + e.w;\n                        if (nd < dp[mask][e.to]) {\n                            dp[mask][e.to] = nd;\n                            pq.offer(new Node(e.to, nd));\n                        }\n                    }\n                }\n            }\n            long ans = INF;\n            for (int v = 0; v < N; v++) {\n                if (dp[fullMask][v] < ans) ans = dp[fullMask][v];\n            }\n            sb.append(ans).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}\n",
+      "Python3": "",
+      "JavaScript": ""
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

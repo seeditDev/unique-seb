@@ -1,0 +1,139 @@
+{
+  "questionId": "Q4163",
+  "title": "Chef Teams",
+  "slug": "chef-teams",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Greedy",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Team Formation",
+      "Rating Difference"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Heaps & Priority Queues"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "The executive chef is trying to bring some competitive spirit into his kitchen. He wants to split the chefs into two teams based on their age - he'll form the young and the old team. To make it fair, he will split them evenly or give the young team one person advantage when there is an odd number of chefs. Ages of all employees are unique. The executive chef also rated all chefs according to their cooking skills. Rating of a team is equal to the sum of ratings of its members. The chefs have developed a habit of coming to work late. The executive chef wants to keep the teams as fair as possible at all times and is therefore forced to change the teams each time one of the chefs comes to work in the morning. He needs your help with this task.",
+    "constraints": [
+      "1 <= N <= 10^5",
+      "1 <= Ai <= 10^9",
+      "1 <= Ri <= 1000"
+    ],
+    "inputFormat": "The first line contains the number of chefs N. Each of the following N lines contains two integers, the age Ai and the rating Ri of a chef.",
+    "outputFormat": "For each chef that joins the kitchen, output the absolute difference between the ratings of the young team and the old team.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "5\n2 3\n1 7\n5 5\n3 1\n8 15",
+        "output": "3\n4\n5\n4\n9",
+        "explanation": "The teams are formed as follows:\n- After the first chef: Young team = [2, 3], Old team = [], Difference = 3\n- After the second chef: Young team = [2, 3], [1, 7], Old team = [], Difference = 4\n- After the third chef: Young team = [2, 3], [1, 7], Old team = [5, 5], Difference = 5\n- After the fourth chef: Young team = [2, 3], [1, 7], Old team = [5, 5], [3, 1], Difference = 4\n- After the fifth chef: Young team = [2, 3], [1, 7], Old team = [5, 5], [3, 1], [8, 15], Difference = 9"
+      },
+      {
+        "id": "sample_2",
+        "input": "3\n1 2\n2 3\n3 4",
+        "output": "1\n3\n4",
+        "explanation": "The teams are formed as follows:\n- After the first chef: Young team = [1, 2], Old team = [], Difference = 1\n- After the second chef: Young team = [1, 2], [2, 3], Old team = [], Difference = 3\n- After the third chef: Young team = [1, 2], [2, 3], Old team = [3, 4], Difference = 4"
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n10 10",
+        "output": "0",
+        "explanation": "The teams are formed as follows:\n- After the first chef: Young team = [10, 10], Old team = [], Difference = 0"
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "100000\n1000000000 1000\n1000000000 1000\n1000000000 1000\n1000000000 1000\n1000000000 1000",
+        "expectedOutput": "4000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "5\n1 1\n1 1\n1 1\n1 1\n1 1",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "5\n1 1000\n2 1\n3 1000\n4 1\n5 1000",
+        "expectedOutput": "2997",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "1\n1 1",
+        "expectedOutput": "0",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved using a greedy approach. We maintain two heaps, one for the young team and one for the old team. The young team is a max-heap, and the old team is a min-heap. We iterate through the chefs and add each chef to the team with the lower total rating. If the young team has more than one more chef than the old team, we move the oldest chef from the young team to the old team. If the old team has more chefs than the young team, we move the youngest chef from the old team to the young team. After each chef joins, we calculate and output the absolute difference between the ratings of the two teams.",
+    "timeComplexity": "O(N log N) per test case, O(N log N) total. The time complexity is dominated by the heap operations.",
+    "spaceComplexity": "O(N) — the dominant structure is the heap.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\n#define MAX_N 100000\n\ntypedef struct {\n    int age;\n    int rating;\n} Chef;\n\nvoid maxHeapInsert(Chef heap[], int *size, Chef chef) {\n    heap[(*size)++] = chef;\n    int index = *size - 1;\n\n    while (index > 0) {\n        int parentIndex = (index - 1) / 2;\n        if (heap[parentIndex].age >= heap[index].age) break;\n        Chef temp = heap[parentIndex];\n        heap[parentIndex] = heap[index];\n        heap[index] = temp;\n        index = parentIndex;\n    }\n}\n\nChef maxHeapExtractMax(Chef heap[], int *size) {\n    Chef maxChef = heap[0];\n    heap[0] = heap[--(*size)];\n    int index = 0;\n\n    while (1) {\n        int leftChildIndex = 2 * index + 1;\n        int rightChildIndex = 2 * index + 2;\n        int largestIndex = index;\n\n        if (leftChildIndex < *size && heap[leftChildIndex].age > heap[largestIndex].age) {\n            largestIndex = leftChildIndex;\n        }\n        if (rightChildIndex < *size && heap[rightChildIndex].age > heap[largestIndex].age) {\n            largestIndex = rightChildIndex;\n        }\n        if (largestIndex == index) break;\n\n        Chef temp = heap[index];\n        heap[index] = heap[largestIndex];\n        heap[largestIndex] = temp;\n        index = largestIndex;\n    }\n\n    return maxChef;\n}\n\nvoid minHeapInsert(Chef heap[], int *size, Chef chef) {\n    heap[(*size)++] = chef;\n    int index = *size - 1;\n\n    while (index > 0) {\n        int parentIndex = (index - 1) / 2;\n        if (heap[parentIndex].age <= heap[index].age) break;\n        Chef temp = heap[parentIndex];\n        heap[parentIndex] = heap[index];\n        heap[index] = temp;\n        index = parentIndex;\n    }\n}\n\nChef minHeapExtractMin(Chef heap[], int *size) {\n    Chef minChef = heap[0];\n    heap[0] = heap[--(*size)];\n    int index = 0;\n\n    while (1) {\n        int leftChildIndex = 2 * index + 1;\n        int rightChildIndex = 2 * index + 2;\n        int smallestIndex = index;\n\n        if (leftChildIndex < *size && heap[leftChildIndex].age < heap[smallestIndex].age) {\n            smallestIndex = leftChildIndex;\n        }\n        if (rightChildIndex < *size && heap[rightChildIndex].age < heap[smallestIndex].age) {\n            smallestIndex = rightChildIndex;\n        }\n        if (smallestIndex == index) break;\n\n        Chef temp = heap[index];\n        heap[index] = heap[smallestIndex];\n        heap[smallestIndex] = temp;\n        index = smallestIndex;\n    }\n\n    return minChef;\n}\n\nint main() {\n    int N;\n    scanf(\"%d\", &N);\n\n    Chef youngTeam[MAX_N], oldTeam[MAX_N];\n    int youngSize = 0, oldSize = 0;\n    int youngRating = 0, oldRating = 0;\n\n    for (int i = 0; i < N; ++i) {\n        Chef chef;\n        scanf(\"%d %d\", &chef.age, &chef.rating);\n\n        // Add chef to the correct team based on age\n        if (youngSize == 0 || (oldSize > 0 && chef.age < oldTeam[0].age)) {\n            maxHeapInsert(youngTeam, &youngSize, chef);\n            youngRating += chef.rating;\n        } else {\n            minHeapInsert(oldTeam, &oldSize, chef);\n            oldRating += chef.rating;\n        }\n\n        // Balance the teams\n        if (youngSize > oldSize + 1) {\n            Chef oldestYoung = maxHeapExtractMax(youngTeam, &youngSize);\n            youngRating -= oldestYoung.rating;\n            minHeapInsert(oldTeam, &oldSize, oldestYoung);\n            oldRating += oldestYoung.rating;\n        } else if (oldSize > youngSize) {\n            Chef youngestOld = minHeapExtractMin(oldTeam, &oldSize);\n            oldRating -= youngestOld.rating;\n            maxHeapInsert(youngTeam, &youngSize, youngestOld);\n            youngRating += youngestOld.rating;\n        }\n\n        // Output the absolute difference between team ratings\n        printf(\"%d\\n\", abs(youngRating - oldRating));\n    }\n\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    int N;\n    cin >> N;\n\n    priority_queue<pair<int, int>> youngTeam; // Max-heap for young team\n    priority_queue<pair<int, int>, vector<pair<int, int>>, greater<pair<int, int>>> oldTeam; // Min-heap for old team\n    int youngRating = 0, oldRating = 0;\n\n    for (int i = 0; i < N; ++i) {\n        int age, rating;\n        cin >> age >> rating;\n\n        // Add chef to the correct team based on age\n        if (youngTeam.empty() || (!oldTeam.empty() && age < oldTeam.top().first)) {\n            youngTeam.push({age, rating});\n            youngRating += rating;\n        } else {\n            oldTeam.push({age, rating});\n            oldRating += rating;\n        }\n\n        // Balance the teams\n        if (youngTeam.size() > oldTeam.size() + 1) {\n            auto oldestYoung = youngTeam.top();\n            youngTeam.pop();\n            youngRating -= oldestYoung.second;\n            oldTeam.push(oldestYoung);\n            oldRating += oldestYoung.second;\n        } else if (oldTeam.size() > youngTeam.size()) {\n            auto youngestOld = oldTeam.top();\n            oldTeam.pop();\n            oldRating -= youngestOld.second;\n            youngTeam.push(youngestOld);\n            youngRating += youngestOld.second;\n        }\n\n        // Output the absolute difference between team ratings\n        cout << abs(youngRating - oldRating) << endl;\n    }\n\n    return 0;\n}",
+      "Java": "import java.util.*;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int N = scanner.nextInt();\n        \n        PriorityQueue<int[]> youngTeam = new PriorityQueue<>((a, b) -> b[0] - a[0]); // Max-heap\n        PriorityQueue<int[]> oldTeam = new PriorityQueue<>(Comparator.comparingInt(a -> a[0])); // Min-heap\n        \n        int youngRating = 0, oldRating = 0;\n\n        for (int i = 0; i < N; i++) {\n            int age = scanner.nextInt();\n            int rating = scanner.nextInt();\n\n            // Add chef to the correct team based on age\n            if (youngTeam.isEmpty() || (!oldTeam.isEmpty() && age < oldTeam.peek()[0])) {\n                youngTeam.offer(new int[]{age, rating});\n                youngRating += rating;\n            } else {\n                oldTeam.offer(new int[]{age, rating});\n                oldRating += rating;\n            }\n\n            // Balance the teams\n            if (youngTeam.size() > oldTeam.size() + 1) {\n                int[] oldestYoung = youngTeam.poll();\n                youngRating -= oldestYoung[1];\n                oldTeam.offer(oldestYoung);\n                oldRating += oldestYoung[1];\n            } else if (oldTeam.size() > youngTeam.size()) {\n                int[] youngestOld = oldTeam.poll();\n                oldRating -= youngestOld[1];\n                youngTeam.offer(youngestOld);\n                youngRating += youngestOld[1];\n            }\n\n            // Output the absolute difference between team ratings\n            System.out.println(Math.abs(youngRating - oldRating));\n        }\n\n        scanner.close();\n    }\n}",
+      "Python3": "import heapq\nimport sys\n\ndef manage_teams(chefs):\n    young_team = []  # Max-heap for young team (using negative ages)\n    old_team = []    # Min-heap for old team\n    young_rating = 0\n    old_rating = 0\n\n    for age, rating in chefs:\n        # Add chef to the correct team based on age\n        if not young_team or (old_team and age < old_team[0][0]):\n            heapq.heappush(young_team, (-age, rating))  # Store negative age for max-heap\n            young_rating += rating\n        else:\n            heapq.heappush(old_team, (age, rating))\n            old_rating += rating\n\n        # Balance the teams\n        if len(young_team) > len(old_team) + 1:\n            oldest_young = heapq.heappop(young_team)\n            young_rating -= oldest_young[1]\n            heapq.heappush(old_team, (-oldest_young[0], oldest_young[1]))\n            old_rating += oldest_young[1]\n        elif len(old_team) > len(young_team):\n            youngest_old = heapq.heappop(old_team)\n            old_rating -= youngest_old[1]\n            heapq.heappush(young_team, (-youngest_old[0], youngest_old[1]))\n            young_rating += youngest_old[1]\n\n        # Output the absolute difference between team ratings\n        print(abs(young_rating - old_rating))\n\n# Function to read input from the user\ndef main():\n    N = int(sys.stdin.readline())\n    chefs = []\n\n    for _ in range(N):\n        age, rating = map(int, sys.stdin.readline().split())\n        chefs.append((age, rating))\n\n    manage_teams(chefs)\n\nif __name__ == \"__main__\":\n    main()",
+      "JavaScript": "const readline = require('readline');\nconst rl = readline.createInterface({\n    input: process.stdin,\n    output: process.stdout\n});\n\nlet lines = [];\nlet i = 0;\n\nrl.on('line', (line) => {\n    lines.push(line);\n});\n\nrl.on('close', () => {\n    let N = parseInt(lines[i++]);\n    let chefs = [];\n\n    for (let j = 0; j < N; j++) {\n        let [age, rating] = lines[i++].split(' ').map(Number);\n        chefs.push([age, rating]);\n    }\n\n    let youngTeam = [];\n    let oldTeam = [];\n    let youngRating = 0, oldRating = 0;\n\n    for (let [age, rating] of chefs) {\n        // Add chef to the correct team based on age\n        if (youngTeam.length === 0 || (oldTeam.length > 0 && age < oldTeam[0][0])) {\n            youngTeam.push([-age, rating]);\n            youngRating += rating;\n        } else {\n            oldTeam.push([age, rating]);\n            oldRating += rating;\n        }\n\n        // Balance the teams\n        if (youngTeam.length > oldTeam.length + 1) {\n            const oldestYoung = youngTeam.shift();\n            youngRating -= oldestYoung[1];\n            oldTeam.push([-oldestYoung[0], oldestYoung[1]]);\n            oldRating += oldestYoung[1];\n        } else if (oldTeam.length > youngTeam.length) {\n            const youngestOld = oldTeam.shift();\n            oldRating -= youngestOld[1];\n            youngTeam.push([-youngestOld[0], youngestOld[1]]);\n            youngRating += youngestOld[1];\n        }\n\n        // Calculate and output the absolute difference between team ratings\n        console.log(Math.abs(youngRating - oldRating));\n    }\n});"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

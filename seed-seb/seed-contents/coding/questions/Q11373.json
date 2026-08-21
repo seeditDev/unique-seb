@@ -1,0 +1,122 @@
+{
+  "questionId": "Q11373",
+  "title": "Graph Valid Tree",
+  "slug": "solutions",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Graph",
+      "Tree",
+      "Union Find"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Write a program for the coding challenge \"Graph Valid Tree\". Refer to SEED-IT description: https://leetcode.com/problems/graph-valid-tree/solutions/",
+    "constraints": [
+      "1 <= n <= 10^5",
+      "0 <= edges.length <= n - 1",
+      "edges[i].length == 2",
+      "0 <= edges[i][0] < n",
+      "0 <= edges[i][1] < n",
+      "No self-loops or parallel edges"
+    ],
+    "inputFormat": "The input will be an integer n representing the number of nodes in the graph, and an array of pairs edges representing the edges in the graph.",
+    "outputFormat": "The output will be a boolean indicating whether the graph is a valid tree.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "[1, []]",
+        "expectedOutput": "true",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "[10, [[0,1],[0,2],[0,3],[0,4],[0,5],[0,6],[0,7],[0,8],[0,9]]]",
+        "expectedOutput": "false",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": "[5, [[0,1],[1,2],[2,3],[3,4]]]",
+        "expectedOutput": "true",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case / empty-like",
+        "input": "[4, [[0,1],[1,2],[2,3],[3,0]]]",
+        "expectedOutput": "false",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": "[7, [[0,1],[0,2],[0,3],[3,4],[4,5],[4,6]]]",
+        "expectedOutput": "true",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Use Union Find to check if the graph is connected and has no cycles.",
+    "timeComplexity": "O(n + m * alpha(n))",
+    "spaceComplexity": "O(n)",
+    "code": {
+      "C": "\n         #include <stdio.h>\n         #include <stdbool.h>\n\n         bool validTree(int n, int** edges, int edgesSize) {\n            int* parent = (int*)malloc(n * sizeof(int));\n            int* rank = (int*)malloc(n * sizeof(int));\n\n            for (int i = 0; i < n; i++) {\n               parent[i] = i;\n               rank[i] = 0;\n            }\n\n            for (int i = 0; i < edgesSize; i++) {\n               int x = edges[i][0];\n               int y = edges[i][1];\n\n               if (find(parent, x) == find(parent, y)) {\n                  return false;\n               }\n\n               unionSet(parent, rank, x, y);\n            }\n\n            int root = find(parent, 0);\n            for (int i = 1; i < n; i++) {\n               if (find(parent, i) != root) {\n                  return false;\n               }\n            }\n\n            return true;\n         }\n\n         int find(int* parent, int x) {\n            if (parent[x] != x) {\n               parent[x] = find(parent, parent[x]);\n            }\n            return parent[x];\n         }\n\n         void unionSet(int* parent, int* rank, int x, int y) {\n            int rootX = find(parent, x);\n            int rootY = find(parent, y);\n\n            if (rank[rootX] < rank[rootY]) {\n               parent[rootX] = rootY;\n            } else if (rank[rootX] > rank[rootY]) {\n               parent[rootY] = rootX;\n            } else {\n               parent[rootY] = rootX;\n               rank[rootX]++;\n            }\n         }\n      ",
+      "C++": "\n         #include <iostream>\n         #include <vector>\n\n         class UnionFind {\n         public:\n            std::vector<int> parent;\n            std::vector<int> rank;\n\n            UnionFind(int n) {\n               parent.resize(n);\n               rank.resize(n);\n\n               for (int i = 0; i < n; i++) {\n                  parent[i] = i;\n                  rank[i] = 0;\n               }\n            }\n\n            int find(int x) {\n               if (parent[x] != x) {\n                  parent[x] = find(parent[x]);\n               }\n               return parent[x];\n            }\n\n            void unionSet(int x, int y) {\n               int rootX = find(x);\n               int rootY = find(y);\n\n               if (rank[rootX] < rank[rootY]) {\n                  parent[rootX] = rootY;\n               } else if (rank[rootX] > rank[rootY]) {\n                  parent[rootY] = rootX;\n               } else {\n                  parent[rootY] = rootX;\n                  rank[rootX]++;\n               }\n            }\n         };\n\n         bool validTree(int n, std::vector<std::vector<int>>& edges) {\n            UnionFind uf(n);\n\n            for (const auto& edge : edges) {\n               int x = edge[0];\n               int y = edge[1];\n\n               if (uf.find(x) == uf.find(y)) {\n                  return false;\n               }\n\n               uf.unionSet(x, y);\n            }\n\n            int root = uf.find(0);\n            for (int i = 1; i < n; i++) {\n               if (uf.find(i) != root) {\n                  return false;\n               }\n            }\n\n            return true;\n         }\n      ",
+      "Java": "\n         public class UnionFind {\n            int[] parent;\n            int[] rank;\n\n            public UnionFind(int n) {\n               parent = new int[n];\n               rank = new int[n];\n\n               for (int i = 0; i < n; i++) {\n                  parent[i] = i;\n                  rank[i] = 0;\n               }\n            }\n\n            public int find(int x) {\n               if (parent[x] != x) {\n                  parent[x] = find(parent[x]);\n               }\n               return parent[x];\n            }\n\n            public void unionSet(int x, int y) {\n               int rootX = find(x);\n               int rootY = find(y);\n\n               if (rank[rootX] < rank[rootY]) {\n                  parent[rootX] = rootY;\n               } else if (rank[rootX] > rank[rootY]) {\n                  parent[rootY] = rootX;\n               } else {\n                  parent[rootY] = rootX;\n                  rank[rootX]++;\n               }\n            }\n         }\n\n         public class Solution {\n            public boolean validTree(int n, int[][] edges) {\n               UnionFind uf = new UnionFind(n);\n\n               for (int[] edge : edges) {\n                  int x = edge[0];\n                  int y = edge[1];\n\n                  if (uf.find(x) == uf.find(y)) {\n                     return false;\n                  }\n\n                  uf.unionSet(x, y);\n               }\n\n               int root = uf.find(0);\n               for (int i = 1; i < n; i++) {\n                  if (uf.find(i) != root) {\n                     return false;\n                  }\n               }\n\n               return true;\n            }\n         }\n      ",
+      "Python3": "\n         class UnionFind:\n            def __init__(self, n):\n               self.parent = list(range(n))\n               self.rank = [0] * n\n\n            def find(self, x):\n               if self.parent[x] != x:\n                  self.parent[x] = self.find(self.parent[x])\n               return self.parent[x]\n\n            def unionSet(self, x, y):\n               rootX = self.find(x)\n               rootY = self.find(y)\n\n               if self.rank[rootX] < self.rank[rootY]:\n                  self.parent[rootX] = rootY\n               elif self.rank[rootX] > self.rank[rootY]:\n                  self.parent[rootY] = rootX\n               else:\n                  self.parent[rootY] = rootX\n                  self.rank[rootX] += 1\n\n         def validTree(n, edges):\n            uf = UnionFind(n)\n\n            for x, y in edges:\n               if uf.find(x) == uf.find(y):\n                  return False\n               uf.unionSet(x, y)\n\n            root = uf.find(0)\n            for i in range(1, n):\n               if uf.find(i) != root:\n                  return False\n\n            return True\n      ",
+      "JavaScript": "\n         class UnionFind {\n            constructor(n) {\n               this.parent = Array.from({ length: n }, (_, i) => i);\n               this.rank = new Array(n).fill(0);\n            }\n\n            find(x) {\n               if (this.parent[x] !== x) {\n                  this.parent[x] = this.find(this.parent[x]);\n               }\n               return this.parent[x];\n            }\n\n            unionSet(x, y) {\n               const rootX = this.find(x);\n               const rootY = this.find(y);\n\n               if (this.rank[rootX] < this.rank[rootY]) {\n                  this.parent[rootX] = rootY;\n               } else if (this.rank[rootX] > this.rank[rootY]) {\n                  this.parent[rootY] = rootX;\n               } else {\n                  this.parent[rootY] = rootX;\n                  this.rank[rootX]++;\n               }\n            }\n         }\n\n         function validTree(n, edges) {\n            const uf = new UnionFind(n);\n\n            for (const [x, y] of edges) {\n               if (uf.find(x) === uf.find(y)) {\n                  return false;\n               }\n               uf.unionSet(x, y);\n            }\n\n            const root = uf.find(0);\n            for (let i = 1; i < n; i++) {\n               if (uf.find(i) !== root) {\n                  return false;\n               }\n            }\n\n            return true;\n         }\n      "
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

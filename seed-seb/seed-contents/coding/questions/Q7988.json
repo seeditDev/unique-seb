@@ -1,0 +1,130 @@
+{
+  "questionId": "Q7988",
+  "title": "Space Arrays",
+  "slug": "space-arrays",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Game Theory",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Greedy",
+      "Sorting",
+      "Parity",
+      "Impartial Game"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Finally, progress reached the Madoka family and she decided to play with her little sister in the sensational game Space Arrays.\n\nThe rules of the game are as follows:\n\n\nInitially, a sequence a1,a2,…,aNa_1, a_2, \\ldots, a_Na1​,a2​,…,aN​ is given.\nThe players alternate turns.\nIn each turn, the current player must choose an index iii and increment aia_iai​, i.e. change aia_iai​ to ai+1a_i + 1ai​+1.\nAfterwards, if there is no permutation p1,p2,…,pNp_1, p_2, \\ldots, p_Np1​,p2​,…,pN​ of the integers 111 through NNN such that ai≤pia_i \\leq p_iai​≤pi​ holds for each valid iii, the current player loses.\nOtherwise, the game continues with the next turn.\nMadoka is asking you to help her ― tell her if the first player (the player that plays in the first turn) or second player wins this game if both play optimally.",
+    "constraints": [
+      "1 <= T <= 20000",
+      "1 <= N <= 200000",
+      "Sum of N over all test cases does not exceed 200000",
+      "1 <= ai <= N"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Then for each test case: the first line contains an integer N, the length of the array. The second line contains N space‑separated integers a1,…,aN.",
+    "outputFormat": "For each test case output a single line containing \"First\" if the first player wins with optimal play, otherwise \"Second\".",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4\n4\n1 2 3 3\n4\n1 1 3 3\n5\n1 2 2 1 5\n3\n2 2 3",
+        "output": "First\nSecond\nSecond\nSecond",
+        "explanation": "For each test case we sort the array and count positions where value equals its 1‑based index. Test1: equalities at indices 1,2,3 → odd → First. Test2: equalities at 1 and 3 → even → Second. Test3: equalities at 1 and 5 → even → Second. Test4: the sorted array is [2,2,3]; at index 1 we already have 2>1, so the position is invalid and the first player loses → Second."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n1",
+        "expectedOutput": "First",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n5\n1 2 3 4 5",
+        "expectedOutput": "First",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case - already invalid",
+        "input": "1\n3\n3 3 3",
+        "expectedOutput": "Second",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n6\n1 2 2 4 5 6",
+        "expectedOutput": "Second",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n4\n1 3 3 4",
+        "expectedOutput": "Second",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "A position is *valid* if we can assign a distinct number from 1..N to each index such that assigned number >= ai. After sorting the array to b1<=b2<=...<=bN, this is possible iff bi <= i for every i (Hall's theorem). The game ends when a move makes the condition false. A move is safe if after incrementing some element the condition still holds. It can be shown that the only thing that matters is the number of positions where bi == i in the current valid array. If this count is odd, the current player has a winning move; if it is even, every safe move leads to a position with odd count for the opponent, so the current player loses. If the initial array is already invalid (some bi > i) the first player loses immediately. Therefore the algorithm is: sort the array, scan i=1..N, if any bi > i → answer \"Second\"; otherwise count how many i satisfy bi == i. If the count is odd → \"First\", else → \"Second\".",
+    "timeComplexity": "O(N log N) per test case because of sorting; total O((sum N) log (max N)).",
+    "spaceComplexity": "O(N) for the sorted array.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\nint cmp(const void *a, const void *b){return *(int*)a-*(int*)b;}\nint main(){int T; if(scanf(\"%d\",&T)!=1) return 0; while(T--){int N; scanf(\"%d\",&N); int *arr=malloc(N*sizeof(int)); for(int i=0;i<N;i++) scanf(\"%d\",&arr[i]); qsort(arr,N,sizeof(int),cmp);\n int eq=0, invalid=0; for(int i=0;i<N;i++){int idx=i+1; if(arr[i]>idx){invalid=1; break;} if(arr[i]==idx) eq++; }\n if(invalid || (eq%2==0)) printf(\"Second\\n\"); else printf(\"First\\n\");\n free(arr);\n }\n return 0; }",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){ios::sync_with_stdio(false);cin.tie(nullptr);\n int T; if(!(cin>>T)) return 0; while(T--){int N;cin>>N; vector<int>a(N); for(int &x:a)cin>>x; sort(a.begin(),a.end()); long long eq=0; bool invalid=false; for(int i=0;i<N;i++){int idx=i+1; if(a[i]>idx){invalid=true; break;} if(a[i]==idx) ++eq; }\n if(invalid || (eq%2==0)) cout<<\"Second\\n\"; else cout<<\"First\\n\"; }\n return 0; }",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner(System.in);\n        int T = fs.nextInt();\n        StringBuilder sb = new StringBuilder();\n        while (T-- > 0) {\n            int N = fs.nextInt();\n            int[] a = new int[N];\n            for (int i = 0; i < N; i++) a[i] = fs.nextInt();\n            Arrays.sort(a);\n            long eq = 0;\n            boolean invalid = false;\n            for (int i = 0; i < N; i++) {\n                int idx = i + 1;\n                if (a[i] > idx) { invalid = true; break; }\n                if (a[i] == idx) eq++;\n            }\n            if (invalid || (eq % 2 == 0)) sb.append(\"Second\\n\");\n            else sb.append(\"First\\n\");\n        }\n        System.out.print(sb.toString());\n    }\n    static class FastScanner {\n        private final InputStream in;\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        FastScanner(InputStream in){ this.in = in; }\n        private int readByte() throws IOException {\n            if (ptr >= len) { len = in.read(buffer); ptr = 0; if (len <= 0) return -1; }\n            return buffer[ptr++];\n        }\n        int nextInt() throws IOException {\n            int c, sign = 1, val = 0;\n            do { c = readByte(); } while (c <= ' ');\n            if (c == '-') { sign = -1; c = readByte(); }\n            while (c > ' ') { val = val * 10 + (c - '0'); c = readByte(); }\n            return val * sign;\n        }\n    }\n}",
+      "Python3": "import sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out = []\n    for _ in range(T):\n        N = int(next(it))\n        a = [int(next(it)) for _ in range(N)]\n        a.sort()\n        eq = 0\n        invalid = False\n        for i, val in enumerate(a, start=1):\n            if val > i:\n                invalid = True\n                break\n            if val == i:\n                eq += 1\n        if invalid or eq % 2 == 0:\n            out.append('Second')\n        else:\n            out.append('First')\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    solve()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/).map(Number);\nlet idx = 0;\nconst T = input[idx++];\nlet out = [];\nfor (let t = 0; t < T; t++) {\n  const N = input[idx++];\n  const arr = input.slice(idx, idx + N);\n  idx += N;\n  arr.sort((a, b) => a - b);\n  let eq = 0;\n  let invalid = false;\n  for (let i = 0; i < N; i++) {\n    const pos = i + 1;\n    if (arr[i] > pos) { invalid = true; break; }\n    if (arr[i] === pos) eq++;\n  }\n  if (invalid || eq % 2 === 0) out.push('Second'); else out.push('First');\n}\nconsole.log(out.join('\\n'));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

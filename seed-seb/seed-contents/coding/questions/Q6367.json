@@ -1,0 +1,126 @@
+{
+  "questionId": "Q6367",
+  "title": "Chef and Amazingness of Numbers",
+  "slug": "chef-and-amazingness-of-numbers",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Amazingness of Numbers",
+      "Modular Arithmetic"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef defined amazingness of a number **n** as follows. Let array **a** denote the decimal representation of **n**.\namazingness of **n** is defined by following pseudo code.\n\n\n`\namazingness(a)\n{\n    set **s**;\n    int ans = 0;\n    for ( int i = 0; i &lt; a.length(); i++ ) {\n         int val = 0;\n         for ( int j = i; j &lt; a.length(); j++ ) {\n            val ^= a[j];  \n            // a[j] denotes digit at j-th (0-based indexing) position of **n** counting \n from most signficant digit (left to right).\n            if (val not present in set s before) {\n                 ans += val;\n                 add val to set **s**\n            }\n         }\n   }\n   return ans;\n}\n`\n\n\nGiven two integers **L, R**. Find out the following sum : amazingness**L** + amazingness**L + 1** + ... + amazingness**R**. As the answer could be large, print your answer modulo **109 + 7 (1000000007)**",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= L, R <= 10^9"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains two space-separated integers L and R.",
+    "outputFormat": "For each test case, output a single integer in a separate line corresponding to the value of the desired sum modulo 10^9 + 7 (1000000007).",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n1 5\n11 14",
+        "output": "15\n23",
+        "explanation": "Explanation: For the first test case, the amazingness values of numbers 1, 2, 3, 4, 5 are 1, 2, 3, 4, 5 respectively. They sum up to 15. For the second test case, the amazingness values of numbers 11, 12, 13, 14 are 1, 6, 6, 10 respectively. They sum up to 23."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n1000000000 1000000000",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n10 10",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n1 10",
+        "expectedOutput": "55",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n100 110",
+        "expectedOutput": "235",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we need to calculate the amazingness of each number from L to R and sum them up. The amazingness of a number is calculated by generating all possible subsequences of its digits, calculating the XOR of each subsequence, and summing up the unique XOR values. We will use a set to keep track of unique XOR values. Finally, we will take the sum modulo 10^9 + 7 to avoid overflow.",
+    "timeComplexity": "O(T * (R - L + 1) * log(R)) — explain: for each test case, we iterate over all numbers from L to R, and for each number, we generate all possible subsequences of its digits, which takes O(log(R)) time.",
+    "spaceComplexity": "O(T * (R - L + 1) * log(R)) — explain: we need to store the unique XOR values for each number, which takes O(log(R)) space.",
+    "code": {
+      "C": "// COMPLETE, COMPILABLE C code\n#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#define MOD 1000000007\n\nint calculateAmazingness(long long num) {\n    int len = 0;\n    long long temp = num;\n    while (temp > 0) {\n        len++;\n        temp /= 10;\n    }\n    int* digits = (int*)malloc(len * sizeof(int));\n    for (int i = len - 1; i >= 0; i--) {\n        digits[i] = num % 10;\n        num /= 10;\n    }\n    int amazingness = 0;\n    for (int i = 0; i < len; i++) {\n        int val = 0;\n        for (int j = i; j < len; j++) {\n            val ^= digits[j];\n            int found = 0;\n            for (int k = 0; k < i; k++) {\n                if (val == amazingness) {\n                    found = 1;\n                    break;\n                }\n            }\n            if (!found) {\n                amazingness += val;\n                amazingness %= MOD;\n            }\n        }\n    }\n    free(digits);\n    return amazingness;\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        long long L, R;\n        scanf(\"%lld %lld\", &L, &R);\n        long long sum = 0;\n        for (long long i = L; i <= R; i++) {\n            sum += calculateAmazingness(i);\n            sum %= MOD;\n        }\n        printf(\"%lld\\n\", sum);\n    }\n    return 0;\n}",
+      "C++": "// COMPLETE, COMPILABLE C++ code\n#include <iostream>\n#include <vector>\n#include <set>\n#include <string>\nusing namespace std;\n#define MOD 1000000007\n\nint calculateAmazingness(long long num) {\n    string str = to_string(num);\n    int amazingness = 0;\n    set<int> uniqueVals;\n    for (int i = 0; i < str.size(); i++) {\n        int val = 0;\n        for (int j = i; j < str.size(); j++) {\n            val ^= str[j] - '0';\n            if (uniqueVals.find(val) == uniqueVals.end()) {\n                amazingness += val;\n                amazingness %= MOD;\n                uniqueVals.insert(val);\n            }\n        }\n    }\n    return amazingness;\n}\n\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        long long L, R;\n        cin >> L >> R;\n        long long sum = 0;\n        for (long long i = L; i <= R; i++) {\n            sum += calculateAmazingness(i);\n            sum %= MOD;\n        }\n        cout << sum << endl;\n    }\n    return 0;\n}",
+      "Java": "// COMPLETE, COMPILABLE Java code\nimport java.util.Scanner;\nimport java.util.HashSet;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n        while (T-- > 0) {\n            long L = sc.nextLong();\n            long R = sc.nextLong();\n            long sum = 0;\n            for (long i = L; i <= R; i++) {\n                sum += calculateAmazingness(i);\n                sum %= 1000000007;\n            }\n            System.out.println(sum);\n        }\n    }\n\n    public static long calculateAmazingness(long num) {\n        String str = Long.toString(num);\n        long amazingness = 0;\n        HashSet<Integer> uniqueVals = new HashSet<>();\n        for (int i = 0; i < str.length(); i++) {\n            int val = 0;\n            for (int j = i; j < str.length(); j++) {\n                val ^= str.charAt(j) - '0';\n                if (!uniqueVals.contains(val)) {\n                    amazingness += val;\n                    amazingness %= 1000000007;\n                    uniqueVals.add(val);\n                }\n            }\n        }\n        return amazingness;\n    }\n}",
+      "Python3": "# COMPLETE, RUNNABLE Python3 code\nimport sys\nMOD = 1000000007\n\ndef calculate_amazingness(num):\n    str_num = str(num)\n    amazingness = 0\n    unique_vals = set()\n    for i in range(len(str_num)):\n        val = 0\n        for j in range(i, len(str_num)):\n            val ^= int(str_num[j])\n            if val not in unique_vals:\n                amazingness += val\n                amazingness %= MOD\n                unique_vals.add(val)\n    return amazingness\n\nT = int(input())\nfor _ in range(T):\n    L, R = map(int, input().split())\n    total_sum = 0\n    for i in range(L, R + 1):\n        total_sum += calculate_amazingness(i)\n        total_sum %= MOD\n    print(total_sum)",
+      "JavaScript": "// COMPLETE, RUNNABLE JavaScript code\nconst fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst MOD = 1000000007;\n\nfunction calculateAmazingness(num) {\n    const str = num.toString();\n    let amazingness = 0;\n    const uniqueVals = new Set();\n    for (let i = 0; i < str.length; i++) {\n        let val = 0;\n        for (let j = i; j < str.length; j++) {\n            val ^= parseInt(str[j]);\n            if (!uniqueVals.has(val)) {\n                amazingness += val;\n                amazingness %= MOD;\n                uniqueVals.add(val);\n            }\n        }\n    }\n    return amazingness;\n}\n\nconst T = parseInt(input[idx++]);\nfor (let i = 0; i < T; i++) {\n    const [L, R] = input[idx++].split(' ').map(Number);\n    let sum = 0;\n    for (let j = L; j <= R; j++) {\n        sum += calculateAmazingness(j);\n        sum %= MOD;\n    }\n    console.log(sum);\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

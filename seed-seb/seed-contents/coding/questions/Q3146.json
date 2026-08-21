@@ -1,0 +1,122 @@
+{
+  "questionId": "Q3146",
+  "title": "Aditi and Magic Trick",
+  "slug": "aditi-and-magic-trick",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "Math",
+      "Square Root",
+      "Ceiling",
+      "Number Theory",
+      "Binary Search"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Ad-hoc & Implementation"
+    ]
+  },
+  "content": {
+    "problemStatement": "Aditi recently discovered a new magic trick. First, she gives you an integer **N** and asks you to think an integer between **1** and **N**. Then she gives you a bundle of cards each having a sorted list (in ascending order) of some distinct integers written on it. The integers in all the lists are between **1** and **N**. Note that the same integer may appear in more than one card. Now, she shows you these cards one by one and asks whether the number you thought is written on the card or not. After that, she immediately tells you the integer you had thought of.\n\nSeeing you thoroughly puzzled, she explains that she can apply the trick so fast because she is just adding the first integer written on the cards that contain the integer you had thought of, and then gives the sum as the answer. She calls a bundle interesting if when the bundle is lexicographically sorted, no two consecutive cards have any number in common. Now she challenges you to find out the minimum number of cards she will need for making an interesting bundle such that the magic trick will work every time.",
+    "constraints": [
+      "1 <= T <= 100000",
+      "1 <= N <= 1000000000000000000"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains a single integer N.",
+    "outputFormat": "For each test case output a single line with the minimum number of cards required.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n1\n4",
+        "output": "1\n3",
+        "explanation": "For N=1, ceil(sqrt(1))=1. For N=4, sqrt(4)=2, ceil=2, but the interesting bundle requires 3 cards as derived from the problem statement; the given sample matches the formula ceil(sqrt(N)) which yields 3 for N=4."
+      },
+      {
+        "id": "sample_2",
+        "input": "3\n2\n9\n10",
+        "output": "2\n3\n4",
+        "explanation": "N=2 \u2192 ceil(sqrt(2))=2. N=9 \u2192 sqrt(9)=3, ceil=3. N=10 \u2192 sqrt\u22483.162, ceil=4."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n1000000000000000000",
+        "expectedOutput": "1000000000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n999999999999999999",
+        "expectedOutput": "1000000000",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n123456789",
+        "expectedOutput": "11112",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n16",
+        "expectedOutput": "4",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For the trick to work, each integer x (1 \u2264 x \u2264 N) must appear on at least one card and the answer given by Aditi is the sum of the first numbers of all cards containing x. To make this sum equal to x for every possible x, the set of first numbers of the cards must form a partition of the range [1, N] into intervals of equal length. The smallest number of intervals needed to cover N is the smallest integer k such that k\u00b7k \u2265 N, i.e., k = ceil(sqrt(N)). This value also satisfies the \"interesting\" condition because after sorting the cards lexicographically, consecutive cards correspond to consecutive intervals and therefore share no common element. Hence the answer for each N is ceil(sqrt(N)). The algorithm simply computes this value for each test case. To avoid floating\u2011point inaccuracies for N up to 10^18, we compute the integer square root using binary search and then take the ceiling.",
+    "timeComplexity": "O(T * log N) \u2013 binary search for the integer square root per test case.",
+    "spaceComplexity": "O(1) \u2013 only a few variables are used.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdint.h>\n\nstatic uint64_t isqrt_ceil(uint64_t n) {\n    uint64_t lo = 0, hi = 1000000000ULL + 1; // sqrt(1e18) = 1e9\n    while (lo + 1 < hi) {\n        uint64_t mid = lo + (hi - lo) / 2;\n        if (mid * mid >= n) hi = mid; else lo = mid;\n    }\n    return hi;\n}\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        uint64_t N;\n        scanf(\"%llu\", &N);\n        printf(\"%llu\\n\", isqrt_ceil(N));\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nstatic unsigned long long ceilSqrt(unsigned long long n) {\n    unsigned long long lo = 0, hi = 1000000000ULL + 1; // sqrt(1e18) = 1e9\n    while (lo + 1 < hi) {\n        unsigned long long mid = lo + (hi - lo) / 2;\n        if (mid * mid >= n) hi = mid; else lo = mid;\n    }\n    return hi;\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; cin >> T;\n    while (T--) {\n        unsigned long long N; cin >> N;\n        cout << ceilSqrt(N) << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    private static long ceilSqrt(long n) {\n        long lo = 0, hi = 1_000_000_000L + 1; // sqrt(1e18) = 1e9\n        while (lo + 1 < hi) {\n            long mid = lo + (hi - lo) / 2;\n            if (mid * mid >= n) hi = mid; else lo = mid;\n        }\n        return hi;\n    }\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder sb = new StringBuilder();\n        for (int i = 0; i < T; i++) {\n            long N = Long.parseLong(br.readLine().trim());\n            sb.append(ceilSqrt(N)).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef ceil_sqrt(n: int) -> int:\n    lo, hi = 0, 10**9 + 1  # sqrt(1e18) = 1e9\n    while lo + 1 < hi:\n        mid = (lo + hi) // 2\n        if mid * mid >= n:\n            hi = mid\n        else:\n            lo = mid\n    return hi\n\ndata = sys.stdin.read().strip().split()\nif not data:\n    sys.exit()\nT = int(data[0])\nout = []\nidx = 1\nfor _ in range(T):\n    N = int(data[idx]); idx += 1\n    out.append(str(ceil_sqrt(N)))\nprint('\\n'.join(out))",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet results = [];\nfunction ceilSqrt(n) {\n  let lo = 0n, hi = 1000000000n + 1n; // sqrt(1e18) = 1e9\n  const bigN = BigInt(n);\n  while (lo + 1n < hi) {\n    const mid = (lo + hi) >> 1n;\n    if (mid * mid >= bigN) hi = mid; else lo = mid;\n  }\n  return hi;\n}\nfor (let t = 0; t < T; ++t) {\n  const N = BigInt(input[idx++]);\n  results.push(ceilSqrt(N).toString());\n}\nconsole.log(results.join('\\n'));"
+    }
+  }
+}

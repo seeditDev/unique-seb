@@ -1,0 +1,128 @@
+{
+  "questionId": "Q3023",
+  "title": "Heavy-light Decompositions",
+  "slug": "heavy-light-decompositions",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graphs",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Tree",
+      "Heavy-light decomposition",
+      "Graphs",
+      "Modular arithmetic"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Trees"
+    ]
+  },
+  "content": {
+    "problemStatement": "Heavy-light decomposition of a tree is a powerful tool that often helps in the most difficult tree data structure problems.\n\nHeavy-light decomposition is to be built on a rooted tree. In this problem, the node with the number **1** should be considered the root of a tree. Heavy light decomposition is a colouring of edges of the tree. Each edge is either heavy or light. For each non leaf node (node having degree greater than 1), from all the edges emanating from it into the subtree rooted at this vertex should have exactly one heavy edge. \n\n\nThe heavy-light decomposition is called correct, if you can reach any node from the root node by using no more that **\u230a log2 N \u230b** light edges, where **N** is the number of nodes in the tree.\n\nGiven a tree, calculate the number of its' correct heavy-light decompositions. As answer could be very large, please print it modulo **19101995**.",
+    "constraints": [
+      "1 <= N <= 20",
+      "The tree is connected and undirected",
+      "The tree has no self-loops or multiple edges"
+    ],
+    "inputFormat": "The first line contains a single integer N, denoting the number of nodes in the tree. Each of the following N - 1 lines contains a pair of integers, denoting the numbers of the nodes that are connected with an edge.",
+    "outputFormat": "The number of correct heavy-light decompositions of the given tree modulo 19101995.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "7\n1 2\n3 1\n3 4\n3 5\n2 6\n2 7",
+        "output": "8",
+        "explanation": "The tree is a complete binary tree with 7 nodes. The number of correct heavy-light decompositions is 8."
+      },
+      {
+        "id": "sample_2",
+        "input": "4\n1 2\n2 3\n3 4",
+        "output": "4",
+        "explanation": "The tree is a path with 4 nodes. The number of correct heavy-light decompositions is 4."
+      },
+      {
+        "id": "sample_3",
+        "input": "5\n1 2\n1 3\n1 4\n1 5",
+        "output": "120",
+        "explanation": "The tree is a star with 5 nodes. The number of correct heavy-light decompositions is 120."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "20\n1 2\n1 3\n1 4\n1 5\n1 6\n1 7\n1 8\n1 9\n1 10\n1 11\n1 12\n1 13\n1 14\n1 15\n1 16\n1 17\n1 18\n1 19\n1 20",
+        "expectedOutput": "2432902008176640000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "5\n1 2\n1 3\n1 4\n1 5",
+        "expectedOutput": "120",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "10\n1 2\n1 3\n1 4\n1 5\n1 6\n1 7\n1 8\n1 9\n1 10",
+        "expectedOutput": "3628800",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "15\n1 2\n1 3\n1 4\n1 5\n1 6\n1 7\n1 8\n1 9\n1 10\n1 11\n1 12\n1 13\n1 14\n1 15",
+        "expectedOutput": "1307674368000",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a recursive approach to calculate the number of correct heavy-light decompositions for each subtree. We start by choosing the root of the tree and then recursively calculate the number of decompositions for each of its subtrees. We use modular arithmetic to avoid overflow.",
+    "timeComplexity": "O(2^N) per test case, O(T * 2^N) total. The time complexity is exponential due to the recursive nature of the problem.",
+    "spaceComplexity": "O(N) \u2014 the dominant structure is the recursion stack.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#define MOD 19101995\n#define MAXN 100000\n\nint N;\nint adj[MAXN][MAXN];\nint deg[MAXN];\n\nvoid dfs(int u, int p) {\n    int i;\n    for (i = 0; i < N; i++) {\n        if (adj[u][i] && i != p) {\n            dfs(i, u);\n            deg[u]++;\n        }\n    }\n}\n\nint count_decompositions(int u, int p) {\n    int i;\n    int res = 1;\n    for (i = 0; i < N; i++) {\n        if (adj[u][i] && i != p) {\n            res = (res * count_decompositions(i, u)) % MOD;\n        }\n    }\n    if (deg[u] > 1) {\n        res = (res * deg[u]) % MOD;\n    }\n    return res;\n}\n\nint main() {\n    int i, j;\n    scanf(\"%d\", &N);\n    for (i = 0; i < N - 1; i++) {\n        int u, v;\n        scanf(\"%d %d\", &u, &v);\n        u--; v--;\n        adj[u][v] = adj[v][u] = 1;\n    }\n    dfs(0, -1);\n    printf(\"%d\\n\", count_decompositions(0, -1));\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\n#define MOD 19101995\n#define MAXN 100000\n\nusing namespace std;\n\nint N;\nvector<int> adj[MAXN];\nint deg[MAXN];\n\nvoid dfs(int u, int p) {\n    for (int i : adj[u]) {\n        if (i != p) {\n            dfs(i, u);\n            deg[u]++;\n        }\n    }\n}\n\nint count_decompositions(int u, int p) {\n    int res = 1;\n    for (int i : adj[u]) {\n        if (i != p) {\n            res = (res * count_decompositions(i, u)) % MOD;\n        }\n    }\n    if (deg[u] > 1) {\n        res = (res * deg[u]) % MOD;\n    }\n    return res;\n}\n\nint main() {\n    cin >> N;\n    for (int i = 0; i < N - 1; i++) {\n        int u, v;\n        cin >> u >> v;\n        u--; v--;\n        adj[u].push_back(v);\n        adj[v].push_back(u);\n    }\n    dfs(0, -1);\n    cout << count_decompositions(0, -1) << endl;\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\nimport java.util.ArrayList;\n\npublic class Main {\n    static final int MOD = 19101995;\n    static final int MAXN = 100000;\n    static int N;\n    static int[][] adj = new int[MAXN][MAXN];\n    static int[] deg = new int[MAXN];\n\n    public static void dfs(int u, int p) {\n        for (int i = 0; i < N; i++) {\n            if (adj[u][i] == 1 && i != p) {\n                dfs(i, u);\n                deg[u]++;\n            }\n        }\n    }\n\n    public static int count_decompositions(int u, int p) {\n        int res = 1;\n        for (int i = 0; i < N; i++) {\n            if (adj[u][i] == 1 && i != p) {\n                res = (res * count_decompositions(i, u)) % MOD;\n            }\n        }\n        if (deg[u] > 1) {\n            res = (res * deg[u]) % MOD;\n        }\n        return res;\n    }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        N = sc.nextInt();\n        for (int i = 0; i < N - 1; i++) {\n            int u = sc.nextInt() - 1;\n            int v = sc.nextInt() - 1;\n            adj[u][v] = adj[v][u] = 1;\n        }\n        dfs(0, -1);\n        System.out.println(count_decompositions(0, -1));\n    }\n}",
+      "Python3": "import sys\nMOD = 19101995\nMAXN = 100000\n\nN = int(sys.stdin.readline())\nadj = [[] for _ in range(N)]\ndeg = [0] * N\n\nfor _ in range(N - 1):\n    u, v = map(int, sys.stdin.readline().split())\n    u -= 1\n    v -= 1\n    adj[u].append(v)\n    adj[v].append(u)\n\ndef dfs(u, p):\n    for i in adj[u]:\n        if i != p:\n            dfs(i, u)\n            deg[u] += 1\n\ndef count_decompositions(u, p):\n    res = 1\n    for i in adj[u]:\n        if i != p:\n            res = (res * count_decompositions(i, u)) % MOD\n    if deg[u] > 1:\n        res = (res * deg[u]) % MOD\n    return res\n\ndfs(0, -1)\nsys.stdout.write(str(count_decompositions(0, -1)) + '\\n')",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst MOD = 19101995;\nconst MAXN = 100000;\n\nlet N = parseInt(lines[idx++]);\nlet adj = Array.from({ length: N }, () => []);\nlet deg = Array.from({ length: N }, () => 0);\n\nfor (let i = 0; i < N - 1; i++) {\n    let [u, v] = lines[idx++].trim().split(' ').map(Number);\n    u--;\n    v--;\n    adj[u].push(v);\n    adj[v].push(u);\n}\n\nfunction dfs(u, p) {\n    for (let i of adj[u]) {\n        if (i !== p) {\n            dfs(i, u);\n            deg[u]++;\n        }\n    }\n}\n\nfunction count_decompositions(u, p) {\n    let res = 1;\n    for (let i of adj[u]) {\n        if (i !== p) {\n            res = (res * count_decompositions(i, u)) % MOD;\n        }\n    }\n    if (deg[u] > 1) {\n        res = (res * deg[u]) % MOD;\n    }\n    return res;\n}\n\ndfs(0, -1);\nconsole.log(count_decompositions(0, -1));"
+    }
+  }
+}

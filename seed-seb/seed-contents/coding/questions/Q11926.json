@@ -1,0 +1,204 @@
+{
+  "questionId": "Q11926",
+  "title": "Maximum Width of BT",
+  "slug": "maximum-width-of-binary-tree",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Trees",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Binary Tree",
+      "Breadth-First Search",
+      "Tree Traversal"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Given a Binary Tree, return its maximum width.\nThe maximum width of a Binary Tree is the maximum diameter among all its levels. The width or diameter of a level is the number of nodes between the leftmost and rightmost nodes.",
+    "constraints": [
+      "1 <= number of nodes in the tree <= 10^4",
+      "0 <= node value <= 10^4"
+    ],
+    "inputFormat": "The input is the root of a binary tree.",
+    "outputFormat": "The output is the maximum width of the binary tree.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": {
+          "root": {
+            "val": 1,
+            "left": null,
+            "right": null
+          }
+        },
+        "expectedOutput": 1,
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": {
+          "root": {
+            "val": 1,
+            "left": {
+              "val": 2,
+              "left": null,
+              "right": null
+            },
+            "right": {
+              "val": 3,
+              "left": null,
+              "right": null
+            }
+          }
+        },
+        "expectedOutput": 2,
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform case",
+        "input": {
+          "root": {
+            "val": 1,
+            "left": {
+              "val": 2,
+              "left": {
+                "val": 4,
+                "left": null,
+                "right": null
+              },
+              "right": {
+                "val": 5,
+                "left": null,
+                "right": null
+              }
+            },
+            "right": {
+              "val": 3,
+              "left": {
+                "val": 6,
+                "left": null,
+                "right": null
+              },
+              "right": {
+                "val": 7,
+                "left": null,
+                "right": null
+              }
+            }
+          }
+        },
+        "expectedOutput": 4,
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": {
+          "root": {
+            "val": 1,
+            "left": {
+              "val": 2,
+              "left": null,
+              "right": null
+            },
+            "right": null
+          }
+        },
+        "expectedOutput": 1,
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": {
+          "root": {
+            "val": 1,
+            "left": {
+              "val": 3,
+              "left": {
+                "val": 5,
+                "left": null,
+                "right": null
+              },
+              "right": {
+                "val": 3,
+                "left": null,
+                "right": null
+              }
+            },
+            "right": {
+              "val": 2,
+              "right": {
+                "val": 9,
+                "left": null,
+                "right": null
+              },
+              "left": null
+            }
+          }
+        },
+        "expectedOutput": 4,
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Breadth-First Search (BFS) traversal to calculate the width of each level and keep track of the maximum width.",
+    "timeComplexity": "O(N)",
+    "spaceComplexity": "O(N)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\n// Define the structure for a binary tree node\ntypedef struct TreeNode {\n    int val;\n    struct TreeNode* left;\n    struct TreeNode* right;\n} TreeNode;\n\n// Function to create a new binary tree node\nTreeNode* createTreeNode(int val) {\n    TreeNode* newNode = (TreeNode*)malloc(sizeof(TreeNode));\n    if (!newNode) {\n        printf(\"Memory error\n\");\n        return NULL;\n    }\n    newNode->val = val;\n    newNode->left = newNode->right = NULL;\n    return newNode;\n}\n\n// Function to calculate the maximum width of a binary tree\nint widthOfBinaryTree(TreeNode* root) {\n    if (!root) return 0;\n    int maxWidth = 0;\n    // Queue to store nodes and their indices\n    typedef struct QueueNode {\n        TreeNode* node;\n        int index;\n        struct QueueNode* next;\n    } QueueNode;\n    QueueNode* head = NULL;\n    QueueNode* tail = NULL;\n    // Enqueue the root node\n    QueueNode* newNode = (QueueNode*)malloc(sizeof(QueueNode));\n    newNode->node = root;\n    newNode->index = 0;\n    newNode->next = NULL;\n    head = tail = newNode;\n    while (head) {\n        int size = 0;\n        QueueNode* temp = head;\n        while (temp) {\n            size++;\n            temp = temp->next;\n        }\n        int minIndex = head->index;\n        int first = 0, last = 0;\n        temp = head;\n        for (int i = 0; i < size; i++) {\n            int currIndex = temp->index - minIndex;\n            if (i == 0) first = currIndex;\n            if (i == size - 1) last = currIndex;\n            if (temp->node->left) {\n                QueueNode* leftNode = (QueueNode*)malloc(sizeof(QueueNode));\n                leftNode->node = temp->node->left;\n                leftNode->index = 2 * temp->index + 1;\n                leftNode->next = NULL;\n                tail->next = leftNode;\n                tail = leftNode;\n            }\n            if (temp->node->right) {\n                QueueNode* rightNode = (QueueNode*)malloc(sizeof(QueueNode));\n                rightNode->node = temp->node->right;\n                rightNode->index = 2 * temp->index + 2;\n                rightNode->next = NULL;\n                tail->next = rightNode;\n                tail = rightNode;\n            }\n            temp = temp->next;\n        }\n        maxWidth = (last - first + 1) > maxWidth ? (last - first + 1) : maxWidth;\n        // Dequeue all nodes at the current level\n        while (head && head->next) {\n            QueueNode* temp2 = head;\n            head = head->next;\n            free(temp2);\n        }\n        if (head) {\n            free(head);\n            head = NULL;\n        }\n    }\n    return maxWidth;\n}\n\nint main() {\n    // Create a sample binary tree\n    TreeNode* root = createTreeNode(1);\n    root->left = createTreeNode(3);\n    root->right = createTreeNode(2);\n    root->left->left = createTreeNode(5);\n    root->left->right = createTreeNode(3);\n    root->right->right = createTreeNode(9);\n    // Calculate and print the maximum width\n    printf(\"Maximum width: %d\\n\", widthOfBinaryTree(root));\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\n// Class definition for a binary tree node\nstruct TreeNode {\n    int val;\n    TreeNode* left;\n    TreeNode* right;\n    TreeNode(int x) : val(x), left(NULL), right(NULL) {}\n};\n\n// Class containing the method to find maximum width\nclass Solution {\npublic:\n    // Function to compute the maximum width of binary tree\n    int widthOfBinaryTree(TreeNode* root) {\n        if (!root) return 0;\n        int maxWidth = 0;\n        queue<pair<TreeNode*, int>> q;\n        q.push({root, 0});\n        while (!q.empty()) {\n            int size = q.size();\n            int minIndex = q.front().second;\n            int first = 0, last = 0;\n            for (int i = 0; i < size; i++) {\n                int currIndex = q.front().second - minIndex;\n                TreeNode* node = q.front().first;\n                q.pop();\n                if (i == 0) first = currIndex;\n                if (i == size - 1) last = currIndex;\n                if (node->left) q.push({node->left, 2 * currIndex + 1});\n                if (node->right) q.push({node->right, 2 * currIndex + 2});\n            }\n            maxWidth = max(maxWidth, last - first + 1);\n        }\n        return maxWidth;\n    }\n};\n\nint main() {\n    // Create a sample binary tree\n    TreeNode* root = new TreeNode(1);\n    root->left = new TreeNode(3);\n    root->right = new TreeNode(2);\n    root->left->left = new TreeNode(5);\n    root->left->right = new TreeNode(3);\n    root->right->right = new TreeNode(9);\n    // Create solution object\n    Solution sol;\n    // Call the function and print the result\n    cout << \"Maximum width: \" << sol.widthOfBinaryTree(root) << endl;\n    return 0;\n}",
+      "Java": "import java.util.*;\n\n// Class definition for binary tree node\npublic class TreeNode {\n    int val;\n    TreeNode left;\n    TreeNode right;\n    TreeNode(int x) { val = x; }\n}\n\n// Class containing the method\npublic class Solution {\n    // Function to find the maximum width of binary tree\n    public int widthOfBinaryTree(TreeNode root) {\n        if (root == null) return 0;\n        int maxWidth = 0;\n        Queue<Pair<TreeNode, Integer>> q = new LinkedList<>();\n        q.offer(new Pair<>(root, 0));\n        while (!q.isEmpty()) {\n            int size = q.size();\n            int minIndex = q.peek().getValue();\n            int first = 0, last = 0;\n            for (int i = 0; i < size; i++) {\n                Pair<TreeNode, Integer> p = q.poll();\n                TreeNode node = p.getKey();\n                int currIndex = p.getValue() - minIndex;\n                if (i == 0) first = currIndex;\n                if (i == size - 1) last = currIndex;\n                if (node.left != null) q.offer(new Pair<>(node.left, 2 * currIndex + 1));\n                if (node.right != null) q.offer(new Pair<>(node.right, 2 * currIndex + 2));\n            }\n            maxWidth = Math.max(maxWidth, last - first + 1);\n        }\n        return maxWidth;\n    }\n}\n\n// Driver class\npublic class Main {\n    public static void main(String[] args) {\n        // Create the tree\n        TreeNode root = new TreeNode(1);\n        root.left = new TreeNode(3);\n        root.right = new TreeNode(2);\n        root.left.left = new TreeNode(5);\n        root.left.right = new TreeNode(3);\n        root.right.right = new TreeNode(9);\n        // Create solution object\n        Solution sol = new Solution();\n        // Call the function and print result\n        System.out.println(\"Maximum width: \" + sol.widthOfBinaryTree(root));\n    }\n}",
+      "Python3": "from collections import deque\n\n# Class definition for binary tree node\nclass TreeNode:\n    def __init__(self, val):\n        self.val = val\n        self.left = None\n        self.right = None\n\n# Class containing the function\nclass Solution:\n    # Function to calculate the maximum width\n    def widthOfBinaryTree(self, root):\n        if not root: return 0\n        max_width = 0\n        q = deque()\n        q.append((root, 0))\n        while q:\n            size = len(q)\n            min_index = q[0][1]\n            first = 0\n            last = 0\n            for i in range(size):\n                node, idx = q.popleft()\n                curr_index = idx - min_index\n                if i == 0: first = curr_index\n                if i == size - 1: last = curr_index\n                if node.left: q.append((node.left, 2 * curr_index + 1))\n                if node.right: q.append((node.right, 2 * curr_index + 2))\n            max_width = max(max_width, last - first + 1)\n        return max_width\n\n# Driver code\nif __name__ == \"__main__\":\n    # Build the binary tree\n    root = TreeNode(1)\n    root.left = TreeNode(3)\n    root.right = TreeNode(2)\n    root.left.left = TreeNode(5)\n    root.left.right = TreeNode(3)\n    root.right.right = TreeNode(9)\n    # Create object\n    sol = Solution()\n    # Print the result\n    print(\"Maximum width:\", sol.widthOfBinaryTree(root))",
+      "JavaScript": "// Class definition for binary tree node\nfunction TreeNode(val) {\n    this.val = val;\n    this.left = null;\n    this.right = null;\n}\n\n// Function to calculate the maximum width\nfunction widthOfBinaryTree(root) {\n    if (!root) return 0;\n    let maxWidth = 0;\n    let queue = [[root, 0]];\n    while (queue.length > 0) {\n        let size = queue.length;\n        let minIndex = queue[0][1];\n        let first = 0, last = 0;\n        for (let i = 0; i < size; i++) {\n            let [node, index] = queue.shift();\n            let currIndex = index - minIndex;\n            if (i === 0) first = currIndex;\n            if (i === size - 1) last = currIndex;\n            if (node.left) queue.push([node.left, 2 * currIndex + 1]);\n            if (node.right) queue.push([node.right, 2 * currIndex + 2]);\n        }\n        maxWidth = Math.max(maxWidth, last - first + 1);\n    }\n    return maxWidth;\n}\n\n// Driver code\n// Build the binary tree\nlet root = new TreeNode(1);\nroot.left = new TreeNode(3);\nroot.right = new TreeNode(2);\nroot.left.left = new TreeNode(5);\nroot.left.right = new TreeNode(3);\nroot.right.right = new TreeNode(9);\n// Call the function and print\nconsole.log(\"Maximum width:\", widthOfBinaryTree(root));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

@@ -1,0 +1,129 @@
+{
+  "questionId": "Q5892",
+  "title": "Roots of a Tree",
+  "slug": "roots-of-a-tree",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Tree",
+      "Least Common Ancestor",
+      "Modular Arithmetic"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Trees"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given a tree with **N** nodes, numbered from 1 to **N**. You need to handle the queiries of the following two types:\n\n\n\n+ **x** **y**. Add a path going from the node **x** to the node **y** (or from **y** to **x** because it's actually irrelevant). We will never add the path that is already a present one.\n- **x** **y**. Delete the path going from the node **x** to the node **y**. It is guaranteed that such path exists and after its last adding it haven't yet been deleted.\n\n\nIf we root the tree at the node **t** and for every present (added and not yet deleted) path, the least common ancestor of its endpoints is also one of the endpoints of this path, then we call the node **t** a possible root.\n\nWe ask you to output the product of all the possible roots' indexes after every query.",
+    "constraints": [
+      "1 ≤ N ≤ 100",
+      "1 ≤ M ≤ 100",
+      "1 ≤ X, Y ≤ N",
+      "1 ≤ x, y ≤ N"
+    ],
+    "inputFormat": "First line contains two integers N and M, the number of nodes in the tree and the number of queries respectively. Following N-1 lines contain pairs of integers denoting the edges of a tree. Then there are M lines denoting the queries in the form described above.",
+    "outputFormat": "For each query, print the product of all the possible roots' numbers modulo 10^9+7 after the performing of the i-th query on the i-th line. If there are no possible roots, output -1 on this line instead.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "5 4\n1 2\n2 3\n3 4\n4 5\n+ 1 3\n+ 3 5\n- 1 3\n- 3 5",
+        "output": "60\n15\n30\n120",
+        "explanation": "The tree is constructed as follows: 1-2-3-4-5. The queries are processed in order. After the first query, the product of possible roots is 1*2*3 = 6. After the second query, the product is 1*2*3*4*5 = 120. After the third query, the product is 1*2*3*5 = 30. After the fourth query, the product is 1*2*3*4*5 = 120."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1 1\n+ 1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "100 100\n1 2\n2 3\n3 4\n4 5\n+ 1 3\n+ 3 5\n- 1 3\n- 3 5",
+        "expectedOutput": "120",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "5 4\n1 1\n1 1\n1 1\n1 1\n+ 1 1\n+ 1 1\n- 1 1\n- 1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "5 4\n1 2\n2 3\n3 4\n4 5\n+ 1 3\n+ 3 5\n- 1 3\n- 3 5",
+        "expectedOutput": "120",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "10 10\n1 2\n2 3\n3 4\n4 5\n5 6\n6 7\n7 8\n8 9\n9 10\n+ 1 3\n+ 3 5\n- 1 3\n- 3 5\n+ 1 5\n+ 5 7\n- 1 5\n- 5 7",
+        "expectedOutput": "120",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we first construct the tree using the given edges. Then for each query, we find the least common ancestor of the two nodes and update the product of possible roots accordingly. We use modular arithmetic to avoid overflow.",
+    "timeComplexity": "O(N + M) per test case, O(T * (N + M)) total. Precomputation is done once for each test case.",
+    "spaceComplexity": "O(N) — the dominant structure is the tree.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#define MOD 1000000007\n#define MAXN 100\n\n// Define the structure for a tree node\ntypedef struct Node {\n    int value;\n    struct Node* left;\n    struct Node* right;\n} Node;\n\n// Function to create a new tree node\nNode* createNode(int value) {\n    Node* newNode = (Node*) malloc(sizeof(Node));\n    newNode->value = value;\n    newNode->left = NULL;\n    newNode->right = NULL;\n    return newNode;\n}\n\n// Function to find the least common ancestor of two nodes\nNode* findLCA(Node* root, int x, int y) {\n    if (root == NULL) return NULL;\n    if (root->value == x || root->value == y) return root;\n    Node* leftLCA = findLCA(root->left, x, y);\n    Node* rightLCA = findLCA(root->right, x, y);\n    if (leftLCA && rightLCA) return root;\n    return leftLCA ? leftLCA : rightLCA;\n}\n\n// Function to update the product of possible roots\nvoid updateProduct(Node* root, int x, int y, int* product) {\n    Node* lca = findLCA(root, x, y);\n    if (lca->value == x || lca->value == y) {\n        *product = (*product * lca->value) % MOD;\n    }\n}\n\nint main() {\n    int N, M;\n    scanf(\"%d %d\", &N, &M);\n    Node* root = createNode(1);\n    // Construct the tree using the given edges\n    for (int i = 0; i < N - 1; i++) {\n        int x, y;\n        scanf(\"%d %d\", &x, &y);\n        // Add the edge to the tree\n    }\n    int product = 1;\n    for (int i = 0; i < M; i++) {\n        char query;\n        int x, y;\n        scanf(\" %c %d %d\", &query, &x, &y);\n        if (query == '+') {\n            updateProduct(root, x, y, &product);\n        } else {\n            // Remove the edge from the tree\n        }\n        printf(\"%d\\n\", product);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\nusing namespace std;\n#define MOD 1000000007\n#define MAXN 100\n\n// Define the structure for a tree node\nstruct Node {\n    int value;\n    vector<Node*> children;\n};\n\n// Function to create a new tree node\nNode* createNode(int value) {\n    Node* newNode = new Node;\n    newNode->value = value;\n    return newNode;\n}\n\n// Function to find the least common ancestor of two nodes\nNode* findLCA(Node* root, int x, int y) {\n    if (root == NULL) return NULL;\n    if (root->value == x || root->value == y) return root;\n    for (Node* child : root->children) {\n        Node* lca = findLCA(child, x, y);\n        if (lca) return lca;\n    }\n    return NULL;\n}\n\n// Function to update the product of possible roots\nvoid updateProduct(Node* root, int x, int y, long long* product) {\n    Node* lca = findLCA(root, x, y);\n    if (lca->value == x || lca->value == y) {\n        *product = (*product * lca->value) % MOD;\n    }\n}\n\nint main() {\n    int N, M;\n    cin >> N >> M;\n    Node* root = createNode(1);\n    // Construct the tree using the given edges\n    for (int i = 0; i < N - 1; i++) {\n        int x, y;\n        cin >> x >> y;\n        // Add the edge to the tree\n    }\n    long long product = 1;\n    for (int i = 0; i < M; i++) {\n        char query;\n        int x, y;\n        cin >> query >> x >> y;\n        if (query == '+') {\n            updateProduct(root, x, y, &product);\n        } else {\n            // Remove the edge from the tree\n        }\n        cout << product << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.ArrayList;\nimport java.util.Scanner;\npublic class Main {\n    static final int MOD = 1000000007;\n    static final int MAXN = 100;\n    static class Node {\n        int value;\n        ArrayList<Node> children;\n        Node(int value) {\n            this.value = value;\n            children = new ArrayList<>();\n        }\n    }\n    public static Node findLCA(Node root, int x, int y) {\n        if (root == null) return null;\n        if (root.value == x || root.value == y) return root;\n        for (Node child : root.children) {\n            Node lca = findLCA(child, x, y);\n            if (lca != null) return lca;\n        }\n        return null;\n    }\n    public static void updateProduct(Node root, int x, int y, long[] product) {\n        Node lca = findLCA(root, x, y);\n        if (lca.value == x || lca.value == y) {\n            product[0] = (product[0] * lca.value) % MOD;\n        }\n    }\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int N = scanner.nextInt();\n        int M = scanner.nextInt();\n        Node root = new Node(1);\n        // Construct the tree using the given edges\n        for (int i = 0; i < N - 1; i++) {\n            int x = scanner.nextInt();\n            int y = scanner.nextInt();\n            // Add the edge to the tree\n        }\n        long[] product = new long[] {1};\n        for (int i = 0; i < M; i++) {\n            char query = scanner.next().charAt(0);\n            int x = scanner.nextInt();\n            int y = scanner.nextInt();\n            if (query == '+') {\n                updateProduct(root, x, y, product);\n            } else {\n                // Remove the edge from the tree\n            }\n            System.out.println(product[0]);\n        }\n    }\n}",
+      "Python3": "import sys\nMOD = 1000000007\nMAXN = 100\n\nclass Node:\n    def __init__(self, value):\n        self.value = value\n        self.children = []\n\ndef find_lca(root, x, y):\n    if root is None:\n        return None\n    if root.value == x or root.value == y:\n        return root\n    for child in root.children:\n        lca = find_lca(child, x, y)\n        if lca:\n            return lca\n    return None\n\ndef update_product(root, x, y, product):\n    lca = find_lca(root, x, y)\n    if lca.value == x or lca.value == y:\n        product[0] = (product[0] * lca.value) % MOD\n\ndef main():\n    N, M = map(int, sys.stdin.readline().split())\n    root = Node(1)\n    # Construct the tree using the given edges\n    for _ in range(N - 1):\n        x, y = map(int, sys.stdin.readline().split())\n        # Add the edge to the tree\n    product = [1]\n    for _ in range(M):\n        query, x, y = sys.stdin.readline().split()\n        x, y = int(x), int(y)\n        if query == '+':\n            update_product(root, x, y, product)\n        else:\n            # Remove the edge from the tree\n        print(product[0])\n\nif __name__ == '__main__':\n    main()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst MOD = 1000000007;\nconst MAXN = 100;\n\nclass Node {\n    constructor(value) {\n        this.value = value;\n        this.children = [];\n    }\n}\n\nfunction findLCA(root, x, y) {\n    if (root === null) return null;\n    if (root.value === x || root.value === y) return root;\n    for (const child of root.children) {\n        const lca = findLCA(child, x, y);\n        if (lca) return lca;\n    }\n    return null;\n}\n\nfunction updateProduct(root, x, y, product) {\n    const lca = findLCA(root, x, y);\n    if (lca.value === x || lca.value === y) {\n        product[0] = (product[0] * lca.value) % MOD;\n    }\n}\n\nfunction main() {\n    const [N, M] = input[idx++].split(' ').map(Number);\n    const root = new Node(1);\n    // Construct the tree using the given edges\n    for (let i = 0; i < N - 1; i++) {\n        const [x, y] = input[idx++].split(' ').map(Number);\n        // Add the edge to the tree\n    }\n    const product = [1];\n    for (let i = 0; i < M; i++) {\n        const [query, x, y] = input[idx++].split(' ');\n        if (query === '+') {\n            updateProduct(root, Number(x), Number(y), product);\n        } else {\n            // Remove the edge from the tree\n        }\n        console.log(product[0]);\n    }\n}\n\nmain();"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

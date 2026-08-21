@@ -1,0 +1,127 @@
+{
+  "questionId": "Q1113",
+  "title": "Print factorial",
+  "slug": "print-factorial",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Easy",
+    "isPremium": false,
+    "tags": [
+      "Math",
+      "Factorial",
+      "Do-while Loop",
+      "Big Integer"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Control Flow"
+    ]
+  },
+  "content": {
+    "problemStatement": "Write a program that uses a do-while loop to find the factorial of a given number.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 100"
+    ],
+    "inputFormat": "First line contains an integer T (1 \u2264 T \u2264 10), the number of test cases. Each of the next T lines contains a single integer N (1 \u2264 N \u2264 100).",
+    "outputFormat": "For each test case, output the factorial of N on its own line. The result must be printed without leading zeros.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\\n8",
+        "output": "40320",
+        "explanation": "8! = 8\u00d77\u00d76\u00d75\u00d74\u00d73\u00d72\u00d71 = 40320."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\\n9",
+        "output": "362880",
+        "explanation": "9! = 9\u00d78\u00d77\u00d76\u00d75\u00d74\u00d73\u00d72\u00d71 = 362880."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\\n11",
+        "output": "39916800",
+        "explanation": "11! = 11\u00d710\u00d79\u00d78\u00d77\u00d76\u00d75\u00d74\u00d73\u00d72\u00d71 = 39916800."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\\n100",
+        "expectedOutput": "93326215443944152681699238856266700490715968264381621468592963895217599993229915608941463976156518286253697920827223758251185210916864000000000000000000000000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform values",
+        "input": "5\\n5\\n5\\n5\\n5\\n5",
+        "expectedOutput": "120\\n120\\n120\\n120\\n120",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "mixed moderate values",
+        "input": "3\\n10\\n15\\n25",
+        "expectedOutput": "3628800\\n1307674368000\\n15511210043330985984000000",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "7\\n1\\n2\\n3\\n4\\n5\\n6\\n7",
+        "expectedOutput": "1\\n2\\n6\\n24\\n120\\n720\\n5040",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The factorial of N is the product of all integers from 1 to N. Because N can be as large as 100, the result does not fit in standard 64\u2011bit types. We therefore use arbitrary\u2011precision arithmetic. In C we implement a simple big\u2011integer using an array of decimal digits (least significant digit first) and multiply it by each i from N down to 1 using a do\u2011while loop. In C++, Java, Python and JavaScript we can rely on built\u2011in big integer types (boost::multiprecision::cpp_int, java.math.BigInteger, Python int, JavaScript BigInt). The algorithm iterates i = N down to 1, multiplying the current result by i each iteration. This exactly follows the required do\u2011while structure.",
+    "timeComplexity": "O(N * D) per test case, where D is the number of decimal digits of N! (\u2264 158 for N=100).",
+    "spaceComplexity": "O(D) per test case for storing the big integer.",
+    "code": {
+      "C": "#include <stdio.h>\n\n// Multiply the big integer stored in digits[] (least significant digit first) by x.\nvoid multiply(int *digits, int *size, int x) {\n    int carry = 0;\n    for (int i = 0; i < *size; ++i) {\n        int prod = digits[i] * x + carry;\n        digits[i] = prod % 10;\n        carry = prod / 10;\n    }\n    while (carry) {\n        digits[(*size)++] = carry % 10;\n        carry /= 10;\n    }\n}\n\nint main() {\n    int T, N;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        scanf(\"%d\", &N);\n        int digits[200]; // enough for 100!\n        int size = 1;\n        digits[0] = 1; // start with 1\n        int i = N;\n        do {\n            multiply(digits, &size, i);\n            i--;\n        } while (i > 0);\n        for (int j = size - 1; j >= 0; --j) putchar('0' + digits[j]);\n        putchar('\\n');\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\n#include <boost/multiprecision/cpp_int.hpp>\nusing namespace std;\nusing boost::multiprecision::cpp_int;\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T, N;\n    if (!(cin >> T)) return 0;\n    while (T--) {\n        cin >> N;\n        cpp_int fact = 1;\n        int i = N;\n        do {\n            fact *= i;\n            i--;\n        } while (i > 0);\n        cout << fact << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.math.BigInteger;\nimport java.util.StringTokenizer;\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st = new StringTokenizer(br.readLine());\n        int T = Integer.parseInt(st.nextToken());\n        StringBuilder sb = new StringBuilder();\n        for (int t = 0; t < T; t++) {\n            int N = Integer.parseInt(br.readLine().trim());\n            BigInteger fact = BigInteger.ONE;\n            int i = N;\n            do {\n                fact = fact.multiply(BigInteger.valueOf(i));\n                i--;\n            } while (i > 0);\n            sb.append(fact.toString()).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef main():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out = []\n    for _ in range(T):\n        N = int(next(it))\n        fact = 1\n        i = N\n        while True:\n            fact *= i\n            i -= 1\n            if i == 0:\n                break\n        out.append(str(fact))\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    main()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = parseInt(input[idx++], 10);\nlet results = [];\nfor (let t = 0; t < T; t++) {\n    let N = parseInt(input[idx++], 10);\n    let fact = 1n;\n    let i = N;\n    do {\n        fact *= BigInt(i);\n        i--;\n    } while (i > 0);\n    results.push(fact.toString());\n}\nconsole.log(results.join('\\n'));"
+    }
+  }
+}

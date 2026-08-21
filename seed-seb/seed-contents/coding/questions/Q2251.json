@@ -1,0 +1,113 @@
+{
+  "questionId": "Q2251",
+  "title": "Bogosort",
+  "slug": "bogosort",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "Dynamic programming",
+      "Dynamic Programming",
+      "Expected value",
+      "Fractions",
+      "Probability",
+      "Permutations"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Combinatorics & Probability"
+    ]
+  },
+  "content": {
+    "problemStatement": "Recently Johnny have learned bogosort sorting algorithm. He thought that it is too ineffective. So he decided to improve it. As you may know this algorithm shuffles the sequence randomly until it is sorted. Johnny decided that we don't need to shuffle the whole sequence every time. If after the last shuffle several first elements end up in the right places we will fix them and don't shuffle those elements furthermore. We will do the same for the last elements if they are in the right places. For example, if the initial sequence is (3, 5, 1, 6, 4, 2) and after one shuffle Johnny gets (1, 2, 5, 4, 3, 6) he will fix 1, 2 and 6 and proceed with sorting (5, 4, 3) using the same algorithm. Johnny hopes that this optimization will significantly improve the algorithm. Help him calculate the expected amount of shuffles for the improved algorithm to sort the sequence of the first n natural numbers given that no elements are in the right places initially.",
+    "constraints": [
+      "1 \u2264 t \u2264 150",
+      "2 \u2264 n \u2264 150"
+    ],
+    "inputFormat": "The first line contains an integer t (1\u202f\u2264\u202ft\u202f\u2264\u202f150) \u2013 the number of test cases. Each of the next t lines contains a single integer n (2\u202f\u2264\u202fn\u202f\u2264\u202f150) \u2013 the size of the permutation. Initially the permutation of 1\u2026n has no element in its correct position.",
+    "outputFormat": "For each test case output the expected number of shuffles required by Johnny's improved bogosort as an irreducible fraction. If the denominator equals 1 output only the numerator.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n2\n6\n10",
+        "output": "2\n1826/189\n877318/35343",
+        "explanation": ""
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Let E[L] be the expected number of shuffles needed when the current unsorted segment has length L (0\u2011based, E[0]=E[1]=0). After one random permutation of the L elements we look at the longest correct prefix of length a (a\u22650) and the longest correct suffix of length b (b\u22650). The remaining segment length becomes L\u2011a\u2011b. The process repeats, therefore\nE[L] = 1 + \u03a3_{a,b, a+b<L} P_L(a,b)\u00b7E[L\u2011a\u2011b]\nwhere P_L(a,b) is the probability that a random permutation of L elements has exactly a correct elements at the beginning, exactly b correct elements at the end, and the next element on each side is incorrect (so the prefix/suffix are maximal). For a+b = L the permutation is already sorted and contributes 0 because E[0]=0; for a+b = L\u20111 the probability is 0 (the single remaining element would be forced to be correct).\nCounting permutations:\nLet M = L\u2011a\u2011b (size of the middle part). If M \u2265 2 the number of permutations with the required property is\ncnt = M! \u2013 2\u00b7(M\u20111)! + (M\u20112)!\nIf M = 0 (a+b = L) cnt = 1. If M = 1 cnt = 0.\nThus\nP_L(a,b) = cnt / L!.\nWe pre\u2011compute factorials up to 150 as big integers, then fill E[0\u2026150] using the recurrence. All arithmetic is performed with exact rational numbers (numerator/denominator reduced by gcd). The final answer for each n is E[n] printed as \"num/den\" or just \"num\" when den=1.\nComplexity: O(n\u00b3) time (n\u2264150 \u2192 ~3\u00b710\u2076 operations) and O(n) extra space for the DP table and factorials. The limits are easily satisfied.\nImplementation notes for each language:\n* Python\u00a03 \u2013 use fractions.Fraction for exact rationals.\n* C++ \u2013 store numerator and denominator as boost::multiprecision::cpp_int, reduce with std::gcd on built\u2011in long long after converting to cpp_int (or implement binary gcd for cpp_int).\n* C \u2013 use GNU MP (gmp) library (mpz_t) for big integers and keep fractions as two mpz_t values.\n* Java \u2013 use java.math.BigInteger for numerator/denominator and reduce with gcd.\n* JavaScript (Node.js) \u2013 use the built\u2011in BigInt type, keep numerator and denominator as BigInt and reduce with Euclidean algorithm.\nAll five programs read t, then loop over the test cases, output the pre\u2011computed value E[n].",
+    "timeComplexity": "O(n\u00b3) per pre\u2011computation (n\u202f=\u202f150) \u2192 negligible, O(1) per query.",
+    "spaceComplexity": "O(n) for DP and factorial tables (big integers).",
+    "code": {
+      "C": "#include <stdio.h>\n#include <gmp.h>\n#include <stdlib.h>\n\n"
+    }
+  }
+}

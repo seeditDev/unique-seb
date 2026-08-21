@@ -1,0 +1,135 @@
+{
+  "questionId": "Q7018",
+  "title": "No Minimum No Maximum",
+  "slug": "no-minimum-no-maximum",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Combinatorics",
+      "Modular Arithmetic"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Mathematics"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Maheshmati and Sangu are playing a game. First, Maheshmati gives Sangu a sequence of NNN distinct integers a1,a2,…,aNa_1, a_2, \\dots, a_Na1​,a2​,…,aN​ (not necessarily sorted) and an integer KKK. Sangu has to create all subsequences of this sequence with length KKK. For each subsequence, he has to write down the product of K−2K-2K−2 integers: all elements of this subsequence except the minimum and maximum element.\n\nSangu wins the game if he is able to write down all these numbers and tell Maheshmati their product (modulo 109+710^9+7109+7, since it can be very large). However, Sangu is a very lazy child and thus wants you to help him win this game. Compute the number Sangu should tell Maheshmati!",
+    "constraints": [
+      "1 <= T <= 10",
+      "3 <= N <= 5000",
+      "3 <= K <= N",
+      "1 <= ai <= 10000 for each valid i",
+      "the numbers a1, a2, …, aN are pairwise distinct"
+    ],
+    "inputFormat": "The first line of the input contains a single integer T denoting the number of test cases. The description of T test cases follows. The first line of each test case contains two space-separated integers N and K. The second line contains N space-separated integers a1, a2, …, aN.",
+    "outputFormat": "For each test case, print a single line containing one integer — the product of all numbers written down by Sangu modulo 10^9 + 7.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n4 3\n1 2 3 4",
+        "output": "36",
+        "explanation": "There are four possible subsequences: [1,2,3], [1,3,4], [1,2,4], [2,3,4]. For each subsequence, we calculate the product of K-2 integers (excluding the minimum and maximum element). The products are 2, 3, 2, 3 respectively. The required product is 2*3*2*3 = 36."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n5 3\n1 2 3 4 5",
+        "output": "162",
+        "explanation": "There are ten possible subsequences: [1,2,3], [1,2,4], [1,2,5], [1,3,4], [1,3,5], [1,4,5], [2,3,4], [2,3,5], [2,4,5], [3,4,5]. For each subsequence, we calculate the product of K-2 integers (excluding the minimum and maximum element). The products are 2, 2, 2, 3, 3, 4, 3, 3, 4, 4 respectively. The required product is 2*2*2*3*3*4*3*3*4*4 = 162."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n3 3\n1 2 3",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n5000 3\n1 2 3",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n5 3\n1 1 1 1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n10 3\n1 2 3 4 5 6 7 8 9 10",
+        "expectedOutput": "162",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n10 4\n1 2 3 4 5 6 7 8 9 10",
+        "expectedOutput": "45360",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a brute force approach by generating all possible subsequences of length K from the given sequence of length N. For each subsequence, we calculate the product of K-2 integers (excluding the minimum and maximum element) and multiply it with the result of the previous subsequences. We use modular arithmetic to avoid overflow.",
+    "timeComplexity": "O(T * (N choose K) * K log N) — where (N choose K) represents the number of possible subsequences of length K from a sequence of length N, and K log N represents the time complexity of calculating the product of K-2 integers.",
+    "spaceComplexity": "O(N) — for storing the input sequence and the current subsequence.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#define MOD 1000000007\n\nlong long powmod(long long a, long long b) {\n    long long res = 1;\n    while (b > 0) {\n        if (b & 1) res = (res * a) % MOD;\n        a = (a * a) % MOD;\n        b >>= 1;\n    }\n    return res;\n}\n\nint compare(const void *a, const void *b) {\n    return (*(int*)a - *(int*)b);\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int N, K;\n        scanf(\"%d %d\", &N, &K);\n        int a[N];\n        for (int i = 0; i < N; i++) scanf(\"%d\", &a[i]);\n        long long ans = 1;\n        for (int mask = 0; mask < (1 << N); mask++) {\n            if (__builtin_popcount(mask) == K) {\n                int sub[N];\n                int idx = 0;\n                for (int i = 0; i < N; i++) if (mask & (1 << i)) sub[idx++] = a[i];\n                qsort(sub, K, sizeof(int), compare);\n                long long prod = 1;\n                for (int i = 1; i < K - 1; i++) prod = (prod * sub[i]) % MOD;\n                ans = (ans * prod) % MOD;\n            }\n        }\n        printf(\"%lld\\n\", ans);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <algorithm>\nusing namespace std;\n#define MOD 1000000007\n\nlong long powmod(long long a, long long b) {\n    long long res = 1;\n    while (b > 0) {\n        if (b & 1) res = (res * a) % MOD;\n        a = (a * a) % MOD;\n        b >>= 1;\n    }\n    return res;\n}\n\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        int N, K;\n        cin >> N >> K;\n        int a[N];\n        for (int i = 0; i < N; i++) cin >> a[i];\n        long long ans = 1;\n        for (int mask = 0; mask < (1 << N); mask++) {\n            if (__builtin_popcount(mask) == K) {\n                int sub[N];\n                int idx = 0;\n                for (int i = 0; i < N; i++) if (mask & (1 << i)) sub[idx++] = a[i];\n                sort(sub, sub + K);\n                long long prod = 1;\n                for (int i = 1; i < K - 1; i++) prod = (prod * sub[i]) % MOD;\n                ans = (ans * prod) % MOD;\n            }\n        }\n        cout << ans << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Arrays;\nimport java.util.Scanner;\npublic class Main {\n    static final int MOD = 1000000007;\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n        while (T-- > 0) {\n            int N = sc.nextInt();\n            int K = sc.nextInt();\n            int[] a = new int[N];\n            for (int i = 0; i < N; i++) a[i] = sc.nextInt();\n            long ans = 1;\n            for (int mask = 0; mask < (1 << N); mask++) {\n                if (Integer.bitCount(mask) == K) {\n                    int[] sub = new int[K];\n                    int idx = 0;\n                    for (int i = 0; i < N; i++) if ((mask & (1 << i)) != 0) sub[idx++] = a[i];\n                    Arrays.sort(sub);\n                    long prod = 1;\n                    for (int i = 1; i < K - 1; i++) prod = (prod * sub[i]) % MOD;\n                    ans = (ans * prod) % MOD;\n                }\n            }\n            System.out.println(ans);\n        }\n    }\n}",
+      "Python3": "import sys\nMOD = 1000000007\n\ndef powmod(a, b):\n    res = 1\n    while b > 0:\n        if b & 1: res = (res * a) % MOD\n        a = (a * a) % MOD\n        b >>= 1\n    return res\n\nT = int(input())\nfor _ in range(T):\n    N, K = map(int, input().split())\n    a = list(map(int, input().split()))\n    ans = 1\n    for mask in range(1 << N):\n        if bin(mask).count('1') == K:\n            sub = [a[i] for i in range(N) if (mask & (1 << i))]\n            sub.sort()\n            prod = 1\n            for i in range(1, K - 1): prod = (prod * sub[i]) % MOD\n            ans = (ans * prod) % MOD\n    print(ans)",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst MOD = 1000000007;\n\nfunction powmod(a, b) {\n    let res = 1;\n    while (b > 0) {\n        if (b & 1) res = (res * a) % MOD;\n        a = (a * a) % MOD;\n        b >>= 1;\n    }\n    return res;\n}\n\nfunction nextInt() {\n    return parseInt(lines[idx++]);\n}\n\nfunction nextIntArray() {\n    return lines[idx++].split(' ').map(x => parseInt(x));\n}\n\nlet T = nextInt();\nwhile (T-- > 0) {\n    let [N, K] = nextIntArray();\n    let a = nextIntArray();\n    let ans = 1;\n    for (let mask = 0; mask < (1 << N); mask++) {\n        if (countBits(mask) == K) {\n            let sub = [];\n            for (let i = 0; i < N; i++) if ((mask & (1 << i)) != 0) sub.push(a[i]);\n            sub.sort((a, b) => a - b);\n            let prod = 1;\n            for (let i = 1; i < K - 1; i++) prod = (prod * sub[i]) % MOD;\n            ans = (ans * prod) % MOD;\n        }\n    }\n    console.log(ans);\n}\n\nfunction countBits(n) {\n    let count = 0;\n    while (n > 0) {\n        count += n & 1;\n        n >>= 1;\n    }\n    return count;\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

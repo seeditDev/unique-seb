@@ -1,0 +1,127 @@
+{
+  "questionId": "Q2211",
+  "title": "Tri-Hexagonal Puzzle",
+  "slug": "tri-hexagonal-puzzle",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graphs",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "Graph Traversal",
+      "Graphs",
+      "Breadth-First Search"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Graphs"
+    ]
+  },
+  "content": {
+    "problemStatement": "Little Johnny wants to play with his friends today. But his babysitter won't let him go! After a lot of begging, the heartless nanny gives him her brand new electronic puzzle and says: \"If you solve the puzzle then you are free to go\". Not being aware of Little Johnny's IT skills, the nanny leaves the kid alone.\n\nRapidly, Little Johnny sends you an e-mail asking for your help.\n\nThe puzzle consists of three hexagons as shown in the figure. Each vertex is painted black or white. Some of them belong to just one hexagon and some of them belong to more than one. Exactly four of them are painted black, and the other nine are white. The goal is to make the shared vertexes black by means of allowed moves: rotating a hexagon 60 degrees clockwise or counter-clockwise.\n\nCan you help Little Johnny?",
+    "constraints": [
+      "1 <= T <= 100",
+      "The binary string has exactly 13 characters",
+      "Exactly four of the characters are '1' (black), and the other nine are '0' (white)"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case consists of a single line containing a binary string of length 13, representing the initial state of the puzzle.",
+    "outputFormat": "For each test case, print the minimum number of moves required to solve the puzzle. If a solution exists, print the moves on separate lines in the format 'H C', where H is the index of the hexagon (0, 1, or 2) and C is the direction of rotation (0 for counter-clockwise, 1 for clockwise). If no solution exists, print 'No solution'.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n0000000101011",
+        "output": "3\n2 0\n2 0\n1 1",
+        "explanation": "Explanation: The initial state is 0000000101011. We apply the moves 2 0, 2 0, and 1 1 to get the final state 1111111111111."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n1010101010101",
+        "output": "0",
+        "explanation": "Explanation: The initial state is already the solution, so no moves are needed."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n0000000000000",
+        "output": "No solution",
+        "explanation": "Explanation: There is no sequence of moves that can transform the initial state into the solution state."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n0000000000000",
+        "expectedOutput": "No solution",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n1111111111111",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "1\n0000000000000",
+        "expectedOutput": "No solution",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "1\n0000000000000",
+        "expectedOutput": "No solution",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "1\n0000000000000",
+        "expectedOutput": "No solution",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved using a breadth-first search (BFS) algorithm. We start with the initial state and apply all possible moves to generate new states. We keep track of the number of moves made to reach each state and stop when we find a state that satisfies the condition (all shared vertices are black). If no such state is found after exploring all possible states, we conclude that no solution exists.",
+    "timeComplexity": "O(T * 3^13) per test case, O(T * 3^13) total. The precomputation is done once for each test case.",
+    "spaceComplexity": "O(3^13) \u2014 the dominant structure is the queue used for BFS.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#define MAX 13\n#define QUEUESIZE 1000000\n\n// Structure to represent a state\ntypedef struct {\n    int config[MAX];\n    int moves;\n} State;\n\n// Function to apply a move to a state\nvoid applyMove(State *state, int hexagon, int direction) {\n    // Apply the move\n    if (direction == 0) {\n        // Counter-clockwise\n        int temp = state->config[hexagon * 3];\n        state->config[hexagon * 3] = state->config[hexagon * 3 + 1];\n        state->config[hexagon * 3 + 1] = state->config[hexagon * 3 + 2];\n        state->config[hexagon * 3 + 2] = temp;\n    } else {\n        // Clockwise\n        int temp = state->config[hexagon * 3 + 2];\n        state->config[hexagon * 3 + 2] = state->config[hexagon * 3 + 1];\n        state->config[hexagon * 3 + 1] = state->config[hexagon * 3];\n        state->config[hexagon * 3] = temp;\n    }\n}\n\n// Function to check if a state is the solution\nint isSolution(State *state) {\n    // Check if all shared vertexes are black\n    return state->config[3] == 1 && state->config[6] == 1 && state->config[9] == 1 && state->config[12] == 1;\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    for (int t = 0; t < T; t++) {\n        char input[MAX + 1];\n        scanf(\"%s\", input);\n        State initialState;\n        for (int i = 0; i < MAX; i++) {\n            initialState.config[i] = input[i] - '0';\n        }\n        initialState.moves = 0;\n        State queue[QUEUESIZE];\n        int front = 0, rear = 0;\n        queue[rear++] = initialState;\n        while (front < rear) {\n            State currentState = queue[front++];\n            if (isSolution(&currentState)) {\n                printf(\"%d\\n\", currentState.moves);\n                // Print the moves\n                for (int i = 0; i < currentState.moves; i++) {\n                    printf(\"%d %d\\n\", i / 2, i % 2);\n                }\n                break;\n            }\n            // Apply all possible moves\n            for (int hexagon = 0; hexagon < 3; hexagon++) {\n                for (int direction = 0; direction < 2; direction++) {\n                    State newState = currentState;\n                    applyMove(&newState, hexagon, direction);\n                    newState.moves++;\n                    queue[rear++] = newState;\n                }\n            }\n        }\n        if (front == rear) {\n            printf(\"No solution\\n\");\n        }\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <queue>\n#include <vector>\nusing namespace std;\n#define MAX 13\n\n// Structure to represent a state\nstruct State {\n    vector<int> config;\n    int moves;\n};\n\n// Function to apply a move to a state\nvoid applyMove(State &state, int hexagon, int direction) {\n    // Apply the move\n    if (direction == 0) {\n        // Counter-clockwise\n        int temp = state.config[hexagon * 3];\n        state.config[hexagon * 3] = state.config[hexagon * 3 + 1];\n        state.config[hexagon * 3 + 1] = state.config[hexagon * 3 + 2];\n        state.config[hexagon * 3 + 2] = temp;\n    } else {\n        // Clockwise\n        int temp = state.config[hexagon * 3 + 2];\n        state.config[hexagon * 3 + 2] = state.config[hexagon * 3 + 1];\n        state.config[hexagon * 3 + 1] = state.config[hexagon * 3];\n        state.config[hexagon * 3] = temp;\n    }\n}\n\n// Function to check if a state is the solution\nbool isSolution(const State &state) {\n    // Check if all shared vertexes are black\n    return state.config[3] == 1 && state.config[6] == 1 && state.config[9] == 1 && state.config[12] == 1;\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(NULL);\n    int T;\n    cin >> T;\n    for (int t = 0; t < T; t++) {\n        string input;\n        cin >> input;\n        State initialState;\n        initialState.config.resize(MAX);\n        for (int i = 0; i < MAX; i++) {\n            initialState.config[i] = input[i] - '0';\n        }\n        initialState.moves = 0;\n        queue<State> q;\n        q.push(initialState);\n        bool found = false;\n        while (!q.empty()) {\n            State currentState = q.front();\n            q.pop();\n            if (isSolution(currentState)) {\n                cout << currentState.moves << endl;\n                // Print the moves\n                for (int i = 0; i < currentState.moves; i++) {\n                    cout << i / 2 << \" \" << i % 2 << endl;\n                }\n                found = true;\n                break;\n            }\n            // Apply all possible moves\n            for (int hexagon = 0; hexagon < 3; hexagon++) {\n                for (int direction = 0; direction < 2; direction++) {\n                    State newState = currentState;\n                    applyMove(newState, hexagon, direction);\n                    newState.moves++;\n                    q.push(newState);\n                }\n            }\n        }\n        if (!found) {\n            cout << \"No solution\" << endl;\n        }\n    }\n    return 0;\n}",
+      "Java": "import java.util.LinkedList;\nimport java.util.Queue;\nimport java.util.Scanner;\npublic class Main {\n    static final int MAX = 13;\n    static class State {\n        int[] config;\n        int moves;\n        State(int[] config, int moves) {\n            this.config = config;\n            this.moves = moves;\n        }\n    }\n\n    public static void applyMove(State state, int hexagon, int direction) {\n        // Apply the move\n        if (direction == 0) {\n            // Counter-clockwise\n            int temp = state.config[hexagon * 3];\n            state.config[hexagon * 3] = state.config[hexagon * 3 + 1];\n            state.config[hexagon * 3 + 1] = state.config[hexagon * 3 + 2];\n            state.config[hexagon * 3 + 2] = temp;\n        } else {\n            // Clockwise\n            int temp = state.config[hexagon * 3 + 2];\n            state.config[hexagon * 3 + 2] = state.config[hexagon * 3 + 1];\n            state.config[hexagon * 3 + 1] = state.config[hexagon * 3];\n            state.config[hexagon * 3] = temp;\n        }\n    }\n\n    public static boolean isSolution(State state) {\n        // Check if all shared vertexes are black\n        return state.config[3] == 1 && state.config[6] == 1 && state.config[9] == 1 && state.config[12] == 1;\n    }\n\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int T = scanner.nextInt();\n        for (int t = 0; t < T; t++) {\n            String input = scanner.next();\n            int[] config = new int[MAX];\n            for (int i = 0; i < MAX; i++) {\n                config[i] = input.charAt(i) - '0';\n            }\n            State initialState = new State(config, 0);\n            Queue<State> queue = new LinkedList<>();\n            queue.add(initialState);\n            boolean found = false;\n            while (!queue.isEmpty()) {\n                State currentState = queue.poll();\n                if (isSolution(currentState)) {\n                    System.out.println(currentState.moves);\n                    // Print the moves\n                    for (int i = 0; i < currentState.moves; i++) {\n                        System.out.println(i / 2 + \" \" + i % 2);\n                    }\n                    found = true;\n                    break;\n                }\n                // Apply all possible moves\n                for (int hexagon = 0; hexagon < 3; hexagon++) {\n                    for (int direction = 0; direction < 2; direction++) {\n                        int[] newConfig = currentState.config.clone();\n                        State newState = new State(newConfig, currentState.moves + 1);\n                        applyMove(newState, hexagon, direction);\n                        queue.add(newState);\n                    }\n                }\n            }\n            if (!found) {\n                System.out.println(\"No solution\");\n            }\n        }\n    }\n}",
+      "Python3": "from collections import deque\nMAX = 13\n\nclass State:\n    def __init__(self, config, moves):\n        self.config = config\n        self.moves = moves\n\ndef apply_move(state, hexagon, direction):\n    # Apply the move\n    if direction == 0:\n        # Counter-clockwise\n        temp = state.config[hexagon * 3]\n        state.config[hexagon * 3] = state.config[hexagon * 3 + 1]\n        state.config[hexagon * 3 + 1] = state.config[hexagon * 3 + 2]\n        state.config[hexagon * 3 + 2] = temp\n    else:\n        # Clockwise\n        temp = state.config[hexagon * 3 + 2]\n        state.config[hexagon * 3 + 2] = state.config[hexagon * 3 + 1]\n        state.config[hexagon * 3 + 1] = state.config[hexagon * 3]\n        state.config[hexagon * 3] = temp\n\ndef is_solution(state):\n    # Check if all shared vertexes are black\n    return state.config[3] == 1 and state.config[6] == 1 and state.config[9] == 1 and state.config[12] == 1\n\nT = int(input())\nfor t in range(T):\n    input_str = input()\n    config = [int(x) for x in input_str]\n    initial_state = State(config, 0)\n    queue = deque([initial_state])\n    found = False\n    while queue:\n        current_state = queue.popleft()\n        if is_solution(current_state):\n            print(current_state.moves)\n            # Print the moves\n            for i in range(current_state.moves):\n                print(i // 2, i % 2)\n            found = True\n            break\n        # Apply all possible moves\n        for hexagon in range(3):\n            for direction in range(2):\n                new_config = current_state.config[:]\n                new_state = State(new_config, current_state.moves + 1)\n                apply_move(new_state, hexagon, direction)\n                queue.append(new_state)\n    if not found:\n        print(\"No solution\")",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst readLine = () => input[idx++];\nconst readInt = () => parseInt(readLine());\nconst readString = () => readLine();\nconst MAX = 13;\n\nclass State {\n    constructor(config, moves) {\n        this.config = config;\n        this.moves = moves;\n    }\n}\n\nfunction applyMove(state, hexagon, direction) {\n    // Apply the move\n    if (direction === 0) {\n        // Counter-clockwise\n        const temp = state.config[hexagon * 3];\n        state.config[hexagon * 3] = state.config[hexagon * 3 + 1];\n        state.config[hexagon * 3 + 1] = state.config[hexagon * 3 + 2];\n        state.config[hexagon * 3 + 2] = temp;\n    } else {\n        // Clockwise\n        const temp = state.config[hexagon * 3 + 2];\n        state.config[hexagon * 3 + 2] = state.config[hexagon * 3 + 1];\n        state.config[hexagon * 3 + 1] = state.config[hexagon * 3];\n        state.config[hexagon * 3] = temp;\n    }\n}\n\nfunction isSolution(state) {\n    // Check if all shared vertexes are black\n    return state.config[3] === 1 && state.config[6] === 1 && state.config[9] === 1 && state.config[12] === 1;\n}\n\nconst T = readInt();\nfor (let t = 0; t < T; t++) {\n    const inputStr = readString();\n    const config = inputStr.split('').map(x => parseInt(x));\n    const initialState = new State(config, 0);\n    const queue = [initialState];\n    let found = false;\n    while (queue.length > 0) {\n        const currentState = queue.shift();\n        if (isSolution(currentState)) {\n            console.log(currentState.moves);\n            // Print the moves\n            for (let i = 0; i < currentState.moves; i++) {\n                console.log(Math.floor(i / 2), i % 2);\n            }\n            found = true;\n            break;\n        }\n        // Apply all possible moves\n        for (let hexagon = 0; hexagon < 3; hexagon++) {\n            for (let direction = 0; direction < 2; direction++) {\n                const newConfig = [...currentState.config];\n                const newState = new State(newConfig, currentState.moves + 1);\n                applyMove(newState, hexagon, direction);\n                queue.push(newState);\n            }\n        }\n    }\n    if (!found) {\n        console.log('No solution');\n    }\n}"
+    }
+  }
+}

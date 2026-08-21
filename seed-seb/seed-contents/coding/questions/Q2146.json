@@ -1,0 +1,115 @@
+{
+  "questionId": "Q2146",
+  "title": "Packing the Boxes",
+  "slug": "packing-the-boxes",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Huffman Coding",
+      "Multiset",
+      "Dynamic Programming",
+      "Greedy Merging",
+      "Priority Queue",
+      "Counting Optimal Solutions"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ]
+  },
+  "content": {
+    "problemStatement": "**This problem was part of the SEED-IT April Challenge.  All user submissions for this contest problem are publicly available here.**\n\nShaheen has bought some gifts for a friend, which are wrapped up in several boxes of different sizes (all of which are full). She will need to carry the gifts a long way to her friend's house, so she would prefer to add some extra packing, and accommodate everything in one extra box. Moreover, to avoid damaging the contents, she does not wish to place more than two boxes directly within any box; however, boxes can be placed within boxes which contain other boxes, etc. A box which is used for holding two boxes of sizes a and b will have size a+b, and will cost Shaheen a+b coins at the local store. Please help Shaheen determine the minimum cost required to achieve the complete packing, and the number of different possible packings (arrangements of boxes within each other) having such a minimal cost.",
+    "constraints": [
+      "1 \u2264 T \u2264 10",
+      "1 \u2264 n \u2264 2000",
+      "1 \u2264 s_i \u2264 10^6",
+      "All intermediate and final values fit into signed 64\u2011bit integers."
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, the first line contains an integer n (1 \u2264 n \u2264 2000), the number of boxes. The next n lines each contain a positive integer s_i (1 \u2264 s_i \u2264 10^6), the size of a box.",
+    "outputFormat": "For each test case output a single line with two integers separated by a space: the minimal total cost required to pack all boxes into one extra box, and the number of distinct optimal packings modulo 1000000000.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "",
+        "output": "Input:\n5\n3\n2\n3\n5\n1\n\nOutput:\n31 3",
+        "explanation": ""
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem is equivalent to repeatedly merging two boxes. Merging two boxes of sizes a and b creates a new box of size a+b and adds a+b to the total cost. The process continues until only one box (the extra outer box) remains. This is exactly the classic Huffman merging problem. The minimal total cost is obtained by always merging the two smallest available sizes (a greedy strategy). To also count the number of different optimal packings, we observe that at each step the two smallest sizes may appear multiple times. If the smallest size w appears c1 times and the second smallest size (different from w) appears c2 times, the number of ways to choose the pair is c1\u00b7c2. If the smallest size appears at least twice (c1 \u2265 2), the two smallest are equal and the number of ways is C(c1,2) = c1\u00b7(c1\u20111)/2. After choosing a pair we decrease the corresponding counts, insert the merged size w1+w2, and continue. The total number of optimal packings is the product of the numbers of choices at every step, taken modulo 1\u202f000\u202f000\u202f000. Edge case n = 1: we still need an extra outer box, so the cost equals the size of the single box and there is exactly one packing.\n\nAlgorithm per test case:\n1. Read all sizes into a multiset (ordered map from size to count).\n2. If n == 1, answer = (size, 1).\n3. While the total count > 1:\n   a. Let w1 be the smallest key, with count c1.\n   b. Determine w2 and its count c2:\n      - If c1 \u2265 2 then w2 = w1 and c2 = c1.\n      - Else w2 is the next larger key, with count c2.\n   c. Compute ways_this_step:\n      - If w1 == w2: ways = c1\u00b7(c1\u20111)/2.\n      - Else: ways = c1\u00b7c2.\n   d. Multiply answerWays = (answerWays * ways) mod MOD.\n   e. Decrease the counts of the chosen elements (by 2 if w1==w2, otherwise by 1 each). Remove keys whose count becomes zero.\n   f. merged = w1 + w2; add merged to the map (increase its count by 1).\n   g. Add merged to totalCost.\n4. Output totalCost and answerWays.\n\nComplexities: Each iteration performs O(log\u202fk) map operations, and there are (n\u20111) iterations, so time O(n\u202flog\u202fn). The map stores at most O(n) distinct keys, giving O(n) memory.",
+    "timeComplexity": "O(n log n) per test case",
+    "spaceComplexity": "O(n)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#define MOD 1000000000ULL\n\n"
+    }
+  }
+}

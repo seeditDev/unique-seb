@@ -1,0 +1,129 @@
+{
+  "questionId": "Q9302",
+  "title": "Chef And Array Construction",
+  "slug": "chef-and-array-construction",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math | Bit Manipulation",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Bitwise AND",
+      "Modular exponentiation",
+      "Counting bits"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Bit Manipulation"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Given two positive integers NNN and MMM, let SSS denote the set of all the arrays of size NNN such that each element of the array lies in the range [1,M][1, M][1,M]. Since there are MNM^NMN such arrays, the size of SSS is MNM^NMN.\n\nLet XiX_iXi​ denote the bitwise AND of all elements of the ithi^{th}ith array in the set, where 1≤i≤MN1 \\le i \\le M^N1≤i≤MN.\n\nFind the value ∑i=1MNXi\\sum_{i = 1}^{M^N} X_i∑i=1MN​Xi​. Since the answer can be huge, output the answer modulo 998244353998244353998244353.\n\n\nInput Format\n\nThe first line of input will contain a single integer TTT, denoting the number of test cases.\nThe first and only line of each test case contains two integers NNN and MMM, the size of the array, and the maximum limit of elements.\n\n\nOutput Format\nFor each test case, print the value ∑i=1MNXi\\sum_{i = 1}^{M^N} X_i∑i=1MN​Xi​. Since the answer can be huge, output the answer modulo 998244353998244353998244353.",
+    "constraints": [
+      "1 ≤ T ≤ 1000",
+      "1 ≤ N ≤ 2·10^5",
+      "1 ≤ M ≤ 10^9",
+      "All calculations are to be performed modulo 998244353."
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains two integers N and M separated by a space.",
+    "outputFormat": "For each test case output a single line containing the value of \\(\\sum_{i=1}^{M^N} X_i\\) modulo 998244353.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n2 2\n2 3",
+        "output": "3\n12",
+        "explanation": "For N=2, M=2: numbers are {1,2}. cnt_0=1, cnt_1=1. Sum = 1*1^2 + 2*1^2 = 3.\\nFor N=2, M=3: numbers are {1,2,3}. cnt_0=2, cnt_1=2. Sum = 1*2^2 + 2*2^2 = 12."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each bit position k (0‑based) consider the contribution of that bit to the final sum. The k‑th bit of the AND of an array is 1 iff every element of the array has the k‑th bit equal to 1. Let cnt_k be the number of integers x (1 ≤ x ≤ M) whose k‑th bit is 1. For a fixed k, the number of arrays of length N where all elements have the k‑th bit set is cnt_k^N. Hence the total contribution of bit k is (2^k)·cnt_k^N. Summing this over all bits gives the answer:\n\nanswer = Σ_{k=0}^{⌊log2 M⌋} (2^k mod MOD) * (cnt_k^N mod MOD) mod MOD.\n\ncnt_k can be computed in O(1) using the well‑known pattern of bits in the range [0, M]:\n\nperiod = 2^{k+1}\nfull   = (M+1) / period\nrem    = (M+1) % period\ncnt_k  = full * 2^k + max(0, rem - 2^k)\n\nThe algorithm iterates over at most 30 bits (since M ≤ 10^9) and for each bit performs a fast modular exponentiation (log N). Overall complexity per test case is O(log M + log N) ≈ O(30·log N), easily fast for the given limits.\n\nEdge cases: when cnt_k = 0 the term is zero; when N = 0 (not possible by constraints) the formula would give 1 for empty product, but N ≥ 1.\n\nThe implementation uses 64‑bit integers for intermediate values and modular exponentiation by squaring.",
+    "timeComplexity": "O(T · (log M + log N)) ≈ O(T·30·log N), because we process at most 30 bits per test case and each exponentiation takes O(log N).",
+    "spaceComplexity": "O(1) additional space per test case.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdint.h>\n\nconst int64_t MOD = 998244353LL;\n\nint64_t mod_pow(int64_t a, int64_t e) {\n    int64_t res = 1 % MOD;\n    a %= MOD;\n    while (e) {\n        if (e & 1) res = (res * a) % MOD;\n        a = (a * a) % MOD;\n        e >>= 1;\n    }\n    return res;\n}\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        int64_t N, M;\n        scanf(\"%lld %lld\", &N, &M);\n        int64_t ans = 0;\n        int64_t limit = M;\n        for (int k = 0; (1LL << k) <= limit; ++k) {\n            int64_t period = 1LL << (k + 1);\n            int64_t full = (M + 1) / period;\n            int64_t rem = (M + 1) % period;\n            int64_t cnt = full * (1LL << k) + (rem > (1LL << k) ? rem - (1LL << k) : 0);\n            if (cnt == 0) continue;\n            int64_t term = mod_pow(cnt % MOD, N);\n            term = (term * ((1LL << k) % MOD)) % MOD;\n            ans += term;\n            if (ans >= MOD) ans -= MOD;\n        }\n        printf(\"%lld\\n\", ans % MOD);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nconst long long MOD = 998244353LL;\n\nlong long mod_pow(long long a, long long e) {\n    long long r = 1 % MOD;\n    a %= MOD;\n    while (e) {\n        if (e & 1) r = r * a % MOD;\n        a = a * a % MOD;\n        e >>= 1;\n    }\n    return r;\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; cin >> T;\n    while (T--) {\n        long long N, M; cin >> N >> M;\n        long long ans = 0;\n        for (int k = 0; (1LL << k) <= M; ++k) {\n            long long period = 1LL << (k + 1);\n            long long full = (M + 1) / period;\n            long long rem = (M + 1) % period;\n            long long cnt = full * (1LL << k) + max(0LL, rem - (1LL << k));\n            if (cnt == 0) continue;\n            long long term = mod_pow(cnt % MOD, N);\n            term = term * ((1LL << k) % MOD) % MOD;\n            ans += term;\n            if (ans >= MOD) ans -= MOD;\n        }\n        cout << ans % MOD << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    static final long MOD = 998244353L;\n    static long modPow(long a, long e) {\n        long r = 1 % MOD;\n        a %= MOD;\n        while (e > 0) {\n            if ((e & 1) == 1) r = (r * a) % MOD;\n            a = (a * a) % MOD;\n            e >>= 1;\n        }\n        return r;\n    }\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st = new StringTokenizer(br.readLine());\n        int T = Integer.parseInt(st.nextToken());\n        StringBuilder sb = new StringBuilder();\n        while (T-- > 0) {\n            st = new StringTokenizer(br.readLine());\n            long N = Long.parseLong(st.nextToken());\n            long M = Long.parseLong(st.nextToken());\n            long ans = 0;\n            for (int k = 0; (1L << k) <= M; ++k) {\n                long period = 1L << (k + 1);\n                long full = (M + 1) / period;\n                long rem = (M + 1) % period;\n                long cnt = full * (1L << k) + Math.max(0L, rem - (1L << k));\n                if (cnt == 0) continue;\n                long term = modPow(cnt % MOD, N);\n                term = term * ((1L << k) % MOD) % MOD;\n                ans += term;\n                if (ans >= MOD) ans -= MOD;\n            }\n            sb.append(ans % MOD).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys\nMOD = 998244353\n\ndef mod_pow(a, e):\n    res = 1\n    a %= MOD\n    while e:\n        if e & 1:\n            res = res * a % MOD\n        a = a * a % MOD\n        e >>= 1\n    return res\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out = []\n    for _ in range(T):\n        N = int(next(it))\n        M = int(next(it))\n        ans = 0\n        k = 0\n        while (1 << k) <= M:\n            period = 1 << (k + 1)\n            full = (M + 1) // period\n            rem = (M + 1) % period\n            cnt = full * (1 << k) + max(0, rem - (1 << k))\n            if cnt:\n                term = mod_pow(cnt % MOD, N)\n                term = term * ((1 << k) % MOD) % MOD\n                ans = (ans + term) % MOD\n            k += 1\n        out.append(str(ans))\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst MOD = 998244353n;\nfunction modPow(base, exp) {\n  base %= MOD;\n  let result = 1n;\n  while (exp > 0n) {\n    if (exp & 1n) result = (result * base) % MOD;\n    base = (base * base) % MOD;\n    exp >>= 1n;\n  }\n  return result;\n}\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nif (input.length === 0) process.exit(0);\nconst T = Number(input[idx++]);\nlet outputs = [];\nfor (let t = 0; t < T; ++t) {\n  const N = BigInt(input[idx++]);\n  const M = BigInt(input[idx++]);\n  let ans = 0n;\n  for (let k = 0; (1n << BigInt(k)) <= M; ++k) {\n    const bit = 1n << BigInt(k);\n    const period = bit << 1n; // 2^{k+1}\n    const full = (M + 1n) / period;\n    const rem = (M + 1n) % period;\n    const cnt = full * bit + (rem > bit ? rem - bit : 0n);\n    if (cnt === 0n) continue;\n    const term = modPow(cnt % MOD, N) * (bit % MOD) % MOD;\n    ans = (ans + term) % MOD;\n  }\n  outputs.push(String(ans));\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

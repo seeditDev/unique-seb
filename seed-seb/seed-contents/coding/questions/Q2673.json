@@ -1,0 +1,123 @@
+{
+  "questionId": "Q2673",
+  "title": "A Plus B Again!",
+  "slug": "a-plus-b-again",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "Carry",
+      "Addition",
+      "Math",
+      "Probability",
+      "Expected Value",
+      "Linear of Expectation"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Combinatorics & Probability"
+    ]
+  },
+  "content": {
+    "problemStatement": "Have you ever implemented a program adding two big integers that cannot be represented by the primitive data type of your programming language? The algorithm is just simulation of the column addition method that we have been taught in elementary school. Sometimes we forget the carry and the result is incorrect. \n\n In this problem, you need to evaluate the expected value of the number of times we have non-zero carry when adding two non-negative integers that contain **at most N** digits each. Note that we are adding the numbers in their **base 10** representation.\n\n\nFor example, the following table shows the number of carries when adding some pairs of numbers: \n\n**A****B****Number of carries**2040111119112392311235987655",
+    "constraints": [
+      "1\u202f\u2264\u202fT\u202f\u2264\u202f100000",
+      "1\u202f\u2264\u202fN\u202f\u2264\u202f100000"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains a single integer N (1\u202f\u2264\u202fN\u202f\u2264\u202f100000) \u2013 the maximum number of decimal digits of the two uniformly random non\u2011negative integers to be added.",
+    "outputFormat": "For each test case output a line with the expected number of non\u2011zero carries when adding the two numbers. The answer must be printed with an absolute error less than 1e-6 (six digits after the decimal point are sufficient).",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\\n1\\n2\\n3",
+        "output": "0.450000\\n0.945000\\n1.444500",
+        "explanation": "For N=1 the formula gives 0.5\u00b71\u20111/18+10\u207b\u00b9/18 = 0.450000. For N=2 it yields 0.945000, and for N=3 it yields 1.444500."
+      },
+      {
+        "id": "sample_2",
+        "input": "2\\n4\\n5",
+        "output": "1.944450\\n2.444445",
+        "explanation": "Using E(N)=0.5\u00b7N\u20111/18+10\u207b\u1d3a/18: for N=4 we obtain 1.944450, for N=5 we obtain 2.444445."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\\n1",
+        "expectedOutput": "0.450000",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\\n100000",
+        "expectedOutput": "49999.944444",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case N=10",
+        "input": "1\\n10",
+        "expectedOutput": "4.944444",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case N=7",
+        "input": "1\\n7",
+        "expectedOutput": "3.444444",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case N=15",
+        "input": "1\\n15",
+        "expectedOutput": "7.444444",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Let the two numbers be A and B. Consider a fixed digit position i (0\u2011based from the least significant digit). The digits a_i and b_i are independent and uniformly distributed in {0,\u2026,9}. A carry from position i to i+1 occurs iff a_i + b_i + c_i \u2265 10, where c_i is the incoming carry (0 or 1). Using linearity of expectation we can compute the probability p_i that a non\u2011zero carry is generated at position i. By symmetry the distribution of (a_i,b_i) does not depend on i, and the probability that a carry is generated when the incoming carry is 0 is 45/100 = 0.45, while when the incoming carry is 1 it is 55/100 = 0.55. Solving the simple Markov chain for the steady\u2011state probability of having an incoming carry yields a constant 0.5 for all interior positions. For the most significant position there is no incoming carry, but the probability that a carry is generated there is 10^{-N}\u00b70.45 (both numbers must have exactly N digits and the sum of the highest digits must be \u226510). Summing the expected contribution of each of the N positions gives the closed form:\nE(N) = 0.5\u00b7N \u2013 1/18 + (10^{-N})/18.\nThus each test case can be answered in O(1) time using this formula.\nThe term 10^{-N} quickly becomes negligible, but it must be kept for full precision when N is small.",
+    "timeComplexity": "O(T) \u2013 constant work per test case.",
+    "spaceComplexity": "O(1) \u2013 only a few variables are stored.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <math.h>\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    const double inv18 = 1.0/18.0;\n    while(T--){\n        int N; scanf(\"%d\", &N);\n        double ans = 0.5 * N - inv18 + pow(10.0, -N) * inv18;\n        printf(\"%.6f\\n\", ans);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    const double inv18 = 1.0/18.0;\n    while(T--){\n        long long N; cin>>N;\n        double ans = 0.5 * N - inv18 + pow(10.0, - (double)N) * inv18;\n        cout.setf(ios::fixed);\n        cout<<setprecision(6)<<ans<<\"\\n\";\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder sb = new StringBuilder();\n        int T = Integer.parseInt(br.readLine().trim());\n        final double inv18 = 1.0/18.0;\n        for(int t=0; t<T; ++t){\n            int N = Integer.parseInt(br.readLine().trim());\n            double ans = 0.5 * N - inv18 + Math.pow(10.0, -N) * inv18;\n            sb.append(String.format(Locale.US, \"%.6f\", ans)).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "import sys, math\n\ndef main():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    inv18 = 1.0/18.0\n    out = []\n    for _ in range(T):\n        N = int(next(it))\n        ans = 0.5 * N - inv18 + (10.0 ** -N) * inv18\n        out.append(f\"{ans:.6f}\")\n    sys.stdout.write(\"\\n\".join(out))\n\nif __name__ == \"__main__\":\n    main()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nconst inv18 = 1/18;\nlet out = [];\nfor(let t=0; t<T; ++t){\n  const N = Number(input[idx++]);\n  const ans = 0.5 * N - inv18 + Math.pow(10, -N) * inv18;\n  out.push(ans.toFixed(6));\n}\nconsole.log(out.join('\\n'));"
+    }
+  }
+}

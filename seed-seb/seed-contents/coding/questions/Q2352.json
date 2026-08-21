@@ -1,0 +1,127 @@
+{
+  "questionId": "Q2352",
+  "title": "Longest Weird Subsequence",
+  "slug": "longest-weird-subsequence",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "String Manipulation",
+      "Strings",
+      "Dynamic Programming",
+      "Longest Weird Subsequence"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ]
+  },
+  "content": {
+    "problemStatement": "Finding the longest increasing subsequence is an old and well-known problem now. Here you will have to do something similar. You need to find the longest weird subsequence (LWS) of the given string. The subsequence is called weird if it can be split into two disjoint subsequences, one of which is non-decreasing and the other one is non-increasing. \n\nJust for clarity, by subsequence of the given string **S** we mean any string that can be obtained from **S** by erasing from it zero or more characters. So empty string is a subsequence of any string and any string is a subsequence of itself. Further, note that we consider only strings composed of lowercase Latin letters and these letters compared by their ASCII codes. So, for example, 'a' is smaller than 'b' and 'p' is larger than 'h'. \n\nNow let's consider some example. Let **S=\"aabcazcczba\"**. Then **\"abczz\"** is its some non-decreasing subsequene, **\"zccb\"** is its some non-increasing subsequence and **\"aabczcczba\"** is its some weird subsequence since it can be split into non-decreasing subsequence **\"aabzz\"** and non-increasing subsequence **\"cccba\": \"AABcZccZba\"** (first subsequence is shown by capital letters just for calrity).",
+    "constraints": [
+      "1 \u2264 T \u2264 10",
+      "1 \u2264 length of S \u2264 2000"
+    ],
+    "inputFormat": "The first line contains a single positive integer T, the number of test cases. Each test case contains a non-empty string S composed of lowercase Latin letters.",
+    "outputFormat": "For every test case, output the length of the longest weird subsequence of the given string.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\nabc\ncbazyzabc\nddaabbaacc",
+        "output": "3\n6\n10",
+        "explanation": "Explanation:\nFirst case: The string itself is LWS since it can be split into non-decreasing subsequence \"abc\" and non-increasing empty subsequence.\nSecond case: One of the possible LWS is \"cbaabc\" since it can be split as \"cbaABC\". Here we indicate by capital letters non-decreasing subsequence and by lowercase letters non-increasing one. Other possible LWS's are \"cbaZZa\", \"AzyaBC\".\nThird case: Here the desired splitting is \"ddAABBaaCC\"."
+      },
+      {
+        "id": "sample_2",
+        "input": "2\na\nab",
+        "output": "1\n2",
+        "explanation": "Explanation:\nFirst case: The string itself is LWS since it can be split into non-decreasing subsequence \"a\" and non-increasing empty subsequence.\nSecond case: The string itself is LWS since it can be split into non-decreasing subsequence \"ab\" and non-increasing empty subsequence."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\nabcabc",
+        "output": "6",
+        "explanation": "Explanation:\nThe string itself is LWS since it can be split into non-decreasing subsequence \"abcabc\" and non-increasing empty subsequence."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\na",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\nabcdefghijklmnopqrstuvwxyz",
+        "expectedOutput": "26",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\naaaaaaaaaa",
+        "expectedOutput": "10",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\nababababab",
+        "expectedOutput": "10",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "5\nabc\ndef\nghi\njkl\nmno",
+        "expectedOutput": "3\n3\n3\n3\n3",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved by using dynamic programming to find the longest increasing and decreasing subsequences in the given string. We can then combine these subsequences to find the longest weird subsequence.",
+    "timeComplexity": "O(T * N^2) per test case, where N is the length of the string. O(T * N^2) total.",
+    "spaceComplexity": "O(N^2) \u2014 for storing the dynamic programming table.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        char S[2001];\n        scanf(\"%s\", S);\n        int N = strlen(S);\n        int dp[N][N];\n        int max_len = 0;\n        for (int i = 0; i < N; i++) {\n            for (int j = 0; j < N; j++) {\n                dp[i][j] = 0;\n            }\n        }\n        for (int i = 0; i < N; i++) {\n            dp[i][i] = 1;\n        }\n        for (int len = 2; len <= N; len++) {\n            for (int i = 0; i < N - len + 1; i++) {\n                int j = i + len - 1;\n                if (S[i] <= S[j]) {\n                    dp[i][j] = dp[i + 1][j] + 1;\n                } else {\n                    dp[i][j] = dp[i + 1][j];\n                }\n            }\n        }\n        for (int i = 0; i < N; i++) {\n            for (int j = 0; j < N; j++) {\n                if (S[i] >= S[j]) {\n                    max_len = (max_len > dp[i][j] + dp[j + 1][N - 1]) ? max_len : dp[i][j] + dp[j + 1][N - 1];\n                }\n            }\n        }\n        printf(\"%d\\n\", max_len);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <string>\nusing namespace std;\n\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        string S;\n        cin >> S;\n        int N = S.length();\n        int dp[N][N];\n        int max_len = 0;\n        for (int i = 0; i < N; i++) {\n            for (int j = 0; j < N; j++) {\n                dp[i][j] = 0;\n            }\n        }\n        for (int i = 0; i < N; i++) {\n            dp[i][i] = 1;\n        }\n        for (int len = 2; len <= N; len++) {\n            for (int i = 0; i < N - len + 1; i++) {\n                int j = i + len - 1;\n                if (S[i] <= S[j]) {\n                    dp[i][j] = dp[i + 1][j] + 1;\n                } else {\n                    dp[i][j] = dp[i + 1][j];\n                }\n            }\n        }\n        for (int i = 0; i < N; i++) {\n            for (int j = 0; j < N; j++) {\n                if (S[i] >= S[j]) {\n                    max_len = (max_len > dp[i][j] + dp[j + 1][N - 1]) ? max_len : dp[i][j] + dp[j + 1][N - 1];\n                }\n            }\n        }\n        cout << max_len << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n        while (T-- > 0) {\n            String S = sc.next();\n            int N = S.length();\n            int[][] dp = new int[N][N];\n            int max_len = 0;\n            for (int i = 0; i < N; i++) {\n                for (int j = 0; j < N; j++) {\n                    dp[i][j] = 0;\n                }\n            }\n            for (int i = 0; i < N; i++) {\n                dp[i][i] = 1;\n            }\n            for (int len = 2; len <= N; len++) {\n                for (int i = 0; i < N - len + 1; i++) {\n                    int j = i + len - 1;\n                    if (S.charAt(i) <= S.charAt(j)) {\n                        dp[i][j] = dp[i + 1][j] + 1;\n                    } else {\n                        dp[i][j] = dp[i + 1][j];\n                    }\n                }\n            }\n            for (int i = 0; i < N; i++) {\n                for (int j = 0; j < N; j++) {\n                    if (S.charAt(i) >= S.charAt(j)) {\n                        max_len = Math.max(max_len, dp[i][j] + dp[j + 1][N - 1]);\n                    }\n                }\n            }\n            System.out.println(max_len);\n        }\n    }\n}",
+      "Python3": "import sys\n\nT = int(input())\nfor _ in range(T):\n    S = input()\n    N = len(S)\n    dp = [[0] * N for _ in range(N)]\n    max_len = 0\n    for i in range(N):\n        dp[i][i] = 1\n    for length in range(2, N + 1):\n        for i in range(N - length + 1):\n            j = i + length - 1\n            if S[i] <= S[j]:\n                dp[i][j] = dp[i + 1][j] + 1\n            else:\n                dp[i][j] = dp[i + 1][j]\n    for i in range(N):\n        for j in range(N):\n            if S[i] >= S[j]:\n                max_len = max(max_len, dp[i][j] + dp[j + 1][N - 1])\n    print(max_len)",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst readline = () => lines[idx++];\n\nconst T = parseInt(readline());\nfor (let i = 0; i < T; i++) {\n    const S = readline().trim();\n    const N = S.length;\n    const dp = Array(N).fill(0).map(() => Array(N).fill(0));\n    let max_len = 0;\n    for (let j = 0; j < N; j++) {\n        dp[j][j] = 1;\n    }\n    for (let length = 2; length <= N; length++) {\n        for (let j = 0; j < N - length + 1; j++) {\n            const k = j + length - 1;\n            if (S[j] <= S[k]) {\n                dp[j][k] = dp[j + 1][k] + 1;\n            } else {\n                dp[j][k] = dp[j + 1][k];\n            }\n        }\n    }\n    for (let j = 0; j < N; j++) {\n        for (let k = 0; k < N; k++) {\n            if (S[j] >= S[k]) {\n                max_len = Math.max(max_len, dp[j][k] + dp[k + 1][N - 1]);\n            }\n        }\n    }\n    console.log(max_len);\n}"
+    }
+  }
+}

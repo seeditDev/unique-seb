@@ -1,0 +1,264 @@
+{
+  "questionId": "Q11818",
+  "title": "Bellman Ford Algorithm",
+  "slug": "bellmanfordalgorithm",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Graphs",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Bellman Ford",
+      "Shortest Path",
+      "Negative Weight Cycle"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Given a weighted, directed and connected graph of V vertices and E edges, Find the shortest distance of all the vertices from the source vertex S.\nNote: If the Graph contains a negative cycle then return an array consisting of only -1.",
+    "constraints": [
+      "1 <= V <= 10^5",
+      "1 <= E <= 10^5",
+      "1 <= S <= V",
+      "-10^8 <= wt <= 10^8"
+    ],
+    "inputFormat": "The input will contain the number of vertices V, the number of edges E, the source vertex S, and the edges of the graph. Each edge is represented as a list of three integers [u, v, wt] where u is the source vertex, v is the destination vertex, and wt is the weight of the edge.",
+    "outputFormat": "The output will be a list of integers representing the shortest distance from the source vertex to all other vertices. If the graph contains a negative cycle, the output will be a list containing only -1.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": {
+          "V": 1,
+          "edges": [],
+          "S": 0
+        },
+        "expectedOutput": "[0]",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": {
+          "V": 100000,
+          "edges": [
+            [
+              0,
+              1,
+              1
+            ],
+            [
+              1,
+              2,
+              1
+            ],
+            [
+              2,
+              3,
+              1
+            ],
+            [
+              3,
+              4,
+              1
+            ],
+            [
+              4,
+              5,
+              1
+            ],
+            [
+              5,
+              6,
+              1
+            ],
+            [
+              6,
+              7,
+              1
+            ],
+            [
+              7,
+              8,
+              1
+            ],
+            [
+              8,
+              9,
+              1
+            ]
+          ],
+          "S": 0
+        },
+        "expectedOutput": "[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": {
+          "V": 5,
+          "edges": [
+            [
+              0,
+              1,
+              0
+            ],
+            [
+              1,
+              2,
+              0
+            ],
+            [
+              2,
+              3,
+              0
+            ],
+            [
+              3,
+              4,
+              0
+            ]
+          ],
+          "S": 0
+        },
+        "expectedOutput": "[0, 0, 0, 0, 0]",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case / empty-like / negative if allowed",
+        "input": {
+          "V": 5,
+          "edges": [
+            [
+              0,
+              1,
+              -1
+            ],
+            [
+              1,
+              2,
+              -1
+            ],
+            [
+              2,
+              3,
+              -1
+            ],
+            [
+              3,
+              4,
+              -1
+            ]
+          ],
+          "S": 0
+        },
+        "expectedOutput": "[0, -1, -2, -3, -4]",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": {
+          "V": 6,
+          "edges": [
+            [
+              3,
+              2,
+              6
+            ],
+            [
+              5,
+              3,
+              1
+            ],
+            [
+              0,
+              1,
+              5
+            ],
+            [
+              1,
+              5,
+              -3
+            ],
+            [
+              1,
+              2,
+              -2
+            ],
+            [
+              3,
+              4,
+              -2
+            ],
+            [
+              2,
+              4,
+              3
+            ]
+          ],
+          "S": 0
+        },
+        "expectedOutput": "[0, -1, 1, 4, 2, -2]",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The Bellman Ford algorithm is used to find the shortest path from the source vertex to all other vertices in a weighted graph. It can handle negative weight edges and can detect negative weight cycles.",
+    "timeComplexity": "O(V*E)",
+    "spaceComplexity": "O(V)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <limits.h>\n\nint min(int a, int b) { return a < b ? a : b; }\n\nvoid bellman_ford(int V, int E, int S, int edges[][3]) {\n    int dist[V];\n    for (int i = 0; i < V; i++) dist[i] = INT_MAX;\n    dist[S] = 0;\n\n    for (int i = 0; i < V - 1; i++) {\n        for (int j = 0; j < E; j++) {\n            int u = edges[j][0], v = edges[j][1], wt = edges[j][2];\n            if (dist[u] != INT_MAX && dist[u] + wt < dist[v]) {\n                dist[v] = dist[u] + wt;\n            }\n        }\n    }\n\n    for (int i = 0; i < E; i++) {\n        int u = edges[i][0], v = edges[i][1], wt = edges[i][2];\n        if (dist[u] != INT_MAX && dist[u] + wt < dist[v]) {\n            printf(\"-1\");\n            return;\n        }\n    }\n\n    for (int i = 0; i < V; i++) printf(\"%d \", dist[i]);\n    printf(\"\\n\");\n}\n\nint main() {\n    int V = 6, E = 7, S = 0;\n    int edges[][3] = {{3, 2, 6}, {5, 3, 1}, {0, 1, 5}, {1, 5, -3}, {1, 2, -2}, {3, 4, -2}, {2, 4, 3}};\n    bellman_ford(V, E, S, edges);\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nclass Solution {\npublic:\n\t/*  Function to implement Bellman Ford\n\t*   edges: vector of vectors which represents the graph\n\t*   S: source vertex to start traversing graph with\n\t*   V: number of vertices\n\t*/\n\tvector<int> bellman_ford(int V, vector<vector<int>>& edges, int S) {\n\t\tvector<int> dist(V, 1e8);\n\t\tdist[S] = 0;\n\t\tfor (int i = 0; i < V - 1; i++) {\n\t\t\tfor (auto it : edges) {\n\t\t\t\tint u = it[0]; //Starting point of the edge\n\t\t\t\tint v = it[1]; //Ending point of the edge\n\t\t\t\tint wt = it[2]; //Edge weight\n\t\t\t\tif (dist[u] != 1e8 && dist[u] + wt < dist[v]) {\n\t\t\t\t\tdist[v] = dist[u] + wt;\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t\t// Nth relaxation to check negative cycle\n\t\tfor (auto it : edges) {\n\t\t\tint u = it[0];\n\t\t\tint v = it[1];\n\t\t\tint wt = it[2];\n\t\t\tif (dist[u] != 1e8 && dist[u] + wt < dist[v]) {\n\t\t\t\treturn { -1};\n\t\t\t}\n\t\t}\n\n\n\t\treturn dist;\n\t}\n};\n\n\nint main() {\n\n\tint V = 6;\n\tvector<vector<int>> edges(7, vector<int>(3));\n\tedges[0] = {3, 2, 6};\n\tedges[1] = {5, 3, 1};\n\tedges[2] = {0, 1, 5};\n\tedges[3] = {1, 5, -3};\n\tedges[4] = {1, 2, -2};\n\tedges[5] = {3, 4, -2};\n\tedges[6] = {2, 4, 3};\n\n\tint S = 0;\n\tSolution obj;\n\tvector<int> dist = obj.bellman_ford(V, edges, S);\n\tfor (auto d : dist) {\n\t\tcout << d << \" \";\n\t}\n\tcout << endl;\n\n\treturn 0;\n}",
+      "Java": "import java.util.*;\n\n/*  \n*   edges: vector of vectors which represents the graph\n*   S: source vertex to start traversing graph with\n*   V: number of vertices\n*/\nclass Solution {\n    static int[] bellman_ford(int V,\n                              ArrayList<ArrayList<Integer>> edges, int S) {\n        int[] dist = new int[V];\n        for (int i = 0; i < V; i++) dist[i] = (int)(1e8);\n        dist[S] = 0;\n        // V x E\n        for (int i = 0; i < V - 1; i++) {\n            for (ArrayList<Integer> it : edges) {\n                int u = it.get(0); //Starting point of the edge\n                int v = it.get(1); //Ending point of the edge\n                int wt = it.get(2); //Edge weight\n                if (dist[u] != 1e8 && dist[u] + wt < dist[v]) {\n                    dist[v] = dist[u] + wt;\n                }\n            }\n        }\n        // Nth relaxation to check negative cycle\n        for (ArrayList<Integer> it : edges) {\n            int u = it.get(0);  \n            int v = it.get(1);\n            int wt = it.get(2);\n            if (dist[u] != 1e8 && dist[u] + wt < dist[v]) {\n                int temp[] = new int[1];\n                temp[0] = -1;\n                return temp;\n            }\n        }\n        return dist;\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        int V = 6;\n        int S = 0;\n        ArrayList<ArrayList<Integer>> edges = new ArrayList<>() {\n            {\n                add(new ArrayList<Integer>(Arrays.asList(3, 2, 6)));\n                add(new ArrayList<Integer>(Arrays.asList(5, 3, 1)));\n                add(new ArrayList<Integer>(Arrays.asList(0, 1, 5)));\n                add(new ArrayList<Integer>(Arrays.asList(1, 5, -3)));\n                add(new ArrayList<Integer>(Arrays.asList(1, 2, -2)));\n                add(new ArrayList<Integer>(Arrays.asList(3, 4, -2)));\n                add(new ArrayList<Integer>(Arrays.asList(2, 4, 3)));\n            }\n        };\n        int[] dist = Solution.bellman_ford(V, edges, S);\n        for (int i = 0; i < V; i++) {\n            System.out.print(dist[i] + \" \");\n        }\n        System.out.println(\"\");\n    }\n}",
+      "Python3": "class Solution:\ndef bellman_ford(V, edges, S):\ndist = [int(1e8)] * V\ndist[S] = 0\n\n    # Relax all edges (V-1) times\n    for _ in range(V - 1):\n        for u, v, wt in edges:  #V is the ending point of the edge\n            if dist[u] != int(1e8) and dist[u] + wt < dist[v]:  #U is the Starting point of the edge\n                dist[v] = dist[u] + wt    #Wt is the edge weight \n\n    # Check for negative weight cycle\n    for u, v, wt in edges:\n        if dist[u] != int(1e8) and dist[u] + wt < dist[v]:\n            return [-1]  # Negative cycle detected\n\n    return dist\n\nif __name__ == \"__main__\":\n    V = 6\n    S = 0\n    edges = [\n        [3, 2, 6],\n        [5, 3, 1],\n        [0, 1, 5],\n        [1, 5, -3],\n        [1, 2, -2],\n        [3, 4, -2],\n        [2, 4, 3]\n    ]\n\n    dist = bellman_ford(V, edges, S)\n    print(\" \".join(map(str, dist)))",
+      "JavaScript": "class Solution{\nfunction bellmanFord(V, edges, S) {\n    // Initialize distance array with a large number (Infinity approximation)\nconst dist = new Array(V).fill(1e8);\ndist[S] = 0;  // Distance to source is 0\n\n    // Relax all edges V-1 times\n    for (let i = 0; i < V - 1; i++) {\n        for (const [u, v, wt] of edges) {  //Starting point of the edge\n            if (dist[u] !== 1e8 && dist[u] + wt < dist[v]) { //V is the ending point of the edge\n                dist[v] = dist[u] + wt;  //Wt is the edge weight\n            }\n        }\n    }\n\n    // Check for negative weight cycle\n    for (const [u, v, wt] of edges) {\n        if (dist[u] !== 1e8 && dist[u] + wt < dist[v]) {\n            return [-1]; // Negative weight cycle detected\n        }\n    }\n\n    return dist;\n}\n\n// Driver code\nconst V = 6;\nconst S = 0;\nconst edges = [\n    [3, 2, 6],\n    [5, 3, 1],\n    [0, 1, 5],\n    [1, 5, -3],\n    [1, 2, -2],\n    [3, 4, -2],\n    [2, 4, 3]\n];\n\nconst dist = bellmanFord(V, edges, S);\nconsole.log(dist.join(\" \"));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

@@ -1,0 +1,127 @@
+{
+  "questionId": "Q2286",
+  "title": "Milestones",
+  "slug": "milestones",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Math",
+      "Geometry",
+      "Collinearity"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Geometry"
+    ]
+  },
+  "content": {
+    "problemStatement": "Once upon a time, there was a Kingdom of Seven Roads. Besides a fancy name, it actually had exactly 7 straight roads. Its residents wanted to keep track of the distances they traveled so they placed milestones along some roads. The roads slowly deteriorated and disappeared but some milestones remained. Archeologists documented remaining milestones and want to reconstruct the kingdom, starting with its main road. Help them by finding the maximum number of collinear milestones.",
+    "constraints": [
+      "1 <= T <= 30",
+      "1 <= N <= 10000",
+      "-15000 <= Xi, Yi <= 15000"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, the first line contains an integer N \u2013 the number of documented milestones. The next N lines each contain two integers Xi and Yi separated by a space, the coordinates of a milestone.",
+    "outputFormat": "For each test case, output a single line containing the maximum number of milestones that lie on the same straight line.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n5\n0 0\n1 0\n2 0\n1 1\n3 1\n2\n1 1\n10 10",
+        "output": "3\n2",
+        "explanation": "In the first test case the points (0,0),(1,0),(2,0) are collinear, giving a maximum of 3. In the second test case only two points exist, so the answer is 2."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n4\n0 0\n1 2\n2 4\n3 6",
+        "output": "4",
+        "explanation": "All four points lie on the line y = 2x, therefore the maximum collinear count is 4."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n6\n0 0\n1 2\n2 5\n3 1\n4 4\n5 3",
+        "output": "2",
+        "explanation": "No three points are on the same line, so the best we can do is any pair, giving 2."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n0 0",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n10000\n-15000 -15000\n-15000 -14999\n-14999 -15000\n-14999 -14999",
+        "expectedOutput": "4",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n5\n0 0\n0 0\n0 0\n0 0\n0 0",
+        "expectedOutput": "5",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n3\n0 0\n1 1\n2 2",
+        "expectedOutput": "3",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "2\n5\n0 0\n1 0\n2 0\n1 1\n3 1\n2\n1 1\n10 10",
+        "expectedOutput": "3\n2",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use the concept of slope. For each pair of milestones, we calculate the slope of the line passing through them. We use a hashmap to store the frequency of each slope. The maximum frequency of slope plus one (for the anchor point) gives us the maximum number of collinear milestones.",
+    "timeComplexity": "O(T * N^2) per test case, O(T * N^2) total. The precomputation is done once for each test case.",
+    "spaceComplexity": "O(N) \u2014 the dominant structure is the hashmap used to store the frequency of each slope.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nint gcd_int(int a, int b){\n    if(a<0) a=-a; if(b<0) b=-b;\n    while(b){int t=a%b; a=b; b=t;} return a;\n}\n\ntypedef struct{int dx, dy;} Dir;\nint cmp_dir(const void *a, const void *b){\n    Dir *x=(Dir*)a, *y=(Dir*)b;\n    if(x->dx!=y->dx) return x->dx - y->dx;\n    return x->dy - y->dy;\n}\n\nint main(){\n    int T; if(scanf(\"%d\",&T)!=1) return 0;\n    while(T--){\n        int N; scanf(\"%d\",&N);\n        int *X = (int*)malloc(N*sizeof(int));\n        int *Y = (int*)malloc(N*sizeof(int));\n        for(int i=0;i<N;i++) scanf(\"%d %d\",&X[i],&Y[i]);\n        int best = (N>0)?1:0;\n        Dir *arr = (Dir*)malloc((N-1)*sizeof(Dir));\n        for(int i=0;i<N;i++){\n            int cnt=0;\n            for(int j=0;j<N;j++) if(j!=i){\n                int dx = X[j]-X[i];\n                int dy = Y[j]-Y[i];\n                if(dx==0 && dy==0) continue; // not possible because distinct\n                int g = gcd_int(dx,dy);\n                dx/=g; dy/=g;\n                if(dx<0){dx=-dx; dy=-dy;}\n                else if(dx==0 && dy<0){dy=-dy;}\n                arr[cnt].dx=dx; arr[cnt].dy=dy; cnt++;\n            }\n            qsort(arr,cnt,sizeof(Dir),cmp_dir);\n            int cur=1; for(int k=1;k<cnt;k++){\n                if(arr[k].dx==arr[k-1].dx && arr[k].dy==arr[k-1].dy) cur++; else cur=1;\n                if(cur+1>best) best=cur+1; // +1 for anchor\n            }\n        }\n        printf(\"%d\\n\",best);\n        free(X); free(Y); free(arr);\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nstruct PairHash{\n    size_t operator()(const pair<int,int>&p) const noexcept{\n        return ((uint64_t)(unsigned)p.first<<32) ^ (unsigned)p.second;\n    }\n};\nint gcd_int(int a,int b){ if(a<0) a=-a; if(b<0) b=-b; while(b){int t=a%b; a=b; b=t;} return a; }\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N; cin>>N;\n        vector<int> X(N),Y(N);\n        for(int i=0;i<N;i++) cin>>X[i]>>Y[i];\n        int best = (N>0)?1:0;\n        for(int i=0;i<N;i++){\n            unordered_map<pair<int,int>,int,PairHash> mp;\n            mp.reserve(N*2);\n            for(int j=0;j<N;j++) if(j!=i){\n                int dx = X[j]-X[i];\n                int dy = Y[j]-Y[i];\n                int g = gcd_int(dx,dy);\n                dx/=g; dy/=g;\n                if(dx<0){dx=-dx; dy=-dy;}\n                else if(dx==0 && dy<0){dy=-dy;}\n                auto key = make_pair(dx,dy);\n                int c = ++mp[key];\n                best = max(best, c+1);\n            }\n        }\n        cout<<best<<\"\\n\";\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    static int gcd(int a,int b){\n        if(a<0) a=-a; if(b<0) b=-b;\n        while(b!=0){int t=a%b; a=b; b=t;}\n        return a;\n    }\n    static class Pair {\n        int dx, dy;\n        Pair(int dx,int dy){this.dx=dx; this.dy=dy;}\n        @Override public int hashCode(){return Objects.hash(dx,dy);}        \n        @Override public boolean equals(Object o){\n            if(this==o) return true;\n            if(!(o instanceof Pair)) return false;\n            Pair p=(Pair)o; return dx==p.dx && dy==p.dy;\n        }\n    }\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st;\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder out = new StringBuilder();\n        while(T-- > 0){\n            int N = Integer.parseInt(br.readLine().trim());\n            int[] X = new int[N];\n            int[] Y = new int[N];\n            for(int i=0;i<N;i++){\n                st = new StringTokenizer(br.readLine());\n                X[i] = Integer.parseInt(st.nextToken());\n                Y[i] = Integer.parseInt(st.nextToken());\n            }\n            int best = (N>0)?1:0;\n            for(int i=0;i<N;i++){\n                HashMap<Pair,Integer> map = new HashMap<>(N*2);\n                for(int j=0;j<N;j++) if(j!=i){\n                    int dx = X[j]-X[i];\n                    int dy = Y[j]-Y[i];\n                    int g = gcd(dx,dy);\n                    dx/=g; dy/=g;\n                    if(dx<0){dx=-dx; dy=-dy;}\n                    else if(dx==0 && dy<0){dy=-dy;}\n                    Pair p = new Pair(dx,dy);\n                    int cnt = map.getOrDefault(p,0)+1;\n                    map.put(p,cnt);\n                    best = Math.max(best, cnt+1);\n                }\n            }\n            out.append(best).append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}\n",
+      "Python3": "import sys,math\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it))\n        pts = [(int(next(it)), int(next(it))) for __ in range(N)]\n        best = 1 if N>0 else 0\n        for i in range(N):\n            slopes = {}\n            xi, yi = pts[i]\n            for j in range(N):\n                if i==j: continue\n                xj, yj = pts[j]\n                dx = xj - xi\n                dy = yj - yi\n                g = math.gcd(dx, dy)\n                dx //= g\n                dy //= g\n                if dx < 0:\n                    dx = -dx\n                    dy = -dy\n                elif dx == 0 and dy < 0:\n                    dy = -dy\n                key = (dx, dy)\n                cnt = slopes.get(key, 0) + 1\n                slopes[key] = cnt\n                if cnt + 1 > best:\n                    best = cnt + 1\n        out_lines.append(str(best))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0,'utf-8').trim().split(/\\s+/).map(Number);\nlet idx = 0;\nconst T = input[idx++];\nlet outputs = [];\nfunction gcd(a,b){\n    a = Math.abs(a); b = Math.abs(b);\n    while(b!==0){ let t = a % b; a = b; b = t; }\n    return a;\n}\nfor(let t=0;t<T;t++){\n    const N = input[idx++];\n    let pts = new Array(N);\n    for(let i=0;i<N;i++){\n        const x = input[idx++];\n        const y = input[idx++];\n        pts[i] = [x,y];\n    }\n    let best = N>0?1:0;\n    for(let i=0;i<N;i++){\n        const map = new Map();\n        const [xi,yi] = pts[i];\n        for(let j=0;j<N;j++) if(j!==i){\n            const [xj,yj] = pts[j];\n            let dx = xj - xi;\n            let dy = yj - yi;\n            const g = gcd(dx,dy);\n            dx /= g; dy /= g;\n            if(dx<0){dx=-dx; dy=-dy;}\n            else if(dx===0 && dy<0){dy=-dy;}\n            const key = dx+','+dy;\n            const cnt = (map.get(key)||0)+1;\n            map.set(key,cnt);\n            if(cnt+1>best) best = cnt+1;\n        }\n    }\n    outputs.push(String(best));\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  }
+}

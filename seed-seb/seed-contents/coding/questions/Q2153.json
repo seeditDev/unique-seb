@@ -1,0 +1,127 @@
+{
+  "questionId": "Q2153",
+  "title": "The Guessing Game",
+  "slug": "the-guessing-game",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Math",
+      "Puzzle",
+      "Logic"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Geometry"
+    ]
+  },
+  "content": {
+    "problemStatement": "Alice and Johnny are playing a simple guessing game. Johnny picks an arbitrary positive integer n (1&lt;=n&lt;=109) and gives Alice exactly k hints about the value of n. It is Alice's task to guess n, based on the received hints. \n\n\n\nAlice often has a serious problem guessing the value of n, and she's beginning to suspect that Johnny occasionally cheats, that is, gives her incorrect hints. \nAfter the last game, they had the following little conversation:\n\n\n\n[Alice] Johnny, you keep cheating!\n[Johnny] Indeed? You cannot prove it.\n[Alice] Oh yes I can. In fact, I can tell you with the utmost certainty that in the last game you lied to me at least *** times.\n\nSo, how many times at least did Johnny lie to Alice? Try to determine this, knowing only the hints Johnny gave to Alice.",
+    "constraints": [
+      "1 <= T <= 20",
+      "1 <= k <= 100000",
+      "1 <= li <= 10^9"
+    ],
+    "inputFormat": "The first line contains the number of test cases T. Each test case starts with a line containing the number of hints k, followed by k lines, each containing an operator (<, >, or =), an integer li, and a logical value (Yes or No).",
+    "outputFormat": "For each test case, output the minimal possible number of Johnny's lies during the game.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n2\n< 100 No\n> 100 No\n3\n< 2 Yes\n> 4 Yes\n= 3 No\n6\n< 2 Yes\n> 1 Yes\n= 1 Yes\n= 1 Yes\n> 1 Yes\n= 1 Yes",
+        "output": "0\n1\n2",
+        "explanation": "Explanation: For the respective test cases, the number picked by Johnny could have been e.g. n=100, n=5, and n=1."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n1\n= 10 Yes",
+        "output": "0",
+        "explanation": "Explanation: The number picked by Johnny is 10."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n2\n< 10 Yes\n> 10 Yes",
+        "output": "1",
+        "explanation": "Explanation: The number picked by Johnny could have been e.g. n=11, but the hint '< 10 Yes' is a lie."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n= 1 Yes",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n1\n= 1000000000 Yes",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n2\n= 10 Yes\n= 10 Yes",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n2\n< 10 Yes\n> 10 Yes",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "2\n2\n< 10 Yes\n> 10 Yes\n2\n= 10 Yes\n= 10 Yes",
+        "expectedOutput": "1\n0",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The key insight is to iterate over all possible values that Johnny could have picked and calculate the number of lies for each value. The value with the minimum number of lies is the answer. We can optimize this by only considering the values that are mentioned in the hints, as well as the minimum and maximum possible values.",
+    "timeComplexity": "O(T * k * log(k)) per test case, O(T * k * log(k)) total. The precomputation is done once for each test case.",
+    "spaceComplexity": "O(k) \u2014 the dominant structure is the array of hints.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#define MAX_K 100000\n#define MAX_N 1000000000\nint compare(const void *a, const void *b) {\n    return (*(int*)a - *(int*)b);\n}\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int k;\n        scanf(\"%d\", &k);\n        int hints[k][3]; // operator, value, logical_value\n        for (int i = 0; i < k; i++) {\n            char operator;\n            int value;\n            char logical_value[4];\n            scanf(\" %c %d %s\", &operator, &value, logical_value);\n            hints[i][0] = operator;\n            hints[i][1] = value;\n            hints[i][2] = (logical_value[0] == 'Y') ? 1 : 0;\n        }\n        int possible_values[k + 2];\n        int count = 0;\n        for (int i = 0; i < k; i++) {\n            possible_values[count++] = hints[i][1];\n        }\n        possible_values[count++] = 1;\n        possible_values[count++] = MAX_N;\n        qsort(possible_values, count, sizeof(int), compare);\n        int min_lies = MAX_N;\n        for (int i = 0; i < count; i++) {\n            int lies = 0;\n            for (int j = 0; j < k; j++) {\n                if (hints[j][0] == '<') {\n                    if (possible_values[i] >= hints[j][1] && hints[j][2] == 1) lies++;\n                    if (possible_values[i] < hints[j][1] && hints[j][2] == 0) lies++;\n                } else if (hints[j][0] == '>') {\n                    if (possible_values[i] <= hints[j][1] && hints[j][2] == 1) lies++;\n                    if (possible_values[i] > hints[j][1] && hints[j][2] == 0) lies++;\n                } else {\n                    if (possible_values[i] != hints[j][1] && hints[j][2] == 1) lies++;\n                    if (possible_values[i] == hints[j][1] && hints[j][2] == 0) lies++;\n                }\n            }\n            min_lies = (lies < min_lies) ? lies : min_lies;\n        }\n        printf(\"%d\\n\", min_lies);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\n#include <algorithm>\nusing namespace std;\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        int k;\n        cin >> k;\n        vector<vector<int>> hints(k, vector<int>(3));\n        for (int i = 0; i < k; i++) {\n            char operator;\n            int value;\n            string logical_value;\n            cin >> operator >> value >> logical_value;\n            hints[i][0] = operator;\n            hints[i][1] = value;\n            hints[i][2] = (logical_value == \"Yes\") ? 1 : 0;\n        }\n        vector<int> possible_values;\n        for (int i = 0; i < k; i++) {\n            possible_values.push_back(hints[i][1]);\n        }\n        possible_values.push_back(1);\n        possible_values.push_back(1000000000);\n        sort(possible_values.begin(), possible_values.end());\n        int min_lies = 1000000000;\n        for (int i = 0; i < possible_values.size(); i++) {\n            int lies = 0;\n            for (int j = 0; j < k; j++) {\n                if (hints[j][0] == '<') {\n                    if (possible_values[i] >= hints[j][1] && hints[j][2] == 1) lies++;\n                    if (possible_values[i] < hints[j][1] && hints[j][2] == 0) lies++;\n                } else if (hints[j][0] == '>') {\n                    if (possible_values[i] <= hints[j][1] && hints[j][2] == 1) lies++;\n                    if (possible_values[i] > hints[j][1] && hints[j][2] == 0) lies++;\n                } else {\n                    if (possible_values[i] != hints[j][1] && hints[j][2] == 1) lies++;\n                    if (possible_values[i] == hints[j][1] && hints[j][2] == 0) lies++;\n                }\n            }\n            min_lies = min(min_lies, lies);\n        }\n        cout << min_lies << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Arrays;\nimport java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int T = scanner.nextInt();\n        while (T-- > 0) {\n            int k = scanner.nextInt();\n            int[][] hints = new int[k][3];\n            for (int i = 0; i < k; i++) {\n                char operator = scanner.next().charAt(0);\n                int value = scanner.nextInt();\n                String logicalValue = scanner.next();\n                hints[i][0] = operator;\n                hints[i][1] = value;\n                hints[i][2] = logicalValue.equals(\"Yes\") ? 1 : 0;\n            }\n            int[] possibleValues = new int[k + 2];\n            int count = 0;\n            for (int i = 0; i < k; i++) {\n                possibleValues[count++] = hints[i][1];\n            }\n            possibleValues[count++] = 1;\n            possibleValues[count++] = 1000000000;\n            Arrays.sort(possibleValues);\n            int minLies = 1000000000;\n            for (int i = 0; i < possibleValues.length; i++) {\n                int lies = 0;\n                for (int j = 0; j < k; j++) {\n                    if (hints[j][0] == '<') {\n                        if (possibleValues[i] >= hints[j][1] && hints[j][2] == 1) lies++;\n                        if (possibleValues[i] < hints[j][1] && hints[j][2] == 0) lies++;\n                    } else if (hints[j][0] == '>') {\n                        if (possibleValues[i] <= hints[j][1] && hints[j][2] == 1) lies++;\n                        if (possibleValues[i] > hints[j][1] && hints[j][2] == 0) lies++;\n                    } else {\n                        if (possibleValues[i] != hints[j][1] && hints[j][2] == 1) lies++;\n                        if (possibleValues[i] == hints[j][1] && hints[j][2] == 0) lies++;\n                    }\n                }\n                minLies = Math.min(minLies, lies);\n            }\n            System.out.println(minLies);\n        }\n    }\n}",
+      "Python3": "import sys\nT = int(input())\nfor _ in range(T):\n    k = int(input())\n    hints = []\n    for _ in range(k):\n        operator, value, logical_value = input().split()\n        hints.append([operator, int(value), logical_value == 'Yes'])\n    possible_values = [hint[1] for hint in hints] + [1, 1000000000]\n    possible_values = sorted(set(possible_values))\n    min_lies = 1000000000\n    for value in possible_values:\n        lies = 0\n        for hint in hints:\n            if hint[0] == '<':\n                if value >= hint[1] and hint[2]:\n                    lies += 1\n                if value < hint[1] and not hint[2]:\n                    lies += 1\n            elif hint[0] == '>':\n                if value <= hint[1] and hint[2]:\n                    lies += 1\n                if value > hint[1] and not hint[2]:\n                    lies += 1\n            else:\n                if value != hint[1] and hint[2]:\n                    lies += 1\n                if value == hint[1] and not hint[2]:\n                    lies += 1\n        min_lies = min(min_lies, lies)\n    print(min_lies)",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst readLine = () => input[idx++];\nconst readInt = () => parseInt(readLine());\nconst readIntArray = () => readLine().split(' ').map(x => parseInt(x));\nconst T = readInt();\nfor (let i = 0; i < T; i++) {\n    const k = readInt();\n    const hints = [];\n    for (let j = 0; j < k; j++) {\n        const [operator, value, logicalValue] = readLine().split(' ');\n        hints.push([operator, parseInt(value), logicalValue === 'Yes']);\n    }\n    const possibleValues = [...new Set(hints.map(hint => hint[1]).concat([1, 1000000000]))].sort((a, b) => a - b);\n    let minLies = 1000000000;\n    for (let value of possibleValues) {\n        let lies = 0;\n        for (let hint of hints) {\n            if (hint[0] === '<') {\n                if (value >= hint[1] && hint[2]) lies++;\n                if (value < hint[1] && !hint[2]) lies++;\n            } else if (hint[0] === '>') {\n                if (value <= hint[1] && hint[2]) lies++;\n                if (value > hint[1] && !hint[2]) lies++;\n            } else {\n                if (value !== hint[1] && hint[2]) lies++;\n                if (value === hint[1] && !hint[2]) lies++;\n            }\n        }\n        minLies = Math.min(minLies, lies);\n    }\n    console.log(minLies);\n}"
+    }
+  }
+}

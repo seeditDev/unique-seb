@@ -1,0 +1,138 @@
+{
+  "questionId": "Q7902",
+  "title": "Rook Path",
+  "slug": "rook-path",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Eulerian Trail",
+      "Hierholzer Algorithm",
+      "Bipartite Graph",
+      "Construction"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Flow & Matching"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "There is a chessboard with NNN rows (numbered 111 through NNN) and NNN columns (numbered 111 through NNN). MMM squares on this chessboard (numbered 111 through MMM) are marked. For each valid iii, the iii-th of the marked squares is in the rir_iri​-th row and cic_ici​-th column.\n\nYou should perform the following process:\n\n\nFirst, you take a rook and put this rook on one of the marked squares.\nThen you move the rook M−1M-1M−1 times; since it is a rook, each of these moves must be to a marked square in the same row or the same column as the square where the rook was currently standing.\nThe rook must visit each of the marked squares exactly once. In each move, squares strictly between those where the rook stands immediately before and after this move are not visited by the rook.\nAlso, the directions of the moves must alternate ― you may not move the rook in the same row twice or in the same column twice in any two consecutive moves.\nFind one valid path for the rook that visits the marked squares. It is guaranteed that at least one such path exists. If there are multiple solutions, you may find any one of them.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 50000",
+      "1 <= M <= 50000",
+      "1 <= r_i, c_i <= N",
+      "All marked squares are distinct",
+      "It is guaranteed that at least one valid alternating rook path exists"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case: the first line contains two integers N and M. Then M lines follow; the i‑th line contains two integers r_i and c_i describing the row and column of the i‑th marked square (1‑based).",
+    "outputFormat": "For each test case output a single line with M space‑separated integers – a permutation of 1…M indicating the order in which the rook visits the marked squares.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n2 4\n1 1\n1 2\n2 1\n2 2\n1 1\n1 1\n",
+        "output": "1 3 4 2\n1\n",
+        "explanation": "First test case uses all four cells of a 2×2 board. The Eulerian circuit 1‑3‑4‑2 corresponds to a valid alternating rook path. The second test case has only one marked square, so the path consists of that single index."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n3 5\n1 2\n2 2\n2 3\n3 3\n3 1\n",
+        "output": "1 2 3 4 5\n",
+        "explanation": "The graph formed by the five squares has exactly two vertices of odd degree (row 1 and column 1), so an Eulerian trail exists. One possible trail visits the squares in the order 1→2→3→4→5, which satisfies the alternating‑row/column requirement."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Treat each row and each column as a vertex of a bipartite graph. Every marked square (r_i, c_i) becomes an undirected edge connecting vertex r_i (row) with vertex N + c_i (column). A rook move from one square to another in the same row corresponds to traversing two consecutive edges that share the row vertex; a move in the same column corresponds to sharing the column vertex. Because the required moves must alternate between row and column, the sequence of visited squares is exactly a trail that uses every edge exactly once – an Eulerian trail in this graph. The statement guarantees that such a trail exists, i.e., the graph is connected and has either 0 or 2 vertices of odd degree. We therefore run Hierholzer's algorithm to construct an Eulerian trail. While traversing, we record the edge identifiers in the order they are taken; this order is the required rook path. The algorithm runs in O(N + M) time and O(N + M) memory per test case.",
+    "timeComplexity": "O(N + M) per test case",
+    "spaceComplexity": "O(N + M) per test case",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\ntypedef struct Edge {int to; int id; struct Edge *next;} Edge;\n\nint main(){int T; if(scanf(\"%d\",&T)!=1) return 0; while(T--){int N,M; scanf(\"%d %d\",&N,&M);\n int totalV = 2*N+5; // rows 1..N, columns N+1..2N\n Edge **adj = (Edge**)calloc(totalV,sizeof(Edge*));\n int *r = (int*)malloc((M+1)*sizeof(int));\n int *c = (int*)malloc((M+1)*sizeof(int));\n for(int i=1;i<=M;i++){\n   scanf(\"%d %d\",&r[i],&c[i]);\n   int u = r[i];\n   int v = N + c[i];\n   Edge *e1 = (Edge*)malloc(sizeof(Edge)); e1->to=v; e1->id=i; e1->next=adj[u]; adj[u]=e1;\n   Edge *e2 = (Edge*)malloc(sizeof(Edge)); e2->to=u; e2->id=i; e2->next=adj[v]; adj[v]=e2;\n }\n int *used = (int*)calloc(M+1,sizeof(int));\n int *stackV = (int*)malloc((M+5)*sizeof(int));\n int *stackE = (int*)malloc((M+5)*sizeof(int));\n int top=0; // vertex stack\n int start=1; // any vertex with degree>0\n for(int i=1;i<=2*N;i++) if(adj[i]){start=i; break;}\n stackV[top++] = start;\n int *res = (int*)malloc((M+1)*sizeof(int));\n int resPos=0;\n while(top){int v = stackV[top-1];\n   while(adj[v] && used[adj[v]->id]) adj[v]=adj[v]->next;\n   if(adj[v]==NULL){ // backtrack\n     top--;\n     if(top>0){ // edge leading to this vertex is stored in stackE[top-1]\n       res[resPos++] = stackE[top-1];\n     }\n   } else {\n     Edge *e = adj[v];\n     used[e->id]=1;\n     stackE[top-1]=e->id;\n     stackV[top++] = e->to;\n   }\n }\n // output in reverse order of collection\n for(int i=resPos-1;i>=0;i--){printf(\"%d\",res[i]); if(i) printf(\" \");}\n printf(\"\\n\");\n free(adj); free(r); free(c); free(used); free(stackV); free(stackE); free(res);\n }\n return 0; }\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nstruct Edge{int to,id;};\nint main(){ios::sync_with_stdio(false);cin.tie(nullptr);\n int T; if(!(cin>>T)) return 0; while(T--){int N,M;cin>>N>>M;int V=2*N+5;\n vector<vector<Edge>> adj(V);\n vector<int> r(M+1),c(M+1);\n for(int i=1;i<=M;i++){\n   cin>>r[i]>>c[i];\n   int u=r[i];\n   int v=N+c[i];\n   adj[u].push_back({v,i});\n   adj[v].push_back({u,i});\n }\n vector<char> used(M+1,0);\n vector<int> stV, stE, ans; stV.reserve(M+5); stE.reserve(M+5);\n int start=1; while(start<V && adj[start].empty()) ++start;\n stV.push_back(start);\n while(!stV.empty()){\n   int v=stV.back();\n   while(!adj[v].empty() && used[adj[v].back().id]) adj[v].pop_back();\n   if(adj[v].empty()){\n     stV.pop_back();\n     if(!stE.empty()){\n       ans.push_back(stE.back());\n       stE.pop_back();\n     }\n   }else{\n     Edge e=adj[v].back(); adj[v].pop_back();\n     used[e.id]=1;\n     stE.push_back(e.id);\n     stV.push_back(e.to);\n   }\n }\n for(int i=ans.size()-1;i>=0;i--){cout<<ans[i]<<(i? ' ':'\\n');}\n if(ans.empty()) cout<<\"\\n\"; // M can be 0 never here\n }\n return 0; }\n",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    static class Edge {int to, id; Edge(int t,int i){to=t;id=i;}}\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner(System.in);\n        int T = fs.nextInt();\n        StringBuilder out = new StringBuilder();\n        while (T-- > 0) {\n            int N = fs.nextInt();\n            int M = fs.nextInt();\n            int V = 2 * N + 5;\n            @SuppressWarnings(\"unchecked\")\n            ArrayList<Edge>[] adj = new ArrayList[V];\n            for (int i = 0; i < V; i++) adj[i] = new ArrayList<>();\n            int[] r = new int[M+1];\n            int[] c = new int[M+1];\n            for (int i = 1; i <= M; i++) {\n                r[i] = fs.nextInt();\n                c[i] = fs.nextInt();\n                int u = r[i];\n                int v = N + c[i];\n                adj[u].add(new Edge(v,i));\n                adj[v].add(new Edge(u,i));\n            }\n            boolean[] used = new boolean[M+1];\n            int start = 1;\n            while (start < V && adj[start].isEmpty()) start++;\n            Deque<Integer> stackV = new ArrayDeque<>();\n            Deque<Integer> stackE = new ArrayDeque<>();\n            List<Integer> ans = new ArrayList<>();\n            stackV.push(start);\n            while (!stackV.isEmpty()) {\n                int v = stackV.peek();\n                while (!adj[v].isEmpty() && used[adj[v].get(adj[v].size()-1).id])\n                    adj[v].remove(adj[v].size()-1);\n                if (adj[v].isEmpty()) {\n                    stackV.pop();\n                    if (!stackE.isEmpty()) {\n                        ans.add(stackE.pop());\n                    }\n                } else {\n                    Edge e = adj[v].remove(adj[v].size()-1);\n                    used[e.id] = true;\n                    stackE.push(e.id);\n                    stackV.push(e.to);\n                }\n            }\n            for (int i = ans.size()-1; i >= 0; i--) {\n                out.append(ans.get(i));\n                if (i > 0) out.append(' ');\n            }\n            out.append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n    // Fast scanner\n    static class FastScanner {\n        private final InputStream in;\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        FastScanner(InputStream is){in=is;}\n        private int readByte() throws IOException {\n            if (ptr >= len) { len = in.read(buffer); ptr = 0; if (len <= 0) return -1; }\n            return buffer[ptr++];\n        }\n        int nextInt() throws IOException {\n            int c, sign = 1, val = 0;\n            do { c = readByte(); } while (c <= ' ');\n            if (c == '-') { sign = -1; c = readByte(); }\n            while (c > ' ') { val = val * 10 + c - '0'; c = readByte(); }\n            return val * sign;\n        }\n    }\n}\n",
+      "Python3": "import sys\nsys.setrecursionlimit(1_000_000)\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it)); M = int(next(it))\n        V = 2 * N + 5\n        adj = [[] for _ in range(V)]\n        rows = [0]*(M+1)\n        cols = [0]*(M+1)\n        for i in range(1, M+1):\n            r = int(next(it)); c = int(next(it))\n            rows[i]=r; cols[i]=c\n            u = r\n            v = N + c\n            adj[u].append((v,i))\n            adj[v].append((u,i))\n        used = [False]*(M+1)\n        start = 1\n        while start < V and not adj[start]:\n            start += 1\n        stack_v = [start]\n        stack_e = []\n        ans = []\n        while stack_v:\n            v = stack_v[-1]\n            while adj[v] and used[adj[v][-1][1]]:\n                adj[v].pop()\n            if not adj[v]:\n                stack_v.pop()\n                if stack_e:\n                    ans.append(stack_e.pop())\n            else:\n                to, eid = adj[v].pop()\n                used[eid] = True\n                stack_e.append(eid)\n                stack_v.append(to)\n        out_lines.append(' '.join(map(str, reversed(ans))))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst data = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nif (data.length === 0) process.exit(0);\nconst T = Number(data[idx++]);\nlet output = [];\nfor (let tc = 0; tc < T; tc++) {\n  const N = Number(data[idx++]);\n  const M = Number(data[idx++]);\n  const V = 2 * N + 5;\n  const adj = Array.from({ length: V }, () => []);\n  const rows = new Array(M + 1);\n  const cols = new Array(M + 1);\n  for (let i = 1; i <= M; i++) {\n    const r = Number(data[idx++]);\n    const c = Number(data[idx++]);\n    rows[i] = r; cols[i] = c;\n    const u = r;\n    const v = N + c;\n    adj[u].push([v, i]);\n    adj[v].push([u, i]);\n  }\n  const used = new Array(M + 1).fill(false);\n  let start = 1;\n  while (start < V && adj[start].length === 0) start++;\n  const stackV = [start];\n  const stackE = [];\n  const ans = [];\n  while (stackV.length) {\n    const v = stackV[stackV.length - 1];\n    while (adj[v].length && used[adj[v][adj[v].length - 1][1]]) adj[v].pop();\n    if (adj[v].length === 0) {\n      stackV.pop();\n      if (stackE.length) ans.push(stackE.pop());\n    } else {\n      const [to, id] = adj[v].pop();\n      used[id] = true;\n      stackE.push(id);\n      stackV.push(to);\n    }\n  }\n  output.push(ans.reverse().join(' '));\n}\nconsole.log(output.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

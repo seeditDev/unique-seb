@@ -1,0 +1,129 @@
+{
+  "questionId": "Q8014",
+  "title": "Odd Array",
+  "slug": "odd-array",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Arrays | Greedy | Bit Manipulation",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Gray Code",
+      "Prefix Parity",
+      "Binary Representation",
+      "Constructive Algorithms"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Constructive Algorithms"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Construct an array of length NNN containing only positive integers in the range [1,1000][1, 1000][1,1000] such that there doesn’t exist a subarray that has all elements occurring in even frequency and the maximum element in the array is minimized. In case there are multiple solutions, you can output any.\n\n\nInput Format\n\nFirst line will contain TTT, number of testcases. Then the testcases follow.\nEach testcase contains of a single line of input, one integer NNN.\n\n\nOutput Format\nFor each test case, output in a single line NNN space-separated integers representing the required array. If there are multiple solutions, you may output any.",
+    "constraints": [
+      "1 ≤ T ≤ 500",
+      "1 ≤ N ≤ 1000",
+      "All array elements must be in the range [1, 1000]"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains a single integer N (1 ≤ N ≤ 1000).",
+    "outputFormat": "For each test case output a line with N space‑separated positive integers (each between 1 and 1000) forming an array that satisfies the condition and has the minimum possible maximum element.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n1\n2\n7",
+        "output": "1\n2 1\n1 2 3 2 1 2 3",
+        "explanation": "Explanation:\nTest case 111: [1][1][1] is the obvious answer.\nTest case 222: Since we need two elements and they can't be the same (otherwise the frequency of that element of the whole array is even), [2,1][2, 1][2,1] is the optimal answer. [1,2][1, 2][1,2] is another optimal one.\nTest case 333: It can be proven that no construction exists with the maximum element of 222."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For a subarray to have all element frequencies even, the parity vector of element counts in that subarray must be all zeros. Let the parity vector of the prefix ending at position i be P_i (a binary vector where the j‑th bit tells whether the number j has appeared an odd number of times up to i). A subarray (l+1 … r) has all even frequencies iff P_l = P_r. Therefore the condition \"no subarray with all even frequencies\" is equivalent to requiring that all prefix parity vectors are distinct.\n\nIf we use k different numbers, the parity vector lives in a k‑dimensional binary space, which contains at most 2^k distinct vectors. To have N+1 distinct vectors (including the empty prefix), we need 2^k ≥ N+1, i.e. k = ceil(log2(N+1)). This is the theoretical minimum for the maximum element.\n\nA Gray code of length 2^k lists all binary vectors of length k such that consecutive vectors differ in exactly one bit. Traversing the first N steps of a Gray code gives N+1 distinct prefix vectors, and each step flips exactly one bit. The index of the flipped bit (1‑based) can be used as the array element for that step. Consequently the maximum element equals k, which is optimal.\n\nAlgorithm per test case:\n1. Compute k = smallest integer with (1 << k) ≥ N+1.\n2. For i from 0 to N‑1:\n   a. gray_i   = i ^ (i >> 1)          // i‑th Gray code value\n   b. gray_next = (i+1) ^ ((i+1) >> 1)\n   c. diff = gray_i ^ gray_next        // a power of two, the changed bit\n   d. bit = number of trailing zeros in diff (0‑based)\n   e. output (bit + 1).\nThe produced array uses only numbers 1 … k, satisfies the required property, and k is minimal.\n\nComplexities: O(N) time and O(1) extra space per test case.",
+    "timeComplexity": "O(N) per test case, O(T·N) overall (N ≤ 1000).",
+    "spaceComplexity": "O(1) auxiliary space (output array not counted).",
+    "code": {
+      "C": "#include <stdio.h>\n#include <math.h>\n\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    while(T--){\n        int N; scanf(\"%d\", &N);\n        int k = 0;\n        while((1<<k) < N+1) k++;\n        for(int i=0;i<N;i++){\n            int gray_i = i ^ (i>>1);\n            int gray_next = (i+1) ^ ((i+1)>>1);\n            int diff = gray_i ^ gray_next; // power of two\n            int bit = __builtin_ctz(diff); // trailing zeros, GCC builtin\n            printf(\"%d\", bit+1);\n            if(i+1<N) printf(\" \");\n        }\n        if(T) printf(\"\\n\");\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N; cin>>N;\n        int k=0; while((1<<k) < N+1) ++k;\n        for(int i=0;i<N;i++){\n            int gray_i = i ^ (i>>1);\n            int gray_next = (i+1) ^ ((i+1)>>1);\n            int diff = gray_i ^ gray_next; // power of two\n            int bit = __builtin_ctz(diff);\n            cout << (bit+1);\n            if(i+1<N) cout << ' ';\n        }\n        if(T) cout << '\\n';\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder out = new StringBuilder();\n        int T = Integer.parseInt(br.readLine().trim());\n        for (int tc = 0; tc < T; tc++) {\n            int N = Integer.parseInt(br.readLine().trim());\n            int k = 0;\n            while ((1 << k) < N + 1) k++;\n            for (int i = 0; i < N; i++) {\n                int gray_i = i ^ (i >> 1);\n                int gray_next = (i + 1) ^ ((i + 1) >> 1);\n                int diff = gray_i ^ gray_next; // power of two\n                int bit = Integer.numberOfTrailingZeros(diff);\n                out.append(bit + 1);\n                if (i + 1 < N) out.append(' ');\n            }\n            if (tc + 1 < T) out.append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}\n",
+      "Python3": "#!/usr/bin/env python3\nimport sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it))\n        k = 0\n        while (1 << k) < N + 1:\n            k += 1\n        arr = []\n        for i in range(N):\n            gray_i = i ^ (i >> 1)\n            gray_next = (i + 1) ^ ((i + 1) >> 1)\n            diff = gray_i ^ gray_next  # power of two\n            # trailing zeros\n            bit = (diff & -diff).bit_length() - 1\n            arr.append(str(bit + 1))\n        out_lines.append(' '.join(arr))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet outputs = [];\nfor (let t = 0; t < T; t++) {\n  const N = Number(input[idx++]);\n  let k = 0;\n  while ((1 << k) < N + 1) k++;\n  let line = [];\n  for (let i = 0; i < N; i++) {\n    const gray_i = i ^ (i >> 1);\n    const gray_next = (i + 1) ^ ((i + 1) >> 1);\n    const diff = gray_i ^ gray_next; // power of two\n    // trailing zeros\n    let bit = 0;\n    let d = diff;\n    while ((d & 1) === 0) { d >>= 1; bit++; }\n    line.push(String(bit + 1));\n  }\n  outputs.push(line.join(' '));\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

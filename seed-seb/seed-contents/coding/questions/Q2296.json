@@ -1,0 +1,116 @@
+{
+  "questionId": "Q2296",
+  "title": "Time of collisions",
+  "slug": "time-of-collisions",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Implementation",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Prefix Sums",
+      "Small Range Values",
+      "Rational Arithmetic",
+      "Sorting",
+      "Implementation",
+      "Two Pointers"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Ad-hoc & Implementation"
+    ]
+  },
+  "content": {
+    "problemStatement": "Identical small balls are located on a straight line and can move along this line only. Each ball moves with a constant velocity, but velocities of different balls may be different. When two balls meet, a perfectly elastic collision occurs. It's a common-known physical fact that when two equal-mass physical bodies, say **A** and **B**, collide perfectly elastically, they swap their velocities. That is, **A**'s new velocity is **B**'s old velocity and **B**'s new velocity is **A**'s old velocity. Your task is to find the sum of all moments of time when collisions occur. If three or more balls collide at the same moment of time in the same place then the following will occur. Let the collision involves **k &gt;= 3** balls then you should consider this collision as simultaneous **k*(k-1)/2** collisions. It means that you should count the moment of time of this collision **k*(k-1)/2** times in you answer. The new velocities of these balls after all collisions have occurred will be as follows: the **1**-st and **k**-th balls swap their velocities, **2**-nd and **k-1**-th balls swap their velocities and so on. Explicitly, for each **i** between **1** and **k/2** balls **i** and **k+1-i** swap their velocities. Here we enumerate balls in order they were on the line in the moment of time just before the collision.",
+    "constraints": [
+      "1 \u2264 T \u2264 10",
+      "1 \u2264 N \u2264 50000",
+      "|xi| \u2264 1000000",
+      "|vi| \u2264 20",
+      "All xi are distinct"
+    ],
+    "inputFormat": "First line contains an integer T (1 \u2264 T \u2264 10) \u2013 the number of test cases. Each test case starts with an integer N (1 \u2264 N \u2264 50000) \u2013 the number of balls. Then N lines follow, each containing two integers xi and vi \u2013 the starting coordinate and the velocity of a ball. All xi are distinct.",
+    "outputFormat": "For each test case output a single line. If the number of collisions is infinite print \"INF\". Otherwise print the sum of all collision moments. The sum is rational; print it as an integer, or as a reduced fraction P/Q if it is less than 1, or as a mixed number A P/Q (A is the integer part, P/Q the reduced fractional part, P < Q).",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "",
+        "output": "Input:\n3\n2\n-1 1\n1 -1\n2\n0 1\n1 -1\n3\n-1 1\n2 -1\n3 -5\n\nOutput:\n1\n1/2\n2 5/12",
+        "explanation": ""
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Because all balls have equal mass, a perfectly elastic collision is equivalent to the two balls passing through each other while keeping their velocities. Therefore a collision between balls i and j occurs exactly once iff their trajectories intersect, i.e. (xi - xj)*(vi - vj) < 0. The collision time is t = (xj - xi) / (vi - vj) (the denominator is positive). The required answer is the sum of t over all such pairs.\n\nVelocities are bounded to the range [-20,20] (41 possible values). After sorting the balls by their initial coordinate we sweep from left to right. While scanning we maintain for each velocity v the number of already\u2011seen balls cnt[v] and the sum of their positions sumPos[v]. When we encounter a ball (xj, vj) we need to add the contribution of every earlier ball with a higher velocity vi > vj:\n    contribution = (cnt[vi] * xj - sumPos[vi]) / (vi - vj).\nSumming these contributions for all vi > vj gives the total added by the current ball. The overall complexity is O(N\u00b7V) with V = 41, well within the limits.\n\nThe total sum is a rational number. We keep it as a GMP rational (mpq_t) which automatically stores the numerator and denominator in reduced form. After processing a test case we output the rational according to the required format. An infinite number of collisions can only happen if two balls start at the same position with the same velocity, which is impossible because all xi are distinct, so the \"INF\" case never occurs for valid input.",
+    "timeComplexity": "O(N \u00b7 V) per test case, where V = 41 (the number of possible velocities).",
+    "spaceComplexity": "O(V) additional space for the count and position\u2011sum arrays, plus O(1) for the rational accumulator.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <gmp.h>\n\ntypedef struct {\n    int x;\n    int v;\n} Ball;\n\nint cmpBall(const void *a, const void *b) {\n    const Ball *ba = (const Ball *)a;\n    const Ball *bb = (const Ball *)b;\n    return (ba->x < bb->x) ? -1 : (ba->x > bb->x);\n}\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        int N;\n        scanf(\"%d\", &N);\n        Ball *arr = (Ball *)malloc(sizeof(Ball) * N);\n        for (int i = 0; i < N; ++i) {\n            scanf(\"%d %d\", &arr[i].x, &arr[i].v);\n        }\n        qsort(arr, N, sizeof(Ball), cmpBall);\n\n        // cnt and sumPos for velocities -20..20 mapped to 0..40\n        int64_t cnt[41] = {0};\n        int64_t sumPos[41] = {0};\n\n        mpq_t total;\n        mpq_init(total);\n        mpq_set_ui(total, 0, 1);\n\n        for (int i = 0; i < N; ++i) {\n            int xj = arr[i].x;\n            int vj = arr[i].v;\n            int idxj = vj + 20; // shift to 0..40\n            for (int vi = vj + 1; vi <= 20; ++vi) {\n                int idxi = vi + 20;\n                if (cnt[idxi] == 0) continue;\n                int64_t numerator = cnt[idxi] * (int64_t)xj - sumPos[idxi];\n                int64_t denominator = vi - vj; // positive\n                // term = numerator / denominator\n                mpq_t term;\n                mpq_init(term);\n                mpq_set_si(term, numerator, denominator);\n                mpq_canonicalize(term);\n                mpq_add(total, total, term);\n                mpq_clear(term);\n            }\n            // update structures with current ball\n            cnt[idxj]++;\n            sumPos[idxj] += xj;\n        }\n\n        // Output total\n        mpz_t num, den;\n        mpz_init(num);\n        mpz_init(den);\n        mpq_get_num(num, total);\n        mpq_get_den(den, total);\n\n        // Ensure denominator positive (GMP guarantees it)\n        if (mpz_cmp_ui(den, 1) == 0) {\n            // integer\n            gmp_printf(\"%Zd\\n\", num);\n        } else if (mpz_cmpabs(num, den) < 0) {\n            // proper fraction\n            gmp_printf(\"%Zd/%Zd\\n\", num, den);\n        } else {\n            // mixed number A P/Q\n            mpz_t A, P;\n            mpz_init(A);\n            mpz_init(P);\n            mpz_fdiv_qr(A, P, num, den); // floor division, both positive\n            gmp_printf(\"%Zd %Zd/%Zd\\n\", A, P, den);\n            mpz_clear(A);\n            mpz_clear(P);\n        }\n\n        mpz_clear(num);\n        mpz_clear(den);\n        mpq_clear(total);\n        free(arr);\n    }\n    return 0;\n}\n"
+    }
+  }
+}

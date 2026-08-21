@@ -1,0 +1,130 @@
+{
+  "questionId": "Q9572",
+  "title": "Minimum Beauty",
+  "slug": "minimum-beauty",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Arrays | Sorting | Two Pointers | Greedy",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Sorting",
+      "Two Pointers",
+      "Arithmetic Progression",
+      "Minimum Absolute Difference"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Two Pointers & Sliding Window"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chefina has an array AAA consisting of NNN non-negative integers.\n\nThe beauty of a subsequence SSS is defined as 333 ⋅\\cdot⋅\nabs(means(S)&nbsp;-&nbsp;median(S))\\texttt{abs(means(S) - median(S))}abs(means(S)&nbsp;-&nbsp;median(S)),\n\nwhere mean(S)\\texttt{mean(S)}mean(S) denotes the mean of subsequence SSS and median(S)\\texttt{median(S)}median(S) denotes the median of subsequence SSS.\n\nNow, Chefina asks Chef to choose a subsequence SSS of size 333 from array AAA such that the beauty of SSS is **minimised**. Your task is to find the **minimum** beauty possible.\n\nAs a reminder, a subsequence of an array is obtained by deleting some elements from the array without changing the order of the remaining elements.\n\nNote: It can be proven that the answer is always an integer.\n\n\nInput Format\n\nThe first line of input will contain a single integer TTT, denoting the number of test cases.\nEach test case consists of multiple lines of input.\n\nThe first line of each test case contains an integer NNN — the number of elements in the array.\nThe second line contains NNN space-separated integers, the elements of the array AAA.\n\n\n\n\nOutput Format\nFor each test case, output on a new line, the **minimum** beauty possible of any subsequence of array AAA, having length 333.",
+    "constraints": [
+      "1 ≤ T ≤ 500",
+      "3 ≤ N ≤ 5000",
+      "0 ≤ A_i ≤ 10^9",
+      "Sum of N over all test cases ≤ 5·10^5"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case consists of two lines: the first line contains an integer N (N ≥ 3) – the size of the array. The second line contains N space‑separated non‑negative integers A_i (0 ≤ A_i ≤ 10^9).",
+    "outputFormat": "For each test case output a single line containing the minimum possible beauty of any subsequence of length 3. The answer is always an integer.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n4\n1 6 8 0\n10\n5 5 7 0 1 0 4 7 9 4",
+        "output": "3\n0",
+        "explanation": "Test case 1: After sorting [0,1,6,8] the best triple is (1,6,8) giving |1+8-2*6| = 3.\\nTest case 2: Sorted array is [0,0,1,4,4,5,5,7,7,9]; the triple (1,4,7) forms an arithmetic progression, so the minimum beauty is 0."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n3\n5 5 5",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n5\n0 1000000000 500000000 250000000 750000000",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "no arithmetic progression",
+        "input": "1\n4\n1 2 4 7",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "duplicate values",
+        "input": "1\n6\n2 2 3 3 4 4",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case",
+        "input": "1\n7\n8 1 6 3 5 9 2",
+        "expectedOutput": "0",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The beauty of a triple (x, y, z) after sorting the three numbers (x ≤ y ≤ z) equals |x + z - 2·y|. The value is zero exactly when the three numbers form an arithmetic progression (y is the average of x and z). Therefore the problem reduces to finding three elements of the array that minimise |a[i] + a[k] - 2·a[j]| where i < j < k after sorting the whole array. After sorting the array we fix the middle element j and use two pointers i (starting at j‑1) and k (starting at j+1). While i ≥ 0 and k < N we compute cur = a[i] + a[k] - 2·a[j]. The absolute value of cur is a candidate answer. If cur == 0 we can stop immediately because the minimum possible beauty is 0. If cur < 0 we need a larger sum, so we move k to the right; otherwise we move i to the left. For each j the pointers move at most O(N) steps, giving an overall O(N^2) algorithm, which is fast enough for N ≤ 5000. The answer fits in 64‑bit signed integer.",
+    "timeComplexity": "O(N^2) per test case (worst‑case 25·10^6 operations for N = 5000).",
+    "spaceComplexity": "O(N) for storing the sorted array.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <limits.h>\n\nint cmp(const void *a, const void *b) {\n    long long x = *(const long long *)a;\n    long long y = *(const long long *)b;\n    return (x > y) - (x < y);\n}\n\nint main() {\n    int T; if (scanf(\"%d\", &T)!=1) return 0;\n    while (T--) {\n        int N; scanf(\"%d\", &N);\n        long long *a = (long long*)malloc(N * sizeof(long long));\n        for (int i = 0; i < N; ++i) scanf(\"%lld\", &a[i]);\n        qsort(a, N, sizeof(long long), cmp);\n        long long best = LLONG_MAX;\n        for (int j = 1; j <= N-2 && best!=0; ++j) {\n            int i = j-1, k = j+1;\n            while (i >= 0 && k < N) {\n                long long cur = a[i] + a[k] - 2LL * a[j];\n                long long ab = cur >= 0 ? cur : -cur;\n                if (ab < best) best = ab;\n                if (best == 0) break;\n                if (cur < 0) ++k; else --i;\n            }\n        }\n        printf(\"%lld\\n\", best);\n        free(a);\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N; cin>>N;\n        vector<long long>a(N);\n        for(int i=0;i<N;++i)cin>>a[i];\n        sort(a.begin(),a.end());\n        long long best = LLONG_MAX;\n        for(int j=1;j<=N-2 && best!=0;++j){\n            int i=j-1,k=j+1;\n            while(i>=0 && k<N){\n                long long cur = a[i]+a[k]-2LL*a[j];\n                long long ab = llabs(cur);\n                if(ab<best) best=ab;\n                if(best==0) break;\n                if(cur<0) ++k; else --i;\n            }\n        }\n        cout<<best<<\"\\n\";\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner(System.in);\n        int T = fs.nextInt();\n        StringBuilder sb = new StringBuilder();\n        while (T-- > 0) {\n            int N = fs.nextInt();\n            long[] a = new long[N];\n            for (int i = 0; i < N; i++) a[i] = fs.nextLong();\n            Arrays.sort(a);\n            long best = Long.MAX_VALUE;\n            outer:\n            for (int j = 1; j <= N - 2 && best != 0; j++) {\n                int i = j - 1, k = j + 1;\n                while (i >= 0 && k < N) {\n                    long cur = a[i] + a[k] - 2L * a[j];\n                    long ab = Math.abs(cur);\n                    if (ab < best) best = ab;\n                    if (best == 0) break outer;\n                    if (cur < 0) k++; else i--;\n                }\n            }\n            sb.append(best).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n    // Fast scanner for large input\n    static class FastScanner {\n        private final InputStream in;\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        FastScanner(InputStream in) { this.in = in; }\n        private int readByte() throws IOException {\n            if (ptr >= len) {\n                len = in.read(buffer);\n                ptr = 0;\n                if (len <= 0) return -1;\n            }\n            return buffer[ptr++];\n        }\n        long nextLong() throws IOException { return Long.parseLong(next()); }\n        int nextInt() throws IOException { return Integer.parseInt(next()); }\n        String next() throws IOException {\n            StringBuilder sb = new StringBuilder();\n            int c;\n            while ((c = readByte()) != -1 && c <= ' ') {}\n            while (c != -1 && c > ' ') {\n                sb.append((char) c);\n                c = readByte();\n            }\n            return sb.toString();\n        }\n    }\n}\n",
+      "Python3": "import sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it))\n        a = [int(next(it)) for _ in range(N)]\n        a.sort()\n        best = 10**20\n        for j in range(1, N-1):\n            i, k = j-1, j+1\n            while i >= 0 and k < N:\n                cur = a[i] + a[k] - 2*a[j]\n                ab = cur if cur >= 0 else -cur\n                if ab < best:\n                    best = ab\n                if best == 0:\n                    break\n                if cur < 0:\n                    k += 1\n                else:\n                    i -= 1\n            if best == 0:\n                break\n        out_lines.append(str(best))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet outputs = [];\nfor (let t = 0; t < T; ++t) {\n  const N = Number(input[idx++]);\n  let a = new Array(N);\n  for (let i = 0; i < N; ++i) a[i] = Number(input[idx++]);\n  a.sort((x, y) => x - y);\n  let best = Number.MAX_SAFE_INTEGER;\n  outer: for (let j = 1; j <= N - 2 && best !== 0; ++j) {\n    let i = j - 1, k = j + 1;\n    while (i >= 0 && k < N) {\n      const cur = a[i] + a[k] - 2 * a[j];\n      const ab = cur >= 0 ? cur : -cur;\n      if (ab < best) best = ab;\n      if (best === 0) break outer;\n      if (cur < 0) ++k; else --i;\n    }\n  }\n  outputs.push(String(best));\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

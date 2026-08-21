@@ -1,0 +1,143 @@
+{
+  "questionId": "Q6291",
+  "title": "Circles and Squares",
+  "slug": "circles-and-squares",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Geometry",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Circles",
+      "Squares",
+      "Expected Value",
+      "Random Selection"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Combinatorics & Probability"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chota pendrive (one of the deadliest coders) is the right hand of Farzi coder. He is really fond of circles and squares. One day he saw this problem and solved it. But he is not very sure if he correctly solved it. Can you help him in verifying the answer.\n\nThe problem looks like:\n\nThere is a grid of size **N x M**, there are **C** unit radii circles with integer center coordinates ((x₀, y₀), (x₁, y₁) .... (xc-1, yc-1)) on the grid. Choose any square portion of that grid with side length **A** such that the sides of the square are parallel to the sides of the grid, corners of this square must be inside or on the boundary of the grid and their coordinates are integers. Find the expected area covered by circles inside that square if you were to choose such a square randomly on the grid. Answer must be correct up to 6 places of decimal.\n\n\nInput Format\nFirst line will contain **N**, **M**, **A**, and **C** i.e number of rows, number of columns, side of the square and total number of circles respectively.\n\n\nNext **C** lines contains coordinates of center of circles.\n\n\n\nOutput Format\nOne line containing expected area covered by circles correct up to 6 places of decimal.",
+    "constraints": [
+      "1 <= N, M, C <= 100000",
+      "1 <= A <= min(N, M)",
+      "0 <= xi <= N",
+      "0 <= yi <= M",
+      "No two pairs of xi, yi are the same"
+    ],
+    "inputFormat": "The first line contains four integers N, M, A, and C separated by spaces, where N is the number of rows, M is the number of columns, A is the side length of the square, and C is the number of circles. Each of the next C lines contains two integers xi and yi separated by a space, representing the center coordinates of the ith circle.",
+    "outputFormat": "The expected area covered by circles inside a randomly chosen square, correct up to 6 decimal places.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1 1 1 1\n0 0",
+        "output": "0.785398",
+        "explanation": "There is only one possible way to choose the square and it will cover one quadrant of a circle."
+      },
+      {
+        "id": "sample_2",
+        "input": "3 3 2 2\n0 0\n3 3",
+        "output": "0.392699",
+        "explanation": "There are 4 possible ways to choose a square with side length 2 and two of them will contain one quadrant of a circle each."
+      },
+      {
+        "id": "sample_3",
+        "input": "5 5 3 1\n2 2",
+        "output": "0.785398",
+        "explanation": "There are 9 possible ways to choose a square with side length 3 and one of them will contain one quadrant of a circle."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1 1 1 1\n0 0",
+        "expectedOutput": "0.785398",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "100000 100000 1 100000\n0 0\n100000 100000",
+        "expectedOutput": "0.785398",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "5 5 5 1\n2 2",
+        "expectedOutput": "0.785398",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "10 10 3 2\n5 5\n8 8",
+        "expectedOutput": "0.392699",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "20 20 4 3\n10 10\n15 15\n18 18",
+        "expectedOutput": "0.785398",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we need to calculate the expected area covered by circles inside a randomly chosen square. We can do this by iterating over all possible squares of side length A in the grid, calculating the area covered by circles in each square, and then taking the average of these areas. The area covered by a circle in a square can be calculated using the formula for the area of a circle segment.",
+    "timeComplexity": "O(N * M * A * C) — because we are iterating over all possible squares and all circles for each square",
+    "spaceComplexity": "O(1) — because we are not using any additional space that scales with input size",
+    "code": {
+      "C": "#include <stdio.h>\n#include <math.h>\nint main() {\n    int N, M, A, C;\n    scanf(\"%d %d %d %d\", &N, &M, &A, &C);\n    int x[C], y[C];\n    for (int i = 0; i < C; i++) {\n        scanf(\"%d %d\", &x[i], &y[i]);\n    }\n    double totalArea = 0;\n    int totalSquares = 0;\n    for (int i = 0; i <= N - A; i++) {\n        for (int j = 0; j <= M - A; j++) {\n            double squareArea = 0;\n            for (int k = 0; k < C; k++) {\n                if (x[k] >= i && x[k] < i + A && y[k] >= j && y[k] < j + A) {\n                    double dx = x[k] - i;\n                    double dy = y[k] - j;\n                    double distance = sqrt(dx * dx + dy * dy);\n                    if (distance <= 1) {\n                        squareArea += M_PI / 4;\n                    } else if (distance <= A / 2) {\n                        double angle = acos(1 / distance);\n                        squareArea += (angle - sin(2 * angle) / 2) * 1 * 1;\n                    }\n                }\n            }\n            totalArea += squareArea;\n            totalSquares++;\n        }\n    }\n    printf(\"%.6f\\n\", totalArea / totalSquares);\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <cmath>\nusing namespace std;\nint main() {\n    int N, M, A, C;\n    cin >> N >> M >> A >> C;\n    int x[C], y[C];\n    for (int i = 0; i < C; i++) {\n        cin >> x[i] >> y[i];\n    }\n    double totalArea = 0;\n    int totalSquares = 0;\n    for (int i = 0; i <= N - A; i++) {\n        for (int j = 0; j <= M - A; j++) {\n            double squareArea = 0;\n            for (int k = 0; k < C; k++) {\n                if (x[k] >= i && x[k] < i + A && y[k] >= j && y[k] < j + A) {\n                    double dx = x[k] - i;\n                    double dy = y[k] - j;\n                    double distance = sqrt(dx * dx + dy * dy);\n                    if (distance <= 1) {\n                        squareArea += M_PI / 4;\n                    } else if (distance <= A / 2) {\n                        double angle = acos(1 / distance);\n                        squareArea += (angle - sin(2 * angle) / 2) * 1 * 1;\n                    }\n                }\n            }\n            totalArea += squareArea;\n            totalSquares++;\n        }\n    }\n    cout << fixed;\n    cout.precision(6);\n    cout << totalArea / totalSquares << endl;\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int N = scanner.nextInt();\n        int M = scanner.nextInt();\n        int A = scanner.nextInt();\n        int C = scanner.nextInt();\n        int[] x = new int[C];\n        int[] y = new int[C];\n        for (int i = 0; i < C; i++) {\n            x[i] = scanner.nextInt();\n            y[i] = scanner.nextInt();\n        }\n        double totalArea = 0;\n        int totalSquares = 0;\n        for (int i = 0; i <= N - A; i++) {\n            for (int j = 0; j <= M - A; j++) {\n                double squareArea = 0;\n                for (int k = 0; k < C; k++) {\n                    if (x[k] >= i && x[k] < i + A && y[k] >= j && y[k] < j + A) {\n                        double dx = x[k] - i;\n                        double dy = y[k] - j;\n                        double distance = Math.sqrt(dx * dx + dy * dy);\n                        if (distance <= 1) {\n                            squareArea += Math.PI / 4;\n                        } else if (distance <= A / 2) {\n                            double angle = Math.acos(1 / distance);\n                            squareArea += (angle - Math.sin(2 * angle) / 2) * 1 * 1;\n                        }\n                    }\n                }\n                totalArea += squareArea;\n                totalSquares++;\n            }\n        }\n        System.out.printf(\"%.6f\\n\", totalArea / totalSquares);\n    }\n}",
+      "Python3": "import math\nN, M, A, C = map(int, input().split())\nX = [0] * C\nY = [0] * C\nfor i in range(C):\n    X[i], Y[i] = map(int, input().split())\ntotalArea = 0\ntotalSquares = 0\nfor i in range(N - A + 1):\n    for j in range(M - A + 1):\n        squareArea = 0\n        for k in range(C):\n            if X[k] >= i and X[k] < i + A and Y[k] >= j and Y[k] < j + A:\n                dx = X[k] - i\n                dy = Y[k] - j\n                distance = math.sqrt(dx * dx + dy * dy)\n                if distance <= 1:\n                    squareArea += math.pi / 4\n                elif distance <= A / 2:\n                    angle = math.acos(1 / distance)\n                    squareArea += (angle - math.sin(2 * angle) / 2) * 1 * 1\n        totalArea += squareArea\n        totalSquares += 1\nprint(\"{:.6f}\".format(totalArea / totalSquares))",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst readline = () => lines[idx++];\nconst [N, M, A, C] = readline().split(' ').map(Number);\nconst X = new Array(C);\nconst Y = new Array(C);\nfor (let i = 0; i < C; i++) {\n    [X[i], Y[i]] = readline().split(' ').map(Number);\n}\nlet totalArea = 0;\nlet totalSquares = 0;\nfor (let i = 0; i <= N - A; i++) {\n    for (let j = 0; j <= M - A; j++) {\n        let squareArea = 0;\n        for (let k = 0; k < C; k++) {\n            if (X[k] >= i && X[k] < i + A && Y[k] >= j && Y[k] < j + A) {\n                let dx = X[k] - i;\n                let dy = Y[k] - j;\n                let distance = Math.sqrt(dx * dx + dy * dy);\n                if (distance <= 1) {\n                    squareArea += Math.PI / 4;\n                } else if (distance <= A / 2) {\n                    let angle = Math.acos(1 / distance);\n                    squareArea += (angle - Math.sin(2 * angle) / 2) * 1 * 1;\n                }\n            }\n        }\n        totalArea += squareArea;\n        totalSquares++;\n    }\n}\nconsole.log(totalArea / totalSquares.toFixed(6));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

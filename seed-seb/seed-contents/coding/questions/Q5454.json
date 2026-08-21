@@ -1,0 +1,140 @@
+{
+  "questionId": "Q5454",
+  "title": "Greatest Dumpling Fight",
+  "slug": "greatest-dumpling-fight",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Number Theory",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "GCD",
+      "LCM",
+      "Math",
+      "Number Theory"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Mathematics"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef Shifu and Chef Po are participating in the Greatest Dumpling Fight of 2012.\nOf course, Masterchef Oogway has formed the rules of the fight.\n\n\n\nThere is a long horizontal rope of infinite length with a center point P.\nInitially both Chef Shifu and Chef Po will stand on the center P of the rope facing each other.\nDon't worry, the rope is thick enough to hold Chef Po and Chef Shifu at the same place and at the same time.\nChef Shifu can jump either **A** or **B** units to the left or right in one move.\nChef Po can jump either **C** or **D** units to the left or right in one move.\n\n\n\nMasterchef Oogway wants to place exactly one dumpling on the rope such that\nboth Chef Shifu and Chef Po will be able to reach it independently in one or more moves.\nAlso the dumpling can be placed at most **K** units away from the center of the rope.\nMasterchef Oogway will let you watch the fight if you can decide the number of possible positions on the rope to place the dumpling.",
+    "constraints": [
+      "1 <= T <= 1000",
+      "1 <= A, B, C, D, K <= 10^18"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains five positive integers A B C D K separated by single spaces.",
+    "outputFormat": "For each test case output a single line containing the number of distinct positions (including the centre) where the dumpling can be placed so that both chefs can reach it and the position is at most K units away from the centre.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n2 4 3 6 7\n1 2 4 5 1\n10 12 3 9 16",
+        "output": "3\n3\n5",
+        "explanation": "For each test case compute g1 = gcd(A,B), g2 = gcd(C,D), L = lcm(g1,g2). The answer is 2*⌊K/L⌋+1. The three cases give L=6,1,6 respectively, leading to answers 3,3,5."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n5 10 15 20 0",
+        "output": "1",
+        "explanation": "g1=gcd(5,10)=5, g2=gcd(15,20)=5, L=lcm(5,5)=5. K=0 < L, so only the centre (0) is possible. Answer = 1."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n6 9 4 10 100",
+        "output": "33",
+        "explanation": "g1=gcd(6,9)=3, g2=gcd(4,10)=2, L=lcm(3,2)=6. floor(100/6)=16, answer = 2*16+1 = 33."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1 1 1 1",
+        "expectedOutput": "3",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n1000000000000000000 1000000000000000000 1000000000000000000 1000000000000000000 1000000000000000000",
+        "expectedOutput": "3",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case L > K",
+        "input": "1\n7 14 9 12 20",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n2 6 4 10 9",
+        "expectedOutput": "9",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n8 12 9 15 50",
+        "expectedOutput": "9",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For Chef Shifu every reachable position is a multiple of g1 = gcd(A, B). For Chef Po every reachable position is a multiple of g2 = gcd(C, D). A position reachable by both must be a multiple of lcm(g1, g2). Let L = lcm(g1, g2). All such positions are ..., -2L, -L, 0, L, 2L, ... . The dumpling may be placed at any of these positions whose absolute value does not exceed K. The number of such positions is 2 * floor(K / L) + 1 (the centre is always counted). The algorithm for each test case: compute g1, g2, then L = lcm(g1, g2) using 128‑bit arithmetic to avoid overflow, compare L with K, and compute the answer.",
+    "timeComplexity": "O(T * log(max(A, B, C, D))) – each gcd is logarithmic, everything else is O(1).",
+    "spaceComplexity": "O(1) – only a few integer variables are stored.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdint.h>\n\nstatic unsigned long long gcd_ull(unsigned long long a, unsigned long long b) {\n    while (b) {\n        unsigned long long t = a % b;\n        a = b;\n        b = t;\n    }\n    return a;\n}\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        unsigned long long A,B,C,D,K;\n        scanf(\"%llu %llu %llu %llu %llu\", &A, &B, &C, &D, &K);\n        unsigned long long g1 = gcd_ull(A, B);\n        unsigned long long g2 = gcd_ull(C, D);\n        unsigned long long g = gcd_ull(g1, g2);\n        __int128 L128 = (__int128)(g1 / g) * (__int128)g2; // lcm\n        unsigned long long ans;\n        if (L128 > ( __int128)K) {\n            ans = 1ULL;\n        } else {\n            unsigned long long L = (unsigned long long)L128;\n            unsigned long long cnt = K / L;\n            ans = 2ULL * cnt + 1ULL;\n        }\n        printf(\"%llu\\n\", ans);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nusing int64 = long long;\nusing i128 = __int128_t;\n\nint64 gcd_int64(int64 a, int64 b) {\n    while (b) {\n        int64 t = a % b;\n        a = b;\n        b = t;\n    }\n    return a;\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; cin >> T;\n    while (T--) {\n        int64 A,B,C,D,K; cin >> A >> B >> C >> D >> K;\n        int64 g1 = gcd_int64(A, B);\n        int64 g2 = gcd_int64(C, D);\n        int64 g = gcd_int64(g1, g2);\n        i128 L128 = (i128)(g1 / g) * (i128)g2; // lcm\n        int64 ans;\n        if (L128 > (i128)K) {\n            ans = 1;\n        } else {\n            int64 L = (int64)L128;\n            int64 cnt = K / L;\n            ans = 2 * cnt + 1;\n        }\n        cout << ans << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\nimport java.math.BigInteger;\n\npublic class Main {\n    private static long gcd(long a, long b) {\n        while (b != 0) {\n            long t = a % b;\n            a = b;\n            b = t;\n        }\n        return a;\n    }\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder sb = new StringBuilder();\n        for (int tc = 0; tc < T; ++tc) {\n            StringTokenizer st = new StringTokenizer(br.readLine());\n            long A = Long.parseLong(st.nextToken());\n            long B = Long.parseLong(st.nextToken());\n            long C = Long.parseLong(st.nextToken());\n            long D = Long.parseLong(st.nextToken());\n            long K = Long.parseLong(st.nextToken());\n            long g1 = gcd(A, B);\n            long g2 = gcd(C, D);\n            long g = gcd(g1, g2);\n            // lcm using BigInteger to avoid overflow\n            BigInteger L = BigInteger.valueOf(g1 / g).multiply(BigInteger.valueOf(g2));\n            BigInteger Kbig = BigInteger.valueOf(K);\n            long ans;\n            if (L.compareTo(Kbig) > 0) {\n                ans = 1;\n            } else {\n                long cnt = Kbig.divide(L).longValue();\n                ans = 2 * cnt + 1;\n            }\n            sb.append(ans).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys, math\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out = []\n    for _ in range(T):\n        A = int(next(it)); B = int(next(it)); C = int(next(it)); D = int(next(it)); K = int(next(it))\n        g1 = math.gcd(A, B)\n        g2 = math.gcd(C, D)\n        g = math.gcd(g1, g2)\n        L = (g1 // g) * g2  # lcm\n        if L > K:\n            ans = 1\n        else:\n            cnt = K // L\n            ans = 2 * cnt + 1\n        out.append(str(ans))\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet results = [];\nfunction gcd(a, b) {\n  while (b !== 0n) {\n    const t = a % b;\n    a = b;\n    b = t;\n  }\n  return a;\n}\nfor (let t = 0; t < T; ++t) {\n  const A = BigInt(input[idx++]);\n  const B = BigInt(input[idx++]);\n  const C = BigInt(input[idx++]);\n  const D = BigInt(input[idx++]);\n  const K = BigInt(input[idx++]);\n  const g1 = gcd(A, B);\n  const g2 = gcd(C, D);\n  const g = gcd(g1, g2);\n  const L = (g1 / g) * g2; // lcm\n  let ans;\n  if (L > K) {\n    ans = 1n;\n  } else {\n    const cnt = K / L;\n    ans = 2n * cnt + 1n;\n  }\n  results.push(ans.toString());\n}\nconsole.log(results.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

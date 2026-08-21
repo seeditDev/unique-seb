@@ -1,0 +1,130 @@
+{
+  "questionId": "Q8647",
+  "title": "Typing Letter",
+  "slug": "typing-letter",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings | Greedy | Dynamic Programming",
+    "difficulty": "Easy",
+    "isPremium": true,
+    "tags": [
+      "String construction",
+      "Greedy",
+      "Reverse simulation",
+      "Doubling operation"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You have to type an email to send to your friend. The email can be represented as a string TTT (which does not contain spaces). To complete your task you can perform **any one** of the following actions in one move:\n\n\nAppend a character at the end of the string.\nAppend a duplicate of the current string.\nFind the **minimum** number of moves required to type the email.\n\n\nInput Format\n\nFirst-line will contain TTT - the number of test cases. Then the test cases follow.\nEach test case contains two lines of input.\nThe first line of every test case contains an integer NNN - the size of the string.\nThe second line of every test case contains a string TTT of size NNN.\n\n\nOutput Format\nFor each testcase, output in a single line - the answer to the iii-th test case.",
+    "constraints": [
+      "1 <= T <= 150",
+      "1 <= N <= 2000",
+      "Sum of N over all test cases <= 5000",
+      "S consists only of lowercase English letters"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Then T test cases follow. Each test case consists of two lines: the first line contains an integer N, the length of the target string, and the second line contains the string S of length N (lowercase English letters).",
+    "outputFormat": "For each test case output a single line containing the minimum number of moves required to obtain the given string.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n6\noooobj\n1\nq\n5\nqqqqr",
+        "output": "5\n1\n4",
+        "explanation": "Test case 1: oooobj -> remove 'b' -> oooob -> remove 'b' -> oooo -> halve -> oo -> halve -> o -> remove -> '' (5 moves).\\nTest case 2: single character needs one append.\\nTest case 3: qqqqr -> remove 'r' -> qqqq -> halve -> qq -> halve -> q -> remove -> '' (4 moves)."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\na",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary (all same character, length 2000)",
+        "input": "1\n2000\na\".repeat(2000)",
+        "expectedOutput": "16",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case with pattern",
+        "input": "1\n5\nababa",
+        "expectedOutput": "4",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n7\nabcabca",
+        "expectedOutput": "5",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n7\nabcdabc",
+        "expectedOutput": "7",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "We work backwards from the target string. In one forward move we can either append a single character or duplicate the whole current string (i.e., concatenate it with itself). Reversing these operations gives:\n- If the current string length is odd, the last operation could only have been a single‑character append, so we delete the last character.\n- If the length is even and the first half equals the second half, the last operation could have been a duplication, so we replace the string by its first half.\n- Otherwise the last operation must have been a single‑character append, so we delete the last character.\nEach deletion or halving counts as one move. Repeating this until the string becomes empty yields the minimal number of moves, because whenever a duplication is possible we should use it (it reduces the length the most). The algorithm runs in O(N^2) in the worst case (each comparison of halves may scan O(N) characters), which is fine for N ≤ 2000.",
+    "timeComplexity": "O(N^2) per test case (worst case when many deletions are performed). With the given limits this easily fits within time limits.",
+    "spaceComplexity": "O(1) additional space besides the input string.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n\nint main() {\n    int T; if (scanf(\"%d\", &T)!=1) return 0;\n    while (T--) {\n        int N; scanf(\"%d\", &N);\n        char s[2005]; scanf(\"%s\", s);\n        int moves = 0;\n        int len = N;\n        while (len > 0) {\n            if (len % 2 == 0) {\n                int half = len / 2;\n                if (strncmp(s, s + half, half) == 0) {\n                    // duplicate operation reversed\n                    s[half] = '\\0';\n                    len = half;\n                    moves++;\n                    continue;\n                }\n            }\n            // remove last character\n            s[--len] = '\\0';\n            moves++;\n        }\n        printf(\"%d\\n\", moves);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--) {\n        int N; string s; cin>>N>>s;\n        int moves = 0;\n        int len = N;\n        while(len>0) {\n            if(len%2==0) {\n                int half = len/2;\n                if(s.compare(0, half, s, half, half)==0) {\n                    s.resize(half);\n                    len = half;\n                    ++moves;\n                    continue;\n                }\n            }\n            s.pop_back();\n            --len;\n            ++moves;\n        }\n        cout<<moves<<\"\\n\";\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder out = new StringBuilder();\n        int T = Integer.parseInt(br.readLine().trim());\n        while (T-- > 0) {\n            int N = Integer.parseInt(br.readLine().trim());\n            String s = br.readLine().trim();\n            int moves = 0;\n            int len = N;\n            StringBuilder sb = new StringBuilder(s);\n            while (len > 0) {\n                if (len % 2 == 0) {\n                    int half = len / 2;\n                    String first = sb.substring(0, half);\n                    String second = sb.substring(half, len);\n                    if (first.equals(second)) {\n                        sb.setLength(half);\n                        len = half;\n                        moves++;\n                        continue;\n                    }\n                }\n                sb.setLength(len - 1);\n                len--;\n                moves++;\n            }\n            out.append(moves).append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef min_moves(s: str) -> int:\n    moves = 0\n    while s:\n        n = len(s)\n        if n % 2 == 0 and s[:n//2] == s[n//2:]:\n            s = s[:n//2]\n        else:\n            s = s[:-1]\n        moves += 1\n    return moves\n\ndef main():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it))\n        s = next(it)\n        out_lines.append(str(min_moves(s)))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    main()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet results = [];\nfunction minMoves(str) {\n  let moves = 0;\n  while (str.length > 0) {\n    const n = str.length;\n    if (n % 2 === 0 && str.slice(0, n / 2) === str.slice(n / 2)) {\n      str = str.slice(0, n / 2);\n    } else {\n      str = str.slice(0, -1);\n    }\n    moves++;\n  }\n  return moves;\n}\nfor (let t = 0; t < T; ++t) {\n  const N = Number(input[idx++]); // N is not needed separately\n  const s = input[idx++];\n  results.push(String(minMoves(s)));\n}\nconsole.log(results.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

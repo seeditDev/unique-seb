@@ -1,0 +1,128 @@
+{
+  "questionId": "Q1369",
+  "title": "Remove k digits",
+  "slug": "remove-k-digits",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Greedy",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Monotonic Stack",
+      "String Manipulation",
+      "Greedy"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Stacks & Queues"
+    ]
+  },
+  "content": {
+    "problemStatement": "Given a string numnumnum representing a non-negative integer and an integer kkk, remove kkk digits from num to form the smallest possible integer. Return this smallest possible integer as a string.\n\n\nInput Format\n\nFirst line contains two integers nnn and kkk , nnn is the size of num and kkk is the number of digits that need to be removed.\nSecond line contains a string num.\n\n\nOutput Format\n\nPrint the smallest possible integer as a string, without leading zero except for the zero itself.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= n <= 100000",
+      "0 <= k <= n",
+      "num consists only of digits '0'-'9' and has no leading zero unless it is \"0\""
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, the first line contains two integers n and k, where n is the length of the number and k is the number of digits to remove. The second line contains a string num of length n representing a non\u2011negative integer (no leading zeros unless the number itself is zero).",
+    "outputFormat": "For each test case output a single line containing the smallest possible integer after removing exactly k digits from num. The result must not contain leading zeros, except that the number zero is represented by a single \"0\".",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n5 2\n91934",
+        "output": "134",
+        "explanation": "Removing the first '9' and the second '9' yields the smallest possible number 134."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\\n7 2\\n7800000",
+        "output": "0",
+        "explanation": "Removing the leading '7' and '8' leaves only zeros; after stripping leading zeros the result is 0."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n4 1\n1111",
+        "output": "111",
+        "explanation": "All digits are equal; removing any one of them leaves the number 111."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 0\n0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\\n15 7\\n987654321012345",
+        "expectedOutput": "21012345",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "1\n1 0\n0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "1\n1 0\n0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "1\n1 0\n0",
+        "expectedOutput": "0",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "We scan the digits from left to right while maintaining a stack (or deque) of the currently kept digits. For each new digit c we pop from the stack while we still have deletions left (k>0) and the top of the stack is larger than c \u2013 removing a larger digit earlier always yields a smaller final number. After processing all digits, if deletions are still remaining we remove them from the end of the stack. Finally we strip leading zeros; if everything is removed we output \"0\". This greedy monotonic\u2011stack algorithm is optimal because any digit that is larger than a later smaller digit can be safely removed without harming the ability to form the smallest possible result.",
+    "timeComplexity": "O(n) per test case \u2013 each digit is pushed once and popped at most once.",
+    "spaceComplexity": "O(n) for the stack/deque storing at most n characters.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n#include <stdlib.h>\n\nchar* removeKdigits(const char* num, int k) {\n    int len = strlen(num);\n    char* stack = (char*)malloc((len + 1) * sizeof(char));\n    int top = -1;\n    for (int i = 0; i < len; ++i) {\n        char c = num[i];\n        while (k > 0 && top >= 0 && stack[top] > c) {\n            --top;\n            --k;\n        }\n        stack[++top] = c;\n    }\n    while (k > 0 && top >= 0) {\n        --top;\n        --k;\n    }\n    int start = 0;\n    while (start <= top && stack[start] == '0') ++start;\n    int resLen = top - start + 1;\n    char* res = (char*)malloc((resLen + 1) * sizeof(char));\n    if (resLen > 0) {\n        memcpy(res, stack + start, resLen);\n    }\n    res[resLen] = '\\0';\n    free(stack);\n    return res;\n}\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        int n, k;\n        scanf(\"%d %d\", &n, &k);\n        char num[100005];\n        scanf(\"%s\", num);\n        char* ans = removeKdigits(num, k);\n        if (ans[0] == '\\0')\n            printf(\"0\");\n        else\n            printf(\"%s\", ans);\n        if (T) printf(\"\\n\");\n        free(ans);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nstring removeKdigits(const string& num, int k) {\n    deque<char> dq;\n    for (char c : num) {\n        while (k > 0 && !dq.empty() && dq.back() > c) {\n            dq.pop_back();\n            --k;\n        }\n        dq.push_back(c);\n    }\n    while (k-- > 0 && !dq.empty()) dq.pop_back();\n    while (!dq.empty() && dq.front() == '0') dq.pop_front();\n    if (dq.empty()) return \"0\";\n    return string(dq.begin(), dq.end());\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T;\n    if (!(cin >> T)) return 0;\n    while (T--) {\n        int n, k;\n        cin >> n >> k;\n        string num;\n        cin >> num;\n        cout << removeKdigits(num, k);\n        if (T) cout << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    private static String removeKdigits(String num, int k) {\n        Deque<Character> dq = new ArrayDeque<>();\n        for (char c : num.toCharArray()) {\n            while (k > 0 && !dq.isEmpty() && dq.peekLast() > c) {\n                dq.pollLast();\n                --k;\n            }\n            dq.addLast(c);\n        }\n        while (k-- > 0 && !dq.isEmpty()) dq.pollLast();\n        while (!dq.isEmpty() && dq.peekFirst() == '0') dq.pollFirst();\n        if (dq.isEmpty()) return \"0\";\n        StringBuilder sb = new StringBuilder();\n        for (char c : dq) sb.append(c);\n        return sb.toString();\n    }\n\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder out = new StringBuilder();\n        for (int t = 0; t < T; ++t) {\n            StringTokenizer st = new StringTokenizer(br.readLine());\n            int n = Integer.parseInt(st.nextToken());\n            int k = Integer.parseInt(st.nextToken());\n            String num = br.readLine().trim();\n            out.append(removeKdigits(num, k));\n            if (t + 1 < T) out.append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef remove_k_digits(num: str, k: int) -> str:\n    stack = []\n    for c in num:\n        while k > 0 and stack and stack[-1] > c:\n            stack.pop()\n            k -= 1\n        stack.append(c)\n    while k > 0:\n        stack.pop()\n        k -= 1\n    i = 0\n    while i < len(stack) and stack[i] == '0':\n        i += 1\n    result = ''.join(stack[i:])\n    return result if result else '0'\n\n\ndef main():\n    data = sys.stdin.read().strip().splitlines()\n    if not data:\n        return\n    T = int(data[0].strip())\n    idx = 1\n    out = []\n    for _ in range(T):\n        n, k = map(int, data[idx].split())\n        idx += 1\n        num = data[idx].strip()\n        idx += 1\n        out.append(remove_k_digits(num, k))\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    main()",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst T = parseInt(lines[idx++].trim(), 10);\nlet outputs = [];\nfor (let t = 0; t < T; ++t) {\n  const [nStr, kStr] = lines[idx++].trim().split(' ');\n  const n = parseInt(nStr, 10);\n  let k = parseInt(kStr, 10);\n  const num = lines[idx++].trim();\n  const dq = [];\n  for (const ch of num) {\n    while (k > 0 && dq.length && dq[dq.length - 1] > ch) {\n      dq.pop();\n      k--;\n    }\n    dq.push(ch);\n  }\n  while (k-- > 0) dq.pop();\n  while (dq.length && dq[0] === '0') dq.shift();\n  outputs.push(dq.length ? dq.join('') : '0');\n}\nconsole.log(outputs.join('\\n'));"
+    }
+  }
+}

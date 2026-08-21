@@ -1,0 +1,118 @@
+{
+  "questionId": "Q3255",
+  "title": "Sereja and Pairs",
+  "slug": "sereja-and-pairs",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Greedy",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Counting",
+      "Sweep Line",
+      "Interval Intersection",
+      "Greedy",
+      "Prefix Sum",
+      "Modulo"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Data Structures"
+    ]
+  },
+  "content": {
+    "problemStatement": "Sereja had an non-negative integer **A** in the range **[0, 10100]**.\n\n\n\nOne day, he wrote **N** pairs of the form **(X[i],  floor(A / X[i]) )** on a piece of paper. Let us denote **floor(A / X[i])** by **D[i]**.\n\n\n\nSereja's little brother Sergey is very naughty, he changed the **D** values for some of the pairs. When confronted for his mischief by Sereja, he said that he did not touch more than **K** such pairs. \n\n\n\nNow, given the modified values of **N** pairs of the form **(X[i], D[i])**, Sereja is wondering about number of possible original values of integer **A**. Please help Sereja so that little Sergey could avoid the upcoming beating by Sereja. As the answer could be large, please report it modulo **1000000007 (109+7)**.",
+    "constraints": [
+      "1 \u2264 T \u2264 5",
+      "0 \u2264 K \u2264 N \u2264 100000",
+      "1 \u2264 X[i] \u2264 10^9",
+      "0 \u2264 D[i] \u2264 10^9",
+      "A is restricted to the integer interval [0, 10100]"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case starts with a line containing two integers N and K (0 \u2264 K \u2264 N \u2264 100000). Then N lines follow, each containing two integers X[i] and D[i] (1 \u2264 X[i] \u2264 10^9, 0 \u2264 D[i] \u2264 10^9).",
+    "outputFormat": "For each test case output a single line with the number of possible original values of A (0 \u2264 A \u2264 10100) such that at most K of the given pairs could have been altered. Print the answer modulo 1000000007.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n3 0\n50 2\n40 2\n30 3\n3 1\n30 3\n40 2\n50 2",
+        "output": "20\n30",
+        "explanation": "For the first test case, the possible values of A are 100, 101, ..., 119. For the second test case, the possible values of A are 90, 91, ..., 119."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For a pair (X, D) the condition floor(A / X) = D is equivalent to D\u00b7X \u2264 A \u2264 (D+1)\u00b7X\u20111. Hence each pair defines a closed interval [L, R] where L = D*X and R = (D+1)*X\u20111. After clipping the interval to the global range [0, M] (M = 10100) we obtain the set of A values that would keep this pair unchanged. An A is valid if it belongs to at least N\u2011K of those intervals (i.e. at most K pairs are mismatched). The problem therefore reduces to counting integer points in [0, M] covered by \u2265 (N\u2011K) intervals.\n\nWe use a classic sweep line: for every clipped interval [L, R] we add an event (+1) at L and an event (\u20111) at R+1. Sorting all events by position and scanning from left to right we maintain the current coverage count. Between two consecutive event positions the coverage stays constant, so the whole segment contributes its length to the answer if the coverage \u2265 N\u2011K. The total number of events is at most 2\u00b7N, giving O(N log N) time per test case and O(N) additional memory.\n\nAll arithmetic for positions uses 64\u2011bit signed integers (long long) because D\u00b7X can be up to 10^18, still safely inside the range of a 64\u2011bit type. The final answer is taken modulo 1\u202f000\u202f000\u202f007.",
+    "timeComplexity": "O(N log N) per test case (sorting the 2\u00b7N events).",
+    "spaceComplexity": "O(N) for the list of events.",
+    "code": {
+      "C": "// COMPLETE, COMPILABLE C code\n#include <stdio.h>\n#include <stdlib.h>\n#define MOD 1000000007LL\n#define MAXM 10100LL\ntypedef struct { long long pos; int delta; } Event;\nint cmpEvent(const void *a, const void *b) {\n    long long pa = ((Event*)a)->pos;\n    long long pb = ((Event*)b)->pos;\n    if (pa < pb) return -1;\n    if (pa > pb) return 1;\n    return ((Event*)a)->delta - ((Event*)b)->delta;\n}\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    while(T--){\n        int N, K; scanf(\"%d %d\", &N, &K);\n        Event *ev = (Event*)malloc(sizeof(Event)*(2LL*N+5));\n        int evCnt = 0;\n        for(int i=0;i<N;i++){\n            long long X, D; scanf(\"%lld %lld\", &X, &D);\n            long long L = D * X;\n            long long R = (D + 1) * X - 1;\n            if (L > MAXM || R < 0) continue; // no overlap\n            if (L < 0) L = 0;\n            if (R > MAXM) R = MAXM;\n            ev[evCnt++] = (Event){L, 1};\n            if (R + 1 <= MAXM) ev[evCnt++] = (Event){R + 1, -1};\n        }\n        qsort(ev, evCnt, sizeof(Event), cmpEvent);\n        long long need = (long long)N - K;\n        long long cur = 0, prev = 0, ans = 0;\n        int idx = 0;\n        while(idx < evCnt){\n            long long pos = ev[idx].pos;\n            if (prev < pos){\n                long long len = (pos <= MAXM+1 ? pos : MAXM+1) - prev;\n                if (cur >= need) ans = (ans + len) % MOD;\n                prev = pos;\n            }\n            while(idx < evCnt && ev[idx].pos == pos){\n                cur += ev[idx].delta;\n                idx++;\n            }\n        }\n        if (prev <= MAXM){\n            long long len = (MAXM + 1) - prev;\n            if (cur >= need) ans = (ans + len) % MOD;\n        }\n        printf(\"%lld\\n\", ans % MOD);\n        free(ev);\n    }\n    return 0;\n}",
+      "C++": "// COMPLETE, COMPILABLE C++ code\n#include <bits/stdc++.h>\nusing namespace std;\nconst long long MOD = 1000000007LL;\nconst long long MAXM = 10100LL;\nstruct Event{ long long pos; int delta; };\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N, K; cin>>N>>K;\n        vector<Event> ev; ev.reserve(2LL*N+5);\n        for(int i=0;i<N;i++){\n            long long X,D; cin>>X>>D;\n            long long L = D*X;\n            long long R = (D+1)*X - 1;\n            if(L>MAXM || R<0) continue;\n            L = max(L, 0LL);\n            R = min(R, MAXM);\n            ev.push_back({L,1});\n            if(R+1<=MAXM) ev.push_back({R+1,-1});\n        }\n        sort(ev.begin(), ev.end(), [](const Event&a,const Event&b){return a.pos<b.pos;});\n        long long need = (long long)N - K;\n        long long cur=0, prev=0, ans=0;\n        size_t idx=0;\n        while(idx<ev.size()){\n            long long pos = ev[idx].pos;\n            if(prev<pos){\n                long long len = min(pos, MAXM+1) - prev;\n                if(cur>=need) ans = (ans + len)%MOD;\n                prev = pos;\n            }\n            while(idx<ev.size() && ev[idx].pos==pos){\n                cur += ev[idx].delta;\n                ++idx;\n            }\n        }\n        if(prev<=MAXM){\n            long long len = (MAXM+1) - prev;\n            if(cur>=need) ans = (ans + len)%MOD;\n        }\n        cout<<ans%MOD<<\"\\n\";\n    }\n    return 0;\n}",
+      "Java": ""
+    }
+  }
+}

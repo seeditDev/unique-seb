@@ -1,0 +1,128 @@
+{
+  "questionId": "Q2256",
+  "title": "Bytelandian Shoppers",
+  "slug": "bytelandian-shoppers",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Combinatorics",
+      "Modular Arithmetic",
+      "Math"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Combinatorics & Probability"
+    ]
+  },
+  "content": {
+    "problemStatement": "There are N shoppers today at the Bytelandian Shopping Mall. There are M different items at sale at the mall. In how many ways can shoppers purchase R items in all such that everyone buys atleast one item, and every item is brought by atleast one person ? A shopper can purchase any particular item at most once.\n\n\nInput :\nThe first line contains the number of test cases T. T lines follow containing 3 integers: N,M and R. \n(1 &lt;= T &lt;= 100. 1 &lt;= N,M &lt;= 200. 1 &lt;= R &lt;= N * M)\n\nOutput :\nOutput T lines, one for each test case, containing the output for the corresponding test case.\nOutput all values modulo 1000000007",
+    "constraints": [
+      "1 <= T <= 100",
+      "1 <= N <= 200",
+      "1 <= M <= 200",
+      "1 <= R <= N * M"
+    ],
+    "inputFormat": "The first line contains the number of test cases T. Each test case contains three integers: N, M, and R, separated by spaces, where N is the number of shoppers, M is the number of items, and R is the total number of items to be purchased.",
+    "outputFormat": "For each test case, print the number of ways shoppers can purchase R items such that everyone buys at least one item and every item is bought by at least one person, modulo 1000000007.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n1 1 1\n2 1 1\n2 3 3",
+        "output": "1\n0\n6",
+        "explanation": "For the first test case, there is only one way to distribute one item among one shopper. For the second test case, there are no ways to distribute one item among two shoppers such that each shopper gets at least one item. For the third test case, there are six ways to distribute three items among two shoppers such that each shopper gets at least one item and each item is given to at least one shopper."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n2 2 2",
+        "output": "2",
+        "explanation": "There are two ways to distribute two items among two shoppers such that each shopper gets at least one item and each item is given to at least one shopper."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n3 3 3",
+        "output": "6",
+        "explanation": "There are six ways to distribute three items among three shoppers such that each shopper gets at least one item and each item is given to at least one shopper."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n200 200 200",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n2 2 2",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n3 3 3",
+        "expectedOutput": "6",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "5\n1 1 1\n2 1 1\n2 3 3\n3 3 3\n200 200 200",
+        "expectedOutput": "1\n0\n6\n6\n0",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved using combinatorial techniques and modular arithmetic. We need to find the number of ways to distribute R items among N shoppers such that each shopper gets at least one item and each item is given to at least one shopper. This can be achieved by using the principle of inclusion-exclusion and calculating the number of ways to distribute the items for each possible subset of shoppers.",
+    "timeComplexity": "O(T * 2^M * N) per test case, O(T * 2^M * N) total.",
+    "spaceComplexity": "O(1) \u2014 constant space complexity.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#define MOD 1000000007\n\nlong long powmod(long long a, long long b, long long mod) {\n    long long res = 1;\n    while (b > 0) {\n        if (b & 1)\n            res = (res * a) % mod;\n        a = (a * a) % mod;\n        b >>= 1;\n    }\n    return res;\n}\n\nlong long comb(long long n, long long k, long long mod) {\n    long long num = 1, den = 1;\n    for (long long i = 1; i <= k; i++) {\n        num = (num * (n - i + 1)) % mod;\n        den = (den * i) % mod;\n    }\n    return (num * powmod(den, mod - 2, mod)) % mod;\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        long long N, M, R;\n        scanf(\"%lld %lld %lld\", &N, &M, &R);\n        long long ans = 0;\n        for (long long mask = 0; mask < (1 << M); mask++) {\n            long long cnt = 0, ways = 1;\n            for (long long i = 0; i < M; i++) {\n                if (mask & (1 << i))\n                    cnt++;\n            }\n            if (cnt < R || cnt > N)\n                continue;\n            for (long long i = 0; i < N; i++) {\n                ways = (ways * comb(cnt - 1, R - 1, MOD)) % MOD;\n            }\n            ans = (ans + ways) % MOD;\n        }\n        printf(\"%lld\\n\", ans);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\n#include <algorithm>\n#include <cmath>\nusing namespace std;\n#define MOD 1000000007\n\nlong long powmod(long long a, long long b, long long mod) {\n    long long res = 1;\n    while (b > 0) {\n        if (b & 1)\n            res = (res * a) % mod;\n        a = (a * a) % mod;\n        b >>= 1;\n    }\n    return res;\n}\n\nlong long comb(long long n, long long k, long long mod) {\n    long long num = 1, den = 1;\n    for (long long i = 1; i <= k; i++) {\n        num = (num * (n - i + 1)) % mod;\n        den = (den * i) % mod;\n    }\n    return (num * powmod(den, mod - 2, mod)) % mod;\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(NULL);\n    int T;\n    cin >> T;\n    while (T--) {\n        long long N, M, R;\n        cin >> N >> M >> R;\n        long long ans = 0;\n        for (long long mask = 0; mask < (1 << M); mask++) {\n            long long cnt = 0, ways = 1;\n            for (long long i = 0; i < M; i++) {\n                if (mask & (1 << i))\n                    cnt++;\n            }\n            if (cnt < R || cnt > N)\n                continue;\n            for (long long i = 0; i < N; i++) {\n                ways = (ways * comb(cnt - 1, R - 1, MOD)) % MOD;\n            }\n            ans = (ans + ways) % MOD;\n        }\n        cout << ans << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.io.BufferedReader;\nimport java.io.IOException;\nimport java.io.InputStreamReader;\nimport java.io.PrintWriter;\nimport java.util.StringTokenizer;\npublic class Main {\n    static final long MOD = 1000000007;\n    public static void main(String[] args) throws IOException {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        PrintWriter pw = new PrintWriter(System.out);\n        int T = Integer.parseInt(br.readLine());\n        while (T-- > 0) {\n            StringTokenizer st = new StringTokenizer(br.readLine());\n            long N = Long.parseLong(st.nextToken());\n            long M = Long.parseLong(st.nextToken());\n            long R = Long.parseLong(st.nextToken());\n            long ans = 0;\n            for (long mask = 0; mask < (1 << M); mask++) {\n                long cnt = 0, ways = 1;\n                for (long i = 0; i < M; i++) {\n                    if ((mask & (1 << i)) != 0)\n                        cnt++;\n                }\n                if (cnt < R || cnt > N)\n                    continue;\n                for (long i = 0; i < N; i++) {\n                    ways = (ways * comb(cnt - 1, R - 1, MOD)) % MOD;\n                }\n                ans = (ans + ways) % MOD;\n            }\n            pw.println(ans);\n        }\n        pw.close();\n    }\n    static long powmod(long a, long b, long mod) {\n        long res = 1;\n        while (b > 0) {\n            if (b % 2 == 1)\n                res = (res * a) % mod;\n            a = (a * a) % mod;\n            b >>= 1;\n        }\n        return res;\n    }\n    static long comb(long n, long k, long mod) {\n        long num = 1, den = 1;\n        for (long i = 1; i <= k; i++) {\n            num = (num * (n - i + 1)) % mod;\n            den = (den * i) % mod;\n        }\n        return (num * powmod(den, mod - 2, mod)) % mod;\n    }\n}",
+      "Python3": "import sys\nMOD = 1000000007\n\ndef powmod(a, b, mod):\n    res = 1\n    while b > 0:\n        if b & 1:\n            res = (res * a) % mod\n        a = (a * a) % mod\n        b >>= 1\n    return res\n\ndef comb(n, k, mod):\n    num = 1\n    den = 1\n    for i in range(1, k + 1):\n        num = (num * (n - i + 1)) % mod\n        den = (den * i) % mod\n    return (num * powmod(den, mod - 2, mod)) % mod\n\ndef main():\n    T = int(sys.stdin.readline().strip())\n    for _ in range(T):\n        N, M, R = map(int, sys.stdin.readline().strip().split())\n        ans = 0\n        for mask in range(1 << M):\n            cnt = 0\n            ways = 1\n            for i in range(M):\n                if mask & (1 << i):\n                    cnt += 1\n            if cnt < R or cnt > N:\n                continue\n            for i in range(N):\n                ways = (ways * comb(cnt - 1, R - 1, MOD)) % MOD\n            ans = (ans + ways) % MOD\n        print(ans)\nif __name__ == '__main__':\n    main()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst MOD = 1000000007;\nfunction powmod(a, b, mod) {\n    let res = 1;\n    while (b > 0) {\n        if (b & 1)\n            res = (res * a) % mod;\n        a = (a * a) % mod;\n        b >>= 1;\n    }\n    return res;\n}\nfunction comb(n, k, mod) {\n    let num = 1, den = 1;\n    for (let i = 1; i <= k; i++) {\n        num = (num * (n - i + 1)) % mod;\n        den = (den * i) % mod;\n    }\n    return (num * powmod(den, mod - 2, mod)) % mod;\n}\nfunction main() {\n    let T = parseInt(input[idx++]);\n    while (T--) {\n        let [N, M, R] = input[idx++].split(' ').map(x => parseInt(x));\n        let ans = 0;\n        for (let mask = 0; mask < (1 << M); mask++) {\n            let cnt = 0, ways = 1;\n            for (let i = 0; i < M; i++) {\n                if (mask & (1 << i))\n                    cnt++;\n            }\n            if (cnt < R || cnt > N)\n                continue;\n            for (let i = 0; i < N; i++) {\n                ways = (ways * comb(cnt - 1, R - 1, MOD)) % MOD;\n            }\n            ans = (ans + ways) % MOD;\n        }\n        console.log(ans);\n    }\n}\nmain();"
+    }
+  }
+}

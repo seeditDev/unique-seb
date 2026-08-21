@@ -1,0 +1,116 @@
+{
+  "questionId": "Q1714",
+  "title": "Chef robs House II",
+  "slug": "chef-robs-house-ii",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "Maximization",
+      "House Robber",
+      "Circular Array",
+      "Dynamic Programming"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ]
+  },
+  "content": {
+    "problemStatement": "Chef is planning a heist on a circular street where houses are arranged in a circle. Each house contains some amount of money, but adjacent houses have connected security systems. \n\nIf Chef robs two adjacent houses on the same night, the alarm will trigger, and the police will be alerted. Chef wants to maximize the amount of money stolen without triggering the alarm. \n\nHelp Chef determine the maximum amount of money that can be robbed tonight under these strict security constraints.\n\nFunction DeclarationFunction NamecalculateMaxRobAmountcalculateMaxRobAmountcalculateMaxRobAmount - This function calculates the maximum amount of money that Chef can rob from a circular list of houses without robbing two adjacent houses.\n\nParameters\nhouseMoneyListhouseMoneyListhouseMoneyList : A reference to a vector of integers representing the amount of money available in each house.\nEach element in houseMoneyListhouseMoneyListhouseMoneyList is a non-negative integer indicating the money in that house.\nReturn Value\nReturns a number representing the maximum sum of money that can be robbed without triggering alarms.\nThe output is a single integer value indicating the optimal robbery amount.\nConstraints\n1\u2264numberofhouses\u22641001 \\leq number of houses \\leq 1001\u2264numberofhouses\u2264100\n0\u2264houseMoneyList[i]\u226410000 \\leq houseMoneyList[i] \\leq 10000\u2264houseMoneyList[i]\u22641000",
+    "constraints": [
+      "1 <= T <= 100",
+      "1 <= number of houses (n) <= 100",
+      "0 <= houseMoneyList[i] <= 1000"
+    ],
+    "inputFormat": "First line contains T, the number of test cases. Each test case contains a list of non-negative integers representing the money in each house.",
+    "outputFormat": "For each test case, print the maximum amount of money that can be robbed without triggering alarms.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n[2,3,2]\n[1,2,3,1]\n[1,2,3]",
+        "output": "3\n4\n3",
+        "explanation": "For [2,3,2] the best is to rob the middle house (3). For [1,2,3,1] rob houses with values 2 and 1 (or 1 and 3) giving 4. For [1,2,3] the first and last are adjacent, so rob the house with 3."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "[1]",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "[1000,1000,1000,1000,1000]",
+        "expectedOutput": "3000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "[0,0,0,0,0]",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "[1,1,1,1,1]",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "[1,2,3,4,5,6,7,8,9,10]",
+        "expectedOutput": "30",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved using dynamic programming. We can consider two cases: one where we rob the first house and one where we don't. If we rob the first house, we cannot rob the last house. If we don't rob the first house, we can rob the last house. We can use two arrays to store the maximum amount of money that can be robbed up to each house in both cases.",
+    "timeComplexity": "O(n) per test case, O(T*n) total",
+    "spaceComplexity": "O(n) \u2014 for the dynamic programming arrays",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <ctype.h>\n\nint max(int a, int b) { return a > b ? a : b; }\n\nint robLinear(int *arr, int start, int end) {\n    int len = end - start + 1;\n    if (len == 1) return arr[start];\n    int prev2 = arr[start];\n    int prev1 = max(arr[start], arr[start + 1]);\n    for (int i = start + 2; i <= end; ++i) {\n        int cur = max(prev1, prev2 + arr[i]);\n        prev2 = prev1;\n        prev1 = cur;\n    }\n    return prev1;\n}\n\nint calculateMaxRobAmount(int *houseMoneyList, int n) {\n    if (n == 1) return houseMoneyList[0];\n    if (n == 2) return max(houseMoneyList[0], houseMoneyList[1]);\n    int exclLast = robLinear(houseMoneyList, 0, n - 2);\n    int exclFirst = robLinear(houseMoneyList, 1, n - 1);\n    return max(exclLast, exclFirst);\n}\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    char line[5000];\n    fgets(line, sizeof(line), stdin);\n    while (T--) {\n        if (!fgets(line, sizeof(line), stdin)) break;\n        int nums[1005];\n        int cnt = 0;\n        int val = 0;\n        int inNumber = 0;\n        for (int i = 0; line[i]; ++i) {\n            if (isdigit(line[i])) {\n                val = val * 10 + (line[i] - '0');\n                inNumber = 1;\n            } else {\n                if (inNumber) {\n                    nums[cnt++] = val;\n                    val = 0;\n                    inNumber = 0;\n                }\n            }\n        }\n        if (inNumber) nums[cnt++] = val;\n        int ans = calculateMaxRobAmount(nums, cnt);\n        printf(\"%d\\n\", ans);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nint robLinear(const vector<int>& a, int l, int r) {\n    if (l == r) return a[l];\n    int prev2 = a[l];\n    int prev1 = max(a[l], a[l+1]);\n    for (int i = l+2; i <= r; ++i) {\n        int cur = max(prev1, prev2 + a[i]);\n        prev2 = prev1;\n        prev1 = cur;\n    }\n    return prev1;\n}\n\nint calculateMaxRobAmount(const vector<int>& houses) {\n    int n = houses.size();\n    if (n == 1) return houses[0];\n    if (n == 2) return max(houses[0], houses[1]);\n    int exclLast = robLinear(houses, 0, n-2);\n    int exclFirst = robLinear(houses, 1, n-1);\n    return max(exclLast, exclFirst);\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; \n    if(!(cin >> T)) return 0;\n    string line;\n    getline(cin, line); // consume endline\n    while (T--) {\n        getline(cin, line);\n        vector<int> arr;\n        int num = 0; bool in = false;\n        for(char c: line) {\n            if (isdigit(c)) { num = num*10 + (c-'0'); in = true; }\n            else { if(in){ arr.push_back(num); num=0; in=false; } }\n        }\n        if(in) arr.push_back(num);\n        cout << calculateMaxRobAmount(arr) << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    private static int robLinear(int[] a, int l, int r) {\n        if (l == r) return a[l];\n        int prev2 = a[l];\n        int prev1 = Math.max(a[l], a[l+1]);\n        for (int i = l+2; i <= r; i++) {\n            int cur = Math.max(prev1, prev2 + a[i]);\n            prev2 = prev1;\n            prev1 = cur;\n        }\n        return prev1;\n    }\n\n    private static int calculateMaxRobAmount(int[] houses) {\n        int n = houses.length;\n        if (n == 1) return houses[0];\n        if (n == 2) return Math.max(houses[0], houses[1]);\n        int exclLast = robLinear(houses, 0, n-2);\n        int exclFirst = robLinear(houses, 1, n-1);\n        return Math.max(exclLast, exclFirst);\n    }\n\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        int T = Integer.parseInt(br.readLine().trim());\n        while (T-- > 0) {\n            String line = br.readLine();\n            List<Integer> list = new ArrayList<>();\n            int num = 0; boolean in = false;\n            for (char c : line.toCharArray()) {\n                if (Character.isDigit(c)) { num = num*10 + (c - '0'); in = true; }\n                else { if (in) { list.add(num); num = 0; in = false; } }\n            }\n            if (in) list.add(num);\n            int[] arr = new int[list.size()];\n            for (int i = 0; i < arr.length; i++) arr[i] = list.get(i);\n            System.out.println(calculateMaxRobAmount(arr));\n        }\n    }\n}",
+      "Python3": "import sys, re\n\ndef rob_linear(arr, l, r):\n    if l == r:\n        return arr[l]\n    prev2 = arr[l]\n    prev1 = max(arr[l], arr[l+1])\n    for i in range(l+2, r+1):\n        cur = max(prev1, prev2 + arr[i])\n        prev2, prev1 = prev1, cur\n    return prev1\n\ndef calculate_max(arr):\n    n = len(arr)\n    if n == 1:\n        return arr[0]\n    if n == 2:\n        return max(arr[0], arr[1])\n    excl_last = rob_linear(arr, 0, n-2)\n    excl_first = rob_linear(arr, 1, n-1)\n    return max(excl_last, excl_first)\n\ndata = sys.stdin.read().strip().split('\\n')\nif not data:\n    sys.exit()\nT = int(data[0].strip())\nout_lines = []\nfor i in range(1, T+1):\n    line = data[i]\n    nums = list(map(int, re.findall(r'\\d+', line)))\n    out_lines.append(str(calculate_max(nums)))\nprint('\\n'.join(out_lines))",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst T = parseInt(input[idx++].trim(), 10);\nfunction robLinear(arr, l, r) {\n  if (l === r) return arr[l];\n  let prev2 = arr[l];\n  let prev1 = Math.max(arr[l], arr[l + 1]);\n  for (let i = l + 2; i <= r; i++) {\n    const cur = Math.max(prev1, prev2 + arr[i]);\n    prev2 = prev1;\n    prev1 = cur;\n  }\n  return prev1;\n}\nfunction calculate(arr) {\n  const n = arr.length;\n  if (n === 1) return arr[0];\n  if (n === 2) return Math.max(arr[0], arr[1]);\n  const exclLast = robLinear(arr, 0, n - 2);\n  const exclFirst = robLinear(arr, 1, n - 1);\n  return Math.max(exclLast, exclFirst);\n}\nlet outputs = [];\nfor (let t = 0; t < T; t++) {\n  const line = input[idx++] || '';\n  const nums = [];\n  let num = '';\n  for (const ch of line) {\n    if (ch >= '0' && ch <= '9') {\n      num += ch;\n    } else {\n      if (num.length) { nums.push(parseInt(num, 10)); num = ''; }\n    }\n  }\n  if (num.length) nums.push(parseInt(num, 10));\n  outputs.push(String(calculate(nums)));\n}\nconsole.log(outputs.join('\\n'));"
+    }
+  }
+}

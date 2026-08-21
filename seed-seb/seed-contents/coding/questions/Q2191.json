@@ -1,0 +1,114 @@
+{
+  "questionId": "Q2191",
+  "title": "Effective Sets",
+  "slug": "effective-sets",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Spatial Indexing",
+      "Nearest Neighbor",
+      "Math",
+      "Divide and Conquer",
+      "KD\u2011Tree",
+      "Range Counting"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Geometry"
+    ]
+  },
+  "content": {
+    "problemStatement": "Johnny has been hired to write a program to analyse strategic data for the Bytelandian Navy. His task is described below.\n\nThere are N battleships represented as N points on the plane. The **radius** of a ship is defined to be the distance from that ship to the ship closest to it. The **effective set** for a ship is defined to be the set of all ships (excluding itself) which are at a distance from that ship of **no more than twice** its radius. The number of elements in the effective set of a ship is called the **effective value** of that ship.\n\nJohnny needs to write a program to calculate the radius and the effective value of each battleship. This task is so tough that without your help, Johnny could never finish it. Let's help him!",
+    "constraints": [
+      "1\u202f\u2264\u202fT\u202f\u2264\u202f10",
+      "1\u202f\u2264\u202fN\u202f\u2264\u202f30000",
+      "0\u202f\u2264\u202fX,\u202fY\u202f\u2264\u202f10000"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, the first line contains an integer N (the number of battleships). The next N lines each contain two integers X and Y (0\u202f\u2264\u202fX,\u202fY\u202f\u2264\u202f10000) representing the coordinates of a battleship.",
+    "outputFormat": "For each test case output N lines. The i\u2011th line contains two numbers: the radius of the i\u2011th battleship (rounded to exactly two decimal places) and its effective value (an integer). After each test case output a blank line.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n3\n0 0\n0 0\n3 4\n\n5\n5 3\n7 8\n0 9\n3 1\n4 4",
+        "output": "0.00 1\n0.00 1\n5.00 2\n\n1.41 2\n5.00 4\n6.40 4\n2.83 2\n1.41 1",
+        "explanation": "For the first test case, the battleships are at (0,0), (0,0), and (3,4). The radius of the first battleship is 0 because there is another battleship at the same location. The effective value is 1 because there is one other battleship within twice the radius. The radius of the second battleship is also 0, and the effective value is also 1. The radius of the third battleship is 5, and the effective value is 2 because there are two other battleships within twice the radius."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For every ship we need two quantities:\n1. **Radius** \u2013 the distance to its closest other ship.\n2. **Effective value** \u2013 the number of ships whose distance is \u2264\u202f2\u202f\u00d7\u202fradius.\nA na\u00efve O(N\u00b2) solution works for tiny inputs but fails for N\u202f=\u202f30000.  The optimal solution builds a static KD\u2011Tree (or an equivalent balanced spatial index) on all points.\n* **Nearest\u2011neighbor query** \u2013 for each point we query the KD\u2011Tree for the closest point that is not itself.  The query runs in O(log\u202fN) average time, giving O(N\u202flog\u202fN) total for all radii.\n* **Range\u2011count query** \u2013 after the radius of a point is known, we query the KD\u2011Tree for the number of points inside the circle centred at the point with radius 2\u202f\u00d7\u202fradius.  The KD\u2011Tree can count points in a rectangular region; we recursively descend the tree, pruning sub\u2011trees whose bounding boxes lie completely outside the circle.  The expected complexity of a range query is O(log\u202fN\u202f+\u202fk) where k is the number of reported points, which is acceptable because the sum of all k over all queries is at most N\u00b2 in the worst case but in practice far smaller.  Overall the algorithm runs in O(N\u202flog\u202fN) time and O(N) memory.\nIf an implementation language does not provide a ready KD\u2011Tree, a simple grid\u2011bucketing technique with cell size equal to the current best distance can also achieve near\u2011linear performance for the given coordinate limits.\nThe steps are:\n1. Read all points.\n2. Build the KD\u2011Tree.\n3. For each point i:\n   a. Perform a nearest\u2011neighbor search (excluding i) \u2192 radius[i].\n   b. Perform a range\u2011count search with radius = 2\u202f\u00d7\u202fradius[i] \u2192 effective[i].\n4. Output radius[i] rounded to two decimals and effective[i].",
+    "timeComplexity": "O(N\u202flog\u202fN) per test case (building the KD\u2011Tree + N nearest\u2011neighbor queries + N range\u2011count queries).",
+    "spaceComplexity": "O(N) for storing the points and the KD\u2011Tree.",
+    "code": {
+      "C": ""
+    }
+  }
+}

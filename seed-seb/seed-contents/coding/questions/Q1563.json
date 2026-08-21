@@ -1,0 +1,126 @@
+{
+  "questionId": "Q1563",
+  "title": "First Occurrence of Substring",
+  "slug": "first-occurrence-of-substring",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "String Searching",
+      "KMP Algorithm",
+      "Strings"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Strings & Pattern Matching"
+    ]
+  },
+  "content": {
+    "problemStatement": "You are given two strings:\n\n\ntexttexttext (also called **haystack**)\npatternpatternpattern (also called **needle**)\nYour task is to determine the **index of the first occurrence** of patternpatternpattern in texttexttext.\n\nIf patternpatternpattern does not appear in texttexttext, return **-1**.\n\nFunction DeclarationFunction NameSearchSearchSearch \u2013 This function finds the **index of the first occurrence** of a substring within a given string.\n\nParameters\ntexttexttext : The main string (haystack) in which the pattern is searched.\npatternpatternpattern : The substring (needle) to search for.\nReturn Value\nReturns an integer representing the **0-based index** of the first occurrence of patternpatternpattern in texttexttext.\nReturns **-1** if the pattern does not exist in the text.\nConstraints\n1\u2264\u2223text\u2223,\u2223pattern\u2223\u22641051 \\leq |text|, |pattern| \\leq 10^51\u2264\u2223text\u2223,\u2223pattern\u2223\u2264105\nBoth strings consist of **lowercase English letters** (`'a'`\u2013`'z'`) only\n\nInput Format\n\nThe first line contains a string texttexttext.\nThe second line contains a string patternpatternpattern.\n\n\nOutput Format\n\nPrint a single integer \u2014 the index of the first occurrence of patternpatternpattern in texttexttext.\nIf the pattern is not present, print **-1**.",
+    "constraints": [
+      "1 \u2264 |text|, |pattern| \u2264 10^5",
+      "Both strings consist of lowercase English letters ('a'\u2013'z') only"
+    ],
+    "inputFormat": "The first line contains a string text (also called haystack). The second line contains a string pattern (also called needle).",
+    "outputFormat": "Print a single integer \u2014 the index of the first occurrence of pattern in text. If the pattern is not present, print -1.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "programmingisfun\nming",
+        "output": "7",
+        "explanation": "The substring 'ming' first appears in 'programmingisfun' starting at index 7."
+      },
+      {
+        "id": "sample_2",
+        "input": "datastructures\ntree",
+        "output": "-1",
+        "explanation": "The substring 'tree' is not present in 'datastructures', so the output is -1."
+      },
+      {
+        "id": "sample_3",
+        "input": "hello\nll",
+        "output": "2",
+        "explanation": "The substring 'll' first appears in 'hello' starting at index 2."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "a\na",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "abcdefghijklmnopqrstuvwxyz\nabcdefghijklmnopqrstuvwxyz",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "aaaaaaaaaa\naaaa",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "ababababab\nabab",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "programmingisfun\nming",
+        "expectedOutput": "7",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The KMP algorithm is used to find the first occurrence of a substring in a string. It works by precomputing a lookup table that stores the longest proper prefix which is also a suffix for each substring of the pattern. This table is used to skip characters in the text that cannot match the pattern, thus reducing the number of comparisons needed.",
+    "timeComplexity": "O(n + m) per test case, where n is the length of the text and m is the length of the pattern. The precomputation of the lookup table takes O(m) time.",
+    "spaceComplexity": "O(m) \u2014 the dominant structure is the lookup table of size m.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n\nvoid computePrefix(char* pattern, int m, int* lps) {\n    int length = 0;\n    lps[0] = 0; // lps[0] is always 0\n\n    int i = 1;\n    while (i < m) {\n        if (pattern[i] == pattern[length]) {\n            length++;\n            lps[i] = length;\n            i++;\n        } else {\n            if (length != 0) {\n                length = lps[length - 1];\n            } else {\n                lps[i] = 0;\n                i++;\n            }\n        }\n    }\n}\n\nint Search(char* text, char* pattern) {\n    int n = strlen(text);\n    int m = strlen(pattern);\n    if (m == 0) return 0; // edge case: empty pattern\n\n    int* lps = (int*)malloc(sizeof(int) * m);\n    computePrefix(pattern, m, lps);\n\n    int i = 0; // index for text\n    int j = 0; // index for pattern\n\n    while (i < n) {\n        if (text[i] == pattern[j]) {\n            i++;\n            j++;\n        }\n        if (j == m) {\n            free(lps);\n            return i - j; // match found\n        } else if (i < n && text[i] != pattern[j]) {\n            if (j != 0) {\n                j = lps[j - 1];\n            } else {\n                i++;\n            }\n        }\n    }\n\n    free(lps);\n    return -1; // no match\n}\n\nint main() {\n    char text[100001], pattern[100001];\n    scanf(\"%s\", text);\n    scanf(\"%s\", pattern);\n    printf(\"%d\\n\", Search(text, pattern));\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <string>\nusing namespace std;\n\nvector<int> computePrefix(const string &pattern) {\n    int m = pattern.size();\n    vector<int> lps(m, 0);\n    int length = 0;\n    int i = 1;\n\n    while (i < m) {\n        if (pattern[i] == pattern[length]) {\n            length++;\n            lps[i] = length;\n            i++;\n        } else {\n            if (length != 0) {\n                length = lps[length - 1];\n            } else {\n                lps[i] = 0;\n                i++;\n            }\n        }\n    }\n    return lps;\n}\n\nint Search(const string &text, const string &pattern) {\n    int n = text.size();\n    int m = pattern.size();\n    if (m == 0) return 0; // edge case: empty pattern\n\n    vector<int> lps = computePrefix(pattern);\n    int i = 0; // index for text\n    int j = 0; // index for pattern\n\n    while (i < n) {\n        if (text[i] == pattern[j]) {\n            i++;\n            j++;\n        }\n        if (j == m) {\n            return i - j; // match found\n        } else if (i < n && text[i] != pattern[j]) {\n            if (j != 0)\n                j = lps[j - 1];\n            else\n                i++;\n        }\n    }\n    return -1; // no match\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(NULL);\n    string text, pattern;\n    cin >> text;\n    cin >> pattern;\n    cout << Search(text, pattern) << endl;\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    static int[] computePrefix(String pattern) {\n        int m = pattern.length();\n        int[] prefix = new int[m];\n        int j = 0; // length of previous longest prefix suffix\n\n        for (int i = 1; i < m; i++) {\n            while (j > 0 && pattern.charAt(i) != pattern.charAt(j)) {\n                j = prefix[j - 1];\n            }\n            if (pattern.charAt(i) == pattern.charAt(j)) {\n                j++;\n            }\n            prefix[i] = j;\n        }\n        return prefix;\n    }\n\n    static int Search(String text, String pattern) {\n        int n = text.length();\n        int m = pattern.length();\n        if (m == 0) return 0; // edge case: empty pattern\n\n        int[] prefix = computePrefix(pattern);\n        int j = 0; // index for pattern[]\n\n        for (int i = 0; i < n; i++) {\n            while (j > 0 && text.charAt(i) != pattern.charAt(j)) {\n                j = prefix[j - 1];\n            }\n            if (text.charAt(i) == pattern.charAt(j)) {\n                j++;\n            }\n            if (j == m) {\n                return i - m + 1; // match found\n            }\n        }\n        return -1; // no match\n    }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        String text = sc.next();\n        String pattern = sc.next();\n        System.out.println(Search(text, pattern));\n    }\n}",
+      "Python3": "def compute_prefix(pattern):\n    m = len(pattern)\n    lps = [0] * m\n    length = 0  # length of the previous longest prefix suffix\n    i = 1\n\n    while i < m:\n        if pattern[i] == pattern[length]:\n            length += 1\n            lps[i] = length\n            i += 1\n        else:\n            if length != 0:\n                length = lps[length - 1]\n            else:\n                lps[i] = 0\n                i += 1\n    return lps\n\n\ndef search(text, pattern):\n    n = len(text)\n    m = len(pattern)\n    if m == 0:\n        return 0  # Edge case: empty pattern\n\n    lps = compute_prefix(pattern)\n    i = 0  # index for text\n    j = 0  # index for pattern\n\n    while i < n:\n        if text[i] == pattern[j]:\n            i += 1\n            j += 1\n\n        if j == m:\n            return i - j  # match found\n        elif i < n and text[i] != pattern[j]:\n            if j != 0:\n                j = lps[j - 1]\n            else:\n                i += 1\n\n    return -1\n\n# Read input\nimport sys\nfor line in sys.stdin:\n    text = line.strip()\n    break\nfor line in sys.stdin:\n    pattern = line.strip()\n    break\nprint(search(text, pattern))",
+      "JavaScript": "const lines = require('fs').readFileSync(0, 'utf-8').trim().split('\\n');\nlet i = 0;\n\nfunction computePrefix(pattern) {\n    const m = pattern.length;\n    const lps = Array(m).fill(0);\n    let length = 0;\n    let j = 0; // length of previous longest prefix suffix\n\n    for (let i = 1; i < m; i++) {\n        while (j > 0 && pattern[i] !== pattern[j]) {\n            j = lps[j - 1];\n        }\n        if (pattern[i] === pattern[j]) {\n            j++;\n        }\n        lps[i] = j;\n    }\n    return lps;\n}\n\nfunction Search(text, pattern) {\n    const n = text.length;\n    const m = pattern.length;\n    if (m === 0) return 0; // edge case: empty pattern\n\n    const lps = computePrefix(pattern);\n    let j = 0; // index for pattern[]\n\n    for (let i = 0; i < n; i++) {\n        while (j > 0 && text[i] !== pattern[j]) {\n            j = lps[j - 1];\n        }\n        if (text[i] === pattern[j]) {\n            j++;\n        }\n        if (j === m) {\n            return i - m + 1; // match found\n        }\n    }\n    return -1; // no match\n}\n\nconst text = lines[i++];\nconst pattern = lines[i++];\nconsole.log(Search(text, pattern));"
+    }
+  }
+}

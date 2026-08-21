@@ -1,0 +1,120 @@
+{
+  "questionId": "Q2314",
+  "title": "The Grand Cook Off",
+  "slug": "the-grand-cook-off",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Random Process",
+      "State Compression",
+      "Expected Value",
+      "Dynamic Programming",
+      "Memoization"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ]
+  },
+  "content": {
+    "problemStatement": "Chef is planning a grand cooking tournament for aspiring chefs in the region.\nThe competition progresses with a number of one-on-one elimination rounds until only one chef remains.\nFor each round, two chefs are chosen at random for a cook-off.\nThe loser of the cook-off is elimited, while the winner moves on.\nAdditionally, each chef begins with a positive number of prize tokens\n(some chefs begin with more than others, based on their performance in a qualification round).\nThe winner of each cook-off receives all of the loser's prize tokens, and the loser is\nawarded a prize based on the number of prize tokens he/she had accrued.\n\nThe final cook-off always receives the most publicity.\nYour task it to compute the expected difference between the number of prize tokens of the final two\ncompetitors before the final cook-off.\nYou will be given the number of tokens each chef begins with.",
+    "constraints": [
+      "1 \u2264 T \u2264 50",
+      "2 \u2264 C \u2264 100",
+      "1 \u2264 ai \u2264 100",
+      "\u2211 ai \u2264 100"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case is given on a single line. The line starts with an integer C (2 \u2264 C \u2264 100) \u2013 the number of chefs \u2013 followed by C positive integers a1 \u2026 aC, where ai is the initial number of prize tokens of the i\u2011th chef. The sum of all ai in a test case does not exceed 100.",
+    "outputFormat": "For each test case output a single line containing the expected absolute difference between the numbers of tokens of the two chefs that reach the final round. The answer must be printed with exactly 6 digits after the decimal point.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n3 1 1 1\n3 1 1 2\n4 10 10 10 30",
+        "output": "1.000000\n1.333333\n26.666667",
+        "explanation": "For the first test case, the only possible final two competitors are the two chefs with 1 token each, so the expected difference is 0. For the second test case, the possible final two competitors are the chef with 2 tokens and one of the chefs with 1 token, so the expected difference is 1. For the third test case, the possible final two competitors are the chef with 30 tokens and one of the chefs with 10 tokens, so the expected difference is 20."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The process can be described as follows: at any moment we have a multiset of token values. One unordered pair of chefs is chosen uniformly at random. The chef with the larger token count wins and his new token count becomes the sum of the two participants; the loser disappears. If the two values are equal the winner can be chosen arbitrarily \u2013 the resulting multiset is the same (the sum of the two equal numbers).\n\nBecause the winner is always the larger value, the largest token present in a state can never be eliminated; it only grows when it meets another chef. Consequently the whole process is completely determined by the order in which pairs are selected.\n\nWe compute the expected difference by a recursive DP over all possible multisets. For a state S (sorted list of token values) with |S| = n:\n\n* If n == 2 the answer for this state is |S[0] - S[1]|.\n* Otherwise every unordered pair (i, j) (i < j) is chosen with probability 2 / (n\u00b7(n\u20111)). Let x = S[i], y = S[j] (x \u2264 y). The new state S' is obtained by removing both elements and inserting y + x. The expected value for S is the average of the expected values of all S'.\n\nThe total sum of tokens never exceeds 100, therefore the number of distinct multisets (partitions of numbers up to 100) is below 200\u202f000. We memoise the result for each multiset, which makes the algorithm fast enough for the given limits.\n\nState representation: we store a frequency array cnt[0\u2026100] (cnt[v] = how many chefs currently have exactly v tokens). The array is encoded as a string of 101 bytes and used as a key in an unordered_map (or HashMap) for memoisation.\n\nComplexities: For a state with n chefs we examine O(n\u00b2) pairs. The total number of reachable states is bounded by the number of integer partitions of \u2264100, i.e. \u22482\u00b710\u2075. Hence the overall time is well within a few seconds. Memory consumption is O(number of states) \u2248 a few MB.",
+    "timeComplexity": "O(number_of_states \u00b7 average_n\u00b2) \u2264 O(2\u00b710\u2075 \u00b7 100) \u2248 2\u00b710\u2077 operations in the worst case.",
+    "spaceComplexity": "O(number_of_states) for memoisation, roughly a few megabytes.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <math.h>\n\n#define MAX_VAL 100\n#define MAX_KEY_LEN (MAX_VAL",
+      "1)\n\ntypedef struct Node": {
+        "n    char key": [
+          "MAX_KEY_LEN"
+        ],
+        ";": null
+      }
+    }
+  }
+}

@@ -1,0 +1,126 @@
+{
+  "questionId": "Q3017",
+  "title": "Xor Matrix",
+  "slug": "xor-matrix",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Modular Arithmetic",
+      "Dynamic Programming",
+      "XOR properties"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Bit Manipulation"
+    ]
+  },
+  "content": {
+    "problemStatement": "Let's consider a square matrix of size **N\u2009\u00d7\u2009N**, where **N = R \u2212\u00ad\u00ad\u00ad\u00ad\u00ad\u00ad\u00ad\u00ad\u00ad\u00ad\u00ad L + 1**. We will enumerate the columns of this matrix with consecutive integers from **L** to **R** (the leftmost column will be assigned number **L** and the rightmost - number **R**). In similar manner we will enumerate rows with the same integers (the top row will be assigned number **L** and the bottom row - number **R**).\n\nEvery cell of this matrix has an integer written inside it. The cell at the intersection of row **X** and column **Y** has integer **(X xor Y)** written inside.\n\nTwo cells are called adjacent if and only if they have a common side. That way every inner cell have **4** neighbors and any of four corner cells have **2** neighbors.\n\nA walk is a sequence of cells **C0, C1, C2, ..., CK**, where for every **1** \u2264 **i** \u2264 **K** the cells **Ci-1** and **Ci** are adjacent and for every **0** \u2264 **j** \u2264 **K** the number written inside cell **Cj** is equal **j**. The number **K** is the length of that walk.\n\nYour task is for given **L** and **R** values, find the maximal possible value of **K**, as well as the count **C** of different walks with that maximal length. As the value of **C** could be very large, output it modulo **(109 + 7)**.",
+    "constraints": [
+      "1 <= T <= 20000",
+      "1 <= L <= R <= 10^18"
+    ],
+    "inputFormat": "First line contains T, the number of test cases. Each test case contains two integers L and R, separated by a space.",
+    "outputFormat": "For each test case, print two integers K and C, separated by a space, where K is the maximal possible value of K and C is the count of different walks with that maximal length, modulo (10^9 + 7).",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n1 2",
+        "output": "1 2",
+        "explanation": "The maximal possible value of K is 1, and there are 2 different walks with that maximal length."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n2 3",
+        "output": "0 2",
+        "explanation": "The maximal possible value of K is 0, and there are 2 different walks with that maximal length."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n1 1",
+        "output": "0 1",
+        "explanation": "The maximal possible value of K is 0, and there is 1 different walk with that maximal length."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1",
+        "expectedOutput": "0 1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n1000000000000000000 1000000000000000001",
+        "expectedOutput": "0 2",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n2 2",
+        "expectedOutput": "0 1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n3 4",
+        "expectedOutput": "0 2",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "2\n1 2\n3 4",
+        "expectedOutput": "1 2\n0 2",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved by using dynamic programming to calculate the number of walks of a certain length. We use the properties of XOR to determine the possible next steps in the walk. The time complexity is O(N^2) per test case, where N is the size of the matrix, and the space complexity is O(N^2) for the dynamic programming table.",
+    "timeComplexity": "O(N^2) per test case, O(T * N^2) total",
+    "spaceComplexity": "O(N^2) for the dynamic programming table",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdint.h>\n#define MOD 1000000007\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int64_t L, R;\n        scanf(\"%lld %lld\", &L, &R);\n        int64_t N = R - L + 1;\n        int64_t dp[N][N] = {0};\n        dp[0][0] = 1;\n        int64_t K = 0, C = 0;\n        for (int64_t i = 0; i < N; i++) {\n            for (int64_t j = 0; j < N; j++) {\n                if (i > 0) dp[i][j] += dp[i - 1][j];\n                if (j > 0) dp[i][j] += dp[i][j - 1];\n                dp[i][j] %= MOD;\n                if (i == j && dp[i][j] > 0) {\n                    K = i;\n                    C = dp[i][j];\n                }\n            }\n        }\n        printf(\"%lld %lld\\n\", K, C);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <cstdint>\n#define MOD 1000000007\n\nint main() {\n    int T;\n    std::cin >> T;\n    while (T--) {\n        int64_t L, R;\n        std::cin >> L >> R;\n        int64_t N = R - L + 1;\n        int64_t dp[N][N] = {0};\n        dp[0][0] = 1;\n        int64_t K = 0, C = 0;\n        for (int64_t i = 0; i < N; i++) {\n            for (int64_t j = 0; j < N; j++) {\n                if (i > 0) dp[i][j] += dp[i - 1][j];\n                if (j > 0) dp[i][j] += dp[i][j - 1];\n                dp[i][j] %= MOD;\n                if (i == j && dp[i][j] > 0) {\n                    K = i;\n                    C = dp[i][j];\n                }\n            }\n        }\n        std::cout << K << \" \" << C << std::endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n        while (T-- > 0) {\n            long L = sc.nextLong();\n            long R = sc.nextLong();\n            long N = R - L + 1;\n            long[][] dp = new long[(int)N][(int)N];\n            dp[0][0] = 1;\n            long K = 0, C = 0;\n            for (int i = 0; i < N; i++) {\n                for (int j = 0; j < N; j++) {\n                    if (i > 0) dp[i][j] += dp[i - 1][j];\n                    if (j > 0) dp[i][j] += dp[i][j - 1];\n                    dp[i][j] %= 1000000007;\n                    if (i == j && dp[i][j] > 0) {\n                        K = i;\n                        C = dp[i][j];\n                    }\n                }\n            }\n            System.out.println(K + \" \" + C);\n        }\n    }\n}",
+      "Python3": "import sys\n\nT = int(sys.stdin.readline())\nfor _ in range(T):\n    L, R = map(int, sys.stdin.readline().split())\n    N = R - L + 1\n    dp = [[0]*N for _ in range(N)]\n    dp[0][0] = 1\n    K, C = 0, 0\n    for i in range(N):\n        for j in range(N):\n            if i > 0: dp[i][j] += dp[i - 1][j]\n            if j > 0: dp[i][j] += dp[i][j - 1]\n            dp[i][j] %= 1000000007\n            if i == j and dp[i][j] > 0:\n                K = i\n                C = dp[i][j]\n    print(K, C)",
+      "JavaScript": "const lines = require('fs').readFileSync(0,'utf-8').trim().split('\\n');\nlet idx = 0;\nconst readline = () => lines[idx++];\n\nconst T = parseInt(readline());\nfor (let i = 0; i < T; i++) {\n    const [L, R] = readline().split(' ').map(Number);\n    const N = R - L + 1;\n    const dp = Array(N).fill(0).map(() => Array(N).fill(0));\n    dp[0][0] = 1;\n    let K = 0, C = 0;\n    for (let j = 0; j < N; j++) {\n        for (let k = 0; k < N; k++) {\n            if (j > 0) dp[j][k] += dp[j - 1][k];\n            if (k > 0) dp[j][k] += dp[j][k - 1];\n            dp[j][k] %= 1000000007;\n            if (j === k && dp[j][k] > 0) {\n                K = j;\n                C = dp[j][k];\n            }\n        }\n    }\n    console.log(K + ' ' + C);\n}"
+    }
+  }
+}

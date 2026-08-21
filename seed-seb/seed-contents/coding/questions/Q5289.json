@@ -1,0 +1,123 @@
+{
+  "questionId": "Q5289",
+  "title": "Buying Land",
+  "slug": "buying-land",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Arrays | Geometry | Sliding Window | Convolution | Prefix Sums",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "2D Convolution",
+      "FFT",
+      "Prefix Sum",
+      "Sliding Window",
+      "Correlation"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Divide & Conquer"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "After recent success of cooking reality shows, Chef decided to borrow the idea and host his own \"Devil's Kitchen\" show. But his ambitions are even bigger. He plans to build a whole complex of hotels, gyms and other entertainment facilities along with one main restaurant where he'll host the show. But first of all, he needs to purhase some land to build on. The country is divided into a grid with R rows and C columns of smaller parcels. Chef wants to buy a rectangular piece of land H parcels high and W parcels wide. He also has a preferred layout in mind. The restaurant will be located at (i,j). For every parcel he defined its preferred height relative to the height of the restaurant parcel. For a particular piece of land, he computes height differences relative to the restaurant and compares them to the preferred layout. This comparison is done as a sum of squared differences over all H*W parcels. Given the map of the country, help him out by finding the K most suitable pieces of land.",
+    "constraints": [
+      "1 ≤ T ≤ 10",
+      "1 ≤ R, C ≤ 666",
+      "1 ≤ H ≤ (R+1)/2",
+      "1 ≤ W ≤ (C+1)/2",
+      "|height| ≤ 30",
+      "The restaurant cell inside the layout always contains 0",
+      "1 ≤ K ≤ 1000 and at least K placements exist"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case:\n1. Two integers R and C (1 ≤ R, C ≤ 666) – dimensions of the country map.\n2. R lines follow, each with C integers – the heights of the parcels (|height| ≤ 30).\n3. Two integers H and W (1 ≤ H ≤ (R+1)/2, 1 ≤ W ≤ (C+1)/2) – dimensions of the preferred layout.\n4. H lines follow, each with W integers – the preferred height differences. The value at the restaurant position is always 0.\n5. Two integers i and j (1‑based, 1 ≤ i ≤ H, 1 ≤ j ≤ W) – the restaurant’s coordinates inside the layout.\n6. An integer K (1 ≤ K ≤ 1000) – the number of best positions to output. It is guaranteed that at least K different placements exist.\nAll numbers are separated by whitespace.",
+    "outputFormat": "For each test case output exactly K lines. Each line contains three integers BR, BC, S separated by a single space, where (BR,BC) is the 1‑based upper‑left corner of a feasible H×W rectangle and S is its score (the sum of squared differences). Lines must be ordered by increasing S; ties are broken by smaller BR, then smaller BC.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For a placement with upper‑left corner (r,c) let b be the height of the restaurant cell (grid[r+i‑1][c+j‑1]). The score is\nS = Σ ( (a – b – p)² ) over all cells of the layout,\nwhere a is the height of the current parcel and p is the preferred difference.\nExpanding the square gives\nS = Σ a² + (H·W)·b² + Σ p² – 2·b·Σ a – 2·Σ (a·p) + 2·b·Σ p.\nAll terms except Σ (a·p) can be obtained in O(1) with 2‑D prefix sums of the grid, of the grid squares and with the constant sums of the layout (Σ p, Σ p²). The term Σ (a·p) is a 2‑D correlation between the grid and the layout. It can be computed for all placements at once using a 2‑D Fast Fourier Transform (FFT):\n1. Build matrix A of size R×C with the grid values.\n2. Build matrix B of size H×W with the layout values, reverse both dimensions (so correlation becomes convolution).\n3. Pad both matrices to the next power‑of‑two size (R+H, C+W) and run a 2‑D FFT on each.\n4. Multiply point‑wise, inverse‑FFT, and round to the nearest integer – the result at position (r+H‑1, c+W‑1) equals Σ a·p for the placement (r,c).\nAfter obtaining S for every feasible placement we keep the K smallest using a min‑heap or simply sort the list (the number of placements is at most (R‑H+1)*(C‑W+1) ≤ 110 k, easily sortable). Finally we output the K best placements respecting the required tie‑break order.\nThe overall complexity is O(N² log N) where N is the next power of two ≥ max(R+H, C+W) (≤ 2048). Memory consumption is O(N²).",
+    "timeComplexity": "O(N² log N) per test case, where N = next power of two ≥ max(R+H, C+W) (≤ 2048). Sorting the at most 110 k placements adds O(P log P) with P ≤ 110 k, negligible compared to the FFT.",
+    "spaceComplexity": "O(N²) for the padded matrices and FFT buffers (≤ 2048² ≈ 4 M complex numbers).",
+    "code": {
+      "C": ""
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

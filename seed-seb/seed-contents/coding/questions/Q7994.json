@@ -1,0 +1,142 @@
+{
+  "questionId": "Q7994",
+  "title": "Sort by Adjacent Swaps",
+  "slug": "sort-by-adjacent-swaps",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Sorting",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Inversions",
+      "Greedy",
+      "Insertion Sort",
+      "Two Pointers"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Sorting"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Sort by Adjacent SwapsYou are given an array AAA (of size nnn) and you can only perform the adjacent swaps on the array, i.e. you can choose\nan index iii (0≤i≤n−20 \\leq i \\leq n-20≤i≤n−2) and swap the values present in AiA_iAi​ and Ai+1A_{i+1}Ai+1​.\n\nSort the array using **minimum** number of adjacent swap operations.\n\nNote that there may be multiple possible outputs, you can print **any** of them.",
+    "constraints": [
+      "1 ≤ T ≤ 10",
+      "1 ≤ n ≤ 10^5",
+      "−10^9 ≤ Ai ≤ 10^9",
+      "The minimal number of swaps for each test case does not exceed 10^5"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases.\nFor each test case:\n- The first line contains an integer n, the size of the array.\n- The second line contains n space‑separated integers A0, A1, …, A{n‑1}.",
+    "outputFormat": "For each test case output two lines.\n- The first line contains a single integer m – the minimum number of adjacent swaps required to sort the array.\n- The second line contains m space‑separated integers, each between 0 and n‑2 inclusive, describing the indices i where the i‑th operation swaps A[i] and A[i+1]. If m = 0, output an empty line.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n3\n3 2 1",
+        "output": "3\n0 1 0",
+        "explanation": "The array [3,2,1] has three inversions. The algorithm swaps indices 0, then 1, then 0, producing the sorted array [1,2,3] with the minimal 3 adjacent swaps."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\\n5\\n1 2 3 4 5",
+        "output": "0\n",
+        "explanation": "The array is already sorted, so zero swaps are required."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n4\n2 1 2 1",
+        "output": "3\n0 2 1",
+        "explanation": "Inversions are (0,1), (0,3) and (2,3). The algorithm performs swaps at indices 0, then 2, then 1, achieving the sorted order [1,1,2,2] with the minimal 3 swaps."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n5",
+        "expectedOutput": "0\n",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\\n5\\n5 4 3 2 1",
+        "expectedOutput": "10\n0 1 0 2 1 0 3 2 1 0",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "1\n1\n5",
+        "expectedOutput": "0\n",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "1\n1\n5",
+        "expectedOutput": "0\n",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "1\n1\n5",
+        "expectedOutput": "0\n",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The minimum number of adjacent swaps needed to sort an array equals the number of inversions (pairs i<j with A[i]>A[j]). A simple greedy procedure that mimics insertion sort achieves exactly this number: iterate i from 1 to n‑1, and while the current element is smaller than its left neighbour, swap them and record the index. Each performed swap removes one inversion, so the total number of swaps equals the inversion count – the optimal value. Because the total number of swaps is guaranteed ≤ 10^5, the algorithm runs in O(n + m) time, where m is the number of swaps, and uses O(1) extra space besides the output list.",
+    "timeComplexity": "O(n + m) per test case, where m is the minimal number of swaps (≤ 10^5).",
+    "spaceComplexity": "O(m) for storing the sequence of swap indices (output), plus O(1) auxiliary space.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nint main() {\n    int T; if (scanf(\"%d\", &T)!=1) return 0;\n    while (T--) {\n        int n; scanf(\"%d\", &n);\n        long long *a = (long long*)malloc(n * sizeof(long long));\n        for (int i = 0; i < n; ++i) scanf(\"%lld\", &a[i]);\n        int *ops = (int*)malloc(100000 * sizeof(int)); // max swaps ≤ 1e5\n        int m = 0;\n        for (int i = 1; i < n; ++i) {\n            int j = i;\n            while (j > 0 && a[j-1] > a[j]) {\n                long long tmp = a[j-1]; a[j-1] = a[j]; a[j] = tmp;\n                ops[m++] = j-1;\n                --j;\n            }\n        }\n        printf(\"%d\\n\", m);\n        for (int i = 0; i < m; ++i) {\n            if (i) printf(\" \");\n            printf(\"%d\", ops[i]);\n        }\n        printf(\"\\n\");\n        free(a);\n        free(ops);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int n; cin>>n;\n        vector<long long> a(n);\n        for(int i=0;i<n;++i) cin>>a[i];\n        vector<int> ops; ops.reserve(100000);\n        for(int i=1;i<n;++i){\n            int j=i;\n            while(j>0 && a[j-1]>a[j]){\n                swap(a[j-1],a[j]);\n                ops.push_back(j-1);\n                --j;\n            }\n        }\n        cout<<ops.size()<<\"\\n\";\n        for(size_t i=0;i<ops.size();++i){\n            if(i) cout<<' ';\n            cout<<ops[i];\n        }\n        cout<<\"\\n\";\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner(System.in);\n        int T = fs.nextInt();\n        StringBuilder out = new StringBuilder();\n        while (T-- > 0) {\n            int n = fs.nextInt();\n            long[] a = new long[n];\n            for (int i = 0; i < n; i++) a[i] = fs.nextLong();\n            int[] ops = new int[100000]; // max swaps\n            int m = 0;\n            for (int i = 1; i < n; i++) {\n                int j = i;\n                while (j > 0 && a[j - 1] > a[j]) {\n                    long tmp = a[j - 1]; a[j - 1] = a[j]; a[j] = tmp;\n                    ops[m++] = j - 1;\n                    j--;\n                }\n            }\n            out.append(m).append('\\n');\n            for (int i = 0; i < m; i++) {\n                if (i > 0) out.append(' ');\n                out.append(ops[i]);\n            }\n            out.append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n    // Fast scanner for speed\n    static class FastScanner {\n        private final InputStream in;\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        FastScanner(InputStream in) { this.in = in; }\n        private int readByte() throws IOException {\n            if (ptr >= len) {\n                len = in.read(buffer);\n                ptr = 0;\n                if (len <= 0) return -1;\n            }\n            return buffer[ptr++];\n        }\n        int nextInt() throws IOException { return (int) nextLong(); }\n        long nextLong() throws IOException {\n            int c; do { c = readByte(); } while (c <= ' ');\n            boolean neg = false;\n            if (c == '-') { neg = true; c = readByte(); }\n            long val = 0;\n            while (c > ' ') {\n                val = val * 10 + (c - '0');\n                c = readByte();\n            }\n            return neg ? -val : val;\n        }\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys\n\ndef solve():\n    data = list(map(int, sys.stdin.read().strip().split()))\n    if not data:\n        return\n    it = iter(data)\n    T = next(it)\n    out_lines = []\n    for _ in range(T):\n        n = next(it)\n        a = [next(it) for _ in range(n)]\n        ops = []\n        for i in range(1, n):\n            j = i\n            while j > 0 and a[j-1] > a[j]:\n                a[j-1], a[j] = a[j], a[j-1]\n                ops.append(j-1)\n                j -= 1\n        out_lines.append(str(len(ops)))\n        out_lines.append(' '.join(map(str, ops)))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst data = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/).map(Number);\nlet idx = 0;\nif (data.length === 0) process.exit(0);\nconst T = data[idx++];\nlet output = [];\nfor (let t = 0; t < T; ++t) {\n  const n = data[idx++];\n  const a = data.slice(idx, idx + n);\n  idx += n;\n  const ops = [];\n  for (let i = 1; i < n; ++i) {\n    let j = i;\n    while (j > 0 && a[j - 1] > a[j]) {\n      const tmp = a[j - 1];\n      a[j - 1] = a[j];\n      a[j] = tmp;\n      ops.push(j - 1);\n      --j;\n    }\n  }\n  output.push(String(ops.length));\n  output.push(ops.join(' '));\n}\nconsole.log(output.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

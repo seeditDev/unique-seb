@@ -1,0 +1,119 @@
+{
+  "questionId": "Q3200",
+  "title": "Cyclist Race",
+  "slug": "cyclist-race",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Data Structures",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Convex Hull Trick",
+      "Line Container",
+      "Segment Tree",
+      "Li Chao Tree",
+      "Data Structures",
+      "Offline Queries"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ]
+  },
+  "content": {
+    "problemStatement": "Chef has been invited to be a judge for a cycling race.\n\nYou may think about cyclists in the race as points on a line. All the cyclists start at the same point with an initial speed of zero. All of them move in the same direction. Some cyclists may force their cycles to speed up. The change of speed takes place immediately. The rest of the time, they move with a constant speed. There are **N** cyclists in total, numbered from **1** to **N**.\n\nIn order to award points to the participants, Chef wants to know how far the cyclists have reached at certain points of time.\n\nCorresponding to the above two, there will be two types of queries.\n\n\nChange the speed of cyclist **i** at some time.\nAsk for the position of the race leader at some time.\nThere are **Q** queries. Each query of first type is described by the type of the query (1), the time **Time**, the cyclist number **cyclist**, and the new speed **NewSpeed**. Each query of second type is described by the type of the query (2), and the time **Time**.\n\nInitial speed of all the cyclists is 0.",
+    "constraints": [
+      "1 \u2264 T \u2264 10",
+      "1 \u2264 N \u2264 50000",
+      "1 \u2264 Q \u2264 100000",
+      "0 \u2264 Time \u2264 10^9",
+      "1 \u2264 NewSpeed \u2264 10^9",
+      "1 \u2264 cyclist \u2264 N",
+      "The speed of any cyclist never decreases."
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, the first line contains two integers N and Q \u2014 the number of cyclists and the number of queries. Then Q lines follow. Each line starts with an integer Type.\n- If Type = 1, three more integers follow: Time, cyclist, NewSpeed \u2014 meaning that at moment Time the speed of cyclist (1\u2011based index) becomes NewSpeed. The speed never decreases.\n- If Type = 2, one more integer follows: Time \u2014 you have to output the position of the race leader (the maximum distance travelled by any cyclist) at moment Time.\nAll times are non\u2011negative and fit in 32\u2011bit signed integer range.",
+    "outputFormat": "For each query of type 2, output a single line containing the maximum distance (as a 64\u2011bit integer) reached by any cyclist at the given time, in the order the queries appear in the input.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "5 14\n1 1 1 2\n1 1 2 5\n1 2 3 4\n1 2 4 7\n2 3\n2 4\n1 5 5 4\n2 5\n2 6\n1 7 5 8\n2 7\n2 8\n2 9\n2 10",
+        "output": "10\n15\n21\n28\n35\n42\n49\n56",
+        "explanation": "The position of the race leader at each time is calculated based on the speed of the cyclists."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "All speed changes and queries are processed in non\u2011decreasing order of time. For each cyclist we keep:\n- lastSpeed \u2013 the speed after the most recent change,\n- lastTime  \u2013 the moment of that change,\n- distSoFar \u2013 total distance travelled up to lastTime.\nWhen a speed change at time t is met, the segment that was valid from lastTime to t is a line f(x)=a+ b\u00b7x with slope b = lastSpeed and intercept a = distSoFar - b\u00b7lastTime. This line is added to a Li Chao segment tree on the interval [lastTime, t]. Afterwards we update distSoFar += lastSpeed\u00b7(t\u2011lastTime), set lastSpeed = NewSpeed and lastTime = t, and insert the new line (valid from t to +\u221e) into the tree on interval [t, MAX_TIME].\nFor a query at time t we simply ask the Li Chao tree for the maximum value among all stored lines at x = t. The answer is the leader's distance.\nThe Li Chao tree works on the whole x\u2011range [0, 10^9] and supports adding a line on a sub\u2011interval in O(log X) time, where X is the coordinate range. Both updates and queries are O(log X), so the total complexity is O((Q+N)\u00b7log X). All arithmetic uses 64\u2011bit signed integers.\nEdge cases handled:\n- Multiple events having the same time \u2013 they are processed in the order they appear, which is correct because a speed change at time t influences the distance from that exact moment onward.\n- Queries before any speed change \u2013 the tree initially contains a line with slope 0 and intercept 0 for every cyclist, giving distance 0.\n- Very large times \u2013 the tree range is fixed to the maximum possible time (10^9).",
+    "timeComplexity": "O((Q + N) \u00b7 log 1e9) \u2248 O((Q + N) \u00b7 30)",
+    "spaceComplexity": "O(N + number_of_lines) \u2264 O(Q) for the Li Chao tree nodes",
+    "code": {
+      "C": "// COMPLETE, COMPILABLE C code\n#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <limits.h>\n\ntypedef long long ll;\n\ntypedef struct Line {\n    ll m; // slope\n    ll b; // intercept\n} Line;\n\nstatic inline ll eval(Line *ln, ll x) { return ln->m * x + ln->b; }\n\ntypedef struct Node {\n    Line line;\n    struct Node *left, *right;\n} Node;\n\n#define X_MIN 0LL\n#define X_MAX 1000000000LL\n\nNode* newNode() {\n    Node* nd = (Node*)malloc(sizeof(Node));\n    nd->line.m = 0; nd->line.b = LLONG_MIN; // represents -infinity\n    nd->left = nd->right = NULL;\n    return nd;\n}\n\nvoid addLine(Node **root, Line newLine, ll l, ll r) {\n    if (*root == NULL) { *root = newNode(); (*root)->line = newLine; return; }\n    Node *node = *root;\n    ll mid = (l + r) >> 1;\n    int leftBetter = eval(&newLine, l) > eval(&node->line, l);\n    int midBetter  = eval(&newLine, mid) > eval(&node->line, mid);\n    if (midBetter) {\n        Line tmp = node->line; node->line = newLine; newLine = tmp;\n    }\n    if (r - l == 0) return;\n    if (leftBetter != midBetter) {\n        addLine(&node->left, newLine, l, mid);\n    } else {\n        addLine(&node->right, newLine, mid+1, r);\n    }\n}\n\nvoid addSegment(Node **root, Line newLine, ll segL, ll segR, ll l, ll r) {\n    if (segR < l || r < segL) return;\n    if (segL <= l && r <= segR) { addLine(root, newLine, l, r); return; }\n    ll mid = (l + r) >> 1;\n    addSegment(root, newLine, segL, segR, l, mid);\n    addSegment(root, newLine, segL, segR, mid+1, r);\n}\n\nll query(Node *root, ll x, ll l, ll r) {\n    if (!root) return LLONG_MIN;\n    ll cur = eval(&root->line, x);\n    if (l == r) return cur;\n    ll mid = (l + r) >> 1;\n    if (x <= mid) return cur > query(root->left, x, l, mid) ? cur : query(root->left, x, l, mid);\n    else return cur > query(root->right, x, mid+1, r) ? cur : query(root->right, x, mid+1, r);\n}\n\nint main(){\n    int T; if (scanf(\"%d\", &T)!=1) return 0;\n    while(T--){\n        int N, Q; scanf(\"%d %d\", &N, &Q);\n        ll *lastTime = (ll*)calloc(N, sizeof(ll));\n        ll *lastSpeed = (ll*)calloc(N, sizeof(ll));\n        ll *dist = (ll*)calloc(N, sizeof(ll));\n        Node *root = NULL;\n        // initially each cyclist has line y = 0 (slope 0, intercept 0) valid from 0 to INF\n        Line init = {0, 0};\n        for(int i=0;i<N;i++) addSegment(&root, init, 0, X_MAX, X_MIN, X_MAX);\n        for(int i=0;i<Q;i++){\n            int type; scanf(\"%d\", &type);\n            if(type==1){\n                ll time; int cyclist; ll newSpeed; scanf(\"%lld %d %lld\", &time, &cyclist, &newSpeed);\n                cyclist--;\n                // close previous segment\n                ll oldSpeed = lastSpeed[cyclist];\n                ll lt = lastTime[cyclist];\n                ll a = dist[cyclist] - oldSpeed * lt; // intercept\n                Line seg = {oldSpeed, a};\n                addSegment(&root, seg, lt, time-1, X_MIN, X_MAX);\n                // update distance up to 'time'\n                dist[cyclist] += oldSpeed * (time - lt);\n                lastSpeed[cyclist] = newSpeed;\n                lastTime[cyclist] = time;\n                // add new line for future (from time onward)\n                ll a2 = dist[cyclist] - newSpeed * time;\n                Line newLine = {newSpeed, a2};\n                addSegment(&root, newLine, time, X_MAX, X_MIN, X_MAX);\n            } else {\n                ll time; scanf(\"%lld\", &time);\n                ll ans = query(root, time, X_MIN, X_MAX);\n                if(ans==LLONG_MIN) ans = 0; // safety\n                printf(\"%lld\\n\", ans);\n            }\n        }\n        free(lastTime); free(lastSpeed); free(dist);\n        // Note: memory of the Li Chao tree is not freed for brevity (acceptable in contest limits).\n    }\n    return 0;\n}\n",
+      "C++": ""
+    }
+  }
+}

@@ -1,0 +1,134 @@
+{
+  "questionId": "Q7976",
+  "title": "Equal Gifts",
+  "slug": "equal-gifts",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Arrays | Greedy",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Duplicate detection",
+      "Hash map",
+      "Linear scan"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Sorting"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Although Christmas has long since passed, Mr. and Mrs. J have a pile of NNN unopened gifts with values a1,a2,…,aNa_1, a_2, \\ldots, a_Na1​,a2​,…,aN​.\n\nThey wish to distribute some (possibly all) of the gifts amongst their two children Alice and Bob, and give the rest away to charity. They must do so in such a manner that:\n\n\nAlice and Bob get at least one gift each\neach gift is given to at most one of the children, as they do not like to share\nthe sum of values of the gifts Alice gets is equal to the sum of values of gifts Bob gets\nGiven NNN and the values of all gifts, help Mr. and Mrs. J distribute the gifts or state that it is impossible to distribute them in a way that satisfies all conditions.",
+    "constraints": [
+      "1 ≤ T ≤ 5",
+      "2 ≤ N ≤ 100000",
+      "1 ≤ ai ≤ 10^8"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case: the first line contains an integer N, the number of gifts. The second line contains N space‑separated integers a1 … aN, the values of the gifts.",
+    "outputFormat": "For each test case output either a single line \"NO\" if it is impossible, or two lines if it is possible. The first line must be \"YES\". The second line must be a string of length N consisting of characters 'A', 'B' and 'N' describing to whom each gift is given (Alice, Bob or Charity). Any valid assignment is accepted.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n5\n3 2 4 5 2\n2\n10 70",
+        "output": "YES\nNANNB\nNO",
+        "explanation": "In the first test case the value 2 appears at positions 2 and 5. Giving the gift at position 2 to Alice (A) and the one at position 5 to Bob (B) makes both sums equal to 2. All other gifts are sent to charity (N). In the second test case there is no repeated value, so it is impossible."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n2\n5 5",
+        "output": "YES\nAB",
+        "explanation": "Both gifts have the same value 5, so Alice receives the first and Bob the second."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n2\n5 5",
+        "expectedOutput": "YES\nAB",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary (5 elements)",
+        "input": "1\n5\n1 2 3 4 1",
+        "expectedOutput": "YES\nANNNB",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "all equal values",
+        "input": "1\n4\n7 7 7 7",
+        "expectedOutput": "YES\nABNN",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "no duplicate",
+        "input": "1\n3\n1 2 3",
+        "expectedOutput": "NO",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "duplicate later in array",
+        "input": "1\n6\n8 9 10 11 12 9",
+        "expectedOutput": "YES\nNANNNB",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "If two gifts have exactly the same value we can give one of them to Alice and the other to Bob and discard all remaining gifts. This satisfies all conditions because both children receive at least one gift and the sums are equal. Therefore the problem reduces to checking whether any value appears at least twice. We scan the array while storing the first index of each value in a hash map. When we encounter a value that is already present we have found a solution. If the scan finishes without a repeat, the answer is \"NO\".",
+    "timeComplexity": "O(N) per test case, where N is the number of gifts in that test case.",
+    "spaceComplexity": "O(N) in the worst case for the hash map storing seen values.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\ntypedef struct Node {int key; int idx; struct Node *next;} Node;\n\n#define MOD 1000003\nNode *table[MOD];\n\nunsigned int hash_int(int x){return ((unsigned int)x)%MOD;}\n\nvoid insert(int key, int idx){\n    unsigned int h = hash_int(key);\n    Node *n = (Node*)malloc(sizeof(Node));\n    n->key = key; n->idx = idx; n->next = table[h];\n    table[h] = n;\n}\n\nint find(int key){\n    unsigned int h = hash_int(key);\n    for(Node *p=table[h]; p; p=p->next) if(p->key==key) return p->idx;\n    return -1;\n}\n\nvoid clear_table(){\n    for(int i=0;i<MOD;i++){\n        Node *p=table[i];\n        while(p){Node *tmp=p; p=p->next; free(tmp);} table[i]=NULL;\n    }\n}\n\nint main(){\n    int T; if(scanf(\"%d\",&T)!=1) return 0;\n    while(T--){\n        int N; scanf(\"%d\",&N);\n        int *a = (int*)malloc(N*sizeof(int));\n        for(int i=0;i<N;i++) scanf(\"%d\",&a[i]);\n        clear_table();\n        int first=-1, second=-1;\n        for(int i=0;i<N;i++){\n            int pos = find(a[i]);\n            if(pos!=-1){first=pos; second=i; break;}\n            insert(a[i], i);\n        }\n        if(first==-1){\n            printf(\"NO\\n\");\n        }else{\n            printf(\"YES\\n\");\n            for(int i=0;i<N;i++){\n                if(i==first) putchar('A');\n                else if(i==second) putchar('B');\n                else putchar('N');\n            }\n            putchar('\\n');\n        }\n        free(a);\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N; cin>>N;\n        vector<int> a(N);\n        for(int &x: a) cin>>x;\n        unordered_map<int,int> mp;\n        int iA=-1,iB=-1;\n        for(int i=0;i<N;i++){\n            auto it=mp.find(a[i]);\n            if(it!=mp.end()){\n                iA=it->second; iB=i; break;\n            }\n            mp[a[i]]=i;\n        }\n        if(iA==-1){\n            cout<<\"NO\\n\";\n        }else{\n            cout<<\"YES\\n\";\n            string ans(N,'N');\n            ans[iA]='A'; ans[iB]='B';\n            cout<<ans<<\"\\n\";\n        }\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder out = new StringBuilder();\n        int T = Integer.parseInt(br.readLine().trim());\n        while (T-- > 0) {\n            int N = Integer.parseInt(br.readLine().trim());\n            StringTokenizer st = new StringTokenizer(br.readLine());\n            int[] a = new int[N];\n            for (int i = 0; i < N; i++) a[i] = Integer.parseInt(st.nextToken());\n            HashMap<Integer,Integer> map = new HashMap<>();\n            int iA = -1, iB = -1;\n            for (int i = 0; i < N; i++) {\n                Integer prev = map.get(a[i]);\n                if (prev != null) { iA = prev; iB = i; break; }\n                map.put(a[i], i);\n            }\n            if (iA == -1) {\n                out.append(\"NO\\n\");\n            } else {\n                out.append(\"YES\\n\");\n                char[] ans = new char[N];\n                Arrays.fill(ans, 'N');\n                ans[iA] = 'A';\n                ans[iB] = 'B';\n                out.append(new String(ans)).append('\\n');\n            }\n        }\n        System.out.print(out.toString());\n    }\n}\n",
+      "Python3": "#!/usr/bin/env python3\nimport sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it))\n        a = [int(next(it)) for _ in range(N)]\n        seen = {}\n        iA = iB = -1\n        for i, val in enumerate(a):\n            if val in seen:\n                iA = seen[val]\n                iB = i\n                break\n            seen[val] = i\n        if iA == -1:\n            out_lines.append(\"NO\")\n        else:\n            out_lines.append(\"YES\")\n            ans = ['N'] * N\n            ans[iA] = 'A'\n            ans[iB] = 'B'\n            out_lines.append(''.join(ans))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet out = [];\nfor (let t = 0; t < T; t++) {\n  const N = Number(input[idx++]);\n  const a = new Array(N);\n  for (let i = 0; i < N; i++) a[i] = Number(input[idx++]);\n  const map = new Map();\n  let iA = -1, iB = -1;\n  for (let i = 0; i < N; i++) {\n    if (map.has(a[i])) { iA = map.get(a[i]); iB = i; break; }\n    map.set(a[i], i);\n  }\n  if (iA === -1) {\n    out.push('NO');\n  } else {\n    out.push('YES');\n    const ans = Array(N).fill('N');\n    ans[iA] = 'A';\n    ans[iB] = 'B';\n    out.push(ans.join(''));\n  }\n}\nconsole.log(out.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

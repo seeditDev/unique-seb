@@ -1,0 +1,139 @@
+{
+  "questionId": "Q7058",
+  "title": "Chef and Lost Story",
+  "slug": "chef-and-lost-story",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Bit Manipulation",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Bitwise XOR",
+      "Backtracking"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Once upon a time, in a land far, far away... nevermind, we don't recall the rest of the story.\n\nAll we know is that Chef has a matrix of integers MMM with NNN rows and NNN columns; he wants to take a single element from each row and a single element from each column (NNN elements in total) and find their bitwise XOR. Find the set of all values he could obtain.",
+    "constraints": [
+      "1 ≤ T ≤ 7",
+      "1 ≤ N ≤ 60",
+      "0 ≤ Mi,j ≤ 1023 for each valid i, j"
+    ],
+    "inputFormat": "The first line of the input contains a single integer T denoting the number of test cases. The description of T test cases follows. The first line of each test case contains a single integer N. N lines follow. For each i (1≤i≤N), the i-th of the following lines contains N space-separated integers Mi,1,Mi,2,…,Mi,N.",
+    "outputFormat": "For each test case, print a single line containing one or more space-separated integers in increasing order — the obtainable values.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n3\n5 9 15\n19 7 2\n1 0 0",
+        "output": "2 7 9 10 26 28",
+        "explanation": "Explanation: We could choose M1,1=5 and M2,2=7; since we are only allowed to choose one element from each row and one from each column, we cannot choose anything else from rows 1, 2 and columns 1, 2, so we have to choose M3,3=0. Their XOR is 5⊕7⊕0=2."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n2\n1 2\n3 4",
+        "output": "4 6",
+        "explanation": "Explanation: We can choose M1,1=1 and M2,2=4, or M1,2=2 and M2,1=3. Their XORs are 1⊕4=5 and 2⊕3=1, respectively."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n1\n5",
+        "output": "5",
+        "explanation": "Explanation: We can only choose M1,1=5. Its XOR is 5."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n60\n1023 1023 1023\n1023 1023 1023\n1023 1023 1023",
+        "expectedOutput": "1023 1023 1023",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n2\n0 0\n0 0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n3\n1 2 3\n4 5 6\n7 8 9",
+        "expectedOutput": "6 15 24",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n4\n1 2 3 4\n5 6 7 8\n9 10 11 12\n13 14 15 16",
+        "expectedOutput": "30 38 46",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a backtracking approach. We start by choosing an element from the first row, then an element from the second row that is not in the same column as the previously chosen element, and so on. We continue this process until we have chosen an element from each row. We then calculate the bitwise XOR of all the chosen elements and add it to our result set. We repeat this process for all possible combinations of elements.",
+    "timeComplexity": "O(N! * N) — because in the worst case, we have to try all permutations of elements and for each permutation, we have to calculate the XOR of N elements",
+    "spaceComplexity": "O(N) — because we need to store the current permutation of elements",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nint compare(const void *a, const void *b) {\n    return (*(int*)a - *(int*)b);\n}\n\nvoid backtrack(int **matrix, int *chosen, int *columns, int row, int n, int *result, int *resultSize) {\n    if (row == n) {\n        int xor = 0;\n        for (int i = 0; i < n; i++) {\n            xor ^= matrix[i][chosen[i]];\n        }\n        result[(*resultSize)++] = xor;\n        return;\n    }\n    for (int col = 0; col < n; col++) {\n        if (columns[col] == 0) {\n            chosen[row] = col;\n            columns[col] = 1;\n            backtrack(matrix, chosen, columns, row + 1, n, result, resultSize);\n            columns[col] = 0;\n        }\n    }\n}\n\nint* chefAndLostStory(int **matrix, int n, int *returnSize) {\n    int *result = (int*)malloc(n * n * sizeof(int));\n    *returnSize = 0;\n    int *chosen = (int*)malloc(n * sizeof(int));\n    int *columns = (int*)malloc(n * sizeof(int));\n    for (int i = 0; i < n; i++) {\n        columns[i] = 0;\n    }\n    backtrack(matrix, chosen, columns, 0, n, result, returnSize);\n    qsort(result, *returnSize, sizeof(int), compare);\n    return result;\n}\n",
+      "C++": "#include <iostream>\n#include <vector>\n#include <algorithm>\nusing namespace std;\n\nvoid backtrack(vector<vector<int>>& matrix, vector<int>& chosen, vector<int>& columns, int row, int n, vector<int>& result) {\n    if (row == n) {\n        int xor = 0;\n        for (int i = 0; i < n; i++) {\n            xor ^= matrix[i][chosen[i]];\n        }\n        result.push_back(xor);\n        return;\n    }\n    for (int col = 0; col < n; col++) {\n        if (columns[col] == 0) {\n            chosen[row] = col;\n            columns[col] = 1;\n            backtrack(matrix, chosen, columns, row + 1, n, result);\n            columns[col] = 0;\n        }\n    }\n}\n\nvector<int> chefAndLostStory(vector<vector<int>>& matrix, int n) {\n    vector<int> result;\n    vector<int> chosen(n, 0);\n    vector<int> columns(n, 0);\n    backtrack(matrix, chosen, columns, 0, n, result);\n    sort(result.begin(), result.end());\n    return result;\n}\n",
+      "Java": "import java.util.Arrays;\npublic class Main {\n    public static void backtrack(int[][] matrix, int[] chosen, int[] columns, int row, int n, int[] result, int[] resultSize) {\n        if (row == n) {\n            int xor = 0;\n            for (int i = 0; i < n; i++) {\n                xor ^= matrix[i][chosen[i]];\n            }\n            result[(*resultSize)++] = xor;\n            return;\n        }\n        for (int col = 0; col < n; col++) {\n            if (columns[col] == 0) {\n                chosen[row] = col;\n                columns[col] = 1;\n                backtrack(matrix, chosen, columns, row + 1, n, result, resultSize);\n                columns[col] = 0;\n            }\n        }\n    }\n    public static int[] chefAndLostStory(int[][] matrix, int n) {\n        int[] result = new int[n * n];\n        int[] chosen = new int[n];\n        int[] columns = new int[n];\n        int[] resultSize = new int[1];\n        backtrack(matrix, chosen, columns, 0, n, result, resultSize);\n        Arrays.sort(result, 0, resultSize[0]);\n        return Arrays.copyOfRange(result, 0, resultSize[0]);\n    }\n}\n",
+      "Python3": "def backtrack(matrix, chosen, columns, row, n, result):\n    if row == n:\n        xor = 0\n        for i in range(n):\n            xor ^= matrix[i][chosen[i]]\n        result.add(xor)\n        return\n    for col in range(n):\n        if columns[col] == 0:\n            chosen[row] = col\n            columns[col] = 1\n            backtrack(matrix, chosen, columns, row + 1, n, result)\n            columns[col] = 0\n\ndef chefAndLostStory(matrix, n):\n    result = set()\n    chosen = [0] * n\n    columns = [0] * n\n    backtrack(matrix, chosen, columns, 0, n, result)\n    return sorted(list(result))\n",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nfunction nextLine() {\n    return lines[idx++];\n}\nfunction nextInt() {\n    return parseInt(nextLine());\n}\nfunction nextIntArray() {\n    return nextLine().split(' ').map(x => parseInt(x));\n}\nfunction backtrack(matrix, chosen, columns, row, n, result) {\n    if (row == n) {\n        let xor = 0;\n        for (let i = 0; i < n; i++) {\n            xor ^= matrix[i][chosen[i]];\n        }\n        result.add(xor);\n        return;\n    }\n    for (let col = 0; col < n; col++) {\n        if (columns[col] == 0) {\n            chosen[row] = col;\n            columns[col] = 1;\n            backtrack(matrix, chosen, columns, row + 1, n, result);\n            columns[col] = 0;\n        }\n    }\n}\nfunction chefAndLostStory(matrix, n) {\n    let result = new Set();\n    let chosen = new Array(n).fill(0);\n    let columns = new Array(n).fill(0);\n    backtrack(matrix, chosen, columns, 0, n, result);\n    return Array.from(result).sort((a, b) => a - b);\n}\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

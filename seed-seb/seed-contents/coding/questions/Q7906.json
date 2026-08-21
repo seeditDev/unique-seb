@@ -1,0 +1,128 @@
+{
+  "questionId": "Q7906",
+  "title": "Interesting XOR!",
+  "slug": "interesting-xor",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Bit Manipulation | Math",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "XOR",
+      "Greedy",
+      "Product Maximization",
+      "Bitwise Operations"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Bit Manipulation"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given an integer CCC. Let ddd be the smallest integer such that 2d2^d2d is strictly greater than CCC.\n\nConsider all pairs of non-negative integers (A,B)(A,B)(A,B) such that A,B&lt;2dA,B \\lt 2^dA,B&lt;2d and A⊕B=CA \\oplus B = CA⊕B=C (⊕\\oplus⊕ denotes the bitwise XOR operation). Find the maximum value of A⋅BA \\cdot BA⋅B over all these pairs.",
+    "constraints": [
+      "1 ≤ T ≤ 10^5",
+      "1 ≤ C ≤ 10^9"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains a single integer C.",
+    "outputFormat": "For each test case output a single line containing the maximum possible product A·B such that 0 ≤ A, B < 2^d, A xor B = C, where d is the smallest integer with 2^d > C.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n13\n10",
+        "output": "70\n91",
+        "explanation": "For C=13 (binary 1101), d=4, mask=2. Starting with A=B=2, assign bits 8,4,1 to keep numbers balanced → A=10, B=7, product=70. For C=10 (binary 1010), d=4, mask=5. Starting with A=B=5, assign bits 8 and 2 → A=13, B=7, product=91."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For a given C, let d be the smallest integer with 2^d > C. All numbers are limited to d bits. For each bit position i (0‑based): if C_i = 0 then both A and B must have the same bit (0 or 1). To maximise the product we set these bits to 1 in both numbers, i.e., we start with A = B = mask where mask = ((1<<d)‑1) xor C. For bits where C_i = 1 the two numbers must differ. The sum S = A + B is fixed: S = 2·mask + C. For a fixed sum, the product A·B is maximised when A and B are as close as possible. Therefore we distribute the set bits of C greedily from the most significant to the least significant, always giving the current bit to the smaller of the two numbers. This yields the pair (A, B) with minimal |A‑B| and thus maximal product. The algorithm runs in O(d) ≤ O(30) per test case.\n\nSteps per test case:\n1. Find d by incrementing while (1<<d) ≤ C.\n2. mask = ((1LL<<d)‑1) ^ C.\n3. A = B = mask.\n4. For i from d‑1 down to 0, if (C>>i)&1 is set:\n   - if A ≤ B then A |= (1LL<<i) else B |= (1LL<<i).\n5. Output A * B.\n\nEdge cases: C = 0 → d = 0, only pair (0,0) → product 0. Power‑of‑two C works automatically.\nThe algorithm uses 64‑bit integers (or BigInt in JavaScript) to avoid overflow.",
+    "timeComplexity": "O(T · d) where d ≤ 30 (≈ O(T)).",
+    "spaceComplexity": "O(1) additional space per test case.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdint.h>\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        long long C;\n        scanf(\"%lld\", &C);\n        int d = 0;\n        while ((1LL << d) <= C) ++d; // smallest d with 2^d > C\n        long long mask = ((1LL << d) - 1) ^ C;\n        long long A = mask, B = mask;\n        for (int i = d - 1; i >= 0; --i) {\n            if ((C >> i) & 1LL) {\n                if (A <= B) A |= (1LL << i);\n                else B |= (1LL << i);\n            }\n        }\n        printf(\"%lld\\n\", A * B);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--) {\n        long long C; cin>>C;\n        int d=0; while((1LL<<d) <= C) ++d;\n        long long mask = ((1LL<<d)-1) ^ C;\n        long long A=mask, B=mask;\n        for(int i=d-1;i>=0;--i){\n            if((C>>i)&1LL){\n                if(A<=B) A|=(1LL<<i);\n                else B|=(1LL<<i);\n            }\n        }\n        cout << A*B << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder sb = new StringBuilder();\n        int T = Integer.parseInt(br.readLine().trim());\n        for (int t = 0; t < T; t++) {\n            long C = Long.parseLong(br.readLine().trim());\n            int d = 0;\n            while ((1L << d) <= C) d++;\n            long mask = ((1L << d) - 1) ^ C;\n            long A = mask, B = mask;\n            for (int i = d - 1; i >= 0; i--) {\n                if (((C >> i) & 1L) == 1L) {\n                    if (A <= B) A |= (1L << i);\n                    else B |= (1L << i);\n                }\n            }\n            sb.append(A * B).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out = []\n    for _ in range(T):\n        C = int(next(it))\n        d = 0\n        while (1 << d) <= C:\n            d += 1\n        mask = ((1 << d) - 1) ^ C\n        A = B = mask\n        for i in range(d - 1, -1, -1):\n            if (C >> i) & 1:\n                if A <= B:\n                    A |= (1 << i)\n                else:\n                    B |= (1 << i)\n        out.append(str(A * B))\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet results = [];\nfor (let t = 0; t < T; t++) {\n  const C = BigInt(input[idx++]);\n  let d = 0n;\n  while ((1n << d) <= C) d++;\n  const mask = ((1n << d) - 1n) ^ C;\n  let A = mask, B = mask;\n  for (let i = Number(d) - 1; i >= 0; i--) {\n    const bit = (C >> BigInt(i)) & 1n;\n    if (bit === 1n) {\n      if (A <= B) A |= (1n << BigInt(i));\n      else B |= (1n << BigInt(i));\n    }\n  }\n  results.push((A * B).toString());\n}\nconsole.log(results.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

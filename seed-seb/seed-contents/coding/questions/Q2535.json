@@ -1,0 +1,128 @@
+{
+  "questionId": "Q2535",
+  "title": "Code Crazy Minions",
+  "slug": "code-crazy-minions",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Easy",
+    "isPremium": false,
+    "tags": [
+      "Modular arithmetic",
+      "String manipulation",
+      "Strings",
+      "Greedy"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Ad-hoc & Implementation"
+    ]
+  },
+  "content": {
+    "problemStatement": "Coding in Sprout (a programming language) is very intuitive. Chef is giving his minions a demonstration in Sprout and wants you to\nhelp him determine if they are not too difficult for them.\n\n\n\nA program in Sprout is written using three kinds of instructions.\n\n\n\n\nLoad Instruction: Load a value into buffer.\n\tIncrement Instruction: Increment the value in buffer.\n\tPrint Instruction: Print the value from buffer.\n\nThe buffer stores a single integer between 0 and 25, both inclusive. If the value in the buffer is x, the increment instruction\nmakes the value (x+1), if x &lt; 25. At x = 25 the increment instruction makes the value 0.\n\n\n\nLoad Instruction can be used to load any value between 0 and 25 (inclusive) into the buffer.\n\n\n\nPrint from the buffer prints a lowercase English character based on the value in the buffer. Precisely, it prints the (x+1)th character\nin the alphabet. Thus, for x = 0, 'a' is printed; x = 1, 'b' is printed and so on. For x = 25, 'z' is printed.\n\n\n\nTo keep his programs clear, he uses the load instruction only once in the beginning (before printing any character). Then\nhe proceeds instruction after instruction. A program is simple, if the number of instructions is not more than ELEVEN times the length\nof the word that it prints.\nGiven the word Chef wants his program to print and assuming he will write the shortest code (i.e. use the fewest instructions)\nto print it, will the program be simple?",
+    "constraints": [
+      "1 <= T <= 100",
+      "1 <= length of word <= 1000",
+      "All characters are lowercase English letters"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains a single word consisting of lowercase English letters (a\u2011z).",
+    "outputFormat": "For each test case output a line containing \"YES\" if the shortest possible program that prints the given word uses at most 11\u202f\u00d7\u202f|word| instructions, otherwise output \"NO\".",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\\nhelloworld\\nmississippi",
+        "output": "NO\nYES",
+        "explanation": "For \"helloworld\" (length 10) the minimal instruction count is 1 (load) + 10 (prints) + 100 (increments) = 111, which exceeds 11*10=110, so output is NO. For \"mississippi\" (length 11) the count is 1+11+100=112 \u2264 11*11=121, so output is YES."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\na",
+        "output": "YES",
+        "explanation": "Length 1. Instructions = 1 (load) + 1 (print) + 0 (no increments) = 2 \u2264 11*1, therefore YES."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\nz",
+        "output": "YES",
+        "explanation": "Length 1. Instructions = 1 (load) + 1 (print) + 0 = 2 \u2264 11, so YES."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\na",
+        "expectedOutput": "YES",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\nabcdefghijklmnopqrstuvwxyz\".repeat(38).substring(01000)",
+        "expectedOutput": "YES",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case alternating extremes",
+        "input": "1\nazazazazaz",
+        "expectedOutput": "YES",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\nprogramming",
+        "expectedOutput": "YES",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\nzzzzzzzzzz",
+        "expectedOutput": "YES",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The program can use exactly one Load instruction at the beginning. After loading the value that corresponds to the first character, a Print instruction is needed for every character. Between two consecutive characters we may only use Increment instructions, which move the buffer forward cyclically (0\u21921\u2192\u2026\u219225\u21920). For two consecutive characters c_prev and c_cur the minimal number of increments is (value(c_cur) - value(c_prev) + 26) % 26. Therefore the optimal number of instructions is:\n    total = 1               // the initial Load\n          + |word|          // one Print for each character\n          + \u03a3 diff_i        // diff_i is the forward distance between consecutive characters.\nIf total <= 11 * |word| the program is considered simple.\nThe algorithm scans the word once, computes the sum of forward distances and checks the inequality. Time complexity is O(|word|) per test case, and O(1) extra space.",
+    "timeComplexity": "O(T * N) where N is the length of each word (\u22641000).",
+    "spaceComplexity": "O(1) additional memory.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\nint main(){\n    int T; if(scanf(\"%d\",&T)!=1) return 0;\n    while(T--){\n        char s[1005]; scanf(\"%s\",s);\n        int len=strlen(s);\n        long long total=1+len; // load + prints\n        for(int i=1;i<len;i++){\n            int diff=(s[i]-s[i-1]);\n            if(diff<0) diff+=26;\n            total+=diff;\n        }\n        if(total<=11LL*len) printf(\"YES\\n\");\n        else printf(\"NO\\n\");\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        string s; cin>>s;\n        int n=s.size();\n        long long total=1LL+n; // load + prints\n        for(int i=1;i<n;i++){\n            int diff=s[i]-s[i-1];\n            if(diff<0) diff+=26;\n            total+=diff;\n        }\n        cout<<(total<=11LL*n?\"YES\":\"NO\")<<'\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder out = new StringBuilder();\n        for(int t=0;t<T;t++){\n            String s = br.readLine().trim();\n            int n = s.length();\n            long total = 1L + n; // load + prints\n            for(int i=1;i<n;i++){\n                int diff = s.charAt(i) - s.charAt(i-1);\n                if(diff<0) diff += 26;\n                total += diff;\n            }\n            out.append(total <= 11L * n ? \"YES\" : \"NO\").append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\\n    if not data:\n        return\\n    it = iter(data)\\n    T = int(next(it))\\n    out = []\\n    for _ in range(T):\\n        s = next(it)\\n        n = len(s)\\n        total = 1 + n  # load + prints\\n        for i in range(1, n):\\n            diff = ord(s[i]) - ord(s[i-1])\\n            if diff < 0:\\n                diff += 26\\n            total += diff\\n        out.append('YES' if total <= 11 * n else 'NO')\\n    sys.stdout.write('\\n'.join(out))\\n\\nif __name__ == \"__main__\":\\n    solve()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet result = [];\nfor (let t = 0; t < T; t++) {\n  const s = input[idx++];\n  const n = s.length;\n  let total = 1 + n; // load + prints\n  for (let i = 1; i < n; i++) {\n    let diff = s.charCodeAt(i) - s.charCodeAt(i - 1);\n    if (diff < 0) diff += 26;\n    total += diff;\n  }\n  result.push(total <= 11 * n ? 'YES' : 'NO');\n}\nconsole.log(result.join('\\n'));"
+    }
+  }
+}

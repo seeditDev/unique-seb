@@ -1,0 +1,82 @@
+{
+  "questionId": "ZEBIAA07",
+  "title": "Collecting Data with Django Form",
+  "slug": "zebiaa07",
+  "version": 1,
+  "createdAt": "2026-07-13",
+  "updatedAt": "2026-07-13",
+  "source": {
+    "platform": "SEED-IT",
+    "courseSlug": "django",
+    "contestCode": "ZLSFRZ",
+    "module": "Forms, Validations & User Interactions",
+    "submodule": "Creating forms",
+    "contentType": "mcq",
+    "originalUrl": "https://www.codechef.com/learn/course/django/ZLSFRZ/problems/ZEBIAA07"
+  },
+  "metadata": {
+    "category": "Concept",
+    "difficulty": "Beginner",
+    "isPremium": false,
+    "tags": [
+      "python3"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Forms, Validations & User Interactions",
+      "Creating forms"
+    ],
+    "QBCategory": "SEED-IT"
+  },
+  "content": {
+    "problemStatement": "So far we have seen how to define different form fields. We were able to see the forms but you must have noticed that after entering inputs to the form and when you click on SUBMIT - it did nothing.\nSo, let's see how we actually collect the information a user types into these forms.\n\n**The Journey of Form Data**\n\nImagine a user fills out a contact form on your website and clicks \"Submit\". What happens to that data?\n\n1.  **In the Template (`.html` file):**\n    *   To send data to your server, this form needs two important attributes:\n        *   `method=\"POST\"`: This tells the browser to send the form data in the body of the HTTP request. \"POST\" is typically used when submitting data that will cause a change on the server (like saving new information).\n        *   `action=\"{% url 'your_view_handling_form_submission' %}\"`: This specifies the URL where the browser should send the form data. We use the `{% url %}` template tag (from `URL Configuration`) to point to a specific view that will handle this data.\n    *   You'll also include `{% csrf_token %}` inside your form for security. This is a Django requirement for POST forms.\n    *   And, of course, a submit button (e.g., `Send`).\n\n    Here's a quick example of how your template (`contact_form_template.html`) might look:\n    ```html\n    \n    \n        {% csrf_token %}\n        {{ form.as_p }}  \n        Submit\n    \n    ```\n\n2.  **URL Configuration (`urls.py`):**\n    *   The `action` attribute in your form (e.g., `{% url 'contact_page' %}`) points to a URL pattern defined in your app's `urls.py` file.\n    *   This URL pattern maps to a specific view function. Often, the same view function handles both displaying the form (when a user first visits) and processing the submitted data.\n    *   Example `urls.py`:\n        ```python\n        # your_app/urls.py\n        from django.urls import path\n        from . import views\n\n        urlpatterns = [\n            # This URL will handle both displaying the form (GET) and processing it (POST)\n            path('contact/', views.contact_view, name='contact_page'),\n            # A separate URL for a \"thank you\" page after submission\n            path('thank-you/', views.thank_you_view, name='thank_you_page'),\n        ]\n        ```\n\n3.  **The View (`views.py`): Handling the Data**\n    *   The view function mapped to your form's `action` URL will receive the submitted data.\n    *   A view often handles two main scenarios for a form page:\n        *   **GET requests:** When a user first visits the page (e.g., `yourwebsite.com/contact/`). The view should display an empty form.\n        *   **POST requests:** When the user submits the form. The view needs to collect and process the data.\n    *   The submitted data from a POST request is available in the `request.POST` object. This object behaves much like a Python dictionary, where keys are the field names and values are the submitted data.\n\n    Let's see how to handle this in a view:\n\n    ```python\n    # your_app/views.py\n    from django.shortcuts import render, redirect\n    from django.http import HttpResponse # For a simple thank you message\n    from .forms import ContactForm # Assuming you have ContactForm in forms.py (from 'Creating Standard Forms')\n\n    # A simple view for the thank you page\n    def thank_you_view(request):\n        return HttpResponse(\"Thank you for contacting us!\") # Or render a full template\n\n    def contact_view(request):\n        if request.method == 'POST':\n            # 1. Data has been submitted!\n            # The raw submitted data is in request.POST.\n            # You could print it to your server console to inspect it:\n            # print(request.POST)\n\n            # 2. Bind the submitted data to a form instance:\n            form = ContactForm(request.POST)\n\n            # Now, the 'form' instance holds the data submitted by the user,\n            # associated with the fields defined in your ContactForm class.\n            # For example, if your form has a field 'user_email', the data entered\n            # for 'user_email' is now conceptually part of this 'form' object.\n            # You could access the raw value directly from request.POST:\n            # submitted_email = request.POST.get('user_email')\n            # print(f\"Email submitted: {submitted_email}\")\n\n            # It's good practice to redirect after a successful POST. This prevents\n            # issues like the form being re-submitted if the user refreshes the page.\n            return redirect('thank_you_page') # Redirect to the 'thank_you_page' URL name\n\n        else: # This is for a GET request (or any other method)\n            # Display an empty, unbound form for the user to fill out\n            form = ContactForm()\n\n        return render(request, 'contact_form_template.html', {'form': form})\n    ```\n\n**Key Idea: Binding Data to the Form**\n\nThe line `form = ContactForm(request.POST)` is crucial.\n*   When you create a form instance *without* any arguments (e.g., `form = ContactForm()`), it's an **unbound** form – it's empty and ready to be displayed to the user for the first time.\n*   When you create a form instance *with* `request.POST` (e.g., `form = ContactForm(request.POST)`), it's a **bound** form. Django takes the submitted data from `request.POST` and \"binds\" it (or associates it) to the respective fields of your `ContactForm`.\n\nThis process of binding makes the submitted data available through the `form` object in a structured way, corresponding to the `Form Fields` you defined. The `form` object now contains the user's input.\n\n\n#### Video Explanation:",
+    "constraints": [
+      "Time Limit: 2s",
+      "Memory Limit: 256MB"
+    ],
+    "inputFormat": "Standard input",
+    "outputFormat": "Standard output",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "input": "",
+        "expectedOutput": "expected",
+        "weight": 100
+      }
+    ],
+    "totalTestCases": 1,
+    "totalWeight": 100
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      100
+    ],
+    "maxScore": 100
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // Write your C code here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your C++ code here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) {\n        // Write your Java code here\n    }\n}",
+    "Python3": "# Write your Python code here\n",
+    "JavaScript": "// Write your JavaScript code here\n",
+    "Go": "package main\n\nimport \"fmt\"\n\nfunc main() {\n    // Write your Go code here\n}",
+    "Rust": "fn main() {\n    // Write your Rust code here\n}",
+    "C#": "using System;\n\nclass Program {\n    static void Main() {\n        // Write your C# code here\n    }\n}",
+    "SQL": "-- Write your SQL query here\n"
+  }
+}

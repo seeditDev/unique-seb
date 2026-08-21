@@ -1,0 +1,133 @@
+{
+  "questionId": "Q11389",
+  "title": "Minimum Window Substring ",
+  "slug": "minimum-window-substring",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "String",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Sliding Window",
+      "Minimum Window Substring"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Write a program for the coding challenge \"Minimum Window Substring \". Refer to SEED-IT description: https://leetcode.com/problems/minimum-window-substring/",
+    "constraints": [
+      "1 <= s.length <= 10^5",
+      "1 <= t.length <= 100",
+      "s and t consist of lowercase English letters."
+    ],
+    "inputFormat": "The input will contain two strings: s and t. The string s will be the string to search for the minimum window substring, and the string t will be the string containing the characters that must be present in the minimum window substring.",
+    "outputFormat": "The output will be the minimum window substring of s that contains all characters of t. If no such window exists, the output will be an empty string.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": [
+          "a",
+          "a"
+        ],
+        "expectedOutput": "a",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": [
+          "abcdefghijklmnopqrstuvwxyz",
+          "abcdefghijklmnopqrstuvwxyz"
+        ],
+        "expectedOutput": "abcdefghijklmnopqrstuvwxyz",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": [
+          "aaaaaa",
+          "aa"
+        ],
+        "expectedOutput": "aa",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case / empty-like",
+        "input": [
+          "",
+          "a"
+        ],
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": [
+          "ADOBECODEBANC",
+          "ABC"
+        ],
+        "expectedOutput": "BANC",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Use a sliding window approach to find the minimum window substring of s that contains all characters of t.",
+    "timeComplexity": "O(|s| * |t|)",
+    "spaceComplexity": "O(|t|)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n\nchar* minWindow(char* s, char* t) {\n    int tCount[128] = {0};\n    int required = strlen(t);\n    for (int i = 0; i < required; i++) {\n        tCount[t[i]]++;\n    }\n    int l = 0, r = 0;\n    int formed = 0;\n    int windowCounts[128] = {0};\n    int ans[3] = { -1, 0, 0 };\n    while (r < strlen(s)) {\n        char c = s[r];\n        windowCounts[c]++;\n        if (tCount[c] > 0 && windowCounts[c] <= tCount[c]) {\n            formed++;\n        }\n        while (l <= r && formed == required) {\n            c = s[l];\n            if (ans[0] == -1 || r - l + 1 < ans[0]) {\n                ans[0] = r - l + 1;\n                ans[1] = l;\n                ans[2] = r;\n            }\n            windowCounts[s[l]]--;\n            if (tCount[s[l]] > 0 && windowCounts[s[l]] < tCount[s[l]]) {\n                formed--;\n            }\n            l++;\n        }\n        r++;\n    }\n    return ans[0] == -1 ? \"\" : strncpy((char*)malloc(ans[0] + 1), s + ans[1], ans[0]);\n}",
+      "C++": "#include <iostream>\n#include <string>\n#include <unordered_map>\nusing namespace std;\n\nstring minWindow(string s, string t) {\n    if (s.length() < t.length()) return \"\";\n    unordered_map<char, int> tCount;\n    for (char c : t) tCount[c]++;\n    int required = tCount.size();\n    int l = 0, r = 0;\n    int formed = 0;\n    unordered_map<char, int> windowCounts;\n    int ans[3] = { -1, 0, 0 };\n    while (r < s.length()) {\n        char c = s[r];\n        windowCounts[c]++;\n        if (tCount.find(c) != tCount.end() && windowCounts[c] <= tCount[c]) {\n            formed++;\n        }\n        while (l <= r && formed == required) {\n            c = s[l];\n            if (ans[0] == -1 || r - l + 1 < ans[0]) {\n                ans[0] = r - l + 1;\n                ans[1] = l;\n                ans[2] = r;\n            }\n            windowCounts[s[l]]--;\n            if (tCount.find(s[l]) != tCount.end() && windowCounts[s[l]] < tCount[s[l]]) {\n                formed--;\n            }\n            l++;\n        }\n        r++;\n    }\n    return ans[0] == -1 ? \"\" : s.substr(ans[1], ans[0]);\n}",
+      "Java": "import java.util.HashMap;\nimport java.util.Map;\n\npublic class Solution {\n    public String minWindow(String s, String t) {\n        if (s.length() < t.length()) return \"\";\n        Map<Character, Integer> tCount = new HashMap<>();\n        for (char c : t.toCharArray()) tCount.put(c, tCount.getOrDefault(c, 0) + 1);\n        int required = tCount.size();\n        int l = 0, r = 0;\n        int formed = 0;\n        Map<Character, Integer> windowCounts = new HashMap<>();\n        int[] ans = new int[] { -1, 0, 0 };\n        while (r < s.length()) {\n            char c = s.charAt(r);\n            windowCounts.put(c, windowCounts.getOrDefault(c, 0) + 1);\n            if (tCount.containsKey(c) && windowCounts.get(c).intValue() <= tCount.get(c).intValue()) {\n                formed++;\n            }\n            while (l <= r && formed == required) {\n                c = s.charAt(l);\n                if (ans[0] == -1 || r - l + 1 < ans[0]) {\n                    ans[0] = r - l + 1;\n                    ans[1] = l;\n                    ans[2] = r;\n                }\n                windowCounts.put(s.charAt(l), windowCounts.get(s.charAt(l)) - 1);\n                if (tCount.containsKey(s.charAt(l)) && windowCounts.get(s.charAt(l)).intValue() < tCount.get(s.charAt(l)).intValue()) {\n                    formed--;\n                }\n                l++;\n            }\n            r++;\n        }\n        return ans[0] == -1 ? \"\" : s.substring(ans[1], ans[2] + 1);\n    }\n}",
+      "Python3": "from collections import defaultdict\n\ndef minWindow(s: str, t: str) -> str:\n    if len(s) < len(t): return \"\"\n    tCount = defaultdict(int)\n    for c in t: tCount[c] += 1\n    required = len(tCount)\n    l = r = 0\n    formed = 0\n    windowCounts = defaultdict(int)\n    ans = [-1, 0, 0]\n    while r < len(s):\n        c = s[r]\n        windowCounts[c] += 1\n        if c in tCount and windowCounts[c] <= tCount[c]:\n            formed += 1\n        while l <= r and formed == required:\n            c = s[l]\n            if ans[0] == -1 or r - l + 1 < ans[0]:\n                ans = [r - l + 1, l, r]\n            windowCounts[s[l]] -= 1\n            if s[l] in tCount and windowCounts[s[l]] < tCount[s[l]]:\n                formed -= 1\n            l += 1\n        r += 1\n    return \"\" if ans[0] == -1 else s[ans[1]:ans[2] + 1]",
+      "JavaScript": "function minWindow(s, t) {\n    if (s.length < t.length) return \"\";\n    let tCount = {};\n    for (let c of t) tCount[c] = (tCount[c] || 0) + 1;\n    let required = Object.keys(tCount).length;\n    let l = 0, r = 0;\n    let formed = 0;\n    let windowCounts = {};\n    let ans = [-1, 0, 0];\n    while (r < s.length) {\n        let c = s[r];\n        windowCounts[c] = (windowCounts[c] || 0) + 1;\n        if (tCount[c] && windowCounts[c] <= tCount[c]) {\n            formed++;\n        }\n        while (l <= r && formed == required) {\n            c = s[l];\n            if (ans[0] == -1 || r - l + 1 < ans[0]) {\n                ans = [r - l + 1, l, r];\n            }\n            windowCounts[s[l]]--;\n            if (tCount[s[l]] && windowCounts[s[l]] < tCount[s[l]]) {\n                formed--;\n            }\n            l++;\n        }\n        r++;\n    }\n    return ans[0] == -1 ? \"\" : s.substring(ans[1], ans[2] + 1);\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

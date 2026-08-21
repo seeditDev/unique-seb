@@ -1,0 +1,127 @@
+{
+  "questionId": "Q3271",
+  "title": "Jalebi Bai and Decks of Sweets",
+  "slug": "jalebi-bai-and-decks-of-sweets",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "String Compression",
+      "Strings",
+      "Greedy"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Strings"
+    ]
+  },
+  "content": {
+    "problemStatement": "Jalebi Bai has two decks of sweets. These decks are represented by two strings `s` and `t` consisting of lowercase letters from the English alphabet. Each letter from 'a' to 'z' denotes a single type of sweet, e.g., \u2018b\u2019 denotes Barfi, 'r' denotes Rasgulla, etc. She wants to use these decks in her friend Laddu\u2019s marriage. Instead of graciously accepting the gift, Laddu asks Jalebi Bai to first make the two decks exactly the same, so that they look good while serving. Now Jalebi Bai can apply the following operation as many times as she wants on both the decks.\n\n\nFrom a single deck, pick any two consecutive sweets of the same type and eat one of them. e.g., if a deck is \"rrrjj\", she can change it to \"rrrj\" by picking the last two sweets of type 'j' (Jalebi) and eating one of them, or she can change the deck to \"rrjj\" by picking up the first two sweets of type \u2018r\u2019 and eating one of them.\nYou need to tell whether Jalebi Bai can make the decks equal by applying the above operation as many times as she wants. Output \"Yes\" [without quotes] if she can, otherwise output \"No\" [without quotes].\n\n\nInput Format\nThe first line of the input contains an integer `T` denoting the number of test cases. The description of `T` test cases follows.\n\n\nThe first line of each test case contains a string `s`.\n\n\nThe second line of each test case contains a string `t`.\n\n\n\nOutput Format\nFor each test case, output \"Yes\" [without quotes] or \"No\" [without quotes] depending on the case.",
+    "constraints": [
+      "1 <= T <= 50",
+      "1 <= |s|, |t| <= 50",
+      "s and t contain only characters 'a' to 'z'"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, two lines follow: the first line is the string s, the second line is the string t. Both strings consist only of lowercase English letters.",
+    "outputFormat": "For each test case output a single line containing \"Yes\" if the two decks can be made equal using the allowed operation, otherwise output \"No\".",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\nrrrjj\nrrrj\nrj\njr",
+        "output": "Yes\nNo",
+        "explanation": "First test: compress('rrrjj') = 'rj', compress('rrrj') = 'rj' \u2192 equal \u2192 Yes. Second test: compress('rj') = 'rj', compress('jr') = 'jr' \u2192 different \u2192 No."
+      },
+      {
+        "id": "sample_2",
+        "input": "3\naabcc\nabccc\nabc\nacb\nababa\naabbbaa",
+        "output": "Yes\nNo\nNo",
+        "explanation": "Test1: both compress to 'abc' \u2192 Yes. Test2: 'abc' vs 'acb' \u2192 No. Test3: compress('ababa') = 'ababa', compress('aabbbaa') = 'aba' \u2192 not equal \u2192 No."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\naaabbbcc\nabcc",
+        "output": "Yes",
+        "explanation": "compress('aaabbbcc') = 'abc', compress('abcc') = 'abc' \u2192 Yes."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\na\na",
+        "expectedOutput": "Yes",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\na",
+        "expectedOutput": "Yes",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\nabcd\nabdc",
+        "expectedOutput": "No",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\naabbccddeeff\nabcdef",
+        "expectedOutput": "Yes",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\nzzzyyyxxx\nzyx",
+        "expectedOutput": "Yes",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The operation can delete one of two consecutive equal characters, which means any maximal block of the same character can be reduced to a single occurrence, but the order of distinct characters cannot be changed. Therefore each string can be transformed into its *compressed* form \u2013 the sequence of characters after removing consecutive duplicates. Two decks can be made identical iff their compressed forms are exactly the same. For each test case we build the compressed version of s and t by scanning once and keeping a character only when it differs from the previous one, then compare the two results.",
+    "timeComplexity": "O(|s| + |t|) per test case, overall O(T * L) where L is the maximum length of a string (\u2264 50).",
+    "spaceComplexity": "O(L) for the temporary compressed strings.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n\nvoid compress(const char *src, char *dst) {\n    int j = 0;\n    for (int i = 0; src[i]; ++i) {\n        if (i == 0 || src[i] != src[i - 1]) {\n            dst[j++] = src[i];\n        }\n    }\n    dst[j] = '\\0';\n}\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    char s[55], t[55], cs[55], ct[55];\n    while (T--) {\n        scanf(\"%s\", s);\n        scanf(\"%s\", t);\n        compress(s, cs);\n        compress(t, ct);\n        if (strcmp(cs, ct) == 0) {\n            printf(\"Yes\\n\");\n        } else {\n            printf(\"No\\n\");\n        }\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nstring compress(const string &s) {\n    string res;\n    for (size_t i = 0; i < s.size(); ++i) {\n        if (i == 0 || s[i] != s[i - 1]) res.push_back(s[i]);\n    }\n    return res;\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T;\n    if (!(cin >> T)) return 0;\n    while (T--) {\n        string s, t;\n        cin >> s >> t;\n        cout << (compress(s) == compress(t) ? \"Yes\" : \"No\") << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    private static String compress(String s) {\n        StringBuilder sb = new StringBuilder();\n        for (int i = 0; i < s.length(); i++) {\n            if (i == 0 || s.charAt(i) != s.charAt(i - 1)) {\n                sb.append(s.charAt(i));\n            }\n        }\n        return sb.toString();\n    }\n\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder out = new StringBuilder();\n        for (int tc = 0; tc < T; tc++) {\n            String s = br.readLine().trim();\n            String t = br.readLine().trim();\n            out.append(compress(s).equals(compress(t)) ? \"Yes\" : \"No\");\n            if (tc + 1 < T) out.append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef compress(s: str) -> str:\n    res = []\n    for i, ch in enumerate(s):\n        if i == 0 or ch != s[i - 1]:\n            res.append(ch)\n    return ''.join(res)\n\ndef solve() -> None:\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out = []\n    for _ in range(T):\n        s = next(it)\n        t = next(it)\n        out.append('Yes' if compress(s) == compress(t) else 'No')\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    solve()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = parseInt(input[idx++], 10);\nlet out = [];\nfunction compress(s) {\n  let res = '';\n  for (let i = 0; i < s.length; i++) {\n    if (i === 0 || s[i] !== s[i - 1]) res += s[i];\n  }\n  return res;\n}\nfor (let tc = 0; tc < T; tc++) {\n  const s = input[idx++];\n  const t = input[idx++];\n  out.push(compress(s) === compress(t) ? 'Yes' : 'No');\n}\nconsole.log(out.join('\\n'));"
+    }
+  }
+}

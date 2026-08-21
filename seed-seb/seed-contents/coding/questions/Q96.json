@@ -1,0 +1,155 @@
+{
+  "questionId": "Q96",
+  "title": "Unique Binary Search Trees",
+  "slug": "unique-binary-search-trees",
+  "version": 2,
+  "createdAt": "2026-07-09",
+  "updatedAt": "2026-07-10",
+  "QBCategory": "LCD",
+  "metadata": {
+    "category": "Searching",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "math",
+      "dynamic-programming",
+      "tree",
+      "binary-search-tree",
+      "binary-tree"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "math",
+      "dynamic-programming",
+      "tree",
+      "binary-search-tree",
+      "binary-tree"
+    ],
+    "QBCategory": "LCD"
+  },
+  "content": {
+    "problemStatement": "Given an integer `n`, return the number of structurally unique BSTs (binary search trees) which have exactly `n` nodes with unique values from `1` to `n`.\n\n**Example 1:**\n\n```\nInput: n = 3\nOutput: 5\n```\n\n**Example 2:**\n\n```\nInput: n = 1\nOutput: 1\n```\n\n**Constraints:**\n\n* `1 <= n <= 20`",
+    "constraints": [
+      "0 <= n <= 20"
+    ],
+    "inputFormat": "Single line: JSON array of all arguments, e.g. [arg1, arg2, ...]",
+    "outputFormat": "Single line: JSON-serialised return value",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "[3]",
+        "output": "5",
+        "explanation": ""
+      },
+      {
+        "id": "sample_2",
+        "input": "[1]",
+        "output": "1",
+        "explanation": ""
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "n=1",
+        "input": "[1]",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "n=19",
+        "input": "[19]",
+        "expectedOutput": "1767263190",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "n=10",
+        "input": "[10]",
+        "expectedOutput": "16796",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "n=20",
+        "input": "[20]",
+        "expectedOutput": "6564120420",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "n=0 (edge case)",
+        "input": "[0]",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_6",
+        "label": "n=2",
+        "input": "[2]",
+        "expectedOutput": "2",
+        "weight": 4
+      },
+      {
+        "id": "tc_7",
+        "label": "n=18",
+        "input": "[18]",
+        "expectedOutput": "477638700",
+        "weight": 4
+      }
+    ],
+    "totalTestCases": 7,
+    "totalWeight": 18
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2,
+      4,
+      4
+    ],
+    "maxScore": 18
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdbool.h>\n\n// Helper JSON parser/tokenizer in C (keeps original parsing helpers)\ntypedef struct {\n    char* s;\n    int pos;\n    int len;\n} Tok;\n\nstatic void skipWS(Tok* t) {\n    while (t->pos < t->len && (t->s[t->pos] == ' ' || t->s[t->pos] == ',' || t->s[t->pos] == '\\t' || t->s[t->pos] == '\\n' || t->s[t->pos] == '\\r')) {\n        t->pos++;\n    }\n}\n\nstatic char* nextToken(Tok* t) {\n    skipWS(t);\n    if (t->pos >= t->len) return NULL;\n    int start = t->pos;\n    if (t->s[t->pos] == '[') {\n        int depth = 0;\n        while (t->pos < t->len) {\n            char c = t->s[t->pos++];\n            if (c == '[') depth++;\n            else if (c == ']') {\n                depth--;\n                if (depth == 0) break;\n            }\n        }\n        int token_len = t->pos - start;\n        char* token = (char*)malloc(token_len + 1);\n        strncpy(token, t->s + start, token_len);\n        token[token_len] = '\\0';\n        return token;\n    } else if (t->s[t->pos] == '\"') {\n        t->pos++;\n        while (t->pos < t->len && t->s[t->pos] != '\"') t->pos++;\n        t->pos++;\n        int token_len = t->pos - start;\n        char* token = (char*)malloc(token_len + 1);\n        strncpy(token, t->s + start, token_len);\n        token[token_len] = '\\0';\n        return token;\n    } else {\n        while (t->pos < t->len && t->s[t->pos] != ',' && t->s[t->pos] != ']' && t->s[t->pos] != '[') t->pos++;\n        int token_len = t->pos - start;\n        char* token = (char*)malloc(token_len + 1);\n        strncpy(token, t->s + start, token_len);\n        token[token_len] = '\\0';\n        int idx = token_len - 1;\n        while (idx >= 0 && token[idx] == ' ') {\n            token[idx] = '\\0';\n            idx--;\n        }\n        return token;\n    }\n}\n\nstatic int parse_int(Tok* t) {\n    char* tok = nextToken(t);\n    if (!tok) return 0;\n    int val = atoi(tok);\n    free(tok);\n    return val;\n}\n\n// ---------------------------------------------------------------------\n// YOUR SOLUTION  <- Implement Catalan DP using 64-bit integers\n// ---------------------------------------------------------------------\nunsigned long long numTrees(int n) {\n    if (n <= 1) return 1ULL;\n    unsigned long long dp[21] = {0};\n    dp[0] = 1ULL; dp[1] = 1ULL;\n    for (int i = 2; i <= n; ++i) {\n        unsigned long long sum = 0ULL;\n        for (int left = 0; left < i; ++left) {\n            int right = i - 1 - left;\n            sum += dp[left] * dp[right];\n        }\n        dp[i] = sum;\n    }\n    return dp[n];\n}\n\n// ---------------------------------------------------------------------\n// DRIVER  (do not modify)\n// ---------------------------------------------------------------------\nint main() {\n    char line[1000000];\n    if (fgets(line, sizeof(line), stdin)) {\n        int len = strlen(line);\n        while (len > 0 && (line[len - 1] == '\\n' || line[len - 1] == '\\r')) {\n            line[len - 1] = '\\0';\n            len--;\n        }\n        char* raw = (char*)malloc(len - 1);\n        strncpy(raw, line + 1, len - 2);\n        raw[len - 2] = '\\0';\n        Tok tok = { raw, 0, (int)strlen(raw) };\n        \n        int n = parse_int(&tok);\n        unsigned long long result = numTrees(n);\n        printf(\"%llu\\n\", result);\n        free(raw);\n    }\n    return 0;\n}\n",
+    "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nstruct Tok {\n    string s;\n    int pos = 0;\n    void skipWS() { while(pos<(int)s.size()&&(s[pos]==' '||s[pos]==','||s[pos]=='\\t')) pos++; }\n    string nextToken() {\n        skipWS();\n        if(pos>=(int)s.size()) return \"\";\n        if(s[pos]=='['){\n            int depth=0,st=pos;\n            while(pos<(int)s.size()){char c=s[pos++];if(c=='[')depth++;else if(c==']'){depth--;if(depth==0)break;}}\n            return s.substr(st,pos-st);\n        } else if(s[pos]=='\"'){\n            int st=pos++;\n            while(pos<(int)s.size()&&s[pos]!='\"')pos++;\n            return s.substr(st,++pos-st);\n        } else {\n            int st=pos;\n            while(pos<(int)s.size()&&s[pos]!=','&&s[pos]!=']'&&s[pos]!='[')pos++;\n            string t=s.substr(st,pos-st);\n            while(!t.empty()&&t.back()==' ')t.pop_back();\n            return t;\n        }\n    }\n};\nstring innerArr(const string& s){return s.substr(1,s.size()-2);} \nvector<string> splitTop(const string& s){\n    vector<string> parts; int depth=0,start=0;\n    for(int i=0;i<(int)s.size();i++){\n        if(s[i]=='['||s[i]=='{')depth++;\n        else if(s[i]==']'||s[i]=='}')depth--;\n        else if(s[i]==','&&depth==0){parts.push_back(s.substr(start,i-start));start=i+1;}\n    }\n    parts.push_back(s.substr(start)); return parts;\n}\nvector<int> readIntVec(Tok& tok){\n    string arr=tok.nextToken();\n    if(arr==\"[]\")return {};\n    auto parts=splitTop(innerArr(arr)); vector<int> v;\n    for(auto&p:parts)v.push_back(stoi(p)); return v;\n}\nint readInt(Tok& tok){ return stoi(tok.nextToken()); }\n\n// ---------------------------------------------------------------------\n// YOUR SOLUTION  <- Implement Catalan DP using 64-bit integers\n// ---------------------------------------------------------------------\nclass Solution {\npublic:\n    unsigned long long numTrees(int n) {\n        if (n <= 1) return 1ULL;\n        vector<unsigned long long> dp(n+1, 0ULL);\n        dp[0] = 1ULL; dp[1] = 1ULL;\n        for (int i = 2; i <= n; ++i) {\n            unsigned long long sum = 0ULL;\n            for (int left = 0; left < i; ++left) {\n                int right = i - 1 - left;\n                sum += dp[left] * dp[right];\n            }\n            dp[i] = sum;\n        }\n        return dp[n];\n    }\n};\n\n// ---------------------------------------------------------------------\n// DRIVER  (do not modify)\n// ---------------------------------------------------------------------\nint main() {\n    string line; getline(cin, line);\n    Tok tok; tok.s = line.substr(1, line.size()-2); tok.pos = 0;\n    int n = readInt(tok);\n    auto result = Solution().numTrees(n);\n    cout << result << endl;\n    return 0;\n}\n",
+    "Java": "import java.util.*;\nimport java.io.*;\n\nclass Solution {\n    public long numTrees(int n) {\n        if (n <= 1) return 1L;\n        long[] dp = new long[n+1];\n        dp[0] = 1L; dp[1] = 1L;\n        for (int i = 2; i <= n; ++i) {\n            long sum = 0L;\n            for (int left = 0; left < i; ++left) {\n                int right = i - 1 - left;\n                sum += dp[left] * dp[right];\n            }\n            dp[i] = sum;\n        }\n        return dp[n];\n    }\n}\n\npublic class Main {\n    static java.util.ArrayDeque<String> tokenize(String s) {\n        java.util.ArrayDeque<String> q = new java.util.ArrayDeque<>();\n        int i = 0, n = s.length();\n        while (i < n) {\n            char c = s.charAt(i);\n            if (c == '[' || c == ']' || c == ',') { i++; continue; }\n            if (c == '\"') {\n                int j = s.indexOf('\"', i+1); q.add(s.substring(i, j+1)); i = j+1;\n            } else if (c != ' ') {\n                int j = i;\n                while (j < n && s.charAt(j) != ',' && s.charAt(j) != ']' && s.charAt(j) != '[') j++;\n                String tok = s.substring(i, j).trim();\n                if (!tok.isEmpty()) q.add(tok);\n                i = j;\n            } else { i++; }\n        }\n        return q;\n    }\n    static String[] readArrayRaw(String s) {\n        s = s.trim();\n        if (s.equals(\"[]\")) return new String[0];\n        s = s.substring(1, s.length()-1);\n        java.util.List<String> parts = new java.util.ArrayList<>();\n        int depth=0, start=0;\n        for (int i=0; i<s.length(); i++) {\n            char c=s.charAt(i);\n            if (c=='[') depth++; else if (c==']') depth--;\n            else if (c==',' && depth==0) { parts.add(s.substring(start,i-start).trim()); start=i+1; }\n        }\n        parts.add(s.substring(start).trim());\n        return parts.toArray(new String[0]);\n    }\n    static int[] toIntArray(String s) {\n        String[] parts = readArrayRaw(s);\n        int[] arr = new int[parts.length];\n        for (int i=0; i<parts.length; i++) arr[i] = Integer.parseInt(parts[i].trim());\n        return arr;\n    }\n    static int readIntToken(String s) {\n        return Integer.parseInt(s.trim());\n    }\n    public static void main(String[] a) throws IOException {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        String line = br.readLine().trim();\n        String raw = line.substring(1, line.length()-1);\n        String token = raw.trim();\n        int n = Integer.parseInt(token);\n        long result = new Solution().numTrees(n);\n        System.out.println(result);\n    }\n}\n",
+    "Python3": "import sys, json\nfrom typing import List\n\nclass Solution:\n    def numTrees(self, n: int) -> int:\n        if n <= 1:\n            return 1\n        dp = [0] * (n + 1)\n        dp[0] = 1\n        dp[1] = 1\n        for i in range(2, n + 1):\n            total = 0\n            for left in range(i):\n                right = i - 1 - left\n                total += dp[left] * dp[right]\n            dp[i] = total\n        return dp[n]\n\nif __name__ == '__main__':\n    _args = json.loads(sys.stdin.readline())\n    _n = _args[0]\n    _result = Solution().numTrees(_n)\n    print(json.dumps(_result))\n",
+    "JavaScript": "'use strict';\nconst readline = require('readline');\n\nvar numTrees = function(n) {\n    if (n <= 1) return 1;\n    const dp = new Array(n+1).fill(0);\n    dp[0] = 1; dp[1] = 1;\n    for (let i = 2; i <= n; ++i) {\n        let sum = 0n;\n        for (let left = 0; left < i; ++left) {\n            const right = i - 1 - left;\n            sum += BigInt(dp[left]) * BigInt(dp[right]);\n        }\n        dp[i] = Number(sum);\n    }\n    return dp[n];\n};\n\nconst rl = readline.createInterface({ input: process.stdin });\nrl.on('line', line => {\n    const _args = JSON.parse(line.trim());\n    const _result = numTrees(_args[0]);\n    console.log(JSON.stringify(_result));\n    rl.close();\n});"
+  },
+  "solution": {
+    "approach": "Compute the nth Catalan number. Use dynamic programming: dp[0]=1, dp[1]=1, and dp[n] = sum_{i=0..n-1} dp[i]*dp[n-1-i].",
+    "timeComplexity": "O(n^2)",
+    "spaceComplexity": "O(n)",
+    "code": {
+      "Python3": "# Time:  O(n^2)\n# Space: O(n)\n\nclass Solution(object):\n    def numTrees(self, n):\n        if n <= 1:\n            return 1\n        dp = [0] * (n + 1)\n        dp[0] = 1\n        dp[1] = 1\n        for i in range(2, n + 1):\n            total = 0\n            for left in range(i):\n                right = i - 1 - left\n                total += dp[left] * dp[right]\n            dp[i] = total\n        return dp[n]"
+    }
+  },
+  "_internal": {
+    "methodName": "numTrees",
+    "params": [
+      {
+        "name": "n",
+        "type": "integer"
+      }
+    ]
+  }
+}

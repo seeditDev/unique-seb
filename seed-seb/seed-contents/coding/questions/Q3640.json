@@ -1,0 +1,114 @@
+{
+  "questionId": "Q3640",
+  "title": "Closest points queries",
+  "slug": "closest-points-queries",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Closest Pair",
+      "Distance Calculation",
+      "Math"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Data Structures"
+    ]
+  },
+  "content": {
+    "problemStatement": "Consider a set of points in 2D which is initially empty.\nYou need to process queries which insert and remove points from it.\n\nAfter each query, you should also print the square of the distance between two closest points in the set.\nIf there are fewer than 2 points in the set, print 0 instead.\n\n It is guaranteed that all the queries are valid \u2014 there will be no query of adding a point that is already present in the set or\nremoving a point which does not exist in the set.",
+    "constraints": [
+      "1 \u2264 Q \u2264 75,000",
+      "1 \u2264 x, y \u2264 500"
+    ],
+    "inputFormat": "The first line of the input contains an integer Q denoting the number of queries. Each of the next Q lines contains one query, which will be one of the following two types: + x y \u2014 add the point (x, y) to the set, - x y \u2014 remove the point (x, y) from the set.",
+    "outputFormat": "For each query, output a single line containing one integer \u2014 the square of the distance between two closest points in the set. If there are fewer than 2 points in the set, print 0 instead.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "6\n+ 1 1\n+ 2 2\n+ 3 3\n- 2 2\n+ 400 400\n- 1 1",
+        "output": "0\n2\n2\n8\n8\n315218",
+        "explanation": "Explanation:\nQuery 1. There is only 1 point, so the answer is 0 \nQuery 2. There are only 2 points, (1, 1) and (2, 2), so answer is (1 - 2)^2 + (1 - 2)^2, which equals to 2 \nQuery 3. The points (1, 1) and (2, 2) are one of the closest pairs, and so the answer is still 2 \nQuery 4. There are only 2 points, (1, 1) and (3, 3), and so answer is (1 - 3)^2 + (1 - 3)^2 which equals to 8 \nQuery 5. Points (1, 1) and (3, 3) are still closest, and so answer is 8  \nQuery 6. There are only 2 points, (3, 3) and (400, 400), and so answer is (3 - 400)^2 + (3 - 400)^2 equals to \n315218"
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n+ 1 1",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "2\n+ 500 500\n+ 500 500",
+        "expectedOutput": "0\n0",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "3\n+ 1 1\n+ 1 1\n- 1 1",
+        "expectedOutput": "0\n0\n0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "4\n+ 1 1\n+ 2 2\n+ 3 3\n- 2 2",
+        "expectedOutput": "0\n2\n2\n8",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "5\n+ 1 1\n+ 2 2\n+ 3 3\n- 1 1\n+ 4 4",
+        "expectedOutput": "0\n2\n2\n8\n8",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a brute force approach by calculating the distance between each pair of points after each query. We will maintain a set of points and update it according to the queries. For each query, we will calculate the square of the distance between each pair of points and keep track of the minimum distance found so far.",
+    "timeComplexity": "O(Q * N^2) \u2014 where Q is the number of queries and N is the maximum number of points in the set at any time. This is because for each query, we are potentially calculating the distance between each pair of points.",
+    "spaceComplexity": "O(N) \u2014 where N is the maximum number of points in the set at any time. This is because we need to store all the points in the set.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <math.h>\n\n#define MAX_POINTS 75000\n\ntypedef struct Point {\n    int x, y;\n} Point;\n\nint comparePoints(const void *a, const void *b) {\n    Point *p1 = (Point *)a;\n    Point *p2 = (Point *)b;\n    if (p1->x < p2->x) return -1;\n    if (p1->x > p2->x) return 1;\n    if (p1->y < p2->y) return -1;\n    if (p1->y > p2->y) return 1;\n    return 0;\n}\n\nint calculateDistance(Point *p1, Point *p2) {\n    return (p1->x - p2->x) * (p1->x - p2->x) + (p1->y - p2->y) * (p1->y - p2->y);\n}\n\nint main() {\n    int Q;\n    scanf(\"%d\", &Q);\n    Point points[MAX_POINTS];\n    int numPoints = 0;\n    for (int i = 0; i < Q; i++) {\n        char query;\n        int x, y;\n        scanf(\" %c %d %d\", &query, &x, &y);\n        if (query == '+') {\n            points[numPoints].x = x;\n            points[numPoints].y = y;\n            numPoints++;\n        } else {\n            for (int j = 0; j < numPoints; j++) {\n                if (points[j].x == x && points[j].y == y) {\n                    for (int k = j; k < numPoints - 1; k++) {\n                        points[k] = points[k + 1];\n                    }\n                    numPoints--;\n                    break;\n                }\n            }\n        }\n        int minDistance = 0;\n        if (numPoints >= 2) {\n            minDistance = calculateDistance(&points[0], &points[1]);\n            for (int j = 0; j < numPoints; j++) {\n                for (int k = j + 1; k < numPoints; k++) {\n                    int distance = calculateDistance(&points[j], &points[k]);\n                    if (distance < minDistance) {\n                        minDistance = distance;\n                    }\n                }\n            }\n        }\n        printf(\"%d\\n\", minDistance);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\n#include <algorithm>\n#include <cmath>\nusing namespace std;\n\nstruct Point {\n    int x, y;\n};\n\nint calculateDistance(const Point &p1, const Point &p2) {\n    return (p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y);\n}\n\nint main() {\n    int Q;\n    cin >> Q;\n    vector<Point> points;\n    for (int i = 0; i < Q; i++) {\n        char query;\n        int x, y;\n        cin >> query >> x >> y;\n        if (query == '+') {\n            points.push_back({x, y});\n        } else {\n            for (auto it = points.begin(); it != points.end(); it++) {\n                if (it->x == x && it->y == y) {\n                    points.erase(it);\n                    break;\n                }\n            }\n        }\n        int minDistance = 0;\n        if (points.size() >= 2) {\n            minDistance = calculateDistance(points[0], points[1]);\n            for (int j = 0; j < points.size(); j++) {\n                for (int k = j + 1; k < points.size(); k++) {\n                    int distance = calculateDistance(points[j], points[k]);\n                    if (distance < minDistance) {\n                        minDistance = distance;\n                    }\n                }\n            }\n        }\n        cout << minDistance << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.ArrayList;\nimport java.util.List;\nimport java.util.Scanner;\n\nclass Point {\n    int x, y;\n    Point(int x, int y) {\n        this.x = x;\n        this.y = y;\n    }\n}\n\npublic class Main {\n    public static int calculateDistance(Point p1, Point p2) {\n        return (p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y);\n    }\n\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int Q = scanner.nextInt();\n        List<Point> points = new ArrayList<>();\n        for (int i = 0; i < Q; i++) {\n            char query = scanner.next().charAt(0);\n            int x = scanner.nextInt();\n            int y = scanner.nextInt();\n            if (query == '+') {\n                points.add(new Point(x, y));\n            } else {\n                for (int j = 0; j < points.size(); j++) {\n                    if (points.get(j).x == x && points.get(j).y == y) {\n                        points.remove(j);\n                        break;\n                    }\n                }\n            }\n            int minDistance = 0;\n            if (points.size() >= 2) {\n                minDistance = calculateDistance(points.get(0), points.get(1));\n                for (int j = 0; j < points.size(); j++) {\n                    for (int k = j + 1; k < points.size(); k++) {\n                        int distance = calculateDistance(points.get(j), points.get(k));\n                        if (distance < minDistance) {\n                            minDistance = distance;\n                        }\n                    }\n                }\n            }\n            System.out.println(minDistance);\n        }\n    }\n}",
+      "Python3": "import sys\n\nclass Point:\n    def __init__(self, x, y):\n        self.x = x\n        self.y = y\n\ndef calculate_distance(p1, p2):\n    return (p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2\n\nQ = int(input())\npoints = []\nfor _ in range(Q):\n    query, x, y = input().split()\n    x, y = int(x), int(y)\n    if query == '+':\n        points.append(Point(x, y))\n    else:\n        for i, point in enumerate(points):\n            if point.x == x and point.y == y:\n                points.pop(i)\n                break\n    min_distance = 0\n    if len(points) >= 2:\n        min_distance = calculate_distance(points[0], points[1])\n        for i in range(len(points)):\n            for j in range(i + 1, len(points)):\n                distance = calculate_distance(points[i], points[j])\n                if distance < min_distance:\n                    min_distance = distance\n    print(min_distance)",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\n\nfunction calculateDistance(p1, p2) {\n    return (p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2;\n}\n\nfunction main() {\n    let Q = parseInt(input[idx++]);\n    let points = [];\n    for (let i = 0; i < Q; i++) {\n        let [query, x, y] = input[idx++].split(' ');\n        x = parseInt(x);\n        y = parseInt(y);\n        if (query === '+') {\n            points.push({ x, y });\n        } else {\n            for (let j = 0; j < points.length; j++) {\n                if (points[j].x === x && points[j].y === y) {\n                    points.splice(j, 1);\n                    break;\n                }\n            }\n        }\n        let minDistance = 0;\n        if (points.length >= 2) {\n            minDistance = calculateDistance(points[0], points[1]);\n            for (let j = 0; j < points.length; j++) {\n                for (let k = j + 1; k < points.length; k++) {\n                    let distance = calculateDistance(points[j], points[k]);\n                    if (distance < minDistance) {\n                        minDistance = distance;\n                    }\n                }\n            }\n        }\n        console.log(minDistance);\n    }\n}\n\nmain();"
+    }
+  }
+}

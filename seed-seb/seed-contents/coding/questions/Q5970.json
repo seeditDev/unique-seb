@@ -1,0 +1,144 @@
+{
+  "questionId": "Q5970",
+  "title": "Course Selection",
+  "slug": "course-selection",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Memoization",
+      "Graph",
+      "Topological Sorting"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Flow & Matching"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Rin is attending a university.\n\nShe has **M** semesters to finish her program, and that program has **N** required courses. Each course must be taken in exactly one of the semesters.\n\nSome courses have prerequisites: for each **i** from 1 to **K**, she must take course **A[i]** before course **B[i]**.\n\nThe same course may be taught by different professors in different semesters, and how well she does will depend on which professor teaches her. Additionally, some courses may not be taught every semester.\n\nWe are given an array **X** representing this information. For each course **i** and each semester **j**, **X[i][j]** = -1 if course **i** is not taught in semester **j**. Otherwise, **X[i][j]** will be an integer between 0 and 100: the expected score Rin will get if she takes course **i** in semester **j**.\n\nRin may take any number of courses per semester, including none, as long as they are taught that semester and she has already taken any required prerequisite courses.\n\nHelp Rin to find the maximal average score she can get over her whole program.",
+    "constraints": [
+      "1 ≤ M, N ≤ 100",
+      "0 ≤ K ≤ 100",
+      "-1 ≤ X[i][j] ≤ 100",
+      "1 ≤ A[i], B[i] ≤ N",
+      "For each i, A[i] ≠ B[i].",
+      "For different i and j, (A[i], B[i]) ≠ (A[j], B[j]).",
+      "We guarantee there exists a way to take these N courses in M semesters."
+    ],
+    "inputFormat": "First line contains three integers: N, M, and K. The next N lines contain M integers each, representing the scores for each course in each semester. The next K lines contain two integers each, representing the prerequisites.",
+    "outputFormat": "The maximum average score that can be achieved, rounded to two decimal places.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3 2 2\n70 100\n100 80\n100 90\n1 2\n1 3",
+        "output": "80.00",
+        "explanation": "The only way she can finish these 3 courses is: take course 1 in the first semester, then take courses 2 and 3 in the second semester. The average score is (70 + 80 + 90) / 3 = 80.00."
+      },
+      {
+        "id": "sample_2",
+        "input": "4 5 4\n20 -1 100 -1 -1\n100 30 -1 -1 -1\n100 -1 30 20 40\n100 30 40 50 20\n1 2\n1 3\n2 4\n3 4",
+        "output": "32.50",
+        "explanation": "The optimal solution is: take course 1 in semester 1, course 2 in semester 2, course 3 in semester 3 and course 4 in semester 4."
+      },
+      {
+        "id": "sample_3",
+        "input": "2 2 1\n50 60\n70 80\n1 2",
+        "output": "65.00",
+        "explanation": "The only way she can finish these 2 courses is: take course 1 in the first semester, then take course 2 in the second semester. The average score is (50 + 80) / 2 = 65.00."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1 1 0\n50",
+        "expectedOutput": "50.00",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "100 100 100\n100",
+        "expectedOutput": "100.00",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "2 2 1\n50 50\n50 50\n1 2",
+        "expectedOutput": "50.00",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "3 3 2\n50 60 70\n60 70 80\n70 80 90\n1 2\n1 3",
+        "expectedOutput": "66.67",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "1 1 0\n50",
+        "expectedOutput": "50.00",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we first build a graph based on the prerequisites. Then, we perform a topological sorting on the graph to get a valid order of courses. We use memoization to store the maximum average score that can be achieved for each course in each semester. Finally, we calculate the maximum average score by considering all possible orders of courses.",
+    "timeComplexity": "O(N * M * K) per test case, O(T * N * M * K) total.",
+    "spaceComplexity": "O(N * M + N * K) — for the memoization table and the graph.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#define MAX_N 100\n#define MAX_M 100\n#define MAX_K 100\n\nint X[MAX_N][MAX_M];\nint A[MAX_K], B[MAX_K];\nint N, M, K;\n\ndouble calculate_max_average_score() {\n    // Build the graph and perform topological sorting\n    int graph[MAX_N][MAX_N] = {{0}};\n    int in_degree[MAX_N] = {0};\n    for (int i = 0; i < K; i++) {\n        graph[A[i] - 1][B[i] - 1] = 1;\n        in_degree[B[i] - 1]++;\n    }\n\n    // Initialize the memoization table\n    double memo[MAX_N][MAX_M] = {{0}};\n    for (int i = 0; i < N; i++) {\n        for (int j = 0; j < M; j++) {\n            memo[i][j] = -1;\n        }\n    }\n\n    // Calculate the maximum average score for each course and semester\n    for (int i = 0; i < N; i++) {\n        for (int j = 0; j < M; j++) {\n            if (X[i][j] != -1) {\n                double max_score = X[i][j];\n                for (int k = 0; k < N; k++) {\n                    if (graph[k][i] == 1) {\n                        max_score += memo[k][j - 1];\n                    }\n                }\n                memo[i][j] = max_score;\n            }\n        }\n    }\n\n    // Calculate the maximum average score\n    double max_average_score = 0;\n    for (int i = 0; i < N; i++) {\n        for (int j = 0; j < M; j++) {\n            if (memo[i][j] > max_average_score) {\n                max_average_score = memo[i][j];\n            }\n        }\n    }\n    return max_average_score / N;\n}\n\nint main() {\n    scanf(\"%d %d %d\", &N, &M, &K);\n    for (int i = 0; i < N; i++) {\n        for (int j = 0; j < M; j++) {\n            scanf(\"%d\", &X[i][j]);\n        }\n    }\n    for (int i = 0; i < K; i++) {\n        scanf(\"%d %d\", &A[i], &B[i]);\n    }\n    printf(\"%.2f\\n\", calculate_max_average_score());\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\nusing namespace std;\n\nconst int MAX_N = 100;\nconst int MAX_M = 100;\nconst int MAX_K = 100;\n\nint X[MAX_N][MAX_M];\nint A[MAX_K], B[MAX_K];\nint N, M, K;\n\n// Function to calculate the maximum average score\ndouble calculate_max_average_score() {\n    // Build the graph and perform topological sorting\n    vector<vector<int>> graph(N);\n    vector<int> in_degree(N, 0);\n    for (int i = 0; i < K; i++) {\n        graph[A[i] - 1].push_back(B[i] - 1);\n        in_degree[B[i] - 1]++;\n    }\n\n    // Initialize the memoization table\n    vector<vector<double>> memo(N, vector<double>(M, -1));\n\n    // Calculate the maximum average score for each course and semester\n    for (int i = 0; i < N; i++) {\n        for (int j = 0; j < M; j++) {\n            if (X[i][j] != -1) {\n                double max_score = X[i][j];\n                for (int k = 0; k < N; k++) {\n                    if (graph[k][i] == 1) {\n                        max_score += memo[k][j - 1];\n                    }\n                }\n                memo[i][j] = max_score;\n            }\n        }\n    }\n\n    // Calculate the maximum average score\n    double max_average_score = 0;\n    for (int i = 0; i < N; i++) {\n        for (int j = 0; j < M; j++) {\n            if (memo[i][j] > max_average_score) {\n                max_average_score = memo[i][j];\n            }\n        }\n    }\n    return max_average_score / N;\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(NULL);\n    cin >> N >> M >> K;\n    for (int i = 0; i < N; i++) {\n        for (int j = 0; j < M; j++) {\n            cin >> X[i][j];\n        }\n    }\n    for (int i = 0; i < K; i++) {\n        cin >> A[i] >> B[i];\n    }\n    cout << fixed << setprecision(2) << calculate_max_average_score() << endl;\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    static final int MAX_N = 100;\n    static final int MAX_M = 100;\n    static final int MAX_K = 100;\n    static int[][] X = new int[MAX_N][MAX_M];\n    static int[] A = new int[MAX_K];\n    static int[] B = new int[MAX_K];\n    static int N, M, K;\n\n    // Function to calculate the maximum average score\n    public static double calculate_max_average_score() {\n        // Build the graph and perform topological sorting\n        int[][] graph = new int[MAX_N][MAX_N];\n        int[] in_degree = new int[MAX_N];\n        for (int i = 0; i < K; i++) {\n            graph[A[i] - 1][B[i] - 1] = 1;\n            in_degree[B[i] - 1]++;\n        }\n\n        // Initialize the memoization table\n        double[][] memo = new double[MAX_N][MAX_M];\n        for (int i = 0; i < MAX_N; i++) {\n            for (int j = 0; j < MAX_M; j++) {\n                memo[i][j] = -1;\n            }\n        }\n\n        // Calculate the maximum average score for each course and semester\n        for (int i = 0; i < N; i++) {\n            for (int j = 0; j < M; j++) {\n                if (X[i][j] != -1) {\n                    double max_score = X[i][j];\n                    for (int k = 0; k < N; k++) {\n                        if (graph[k][i] == 1) {\n                            max_score += memo[k][j - 1];\n                        }\n                    }\n                    memo[i][j] = max_score;\n                }\n            }\n        }\n\n        // Calculate the maximum average score\n        double max_average_score = 0;\n        for (int i = 0; i < N; i++) {\n            for (int j = 0; j < M; j++) {\n                if (memo[i][j] > max_average_score) {\n                    max_average_score = memo[i][j];\n                }\n            }\n        }\n        return max_average_score / N;\n    }\n\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        N = scanner.nextInt();\n        M = scanner.nextInt();\n        K = scanner.nextInt();\n        for (int i = 0; i < N; i++) {\n            for (int j = 0; j < M; j++) {\n                X[i][j] = scanner.nextInt();\n            }\n        }\n        for (int i = 0; i < K; i++) {\n            A[i] = scanner.nextInt();\n            B[i] = scanner.nextInt();\n        }\n        System.out.printf(\"%.2f\\n\", calculate_max_average_score());\n    }\n}",
+      "Python3": "import sys\n\nMAX_N = 100\nMAX_M = 100\nMAX_K = 100\n\nX = [[0 for _ in range(MAX_M)] for _ in range(MAX_N)]\nA = [0 for _ in range(MAX_K)]\nB = [0 for _ in range(MAX_K)]\nN, M, K = 0, 0, 0\n\n# Function to calculate the maximum average score\ndef calculate_max_average_score():\n    # Build the graph and perform topological sorting\n    graph = [[0 for _ in range(MAX_N)] for _ in range(MAX_N)]\n    in_degree = [0 for _ in range(MAX_N)]\n    for i in range(K):\n        graph[A[i] - 1][B[i] - 1] = 1\n        in_degree[B[i] - 1] += 1\n\n    # Initialize the memoization table\n    memo = [[-1 for _ in range(MAX_M)] for _ in range(MAX_N)]\n\n    # Calculate the maximum average score for each course and semester\n    for i in range(N):\n        for j in range(M):\n            if X[i][j] != -1:\n                max_score = X[i][j]\n                for k in range(N):\n                    if graph[k][i] == 1:\n                        max_score += memo[k][j - 1]\n                memo[i][j] = max_score\n\n    # Calculate the maximum average score\n    max_average_score = 0\n    for i in range(N):\n        for j in range(M):\n            if memo[i][j] > max_average_score:\n                max_average_score = memo[i][j]\n    return max_average_score / N\n\n# Read input\ninput_lines = sys.stdin.readlines()\nN, M, K = map(int, input_lines[0].split())\nindex = 1\nfor i in range(N):\n    X[i] = list(map(int, input_lines[index].split()))\n    index += 1\nfor i in range(K):\n    A[i], B[i] = map(int, input_lines[index].split())\n    index += 1\n\n# Calculate and print the maximum average score\nprint(\"{:.2f}\".format(calculate_max_average_score()))",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\n\nconst MAX_N = 100;\nconst MAX_M = 100;\nconst MAX_K = 100;\nlet X = Array(MAX_N).fill(0).map(() => Array(MAX_M).fill(0));\nlet A = Array(MAX_K).fill(0);\nlet B = Array(MAX_K).fill(0);\nlet N, M, K;\n\n// Function to calculate the maximum average score\nfunction calculate_max_average_score() {\n    // Build the graph and perform topological sorting\n    let graph = Array(MAX_N).fill(0).map(() => Array(MAX_N).fill(0));\n    let in_degree = Array(MAX_N).fill(0);\n    for (let i = 0; i < K; i++) {\n        graph[A[i] - 1][B[i] - 1] = 1;\n        in_degree[B[i] - 1]++;\n    }\n\n    // Initialize the memoization table\n    let memo = Array(MAX_N).fill(0).map(() => Array(MAX_M).fill(-1));\n\n    // Calculate the maximum average score for each course and semester\n    for (let i = 0; i < N; i++) {\n        for (let j = 0; j < M; j++) {\n            if (X[i][j] !== -1) {\n                let max_score = X[i][j];\n                for (let k = 0; k < N; k++) {\n                    if (graph[k][i] === 1) {\n                        max_score += memo[k][j - 1];\n                    }\n                }\n                memo[i][j] = max_score;\n            }\n        }\n    }\n\n    // Calculate the maximum average score\n    let max_average_score = 0;\n    for (let i = 0; i < N; i++) {\n        for (let j = 0; j < M; j++) {\n            if (memo[i][j] > max_average_score) {\n                max_average_score = memo[i][j];\n            }\n        }\n    }\n    return max_average_score / N;\n}\n\n// Read input\n[N, M, K] = input[0].split(' ').map(Number);\nlet index = 1;\nfor (let i = 0; i < N; i++) {\n    X[i] = input[index].split(' ').map(Number);\n    index++;\n}\nfor (let i = 0; i < K; i++) {\n    [A[i], B[i]] = input[index].split(' ').map(Number);\n    index++;\n}\n\n// Calculate and print the maximum average score\nconsole.log(calculate_max_average_score().toFixed(2));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

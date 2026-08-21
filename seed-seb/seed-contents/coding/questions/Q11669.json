@@ -1,0 +1,119 @@
+{
+  "questionId": "Q11669",
+  "title": "Vasya and a Tree",
+  "slug": "E",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "$undefined",
+    "isPremium": true,
+    "tags": [
+      "Tree",
+      "Distance",
+      "Graph Theory"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Write a program for the coding challenge \"Vasya and a Tree\". Refer to SEED-IT description: https://codeforces.com/contest/1076/problem/E",
+    "constraints": [
+      "2 <= n <= 10^5",
+      "1 <= m <= 10^5",
+      "1 <= u, v <= n"
+    ],
+    "inputFormat": "The first line contains an integer n, the number of nodes in the tree. Then n-1 lines follow, each containing two integers u and v, the nodes connected by an edge. The next line contains an integer m, the number of queries. Then m lines follow, each containing two integers u and v, the nodes for which we want to find the distance.",
+    "outputFormat": "For each query, output the distance between the two nodes.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "2\n1 2\n1\n1 2",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "10\n1 2\n1 3\n1 4\n1 5\n1 6\n1 7\n1 8\n1 9\n1 10\n10\n1 2\n1 3\n1 4\n1 5\n1 6\n1 7\n1 8\n1 9\n1 10",
+        "expectedOutput": "1\n1\n1\n1\n1\n1\n1\n1\n1",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": "5\n1 2\n1 3\n1 4\n1 5\n5\n1 1\n2 2\n3 3\n4 4\n5 5",
+        "expectedOutput": "0\n0\n0\n0\n0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case/empty-like/negative if allowed",
+        "input": "1\n0\n1\n1 1",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": "7\n1 2\n1 3\n2 4\n2 5\n3 6\n3 7\n5\n1 4\n1 5\n1 6\n1 7\n2 3\n2 6\n2 7",
+        "expectedOutput": "2\n2\n2\n2\n1\n2\n3",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Use a tree traversal algorithm (e.g., DFS or BFS) to calculate the distance between each pair of nodes.",
+    "timeComplexity": "O(n + m)",
+    "spaceComplexity": "O(n)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#define MAX_N 100005\nint n, m;\ntypedef struct Node {\n    int val;\n    struct Node* next;\n} Node;\nNode* adj[MAX_N];\nvoid addEdge(int u, int v) {\n    Node* newNode = (Node*) malloc(sizeof(Node));\n    newNode->val = v;\n    newNode->next = adj[u];\n    adj[u] = newNode;\n}\nint distance(int u, int v) {\n    int visited[MAX_N] = {0};\n    int queue[MAX_N], front = 0, rear = 0;\n    queue[rear++] = u;\n    visited[u] = 1;\n    int dist = 0;\n    while (front < rear) {\n        int size = rear - front;\n        for (int i = 0; i < size; i++) {\n            int node = queue[front++];\n            if (node == v) return dist;\n            Node* temp = adj[node];\n            while (temp) {\n                if (!visited[temp->val]) {\n                    queue[rear++] = temp->val;\n                    visited[temp->val] = 1;\n                }\n                temp = temp->next;\n            }\n        }\n        dist++;\n    }\n    return -1;\n}\nint main() {\n    scanf(\"%d\", &n);\n    for (int i = 0; i < n - 1; i++) {\n        int u, v;\n        scanf(\"%d %d\", &u, &v);\n        addEdge(u, v);\n        addEdge(v, u);\n    }\n    scanf(\"%d\", &m);\n    for (int i = 0; i < m; i++) {\n        int u, v;\n        scanf(\"%d %d\", &u, &v);\n        printf(\"%d\\n\", distance(u, v));\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\n#include <queue>\nusing namespace std;\nconst int MAX_N = 100005;\nvector<int> adj[MAX_N];\nint distance(int u, int v, vector<int> adj[]) {\n    vector<bool> visited(MAX_N, false);\n    queue<int> q;\n    q.push(u);\n    visited[u] = true;\n    int dist = 0;\n    while (!q.empty()) {\n        int size = q.size();\n        for (int i = 0; i < size; i++) {\n            int node = q.front();\n            q.pop();\n            if (node == v) return dist;\n            for (int neighbor : adj[node]) {\n                if (!visited[neighbor]) {\n                    q.push(neighbor);\n                    visited[neighbor] = true;\n                }\n            }\n        }\n        dist++;\n    }\n    return -1;\n}\nint main() {\n    int n;\n    cin >> n;\n    for (int i = 0; i < n - 1; i++) {\n        int u, v;\n        cin >> u >> v;\n        adj[u].push_back(v);\n        adj[v].push_back(u);\n    }\n    int m;\n    cin >> m;\n    for (int i = 0; i < m; i++) {\n        int u, v;\n        cin >> u >> v;\n        cout << distance(u, v, adj) << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.ArrayList;\nimport java.util.LinkedList;\nimport java.util.Queue;\nimport java.util.Scanner;\npublic class Main {\n    static final int MAX_N = 100005;\n    static ArrayList<Integer>[] adj = new ArrayList[MAX_N];\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int n = scanner.nextInt();\n        for (int i = 0; i < MAX_N; i++) {\n            adj[i] = new ArrayList<>();\n        }\n        for (int i = 0; i < n - 1; i++) {\n            int u = scanner.nextInt();\n            int v = scanner.nextInt();\n            adj[u].add(v);\n            adj[v].add(u);\n        }\n        int m = scanner.nextInt();\n        for (int i = 0; i < m; i++) {\n            int u = scanner.nextInt();\n            int v = scanner.nextInt();\n            System.out.println(distance(u, v));\n        }\n    }\n    public static int distance(int u, int v) {\n        boolean[] visited = new boolean[MAX_N];\n        Queue<Integer> queue = new LinkedList<>();\n        queue.add(u);\n        visited[u] = true;\n        int dist = 0;\n        while (!queue.isEmpty()) {\n            int size = queue.size();\n            for (int i = 0; i < size; i++) {\n                int node = queue.poll();\n                if (node == v) return dist;\n                for (int neighbor : adj[node]) {\n                    if (!visited[neighbor]) {\n                        queue.add(neighbor);\n                        visited[neighbor] = true;\n                    }\n                }\n            }\n            dist++;\n        }\n        return -1;\n    }\n}",
+      "Python3": "from collections import deque\nMAX_N = 100005\nadj = [[] for _ in range(MAX_N)]\ndef distance(u, v):\n    visited = [False] * MAX_N\n    queue = deque()\n    queue.append(u)\n    visited[u] = True\n    dist = 0\n    while queue:\n        size = len(queue)\n        for _ in range(size):\n            node = queue.popleft()\n            if node == v: return dist\n            for neighbor in adj[node]:\n                if not visited[neighbor]:\n                    queue.append(neighbor)\n                    visited[neighbor] = True\n        dist += 1\n    return -1\nn = int(input())\nfor _ in range(n - 1):\n    u, v = map(int, input().split())\n    adj[u].append(v)\n    adj[v].append(u)\nm = int(input())\nfor _ in range(m):\n    u, v = map(int, input().split())\n    print(distance(u, v))",
+      "JavaScript": "const MAX_N = 100005;\nlet adj = new Array(MAX_N).fill(0).map(() => []);\nfunction distance(u, v) {\n    let visited = new Array(MAX_N).fill(false);\n    let queue = [];\n    queue.push(u);\n    visited[u] = true;\n    let dist = 0;\n    while (queue.length > 0) {\n        let size = queue.length;\n        for (let i = 0; i < size; i++) {\n            let node = queue.shift();\n            if (node === v) return dist;\n            for (let neighbor of adj[node]) {\n                if (!visited[neighbor]) {\n                    queue.push(neighbor);\n                    visited[neighbor] = true;\n                }\n            }\n        }\n        dist++;\n    }\n    return -1;\n}\nlet input = '';\nprocess.stdin.on('data', c => input += c);\nprocess.stdin.on('end', () => {\n    const {EOL} = require('os);\n    const lines = input.split(EOL);\n    let n = parseInt(lines[0]);\n    for (let i = 0; i < n - 1; i++) {\n        let [u, v] = lines[i + 1].split(' ').map(x => parseInt(x));\n        adj[u].push(v);\n        adj[v].push(u);\n    }\n    let m = parseInt(lines[n]);\n    for (let i = 0; i < m; i++) {\n        let [u, v] = lines[n + i + 1].split(' ').map(x => parseInt(x));\n        console.log(distance(u, v));\n    }\n});"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

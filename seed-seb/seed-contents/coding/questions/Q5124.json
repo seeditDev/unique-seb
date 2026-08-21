@@ -1,0 +1,140 @@
+{
+  "questionId": "Q5124",
+  "title": "File Opener Counter",
+  "slug": "file-opener-counter",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Implementation",
+    "difficulty": "Easy",
+    "isPremium": true,
+    "tags": [
+      "File I/O",
+      "Exception Handling",
+      "Try‑Catch",
+      "Finally"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Exception Handling"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "In this task, you will create a function that attempts to open a file, counts the number of attempts made, and ensures that the count is always updated and returned, regardless of whether the file was successfully opened or an exception occurred.\n\nThe function should take a filename as input and try to open it. If successful, it should read the first line of the file. If an exception occurs (e.g., file not found), it should catch the exception. In both cases, it should increment a counter for the number of attempts made.\n\nUse a 'finally' clause to ensure that the counter is always incremented and returned, regardless of whether an exception occurred or not.\n\nFor example, if the input is \"existing_file.txt\" and the file exists, the function should return 1 (indicating one attempt was made). If the input is \"non_existent_file.txt\" and the file doesn't exist, the function should also return 1.\n\nYour task is to complete the 'open_file_counter' function to implement this behavior.",
+    "constraints": [
+      "1 ≤ T ≤ 10",
+      "1 ≤ length of filename ≤ 100"
+    ],
+    "inputFormat": "The first line contains an integer T (1 ≤ T ≤ 10) – the number of test cases. Each of the next T lines contains a single filename (a non‑empty string without spaces).",
+    "outputFormat": "For each test case output a single integer on its own line – the number of attempts made to open the file (always 1).",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\\nexisting_file.txt\\nnon_existent_file.txt",
+        "output": "1\\n1",
+        "explanation": "Two test cases are processed. For each filename the function increments the counter exactly once, so both outputs are 1."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\\nREADME.md",
+        "output": "1",
+        "explanation": "A single filename is given; regardless of whether README.md exists, the counter is incremented once."
+      },
+      {
+        "id": "sample_3",
+        "input": "3\\na.txt\\nb.txt\\nc.txt",
+        "output": "1\\n1\\n1",
+        "explanation": "Three independent attempts are made; each finally block adds one to the counter, yielding 1 for every test case."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\\nfile1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "10\\nfileA\\nfileB\\nfileC\\nfileD\\nfileE\\nfileF\\nfileG\\nfileH\\nfileI\\nfileJ",
+        "expectedOutput": "1\\n1\\n1\\n1\\n1\\n1\\n1\\n1\\n1\\n1",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case – long filename",
+        "input": "1\\nabcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.txt",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "2\\ndata.in\\noutput.out",
+        "expectedOutput": "1\\n1",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "4\\nlog1\\nlog2\\nlog3\\nlog4",
+        "expectedOutput": "1\\n1\\n1\\n1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For every filename we perform exactly one attempt to open the file. The attempt is wrapped in a try‑catch (or equivalent) block so that any error (e.g., file not found) is caught and ignored. A counter variable is initialised to 0 before the attempt. In a finally clause we increment the counter and return it. Because the finally block is executed whether the open succeeds or an exception is thrown, the returned value is always 1. The algorithm is O(T) time and O(1) extra memory.",
+    "timeComplexity": "O(T) – one constant‑time operation per test case.",
+    "spaceComplexity": "O(1) – only a few scalar variables are used.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nint open_file_counter(const char *filename) {\n    int attempts = 0;\n    FILE *f = fopen(filename, \"r\");\n    if (f != NULL) {\n        char buffer[1024];\n        fgets(buffer, sizeof(buffer), f);\n        fclose(f);\n    }\n    // finally equivalent\n    attempts += 1;\n    return attempts;\n}\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    char filename[256];\n    for (int i = 0; i < T; ++i) {\n        scanf(\"%255s\", filename);\n        int res = open_file_counter(filename);\n        printf(\"%d\\n\", res);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nint open_file_counter(const string &filename) {\n    int attempts = 0;\n    ifstream file(filename);\n    if (file.is_open()) {\n        string line;\n        getline(file, line);\n        file.close();\n    }\n    // finally equivalent\n    ++attempts;\n    return attempts;\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T;\n    if (!(cin >> T)) return 0;\n    string filename;\n    for (int i = 0; i < T; ++i) {\n        cin >> filename;\n        cout << open_file_counter(filename) << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    private static int openFileCounter(String filename) {\n        int attempts = 0;\n        BufferedReader br = null;\n        try {\n            br = new BufferedReader(new FileReader(filename));\n            br.readLine(); // read first line if exists\n        } catch (FileNotFoundException e) {\n            // ignore\n        } catch (IOException e) {\n            // ignore\n        } finally {\n            attempts++;\n            try { if (br != null) br.close(); } catch (IOException ignored) {}\n        }\n        return attempts;\n    }\n\n    public static void main(String[] args) throws Exception {\n        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));\n        int T = Integer.parseInt(in.readLine().trim());\n        for (int i = 0; i < T; ++i) {\n            String filename = in.readLine().trim();\n            System.out.println(openFileCounter(filename));\n        }\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys\n\ndef open_file_counter(filename: str) -> int:\n    attempts = 0\n    try:\n        with open(filename, 'r') as f:\n            f.readline()\n    except FileNotFoundError:\n        pass\n    finally:\n        attempts += 1\n        return attempts\n\ndef main():\n    data = sys.stdin.read().splitlines()\n    if not data:\n        return\n    T = int(data[0].strip())\n    out = []\n    for i in range(1, T + 1):\n        filename = data[i].strip()\n        out.append(str(open_file_counter(filename)))\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    main()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nif (input.length === 0) process.exit(0);\nconst T = parseInt(input[0].trim(), 10);\nlet output = [];\nfor (let i = 1; i <= T; ++i) {\n  const filename = input[i].trim();\n  let attempts = 0;\n  try {\n    const data = fs.readFileSync(filename, 'utf-8');\n    // read first line (optional)\n    data.split('\\n')[0];\n  } catch (e) {\n    // ignore errors\n  } finally {\n    attempts += 1;\n    output.push(String(attempts));\n  }\n}\nconsole.log(output.join('\\n'));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

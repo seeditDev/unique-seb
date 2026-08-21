@@ -1,0 +1,119 @@
+{
+  "questionId": "Q11587",
+  "title": "Dijkstra?",
+  "slug": "C",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Graphs",
+    "difficulty": "$undefined",
+    "isPremium": true,
+    "tags": [
+      "Dijkstra's algorithm",
+      "Shortest paths"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Write a program for the coding challenge \"Dijkstra?\". Refer to SEED-IT description: https://codeforces.com/contest/20/problem/C",
+    "constraints": [
+      "1 <= V <= 10^5",
+      "1 <= E <= 10^6",
+      "1 <= weight of each edge <= 10^9",
+      "1 <= source vertex <= V"
+    ],
+    "inputFormat": "The first line contains the number of vertices (V) and edges (E) in the graph, separated by a space. The next E lines contain three integers each, representing the source vertex, destination vertex, and weight of the edge. The last line contains the source vertex for Dijkstra's algorithm.",
+    "outputFormat": "The shortest distances from the source vertex to all other vertices in the graph, separated by spaces.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "1 0\n1",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "9 10\n1 2 1\n1 3 4\n2 3 2\n2 4 5\n3 4 1\n3 5 3\n4 5 2\n4 6 4\n5 6 5\n5 7 1\n5 8 2\n5 9 6\n1",
+        "expectedOutput": "0 1 3 4 5 6 7 8 9",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": "5 6\n1 2 1\n1 3 1\n2 3 1\n2 4 1\n3 4 1\n3 5 1\n1",
+        "expectedOutput": "0 1 1 2 2 3",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case / empty-like / negative if allowed",
+        "input": "5 0\n1",
+        "expectedOutput": "0 -1 -1 -1 -1",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": "6 9\n1 2 5\n1 3 3\n1 4 7\n2 3 2\n2 4 4\n3 4 1\n3 5 6\n4 5 1\n4 6 1\n1",
+        "expectedOutput": "0 5 3 6 8 9",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Use a priority queue to efficiently select the next vertex with the minimum distance.",
+    "timeComplexity": "O((V + E) log V)",
+    "spaceComplexity": "O(V + E)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#define INF 1000000000\n#define V 100001\ntypedef struct { int v, w; } Edge;\ntypedef struct { Edge *edges; int size; } Graph;\nGraph *createGraph(int V) {\n    Graph *graph = (Graph *)malloc(sizeof(Graph));\n    graph->edges = (Edge *)malloc(V * sizeof(Edge));\n    graph->size = 0;\n    return graph;\n}\nvoid addEdge(Graph *graph, int u, int v, int w) {\n    graph->edges[graph->size].v = v;\n    graph->edges[graph->size].w = w;\n    graph->size++;\n}\nint *dijkstra(Graph *graph, int V, int src) {\n    int *dist = (int *)malloc(V * sizeof(int));\n    for (int i = 0; i < V; i++) dist[i] = INF;\n    dist[src] = 0;\n    // priority queue implementation\n    int *pq = (int *)malloc(V * sizeof(int));\n    int pqSize = 0;\n    pq[pqSize++] = src;\n    while (pqSize > 0) {\n        int u = pq[pqSize - 1];\n        pqSize--;\n        for (int i = 0; i < graph->size; i++) {\n            int v = graph->edges[i].v;\n            int w = graph->edges[i].w;\n            if (dist[u] + w < dist[v]) {\n                dist[v] = dist[u] + w;\n                pq[pqSize++] = v;\n            }\n        }\n    }\n    free(pq);\n    return dist;\n}\nint main() {\n    int V, E;\n    scanf(\"%d %d\", &V, &E);\n    Graph *graph = createGraph(V);\n    for (int i = 0; i < E; i++) {\n        int u, v, w;\n        scanf(\"%d %d %d\", &u, &v, &w);\n        addEdge(graph, u, v, w);\n    }\n    int src;\n    scanf(\"%d\", &src);\n    int *dist = dijkstra(graph, V, src);\n    for (int i = 0; i < V; i++) printf(\"%d \", dist[i]);\n    free(dist);\n    free(graph->edges);\n    free(graph);\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\n#include <queue>\n#include <limits>\nusing namespace std;\ntypedef pair<int, int> pii;\nconst int INF = 1000000000;\nconst int V = 100001;\nvector<pii> adj[V];\nvoid addEdge(int u, int v, int w) {\n    adj[u].push_back({v, w});\n}\nvector<int> dijkstra(int V, int src) {\n    vector<int> dist(V, INF);\n    dist[src] = 0;\n    priority_queue<pii, vector<pii>, greater<pii>> pq;\n    pq.push({0, src});\n    while (!pq.empty()) {\n        int u = pq.top().second;\n        int d = pq.top().first;\n        pq.pop();\n        if (d > dist[u]) continue;\n        for (auto &edge : adj[u]) {\n            int v = edge.first;\n            int w = edge.second;\n            if (dist[u] + w < dist[v]) {\n                dist[v] = dist[u] + w;\n                pq.push({dist[v], v});\n            }\n        }\n    }\n    return dist;\n}\nint main() {\n    int V, E;\n    cin >> V >> E;\n    for (int i = 0; i < E; i++) {\n        int u, v, w;\n        cin >> u >> v >> w;\n        addEdge(u, v, w);\n    }\n    int src;\n    cin >> src;\n    vector<int> dist = dijkstra(V, src);\n    for (int i = 0; i < V; i++) cout << dist[i] << \" \";\n    return 0;\n}",
+      "Java": "import java.util.PriorityQueue;\nimport java.util.Scanner;\nimport java.util.ArrayList;\npublic class Dijkstra {\n    static final int INF = 1000000000;\n    static final int V = 100001;\n    static class Edge implements Comparable<Edge> {\n        int v, w;\n        Edge(int v, int w) {\n            this.v = v;\n            this.w = w;\n        }\n        public int compareTo(Edge other) {\n            return Integer.compare(w, other.w);\n        }\n    }\n    public static int[] dijkstra(int V, int src, int[][] edges) {\n        int[] dist = new int[V];\n        for (int i = 0; i < V; i++) dist[i] = INF;\n        dist[src] = 0;\n        PriorityQueue<Edge> pq = new PriorityQueue<>();\n        pq.add(new Edge(src, 0));\n        while (!pq.isEmpty()) {\n            Edge e = pq.poll();\n            int u = e.v;\n            int d = e.w;\n            if (d > dist[u]) continue;\n            for (int[] edge : edges) {\n                int v = edge[0];\n                int w = edge[1];\n                if (u == edge[2]) {\n                    if (dist[u] + w < dist[v]) {\n                        dist[v] = dist[u] + w;\n                        pq.add(new Edge(v, dist[v]));\n                    }\n                }\n            }\n        }\n        return dist;\n    }\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int V = sc.nextInt();\n        int E = sc.nextInt();\n        int[][] edges = new int[E][3];\n        for (int i = 0; i < E; i++) {\n            edges[i][0] = sc.nextInt();\n            edges[i][1] = sc.nextInt();\n            edges[i][2] = sc.nextInt();\n        }\n        int src = sc.nextInt();\n        int[] dist = dijkstra(V, src - 1, edges);\n        for (int i = 0; i < V; i++) System.out.print(dist[i] + \" \");\n    }\n}",
+      "Python3": "import sys\nimport heapq\nINF = 1000000000\nV = 100001\ndef dijkstra(V, src, edges):\n    dist = [INF] * V\n    dist[src] = 0\n    pq = [(0, src)]\n    while pq:\n        d, u = heapq.heappop(pq)\n        if d > dist[u]: continue\n        for v, w in edges[u]:\n            if dist[u] + w < dist[v]:\n                dist[v] = dist[u] + w\n                heapq.heappush(pq, (dist[v], v))\n    return dist\nV, E = map(int, input().split())\nedges = [[] for _ in range(V)]\nfor _ in range(E):\n    u, v, w = map(int, input().split())\n    edges[u - 1].append((v - 1, w))\nsrc = int(input()) - 1\ndist = dijkstra(V, src, edges)\nprint(' '.join(map(str, dist)))",
+      "JavaScript": "const INF = 1000000000;\nconst V = 100001;\nfunction dijkstra(V, src, edges) {\n    const dist = new Array(V).fill(INF);\n    dist[src] = 0;\n    const pq = [];\n    pq.push([0, src]);\n    while (pq.length > 0) {\n        pq.sort((a, b) => a[0] - b[0]);\n        const [d, u] = pq.shift();\n        if (d > dist[u]) continue;\n        for (const [v, w] of edges[u]) {\n            if (dist[u] + w < dist[v]) {\n                dist[v] = dist[u] + w;\n                pq.push([dist[v], v]);\n            }\n        }\n    }\n    return dist;\n}\nconst readline = require('readline');\nconst rl = readline.createInterface({\n    input: process.stdin,\n    output: process.stdout\n});\nlet V, E;\nlet edges = [];\nrl.on('line', (input) => {\n    if (!V) {\n        [V, E] = input.split(' ').map(Number);\n        edges = new Array(V).fill(0).map(() => []);\n    } else if (edges.length < E) {\n        const [u, v, w] = input.split(' ').map(Number);\n        edges[u - 1].push([v - 1, w]);\n    } else {\n        const src = Number(input) - 1;\n        const dist = dijkstra(V, src, edges);\n        console.log(dist.join(' '));\n        rl.close();\n    }\n});"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

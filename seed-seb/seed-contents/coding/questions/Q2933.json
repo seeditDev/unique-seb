@@ -1,0 +1,128 @@
+{
+  "questionId": "Q2933",
+  "title": "Shooting",
+  "slug": "shooting",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graphs",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Graphs",
+      "BFS",
+      "Grid",
+      "Traversal"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Flow & Matching"
+    ]
+  },
+  "content": {
+    "problemStatement": "You are given a rectangular grid with **N** rows and **M** columns. Each its cell is either empty, contains an enemy, or contains a laser.\n\n\n\nThe lasers are capable of shooting. Each one can shoot in one of **three** directions: either left, right or up.When a laser shoots at some direction, it kills all the enemies on its way.\n\n\n\nFind out whether it's possible to kill all the enemies on the grid. If it's possible, output \"Possible\", otherwise output \"Impossible\".",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N, M <= 50",
+      "The number of lasers will be between 1 and 16, inclusive."
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case consists of two lines. The first line contains two integers N and M, the number of rows and columns in the grid. The next N lines contain M characters each, representing the grid.",
+    "outputFormat": "For each test case, print 'Possible' if it's possible to kill all the enemies on the grid, otherwise print 'Impossible'.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n2 2\nE.\nL.\n2 4\nE.EL\nLL..\n3 3\nEE.\nL.L\nL..",
+        "output": "Possible\nPossible\nImpossible",
+        "explanation": "For the first test case, the laser can kill the enemy by shooting left. For the second test case, the lasers can kill the enemies by shooting left and right. For the third test case, the lasers cannot kill all the enemies."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n1 1\nL",
+        "output": "Possible",
+        "explanation": "There are no enemies to kill."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n1 1\nE",
+        "output": "Impossible",
+        "explanation": "There is no laser to kill the enemy."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1\nL",
+        "expectedOutput": "Possible",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n50 50\n",
+        "expectedOutput": "Impossible",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n5 5\nLLLLL\nLLLLL\nLLLLL\nLLLLL\nLLLLL",
+        "expectedOutput": "Possible",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n5 5\nEEEEE\nEEEEE\nEEEEE\nEEEEE\nEEEEE",
+        "expectedOutput": "Impossible",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "10\n10 10\n",
+        "expectedOutput": "Possible",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved by performing a BFS traversal for each laser in the grid. For each laser, we check all three possible directions (left, right, and up) and mark the enemies as visited if we can reach them. If we can visit all enemies, we print 'Possible', otherwise we print 'Impossible'.",
+    "timeComplexity": "O(T * N * M * 3) per test case, O(T * N * M * 3) total.",
+    "spaceComplexity": "O(N * M) \u2014 for storing the grid and the visited array.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#define MAXN 50\n#define MAXM 50\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int N, M;\n        scanf(\"%d %d\", &N, &M);\n        char grid[MAXN][MAXM + 1];\n        for (int i = 0; i < N; i++) {\n            scanf(\"%s\", grid[i]);\n        }\n        // Find positions of lasers and enemies\n        int laserCount = 0;\n        int enemyCount = 0;\n        int lasers[MAXN * MAXM][2];\n        int enemies[MAXN * MAXM][2];\n        for (int i = 0; i < N; i++) {\n            for (int j = 0; j < M; j++) {\n                if (grid[i][j] == 'L') {\n                    lasers[laserCount][0] = i;\n                    lasers[laserCount][1] = j;\n                    laserCount++;\n                } else if (grid[i][j] == 'E') {\n                    enemies[enemyCount][0] = i;\n                    enemies[enemyCount][1] = j;\n                    enemyCount++;\n                }\n            }\n        }\n        // Perform BFS traversal for each laser\n        int visited[MAXN * MAXM];\n        for (int i = 0; i < laserCount; i++) {\n            int queue[MAXN * MAXM][2];\n            int front = 0;\n            int rear = 0;\n            queue[rear][0] = lasers[i][0];\n            queue[rear][1] = lasers[i][1];\n            rear++;\n            while (front < rear) {\n                int x = queue[front][0];\n                int y = queue[front][1];\n                front++;\n                // Check left direction\n                for (int j = y - 1; j >= 0; j--) {\n                    if (grid[x][j] == 'E') {\n                        visited[enemyCount--] = 1;\n                    } else if (grid[x][j] == 'L') {\n                        break;\n                    }\n                }\n                // Check right direction\n                for (int j = y + 1; j < M; j++) {\n                    if (grid[x][j] == 'E') {\n                        visited[enemyCount--] = 1;\n                    } else if (grid[x][j] == 'L') {\n                        break;\n                    }\n                }\n                // Check up direction\n                for (int j = x - 1; j >= 0; j--) {\n                    if (grid[j][y] == 'E') {\n                        visited[enemyCount--] = 1;\n                    } else if (grid[j][y] == 'L') {\n                        break;\n                    }\n                }\n            }\n        }\n        if (enemyCount == 0) {\n            printf(\"Possible\\n\");\n        } else {\n            printf(\"Impossible\\n\");\n        }\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <queue>\nusing namespace std;\n#define MAXN 50\n#define MAXM 50\n\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        int N, M;\n        cin >> N >> M;\n        char grid[MAXN][MAXM + 1];\n        for (int i = 0; i < N; i++) {\n            cin >> grid[i];\n        }\n        // Find positions of lasers and enemies\n        int laserCount = 0;\n        int enemyCount = 0;\n        pair<int, int> lasers[MAXN * MAXM];\n        pair<int, int> enemies[MAXN * MAXM];\n        for (int i = 0; i < N; i++) {\n            for (int j = 0; j < M; j++) {\n                if (grid[i][j] == 'L') {\n                    lasers[laserCount++] = make_pair(i, j);\n                } else if (grid[i][j] == 'E') {\n                    enemies[enemyCount++] = make_pair(i, j);\n                }\n            }\n        }\n        // Perform BFS traversal for each laser\n        bool visited[MAXN * MAXM];\n        for (int i = 0; i < laserCount; i++) {\n            queue<pair<int, int>> q;\n            q.push(lasers[i]);\n            while (!q.empty()) {\n                pair<int, int> p = q.front();\n                q.pop();\n                // Check left direction\n                for (int j = p.second - 1; j >= 0; j--) {\n                    if (grid[p.first][j] == 'E') {\n                        visited[enemyCount--] = true;\n                    } else if (grid[p.first][j] == 'L') {\n                        break;\n                    }\n                }\n                // Check right direction\n                for (int j = p.second + 1; j < M; j++) {\n                    if (grid[p.first][j] == 'E') {\n                        visited[enemyCount--] = true;\n                    } else if (grid[p.first][j] == 'L') {\n                        break;\n                    }\n                }\n                // Check up direction\n                for (int j = p.first - 1; j >= 0; j--) {\n                    if (grid[j][p.second] == 'E') {\n                        visited[enemyCount--] = true;\n                    } else if (grid[j][p.second] == 'L') {\n                        break;\n                    }\n                }\n            }\n        }\n        if (enemyCount == 0) {\n            cout << \"Possible\" << endl;\n        } else {\n            cout << \"Impossible\" << endl;\n        }\n    }\n    return 0;\n}",
+      "Java": "import java.util.Queue;\nimport java.util.LinkedList;\npublic class Main {\n    public static void main(String[] args) {\n        int T = sc.nextInt();\n        while (T-- > 0) {\n            int N = sc.nextInt();\n            int M = sc.nextInt();\n            char[][] grid = new char[N][M];\n            for (int i = 0; i < N; i++) {\n                grid[i] = sc.next().toCharArray();\n            }\n            // Find positions of lasers and enemies\n            int laserCount = 0;\n            int enemyCount = 0;\n            int[][] lasers = new int[N * M][2];\n            int[][] enemies = new int[N * M][2];\n            for (int i = 0; i < N; i++) {\n                for (int j = 0; j < M; j++) {\n                    if (grid[i][j] == 'L') {\n                        lasers[laserCount][0] = i;\n                        lasers[laserCount][1] = j;\n                        laserCount++;\n                    } else if (grid[i][j] == 'E') {\n                        enemies[enemyCount][0] = i;\n                        enemies[enemyCount][1] = j;\n                        enemyCount++;\n                    }\n                }\n            }\n            // Perform BFS traversal for each laser\n            boolean[] visited = new boolean[N * M];\n            for (int i = 0; i < laserCount; i++) {\n                Queue<int[]> q = new LinkedList<>();\n                q.add(new int[] {lasers[i][0], lasers[i][1]});\n                while (!q.isEmpty()) {\n                    int[] p = q.poll();\n                    // Check left direction\n                    for (int j = p[1] - 1; j >= 0; j--) {\n                        if (grid[p[0]][j] == 'E') {\n                            visited[enemyCount--] = true;\n                        } else if (grid[p[0]][j] == 'L') {\n                            break;\n                        }\n                    }\n                    // Check right direction\n                    for (int j = p[1] + 1; j < M; j++) {\n                        if (grid[p[0]][j] == 'E') {\n                            visited[enemyCount--] = true;\n                        } else if (grid[p[0]][j] == 'L') {\n                            break;\n                        }\n                    }\n                    // Check up direction\n                    for (int j = p[0] - 1; j >= 0; j--) {\n                        if (grid[j][p[1]] == 'E') {\n                            visited[enemyCount--] = true;\n                        } else if (grid[j][p[1]] == 'L') {\n                            break;\n                        }\n                    }\n                }\n            }\n            if (enemyCount == 0) {\n                System.out.println(\"Possible\");\n            } else {\n                System.out.println(\"Impossible\");\n            }\n        }\n    }\n}",
+      "Python3": "import sys\nfrom collections import deque\ninput = sys.stdin.readline\n\nT = int(input())\nfor _ in range(T):\n    N, M = map(int, input().split())\n    grid = [list(input().rstrip()) for _ in range(N)]\n    # Find positions of lasers and enemies\n    laser_count = 0\n    enemy_count = 0\n    lasers = []\n    enemies = []\n    for i in range(N):\n        for j in range(M):\n            if grid[i][j] == 'L':\n                lasers.append((i, j))\n                laser_count += 1\n            elif grid[i][j] == 'E':\n                enemies.append((i, j))\n                enemy_count += 1\n    # Perform BFS traversal for each laser\n    visited = [False] * enemy_count\n    for i in range(laser_count):\n        q = deque([lasers[i]])\n        while q:\n            x, y = q.popleft()\n            # Check left direction\n            for j in range(y - 1, -1, -1):\n                if grid[x][j] == 'E':\n                    visited[enemy_count - 1] = True\n                    enemy_count -= 1\n                elif grid[x][j] == 'L':\n                    break\n            # Check right direction\n            for j in range(y + 1, M):\n                if grid[x][j] == 'E':\n                    visited[enemy_count - 1] = True\n                    enemy_count -= 1\n                elif grid[x][j] == 'L':\n                    break\n            # Check up direction\n            for j in range(x - 1, -1, -1):\n                if grid[j][y] == 'E':\n                    visited[enemy_count - 1] = True\n                    enemy_count -= 1\n                elif grid[j][y] == 'L':\n                    break\n    if enemy_count == 0:\n        print('Possible')\n    else:\n        print('Impossible')",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf8').trim().split('\\n');\nlet idx = 0;\nconst readline = () => input[idx++];\n\nconst T = parseInt(readline());\nfor (let i = 0; i < T; i++) {\n    const [N, M] = readline().split(' ').map(Number);\n    const grid = [];\n    for (let j = 0; j < N; j++) {\n        grid.push(readline().split(''));\n    }\n    // Find positions of lasers and enemies\n    let laserCount = 0;\n    let enemyCount = 0;\n    const lasers = [];\n    const enemies = [];\n    for (let j = 0; j < N; j++) {\n        for (let k = 0; k < M; k++) {\n            if (grid[j][k] === 'L') {\n                lasers.push([j, k]);\n                laserCount++;\n            } else if (grid[j][k] === 'E') {\n                enemies.push([j, k]);\n                enemyCount++;\n            }\n        }\n    }\n    // Perform BFS traversal for each laser\n    const visited = new Array(enemyCount).fill(false);\n    for (let j = 0; j < laserCount; j++) {\n        const q = [[lasers[j][0], lasers[j][1]]];\n        while (q.length > 0) {\n            const [x, y] = q.shift();\n            // Check left direction\n            for (let k = y - 1; k >= 0; k--) {\n                if (grid[x][k] === 'E') {\n                    visited[enemyCount - 1] = true;\n                    enemyCount--;\n                } else if (grid[x][k] === 'L') {\n                    break;\n                }\n            }\n            // Check right direction\n            for (let k = y + 1; k < M; k++) {\n                if (grid[x][k] === 'E') {\n                    visited[enemyCount - 1] = true;\n                    enemyCount--;\n                } else if (grid[x][k] === 'L') {\n                    break;\n                }\n            }\n            // Check up direction\n            for (let k = x - 1; k >= 0; k--) {\n                if (grid[k][y] === 'E') {\n                    visited[enemyCount - 1] = true;\n                    enemyCount--;\n                } else if (grid[k][y] === 'L') {\n                    break;\n                }\n            }\n        }\n    }\n    if (enemyCount === 0) {\n        console.log('Possible');\n    } else {\n        console.log('Impossible');\n    }\n}"
+    }
+  }
+}

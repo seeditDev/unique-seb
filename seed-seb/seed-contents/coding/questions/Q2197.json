@@ -1,0 +1,128 @@
+{
+  "questionId": "Q2197",
+  "title": "Maze of Digits",
+  "slug": "maze-of-digits",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graphs",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Graphs",
+      "BFS",
+      "Shortest Path"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ]
+  },
+  "content": {
+    "problemStatement": "Johnny, a third year computer science student of Byteland University, is rushing with his AI assignment project which is due tomorrow evening. In this project, he has to build a Lego NXT robot which is able to navigate in a maze. Johnny calls his robot WallB (because he likes the movie \"WallE\" very much).\n\nThe maze is an MxN rectangular grid. There are digits 0..9 and obstacles placed at some intersections. Starting at some intersection, in each step, WallB can move to one of the four intersections adjacent to its current position. However, WallB cannot step into an obstacle.\n\n\nA maze intersection with a handwritten digit\n\n\nJohnny needs to program WallB to be able to do the following tasks. First, WallB has to traverse through all reachable intersections of the maze and recognize the digits written at the intersections. Johnny has already finished this part of the assignment since he is very good at image recognition algorithms.\n\n\nWallB needs to scan and recognize all the reachable digits.\n\n\nThe second part of the assignment is harder. Prof. Q will announce a number X. Based on the map of the maze obtained in the first part, Johnny needs to program WallB to find a shortest path that passes through digits which sum up to X.\n\nTo be more precise, suppose in his route, WallB passes through the digits d1, d2, ..., dk in order; then we should have d1 + d2 + ... + dk = X. WallB could pass through a digit more than once.\n\nJohnny gets stuck in this second part of the assignment. Could you write a program to help him?",
+    "constraints": [
+      "1 <= T <= 25",
+      "0 <= M, N <= 100",
+      "1 <= X <= 100",
+      "The number of digits in a maze is at most 100"
+    ],
+    "inputFormat": "The first line contains T, the number of test cases. Each test case consists of two integers M and N representing the size of the maze, followed by M lines describing the maze, and a final line containing the target sum X.",
+    "outputFormat": "For each test case, print the minimum number of steps required to visit the digits that sum up to X. If no such path exists, print -1.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n2 3\n1.#2\n#..#\n*.#.\n3\n2 3\n2.#2\n#..#\n*.#.\n5\n2 3\n2.#2\n#.3#\n*.#.\n5",
+        "output": "8\n-1\n6",
+        "explanation": "For the first test case, the shortest path that sums up to 3 is 1 + 2. For the second test case, there is no path that sums up to 5. For the third test case, the shortest path that sums up to 5 is 2 + 3."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n5 5\n1....\n#..#.\n*.#.#\n#..#.\n1....\n5",
+        "output": "6",
+        "explanation": "The shortest path that sums up to 5 is 1 + 1 + 1 + 1 + 1."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n3 3\n1#1\n#..#\n*.#.\n3",
+        "output": "4",
+        "explanation": "The shortest path that sums up to 3 is 1 + 1 + 1."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1\n*\n1",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "no path",
+        "input": "1\n2 2\n#.#\n#.#\n5",
+        "expectedOutput": "-1",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "single digit",
+        "input": "1\n1 1\n1\n1",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "multiple digits",
+        "input": "1\n2 2\n1.1\n1.1\n4",
+        "expectedOutput": "4",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "large maze",
+        "input": "1\n10 10\n1..........\n...........\n...........\n...........\n...........\n...........\n...........\n...........\n...........\n...........\n10",
+        "expectedOutput": "10",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved using a breadth-first search (BFS) algorithm. We start from the initial position of WallB and explore all possible paths. For each path, we keep track of the current sum of digits and the number of steps taken. If the current sum equals the target sum X, we update the minimum number of steps if necessary.",
+    "timeComplexity": "O(T * M * N * X) per test case, where T is the number of test cases, M and N are the dimensions of the maze, and X is the target sum.",
+    "spaceComplexity": "O(M * N * X) for the visited array and the queue used in BFS.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#define MAX_M 101\n#define MAX_N 101\n#define MAX_X 101\n\nint min_steps = -1;\n\nvoid bfs(int m, int n, char maze[m + 1][n + 1], int x, int i, int j, int current_sum, int steps, int visited[m + 1][n + 1][MAX_X]) {\n    if (i < 0 || i >= m || j < 0 || j >= n || maze[i][j] == '#' || visited[i][j][current_sum]) return;\n    visited[i][j][current_sum] = 1;\n    if (maze[i][j] >= '0' && maze[i][j] <= '9') current_sum += maze[i][j] - '0';\n    if (current_sum > x) return;\n    if (current_sum == x) {\n        if (min_steps == -1 || steps < min_steps) min_steps = steps;\n        return;\n    }\n    bfs(m, n, maze, x, i - 1, j, current_sum, steps + 1, visited);\n    bfs(m, n, maze, x, i + 1, j, current_sum, steps + 1, visited);\n    bfs(m, n, maze, x, i, j - 1, current_sum, steps + 1, visited);\n    bfs(m, n, maze, x, i, j + 1, current_sum, steps + 1, visited);\n}\n\nint main() {\n    int t;\n    scanf(\"%d\", &t);\n    while (t--) {\n        int m, n;\n        scanf(\"%d %d\", &m, &n);\n        char maze[m + 1][n + 1];\n        for (int i = 0; i < m; i++) scanf(\"%s\", maze[i]);\n        int x;\n        scanf(\"%d\", &x);\n        int start_i, start_j;\n        for (int i = 0; i < m; i++) for (int j = 0; j < n; j++) if (maze[i][j] == '*') {\n            start_i = i;\n            start_j = j;\n            break;\n        }\n        int visited[m + 1][n + 1][MAX_X];\n        for (int i = 0; i <= m; i++) for (int j = 0; j <= n; j++) for (int k = 0; k <= x; k++) visited[i][j][k] = 0;\n        min_steps = -1;\n        bfs(m, n, maze, x, start_i, start_j, 0, 0, visited);\n        printf(\"%d\\n\", min_steps);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <queue>\n#include <vector>\nusing namespace std;\n#define MAX_M 101\n#define MAX_N 101\n#define MAX_X 101\n\nstruct State {\n    int i, j, current_sum, steps;\n};\n\nint min_steps = -1;\n\nvoid bfs(int m, int n, vector<vector<char>> &maze, int x, int i, int j, int current_sum, int steps, vector<vector<vector<bool>>> &visited) {\n    if (i < 0 || i >= m || j < 0 || j >= n || maze[i][j] == '#' || visited[i][j][current_sum]) return;\n    visited[i][j][current_sum] = true;\n    if (maze[i][j] >= '0' && maze[i][j] <= '9') current_sum += maze[i][j] - '0';\n    if (current_sum > x) return;\n    if (current_sum == x) {\n        if (min_steps == -1 || steps < min_steps) min_steps = steps;\n        return;\n    }\n    bfs(m, n, maze, x, i - 1, j, current_sum, steps + 1, visited);\n    bfs(m, n, maze, x, i + 1, j, current_sum, steps + 1, visited);\n    bfs(m, n, maze, x, i, j - 1, current_sum, steps + 1, visited);\n    bfs(m, n, maze, x, i, j + 1, current_sum, steps + 1, visited);\n}\n\nint main() {\n    int t;\n    cin >> t;\n    while (t--) {\n        int m, n;\n        cin >> m >> n;\n        vector<vector<char>> maze(m + 1, vector<char>(n + 1));\n        for (int i = 0; i < m; i++) for (int j = 0; j < n; j++) cin >> maze[i][j];\n        int x;\n        cin >> x;\n        int start_i, start_j;\n        for (int i = 0; i < m; i++) for (int j = 0; j < n; j++) if (maze[i][j] == '*') {\n            start_i = i;\n            start_j = j;\n            break;\n        }\n        vector<vector<vector<bool>>> visited(m + 1, vector<vector<bool>>(n + 1, vector<bool>(MAX_X, false)));\n        min_steps = -1;\n        bfs(m, n, maze, x, start_i, start_j, 0, 0, visited);\n        cout << min_steps << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Queue;\nimport java.util.LinkedList;\nimport java.util.Scanner;\n\npublic class Main {\n    static int min_steps = -1;\n    static class State {\n        int i, j, current_sum, steps;\n        State(int i, int j, int current_sum, int steps) {\n            this.i = i;\n            this.j = j;\n            this.current_sum = current_sum;\n            this.steps = steps;\n        }\n    }\n\n    public static void bfs(int m, int n, char[][] maze, int x, int i, int j, int current_sum, int steps, boolean[][][] visited) {\n        if (i < 0 || i >= m || j < 0 || j >= n || maze[i][j] == '#' || visited[i][j][current_sum]) return;\n        visited[i][j][current_sum] = true;\n        if (maze[i][j] >= '0' && maze[i][j] <= '9') current_sum += maze[i][j] - '0';\n        if (current_sum > x) return;\n        if (current_sum == x) {\n            if (min_steps == -1 || steps < min_steps) min_steps = steps;\n            return;\n        }\n        bfs(m, n, maze, x, i - 1, j, current_sum, steps + 1, visited);\n        bfs(m, n, maze, x, i + 1, j, current_sum, steps + 1, visited);\n        bfs(m, n, maze, x, i, j - 1, current_sum, steps + 1, visited);\n        bfs(m, n, maze, x, i, j + 1, current_sum, steps + 1, visited);\n    }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int t = sc.nextInt();\n        while (t-- > 0) {\n            int m = sc.nextInt();\n            int n = sc.nextInt();\n            char[][] maze = new char[m + 1][n + 1];\n            for (int i = 0; i < m; i++) {\n                String s = sc.next();\n                for (int j = 0; j < n; j++) {\n                    maze[i][j] = s.charAt(j);\n                }\n            }\n            int x = sc.nextInt();\n            int start_i = -1, start_j = -1;\n            for (int i = 0; i < m; i++) for (int j = 0; j < n; j++) if (maze[i][j] == '*') {\n                start_i = i;\n                start_j = j;\n                break;\n            }\n            boolean[][][] visited = new boolean[m + 1][n + 1][101];\n            min_steps = -1;\n            bfs(m, n, maze, x, start_i, start_j, 0, 0, visited);\n            System.out.println(min_steps);\n        }\n    }\n}",
+      "Python3": "from collections import deque\n\nmin_steps = -1\n\ndef bfs(m, n, maze, x, i, j, current_sum, steps, visited):\n    if i < 0 or i >= m or j < 0 or j >= n or maze[i][j] == '#' or visited[i][j][current_sum]:\n        return\n    visited[i][j][current_sum] = True\n    if maze[i][j] >= '0' and maze[i][j] <= '9':\n        current_sum += ord(maze[i][j]) - ord('0')\n    if current_sum > x:\n        return\n    if current_sum == x:\n        global min_steps\n        if min_steps == -1 or steps < min_steps:\n            min_steps = steps\n        return\n    bfs(m, n, maze, x, i - 1, j, current_sum, steps + 1, visited)\n    bfs(m, n, maze, x, i + 1, j, current_sum, steps + 1, visited)\n    bfs(m, n, maze, x, i, j - 1, current_sum, steps + 1, visited)\n    bfs(m, n, maze, x, i, j + 1, current_sum, steps + 1, visited)\n\nfor _ in range(int(input())):\n    m, n = map(int, input().split())\n    maze = [list(input()) for _ in range(m)]\n    x = int(input())\n    start_i, start_j = -1, -1\n    for i in range(m):\n        for j in range(n):\n            if maze[i][j] == '*':\n                start_i, start_j = i, j\n                break\n    visited = [[[False for _ in range(101)] for _ in range(n + 1)] for _ in range(m + 1)]\n    min_steps = -1\n    bfs(m, n, maze, x, start_i, start_j, 0, 0, visited)\n    print(min_steps)",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nlet min_steps = -1;\n\nfunction bfs(m, n, maze, x, i, j, current_sum, steps, visited) {\n    if (i < 0 || i >= m || j < 0 || j >= n || maze[i][j] === '#' || visited[i][j][current_sum]) return;\n    visited[i][j][current_sum] = true;\n    if (maze[i][j] >= '0' && maze[i][j] <= '9') current_sum += maze[i][j].charCodeAt(0) - '0'.charCodeAt(0);\n    if (current_sum > x) return;\n    if (current_sum === x) {\n        if (min_steps === -1 || steps < min_steps) min_steps = steps;\n        return;\n    }\n    bfs(m, n, maze, x, i - 1, j, current_sum, steps + 1, visited);\n    bfs(m, n, maze, x, i + 1, j, current_sum, steps + 1, visited);\n    bfs(m, n, maze, x, i, j - 1, current_sum, steps + 1, visited);\n    bfs(m, n, maze, x, i, j + 1, current_sum, steps + 1, visited);\n}\n\nlet t = +lines[idx++];\nwhile (t--) {\n    let [m, n] = lines[idx++].trim().split(' ').map(Number);\n    let maze = [];\n    for (let i = 0; i < m; i++) {\n        maze.push(lines[idx++].trim().split(''));\n    }\n    let x = +lines[idx++];\n    let start_i, start_j;\n    for (let i = 0; i < m; i++) for (let j = 0; j < n; j++) if (maze[i][j] === '*') {\n        start_i = i;\n        start_j = j;\n        break;\n    }\n    let visited = Array(m + 1).fill(0).map(() => Array(n + 1).fill(0).map(() => Array(101).fill(false)));\n    min_steps = -1;\n    bfs(m, n, maze, x, start_i, start_j, 0, 0, visited);\n    console.log(min_steps);\n}"
+    }
+  }
+}

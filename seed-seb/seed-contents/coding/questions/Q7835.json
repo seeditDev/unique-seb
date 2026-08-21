@@ -1,0 +1,142 @@
+{
+  "questionId": "Q7835",
+  "title": "Ada Matrix",
+  "slug": "ada-matrix",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Arrays | Greedy",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Matrix",
+      "Prefix Transpose",
+      "Greedy",
+      "Simulation"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Ad-hoc & Implementation"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef Ada has a matrix with NNN rows (numbered 111 through NNN from top to bottom) and NNN columns (numbered 111 through NNN from left to right) containing all integers between 111 and N2N^2N2 inclusive. For each valid iii and jjj, let's denote the cell in the iii-th row and jjj-th column by (i,j)(i,j)(i,j).\n\nAda wants to sort the matrix in row-major order ― for each valid iii and jjj, she wants the cell (i,j)(i, j)(i,j) to contain the value (i−1)⋅N+j(i-1) \\cdot N + j(i−1)⋅N+j.\n\nIn one operation, Ada should choose an integer LLL and transpose the submatrix between rows 111 and LLL and columns 111 and LLL (inclusive). Formally, for each iii and jjj (1≤i,j≤L1 \\le i, j \\le L1≤i,j≤L), the value in the cell (i,j)(i, j)(i,j) after this operation is equal to the value in (j,i)(j, i)(j,i) before it.\n\nThe initial state of the matrix is chosen in such a way that it is possible to sort it using a finite number of operations (possibly zero). Find the smallest number of operations required to sort the matrix.",
+    "constraints": [
+      "1 ≤ T ≤ 10",
+      "4 ≤ N ≤ 64",
+      "The matrix contains each integer from 1 to N² exactly once.",
+      "The sum of N² over all test files does not exceed 3·10⁵."
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, the first line contains an integer N (4 ≤ N ≤ 64). Then N lines follow, each containing N space‑separated integers – the initial matrix.",
+    "outputFormat": "For each test case output a single integer – the minimum number of prefix‑transpose operations required to transform the matrix into row‑major order.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n4\n1 2 3 4\n5 6 7 8\n9 10 11 12\n13 14 15 16",
+        "output": "0",
+        "explanation": "All diagonal elements already contain their target values, so no operation is needed."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n4\n1 2 3 4\n5 6 7 8\n9 10 11 12\n13 14 16 15",
+        "output": "1",
+        "explanation": "Only the element at (4,4) is wrong (15 instead of 16). One transpose with L=4 fixes it."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n5\n1 2 3 4 5\n6 7 8 9 10\n11 12 14 13 15\n16 17 18 19 20\n21 22 23 25 24",
+        "output": "2",
+        "explanation": "Diagonal mismatches: (3,3)=14 (should be 13) and (5,5)=24 (should be 25). Operations with L=5 and then L=3 resolve both."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The only operation allowed is transposing the top‑left L×L sub‑matrix. After such a transpose, the element that should finally be at position (i,i) (value (i‑1)·N + i) will be correct if and only if it was already correct before the operation. Therefore we can process the matrix from the largest index downwards: for i = N … 1, if the current element at (i,i) is not the target value, we must perform an operation with L = i, which fixes the i‑th row and column simultaneously. Each such mismatch requires exactly one operation and fixing a larger L never harms already fixed smaller diagonals. Hence the answer equals the number of indices i for which a[i][i] ≠ (i‑1)·N + i when scanning from N down to 1.",
+    "timeComplexity": "O(N²) per test case – reading the matrix dominates; the diagonal check is O(N).",
+    "spaceComplexity": "O(N²) to store the matrix (can be reduced to O(N) by reading row by row, but O(N²) fits the limits).",
+    "code": {
+      "C": "#include <stdio.h>\nint main(){int T; if(scanf(\"%d\",&T)!=1) return 0; while(T--){int N; scanf(\"%d\",&N); int a[N][N]; for(int i=0;i<N;i++) for(int j=0;j<N;j++) scanf(\"%d\",&a[i][j]); int ans=0; for(int i=N-1;i>=0;i--){int target=i*N + (i+1); if(a[i][i]!=target) ans++; }\nprintf(\"%d\\n\",ans);\n}\nreturn 0;}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){ios::sync_with_stdio(false);cin.tie(nullptr);\nint T; if(!(cin>>T)) return 0; while(T--){int N;cin>>N; vector<vector<int>> a(N,vector<int>(N)); for(int i=0;i<N;i++) for(int j=0;j<N;j++) cin>>a[i][j]; int ans=0; for(int i=N-1;i>=0;i--){int target=i*N + (i+1); if(a[i][i]!=target) ans++; }\ncout<<ans<<\"\\n\"; }\nreturn 0;}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner(System.in);\n        int T = fs.nextInt();\n        StringBuilder sb = new StringBuilder();\n        while (T-- > 0) {\n            int N = fs.nextInt();\n            int[][] a = new int[N][N];\n            for (int i = 0; i < N; i++)\n                for (int j = 0; j < N; j++)\n                    a[i][j] = fs.nextInt();\n            int ans = 0;\n            for (int i = N - 1; i >= 0; i--) {\n                int target = i * N + (i + 1);\n                if (a[i][i] != target) ans++;\n            }\n            sb.append(ans).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n    static class FastScanner {\n        private final BufferedInputStream in;\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        FastScanner(InputStream is) { in = new BufferedInputStream(is); }\n        private int readByte() throws IOException {\n            if (ptr >= len) { len = in.read(buffer); ptr = 0; if (len <= 0) return -1; }\n            return buffer[ptr++];\n        }\n        int nextInt() throws IOException {\n            int c, sign = 1, val = 0;\n            do { c = readByte(); } while (c <= ' ');\n            if (c == '-') { sign = -1; c = readByte(); }\n            while (c > ' ') { val = val * 10 + (c - '0'); c = readByte(); }\n            return val * sign;\n        }\n    }\n}",
+      "Python3": "import sys\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out = []\n    for _ in range(T):\n        N = int(next(it))\n        # read matrix but we only need diagonal values\n        diag = []\n        for i in range(N):\n            for j in range(N):\n                val = int(next(it))\n                if i == j:\n                    diag.append(val)\n        ans = 0\n        for i in range(N-1, -1, -1):\n            target = i * N + (i + 1)\n            if diag[i] != target:\n                ans += 1\n        out.append(str(ans))\n    sys.stdout.write('\\n'.join(out))\nif __name__ == \"__main__\":\n    solve()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nif (input.length === 0) process.exit(0);\nconst T = Number(input[idx++]);\nlet out = [];\nfor (let t = 0; t < T; t++) {\n  const N = Number(input[idx++]);\n  const diag = new Array(N);\n  for (let i = 0; i < N; i++) {\n    for (let j = 0; j < N; j++) {\n      const val = Number(input[idx++]);\n      if (i === j) diag[i] = val;\n    }\n  }\n  let ans = 0;\n  for (let i = N - 1; i >= 0; i--) {\n    const target = i * N + (i + 1);\n    if (diag[i] !== target) ans++;\n  }\n  out.push(String(ans));\n}\nconsole.log(out.join('\\n'));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

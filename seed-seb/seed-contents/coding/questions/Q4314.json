@@ -1,0 +1,144 @@
+{
+  "questionId": "Q4314",
+  "title": "BST Two Sum",
+  "slug": "bst-two-sum",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Data Structures | Searching",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Binary Search Tree",
+      "Two Sum",
+      "Hash Set",
+      "DFS"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Trees"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Given a binary search tree and an integer SSS, check if there exist two elements in the BST such that their sum is equal to SSS.\n\nFor eg., in the following BST, for given S = 8, there exists few pairs of nodes whose sum is 8:\n\n\n\n\nInput Format\n\nThe first line of the input contains two space separated integers NNN and SSS — the number of nodes in the binary search tree, and the target sum.\nNext N−1N - 1N−1 lines contain three space separated characters pi,ci,Rip_i, c_i, R_ipi​,ci​,Ri​, describing the tree with edge informations - pip_ipi​ is an integer denoting the parent node of the iiith edge, cic_ici​ is child node, and the letter RiR_iRi​ denotes whether the child is left child or right child, it's value is `L` if cic_ici​ is left child of pip_ipi​, else `R`.\n\n\nOutput Format\nPrint `YES`, if there exists at least one such pair of nodes, whose sum is equal to SSS, else `NO`.",
+    "constraints": [
+      "1 ≤ T ≤ 10",
+      "1 ≤ N ≤ 10000",
+      "1 ≤ node values ≤ 100000",
+      "1 ≤ S ≤ 150000",
+      "All node values are distinct",
+      "Ri ∈ {'L','R'}"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case:\n- The first line contains two space‑separated integers N and S, where N is the number of nodes in the BST and S is the target sum.\n- The next N‑1 lines each contain three space‑separated items: pi ci Ri. pi is the value of the parent node, ci is the value of the child node, and Ri is either 'L' (ci is the left child of pi) or 'R' (ci is the right child of pi). All node values are distinct.",
+    "outputFormat": "For each test case output a single line containing \"YES\" if there exist two distinct nodes whose values sum to S, otherwise output \"NO\".",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "5 8\n1 2 L\n1 3 R\n2 4 L\n2 5 R",
+        "output": "YES",
+        "explanation": "There exist pairs of nodes in the binary search tree whose sum is equal to the target sum."
+      },
+      {
+        "id": "sample_2",
+        "input": "3 6\n1 2 L\n1 3 R",
+        "output": "YES",
+        "explanation": "There exist pairs of nodes in the binary search tree whose sum is equal to the target sum."
+      },
+      {
+        "id": "sample_3",
+        "input": "2 4\n1 2 R",
+        "output": "NO",
+        "explanation": "There do not exist pairs of nodes in the binary search tree whose sum is equal to the target sum."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each test case we first reconstruct the BST from the given edges. While building we keep track of every value that appears as a child; the node that never appears as a child is the root. After the tree is built we perform a depth‑first traversal. During the traversal we store all visited node values in an unordered hash set. For the current node with value v we check whether (S‑v) already exists in the set – if it does, a required pair has been found and we can stop. If the whole tree is visited without finding such a complement, the answer is NO. The hash‑set lookup is O(1) on average, so the whole algorithm runs in O(N) time per test case and uses O(N) extra space for the set and the tree nodes.",
+    "timeComplexity": "O(N) per test case, where N is the number of nodes in the BST.",
+    "spaceComplexity": "O(N) for storing the tree nodes and the hash set.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdbool.h>\n\ntypedef struct Node {\n    int val;\n    struct Node *left;\n    struct Node *right;\n} Node;\n\n// Global array to map a value (≤100000) to its node pointer\nstatic Node *nodeMap[100001];\nstatic bool isChild[100001];\n\nNode* getNode(int v) {\n    if (nodeMap[v] == NULL) {\n        nodeMap[v] = (Node*)malloc(sizeof(Node));\n        nodeMap[v]->val = v;\n        nodeMap[v]->left = nodeMap[v]->right = NULL;\n    }\n    return nodeMap[v];\n}\n\nbool dfs(Node* root, int target, int *seen, int *cnt) {\n    if (!root) return false;\n    int need = target - root->val;\n    for (int i = 0; i < *cnt; ++i) if (seen[i] == need) return true;\n    seen[(*cnt)++] = root->val;\n    return dfs(root->left, target, seen, cnt) || dfs(root->right, target, seen, cnt);\n}\n\nint main() {\n    int T; if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        int N, S; scanf(\"%d %d\", &N, &S);\n        // reset maps for this test case\n        for (int i = 0; i <= 100000; ++i) {\n            nodeMap[i] = NULL; isChild[i] = false;\n        }\n        for (int i = 0; i < N-1; ++i) {\n            int p, c; char dir; scanf(\"%d %d %c\", &p, &c, &dir);\n            Node *parent = getNode(p);\n            Node *child  = getNode(c);\n            if (dir == 'L') parent->left = child; else parent->right = child;\n            isChild[c] = true;\n        }\n        // find root (the node that never appeared as child)\n        Node *root = NULL;\n        for (int i = 0; i <= 100000; ++i) {\n            if (nodeMap[i] && !isChild[i]) { root = nodeMap[i]; break; }\n        }\n        int seen[10000]; int cnt = 0;\n        bool ok = dfs(root, S, seen, &cnt);\n        printf(ok ? \"YES\\n\" : \"NO\\n\");\n        // free allocated nodes (optional for contest environment)\n        for (int i = 0; i <= 100000; ++i) if (nodeMap[i]) free(nodeMap[i]);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nstruct Node{int val; Node *left,*right; Node(int v):val(v),left(nullptr),right(nullptr){}};\n\nNode* getNode(unordered_map<int,Node*>& mp,int v){auto it=mp.find(v);if(it!=mp.end())return it->second;Node* nd=new Node(v);mp[v]=nd;return nd;}\n\nbool dfs(Node* cur,int target,unordered_set<int>& seen){if(!cur) return false;int need=target-cur->val;if(seen.count(need))return true;seen.insert(cur->val);return dfs(cur->left,target,seen)||dfs(cur->right,target,seen);} \n\nint main(){ios::sync_with_stdio(false);cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0; while(T--){int N,S;cin>>N>>S; unordered_map<int,Node*> mp; vector<int> children; children.reserve(N);\n        for(int i=0;i<N-1;++i){int p,c;char dir;cin>>p>>c>>dir;Node* parent=getNode(mp,p);Node* child=getNode(mp,c);if(dir=='L')parent->left=child;else parent->right=child;children.push_back(c);} \n        Node* root=nullptr; for(auto &kv:mp){int v=kv.first; if(find(children.begin(),children.end(),v)==children.end()){root=kv.second;break;}}\n        unordered_set<int> seen; bool ok=dfs(root,S,seen); cout<<(ok?\"YES\":\"NO\")<<'\\n';\n        // free memory\n        for(auto &kv:mp) delete kv.second;\n    }\n    return 0; }\n",
+      "Java": "import java.io.*;\nimport java.util.*;\n\nclass Node {\n    int val;\n    Node left, right;\n    Node(int v){val=v;}\n}\n\npublic class Main {\n    static Node getNode(Map<Integer, Node> map, int v) {\n        return map.computeIfAbsent(v, k -> new Node(k));\n    }\n\n    static boolean dfs(Node cur, int target, Set<Integer> seen) {\n        if (cur == null) return false;\n        int need = target - cur.val;\n        if (seen.contains(need)) return true;\n        seen.add(cur.val);\n        return dfs(cur.left, target, seen) || dfs(cur.right, target, seen);\n    }\n\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st = new StringTokenizer(br.readLine());\n        int T = Integer.parseInt(st.nextToken());\n        while (T-- > 0) {\n            st = new StringTokenizer(br.readLine());\n            int N = Integer.parseInt(st.nextToken());\n            int S = Integer.parseInt(st.nextToken());\n            Map<Integer, Node> map = new HashMap<>();\n            Set<Integer> childSet = new HashSet<>();\n            for (int i = 0; i < N - 1; i++) {\n                st = new StringTokenizer(br.readLine());\n                int p = Integer.parseInt(st.nextToken());\n                int c = Integer.parseInt(st.nextToken());\n                char dir = st.nextToken().charAt(0);\n                Node parent = getNode(map, p);\n                Node child = getNode(map, c);\n                if (dir == 'L') parent.left = child; else parent.right = child;\n                childSet.add(c);\n            }\n            Node root = null;\n            for (int v : map.keySet()) {\n                if (!childSet.contains(v)) { root = map.get(v); break; }\n            }\n            Set<Integer> seen = new HashSet<>();\n            boolean ok = dfs(root, S, seen);\n            System.out.println(ok ? \"YES\" : \"NO\");\n        }\n    }\n}",
+      "Python3": "import sys\n\ndef get_node(nodes, v):\n    if v not in nodes:\n        nodes[v] = [v, None, None]  # [val, left, right]\n    return nodes[v]\n\ndef dfs(node, target, seen):\n    if node is None:\n        return False\n    val, left, right = node\n    need = target - val\n    if need in seen:\n        return True\n    seen.add(val)\n    return dfs(left, target, seen) or dfs(right, target, seen)\n\ndef solve():\n    data = sys.stdin.read().strip().splitlines()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out = []\n    for _ in range(T):\n        N, S = map(int, next(it).split())\n        nodes = {}\n        children = set()\n        for _ in range(N-1):\n            p, c, d = next(it).split()\n            p = int(p); c = int(c)\n            parent = get_node(nodes, p)\n            child = get_node(nodes, c)\n            if d == 'L':\n                parent[1] = child\n            else:\n                parent[2] = child\n            children.add(c)\n        root = None\n        for v in nodes:\n            if v not in children:\n                root = nodes[v]\n                break\n        seen = set()\n        ok = dfs(root, S, seen)\n        out.append('YES' if ok else 'NO')\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nfunction getNode(map, v) {\n  if (!map.has(v)) map.set(v, {val: v, left: null, right: null});\n  return map.get(v);\n}\nfunction dfs(node, target, set) {\n  if (!node) return false;\n  const need = target - node.val;\n  if (set.has(need)) return true;\n  set.add(node.val);\n  return dfs(node.left, target, set) || dfs(node.right, target, set);\n}\nconst T = parseInt(lines[idx++]);\nlet outputs = [];\nfor (let t = 0; t < T; ++t) {\n  const [Nstr, Sstr] = lines[idx++].trim().split(/\\s+/);\n  const N = parseInt(Nstr), S = parseInt(Sstr);\n  const map = new Map();\n  const childSet = new Set();\n  for (let i = 0; i < N - 1; ++i) {\n    const [pStr, cStr, dir] = lines[idx++].trim().split(/\\s+/);\n    const p = parseInt(pStr), c = parseInt(cStr);\n    const parent = getNode(map, p);\n    const child = getNode(map, c);\n    if (dir === 'L') parent.left = child; else parent.right = child;\n    childSet.add(c);\n  }\n  let root = null;\n  for (let [val, node] of map) {\n    if (!childSet.has(val)) { root = node; break; }\n  }\n  const set = new Set();\n  const ok = dfs(root, S, set);\n  outputs.push(ok ? 'YES' : 'NO');\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

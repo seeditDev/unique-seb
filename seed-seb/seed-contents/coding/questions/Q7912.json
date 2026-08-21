@@ -1,0 +1,125 @@
+{
+  "questionId": "Q7912",
+  "title": "String Operations",
+  "slug": "string-operations",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "String Transformation",
+      "Equivalence Classes",
+      "Graph Theory",
+      "Union‑Find"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Strings"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Two strings AAA and BBB are equivalent (denoted by A∼BA \\sim BA∼B) if they have the same lengths and AAA can be transformed into BBB by performing the following operation zero or more times: choose a substring of AAA which contains '1' an even number of times and reverse this substring.\n\nYou are given a binary string SSS. Find the number of different equivalence classes of the substrings of this string. In other words, find the smallest possible size of a set C\\mathcal{C}C of binary strings with the following property: for each non-empty string RRR which is a substring of SSS (including SSS itself), there is a string X∈CX \\in \\mathcal{C}X∈C such that R∼XR \\sim XR∼X.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= |S| <= 1000",
+      "S consists only of characters '0' and '1'"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Then T lines follow, each containing a binary string S (1 ≤ |S| ≤ 1000).",
+    "outputFormat": "For each test case output a single integer – the number of equivalence classes among all non‑empty substrings of S.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "10\n00000\n10001\n10101\n01111\n11001\n01101\n10110\n10010\n10111\n11001",
+        "output": "5\n11\n8\n9\n12\n10\n10\n11\n11\n12",
+        "explanation": ""
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For every substring we build a node in a graph. Two nodes are connected if one can be obtained from the other by a single allowed operation (reversing a substring that contains an even number of '1's). The relation is transitive, so each connected component of this graph is an equivalence class. Because the length of S is at most 1000, the total number of substrings is at most 500 500, which is small enough to build the graph explicitly.\n\nWe enumerate all substrings, store them in a vector and assign each a unique id. For each substring we try all possible intervals [l, r] inside it (O(L^2) per substring, where L is its length). If the interval contains an even number of '1's we reverse it, obtain the resulting string, look up its id with a hash‑map and unite the two ids in a Disjoint Set Union (DSU). After processing all substrings, the number of different DSU roots equals the number of equivalence classes.\n\nComplexities:\n- Enumerating all substrings: O(N^2).\n- For a substring of length L we examine O(L^2) intervals, so the total work is Σ_{L=1}^{N} (N‑L+1)·L^2 = O(N^4) in the worst case. With N ≤ 1000 this is too large, therefore we optimise:\n  * For each substring we pre‑compute the prefix sum of '1's, allowing O(1) query of the number of '1's in any interval.\n  * We only need to consider intervals whose length is at least 2, because reversing a length‑1 interval does nothing.\n  * The crucial observation is that reversing an interval with an even number of '1's does not change the parity of the number of '1's in any prefix outside the interval, therefore the only information that matters for connectivity is the pair (length, total number of '1's). Using this observation we can prove that:\n      – If the total number of '1's in a substring is even, all substrings of the same length and the same number of '1's belong to one class.\n      – If the total number of '1's is odd, the substring cannot be changed at all; each distinct string forms its own class.\n  * Consequently we do not need the explicit graph. We only have to count, for every length L, how many different values of the number of '1's (k) appear among substrings of length L, and for each (L, k) we add 1 if k is even, otherwise we add the number of distinct strings that have exactly k ones.\n\nImplementation steps for each test case:\n1. Pre‑compute prefix sums of '1's.\n2. For every length L from 1 to N:\n   a. Use a map cntEven[L] to store the set of k (0 ≤ k ≤ L) that appear with even k.\n   b. Use a map cntOdd[L] (key = k) to store a hash‑set of the actual substrings that have odd k.\n   c. Iterate over all start positions i (0‑based). Let j = i+L‑1. Compute k = ones in S[i..j] via prefix sums.\n      – If k is even, insert k into cntEven[L].\n      – If k is odd, insert the substring S[i..j] into cntOdd[L][k].\n3. The answer is sum over L of (size of cntEven[L]) + Σ_{k odd} (size of cntOdd[L][k]).\n\nThe algorithm runs in O(N^2) time (enumerating all substrings once) and uses O(N^2) memory for the hash‑sets of odd‑k substrings, which fits the limits (N ≤ 1000 ⇒ at most 500 500 substrings).",
+    "timeComplexity": "O(N^2) per test case",
+    "spaceComplexity": "O(N^2) in the worst case (stores all odd‑k substrings)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n#include <stdlib.h>\n#include <stdbool.h>\n\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

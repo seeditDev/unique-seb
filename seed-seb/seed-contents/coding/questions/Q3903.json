@@ -1,0 +1,110 @@
+{
+  "questionId": "Q3903",
+  "title": "DP Made Easy",
+  "slug": "dp-made-easy",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-03",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Convex Hull Trick",
+      "Dijkstra",
+      "Undirected Weighted Graph",
+      "State Expansion",
+      "Quadratic DP",
+      "Dynamic Programming"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ]
+  },
+  "content": {
+    "problemStatement": "**DP[i][j]**\n**N****\u0192i(x)****=****ai*x2 + bi*x1 + ci****ai &gt;= bi &gt;= ci &gt;= 0**\n\n\nTransition of the DP in 1st dimension is given as some transition pairs with a cost associated with it. \n\nFor example, given **i** one can transit to **v1, v2, v3 ... vx** with cost **w1, w2, w3 ... wx** respectively then\n\n**DP[i][j] = min( DP[vk][j] + wk )** \u2200 **k &lt;= x** and \u2200 **j**.\n\nIf it is possible to transit from **i** to **vk** with cost **wk** then it is also possible to transit from **vk** to **i**  with cost **wk**.\n\nTransition in 2nd dimension is given as -\n\n**DP[i][j] = min ( DP[i][j-d] + **\u0192i(d)** )** \u2200 **d &lt;= j-1**.\n\n\n\n**DP[1][1] = 0.**\n\n**Q****\u0192i(x)****i ai bi ci****ai &gt;= bi &gt;= ci &gt;= 0****\u0192i(x)****=****ai*x2 + bi*x1 + ci**\n**DP[N][N]**",
+    "constraints": [
+      "1 \u2264 N \u2264 100000",
+      "0 \u2264 M \u2264 400000",
+      "1 \u2264 Q \u2264 100000",
+      "0 \u2264 c_i \u2264 b_i \u2264 a_i \u2264 100000",
+      "All edge costs w are non\u2011negative",
+      "The graph may be disconnected \u2013 in that case DP[i][j] is considered infinite and you should output -1"
+    ],
+    "inputFormat": "The first line contains three integers N, M and Q \u2013 the number of vertices, the number of undirected edges and the number of queries.\\nThe next M lines each contain three integers u, v and w (1 \u2264 u, v \u2264 N, 0 \u2264 w \u2264 10^9) describing an undirected edge between u and v with cost w.\\nThe following N lines each contain three integers a_i, b_i and c_i (0 \u2264 c_i \u2264 b_i \u2264 a_i \u2264 10^5) \u2013 the coefficients of the quadratic function f_i(x) = a_i\u00b7x^2 + b_i\u00b7x + c_i.\\nEach of the next Q lines contains two integers i and j (1 \u2264 i \u2264 N, 1 \u2264 j \u2264 N) \u2013 a query asking for the minimum possible value of DP[i][j] defined below.",
+    "outputFormat": "For each query output a single line containing the integer DP[i][j] \u2013 the minimum cost to reach vertex i with exactly j \u201csteps\u201d according to the rules described in the statement.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The definition of DP can be interpreted as a shortest\u2011path problem on an expanded state graph. A state is a pair (v, k) where v is a vertex of the original graph and k (1 \u2264 k \u2264 N) is the current value of the second dimension. From a state (v, k) we have two kinds of outgoing edges:\\n1. **Graph move** \u2013 for every original edge (v, to, w) we can go to (to, k) with additional cost w. This does not change the second dimension.\\n2. **Stay move** \u2013 we may stay at the same vertex and increase the second dimension by any d \u2265 1 (as long as k+d \u2264 N). The cost of such a move is f_v(d). Formally we can go from (v, k) to (v, k+d) with cost f_v(d).\\nThe start state is (1, 1) with cost 0 (DP[1][1] = 0). The answer for a query (i, j) is the shortest distance from (1,1) to (i, j) in this expanded graph.\\nBecause N can be as large as 10^5 a na\u00efve expansion (O(N^2) states) is impossible. The crucial observation is that the \u201cstay\u201d edges of a vertex form a **convex** cost function (quadratic with non\u2011negative coefficients). For a fixed vertex v the transition DP[v][k] \u2192 DP[v][k+d] = DP[v][k] + f_v(d) can be processed for all k in O(N) total using the **Convex Hull Trick (CHT)** (or Li Chao segment tree) because f_v(d) = a_v\u00b7d^2 + b_v\u00b7d + c_v is a convex parabola.\\nThe overall algorithm works as follows:\\n* Run Dijkstra on the state graph, but we never materialise all stay\u2011edges. When a state (v, k) is extracted from the priority queue we already know the optimal DP[v][k].\\n* From (v, k) we relax all graph\u2011move neighbours (to, k) in the usual way (O(deg(v))).\\n* To relax stay\u2011moves we keep, for each vertex v, a **Li Chao segment tree** that stores the family of functions g_{k}(x) = DP[v][k] + f_v(x\u2011k) for all already processed k. Querying the tree at x = k' gives the best way to reach (v, k') by staying at v some number of steps after having reached (v, k). Whenever DP[v][k] becomes final we insert the line representing the parabola f_v shifted by k into the Li Chao tree of v. This makes every stay\u2011transition processed in O(log N) time.\\n* The algorithm stops when the priority queue becomes empty or when all queried states have been settled.\\nComplexity analysis: each vertex\u2011state is extracted at most once, giving O(N log N) extractions. For each extraction we relax all incident graph edges \u2013 total O(M log N). Each insertion/query on a Li Chao tree costs O(log N), and we perform at most one insertion per extracted state and at most one query per query request, so the total extra cost is O((N+Q) log N). The overall time complexity is therefore O((M + N + Q) log N). The memory consumption is O(N + M + Q) plus the Li Chao trees (each tree stores at most the number of extracted states of its vertex, i.e. O(N) total nodes).",
+    "timeComplexity": "O((M + N + Q) \u00b7 log N)",
+    "spaceComplexity": "O(N + M + Q)",
+    "code": {
+      "C": ""
+    }
+  }
+}

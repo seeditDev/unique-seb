@@ -1,0 +1,129 @@
+{
+  "questionId": "Q1173",
+  "title": "Easy Tiling",
+  "slug": "easy-tiling",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Fast Doubling",
+      "Matrix Exponentiation",
+      "Modulo Arithmetic",
+      "Dynamic Programming",
+      "Fibonacci"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ]
+  },
+  "content": {
+    "problemStatement": "We wish to tile a grid of size Nx2 with rectangles (dominoes) of 2x1 (in either orientation).\n\nWrite a program that takes input N and outputs the number of different ways to tile the grid. Output the ans mod 10^9 + 7",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 1000",
+      "All values are integers"
+    ],
+    "inputFormat": "First line contains an integer T, the number of test cases. Each of the next T lines contains a single integer N denoting the length of the board (grid size N\u00d72).",
+    "outputFormat": "For each test case, output on a new line the number of ways to tile an N\u00d72 board with 2\u00d71 dominoes, modulo 1000000007.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\\n1\\n2",
+        "output": "1\\n2",
+        "explanation": "For N=1 there is only one vertical domino. For N=2 there are two ways: two vertical dominoes or two horizontal dominoes stacked."
+      },
+      {
+        "id": "sample_2",
+        "input": "3\\n3\\n4\\n5",
+        "output": "3\\n5\\n8",
+        "explanation": "The numbers follow the Fibonacci sequence shifted by one: f(3)=3, f(4)=5, f(5)=8."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\\n10",
+        "output": "89",
+        "explanation": "f(10)=Fib(11)=89."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\\n1000",
+        "expectedOutput": "205686782",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform values",
+        "input": "5\\n5\\n5\\n5\\n5\\n5",
+        "expectedOutput": "8\\n8\\n8\\n8\\n8",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky edge (large N repeated)",
+        "input": "3\\n1000\\n999\\n998",
+        "expectedOutput": "205686782\\n517691607\\n687995182",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "mixed/general stress",
+        "input": "4\\n1\\n2\\n10\\n1000",
+        "expectedOutput": "1\\n2\\n89\\n205686782",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Tiling an N\u00d72 board with 2\u00d71 dominoes is equivalent to counting the number of ways to cover a length N with tiles of size 1 (vertical domino) and 2 (two horizontal dominoes). The recurrence is f(N)=f(N-1)+f(N-2) with base f(0)=1, f(1)=1, which yields the (N+1)\u2011th Fibonacci number. Hence the answer is Fib(N+1). To handle N up to 1000 under modulo 1e9+7 efficiently, we compute Fibonacci using fast doubling (O(log N) per test case).",
+    "timeComplexity": "O(log N) per test case, O(T\u00b7log N) total.",
+    "spaceComplexity": "O(1) auxiliary space (recursion depth O(log N)).",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdint.h>\n\nconst int64_t MOD = 1000000007LL;\n\n// Returns pair (F(n), F(n+1))\nvoid fibDoubling(long long n, int64_t *fn, int64_t *fn1) {\n    if (n == 0) {\n        *fn = 0;\n        *fn1 = 1;\n        return;\n    }\n    int64_t a, b;\n    fibDoubling(n >> 1, &a, &b); // a = F(k), b = F(k+1)\n    int64_t c = (a * ((2 * b % MOD - a + MOD) % MOD)) % MOD; // F(2k)\n    int64_t d = ((a * a) % MOD + (b * b) % MOD) % MOD;      // F(2k+1)\n    if ((n & 1) == 0) {\n        *fn = c;\n        *fn1 = d;\n    } else {\n        *fn = d;\n        *fn1 = (c + d) % MOD;\n    }\n}\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        long long N;\n        scanf(\"%lld\", &N);\n        int64_t fn, fn1;\n        fibDoubling(N + 1, &fn, &fn1);\n        printf(\"%lld\\n\", fn);\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nconst long long MOD = 1000000007LL;\n\npair<long long,long long> fibDoubling(long long n){\n    if(n==0) return {0,1};\n    auto p = fibDoubling(n>>1);\n    long long a = p.first;   // F(k)\n    long long b = p.second;  // F(k+1)\n    long long c = (a * ((2*b % MOD - a + MOD) % MOD)) % MOD; // F(2k)\n    long long d = ((a*a)%MOD + (b*b)%MOD) % MOD;           // F(2k+1)\n    if((n&1)==0) return {c,d};\n    else return {d,(c+d)%MOD};\n}\n\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T;cin>>T;\n    while(T--){\n        long long N;cin>>N;\n        cout<<fibDoubling(N+1).first<<\"\\n\";\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    static final long MOD = 1_000_000_007L;\n\n    static long[] fibDoubling(long n) {\n        if (n == 0) return new long[]{0, 1};\n        long[] p = fibDoubling(n >> 1);\n        long a = p[0]; // F(k)\n        long b = p[1]; // F(k+1)\n        long c = (a * ((2 * b % MOD - a + MOD) % MOD)) % MOD; // F(2k)\n        long d = ((a * a) % MOD + (b * b) % MOD) % MOD;      // F(2k+1)\n        if ((n & 1) == 0) return new long[]{c, d};\n        else return new long[]{d, (c + d) % MOD};\n    }\n\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder sb = new StringBuilder();\n        int T = Integer.parseInt(br.readLine().trim());\n        for (int t = 0; t < T; t++) {\n            long N = Long.parseLong(br.readLine().trim());\n            long ans = fibDoubling(N + 1)[0]; // Fib(N+1)\n            sb.append(ans).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}\n",
+      "Python3": "import sys\nMOD = 1000000007\n\ndef fib_doubling(n):\n    if n == 0:\n        return (0, 1)\n    a, b = fib_doubling(n >> 1)\n    c = (a * ((2 * b % MOD - a + MOD) % MOD)) % MOD\n    d = ((a * a) % MOD + (b * b) % MOD) % MOD\n    if n & 1:\n        return (d, (c + d) % MOD)\n    else:\n        return (c, d)\n\ndef main():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out = []\n    for _ in range(T):\n        N = int(next(it))\n        out.append(str(fib_doubling(N + 1)[0]))\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    main()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst MOD = 1000000007n;\nfunction fibDoubling(n) {\n  if (n === 0n) return [0n, 1n];\n  const [a, b] = fibDoubling(n >> 1n);\n  const c = (a * ((2n * b % MOD - a + MOD) % MOD)) % MOD;\n  const d = ((a * a) % MOD + (b * b) % MOD) % MOD;\n  if (n & 1n) return [d, (c + d) % MOD];\n  else return [c, d];\n}\nconst T = Number(input[idx++]);\nlet out = [];\nfor (let t = 0; t < T; t++) {\n  const N = BigInt(input[idx++]);\n  out.push(fibDoubling(N + 1n)[0].toString());\n}\nconsole.log(out.join('\\n'));\n"
+    }
+  }
+}

@@ -1,0 +1,218 @@
+{
+  "questionId": "Q11825",
+  "title": "Number of operations to make network connected",
+  "slug": "number-of-operations-to-make-network-connected",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Disjoint Set Union",
+      "Graph Connectivity"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given a graph with n vertices and m edges. You can remove one edge from anywhere and add that edge between any two vertices in one operation. Find the minimum number of operations that will be required to make the graph connected. If it is not possible to make the graph connected, return -1.",
+    "constraints": [
+      "1 <= n <= 10^5",
+      "0 <= connections.length <= n * (n - 1) / 2",
+      "0 <= connections[i][0], connections[i][1] < n",
+      "connections[i][0] != connections[i][1]"
+    ],
+    "inputFormat": "The input will contain two parameters: n (the number of vertices) and connections (a 2D array representing the edges in the graph).",
+    "outputFormat": "The output will be the minimum number of operations required to make the graph connected. If it's not possible to make the graph connected, return -1.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": {
+          "n": 1,
+          "connections": []
+        },
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": {
+          "n": 10,
+          "connections": [
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              2,
+              3
+            ],
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              5
+            ],
+            [
+              5,
+              6
+            ],
+            [
+              6,
+              7
+            ],
+            [
+              7,
+              8
+            ],
+            [
+              8,
+              9
+            ]
+          ]
+        },
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": {
+          "n": 5,
+          "connections": [
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              2,
+              3
+            ],
+            [
+              3,
+              4
+            ]
+          ]
+        },
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": {
+          "n": 5,
+          "connections": [
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              2,
+              3
+            ]
+          ]
+        },
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": {
+          "n": 6,
+          "connections": [
+            [
+              0,
+              1
+            ],
+            [
+              0,
+              2
+            ],
+            [
+              0,
+              3
+            ],
+            [
+              1,
+              4
+            ]
+          ]
+        },
+        "expectedOutput": "1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Use Disjoint Set Union to keep track of connected components and calculate the minimum number of operations required to connect all components.",
+    "timeComplexity": "O(n + m * alpha(n))",
+    "spaceComplexity": "O(n)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\n// Define structure for Disjoint Set Union\ntypedef struct {\n    int* parent;\n    int* rank;\n    int size;\n} DSU;\n\n// Function to create a new DSU\nDSU* createDSU(int size) {\n    DSU* dsu = (DSU*)malloc(sizeof(DSU));\n    dsu->parent = (int*)malloc(size * sizeof(int));\n    dsu->rank = (int*)malloc(size * sizeof(int));\n    dsu->size = size;\n    for (int i = 0; i < size; i++) {\n        dsu->parent[i] = i;\n        dsu->rank[i] = 0;\n    }\n    return dsu;\n}\n\n// Function to find the parent of a node\nint find(DSU* dsu, int node) {\n    if (dsu->parent[node] != node) {\n        dsu->parent[node] = find(dsu, dsu->parent[node]);\n    }\n    return dsu->parent[node];\n}\n\n// Function to union two nodes\nvoid unionDSU(DSU* dsu, int node1, int node2) {\n    int parent1 = find(dsu, node1);\n    int parent2 = find(dsu, node2);\n    if (parent1 != parent2) {\n        if (dsu->rank[parent1] < dsu->rank[parent2]) {\n            dsu->parent[parent1] = parent2;\n        } else if (dsu->rank[parent1] > dsu->rank[parent2]) {\n            dsu->parent[parent2] = parent1;\n        } else {\n            dsu->parent[parent2] = parent1;\n            dsu->rank[parent1]++;\n        }\n    }\n}\n\n// Function to calculate the minimum number of operations\nint minOperations(int n, int** connections, int connectionsSize) {\n    DSU* dsu = createDSU(n);\n    for (int i = 0; i < connectionsSize; i++) {\n        unionDSU(dsu, connections[i][0], connections[i][1]);\n    }\n    int count = 0;\n    for (int i = 0; i < n; i++) {\n        if (dsu->parent[i] == i) {\n            count++;\n        }\n    }\n    if (connectionsSize < n - 1) {\n        return -1;\n    }\n    return count - 1;\n}\n\nint main() {\n    int n = 6;\n    int connectionsSize = 4;\n    int** connections = (int**)malloc(connectionsSize * sizeof(int*));\n    for (int i = 0; i < connectionsSize; i++) {\n        connections[i] = (int*)malloc(2 * sizeof(int));\n    }\n    connections[0][0] = 0; connections[0][1] = 1;\n    connections[1][0] = 0; connections[1][1] = 2;\n    connections[2][0] = 0; connections[2][1] = 3;\n    connections[3][0] = 1; connections[3][1] = 4;\n    printf(\"%d\\n\", minOperations(n, connections, connectionsSize));\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\n// Class to manage Disjoint Set Union\nclass DSU {\npublic:\n    vector<int> parent, rank;\n\n    // Initialize DSU with n nodes\n    DSU(int n) {\n        parent.resize(n);\n        rank.resize(n, 0);\n\n        // Initially, every node is its own parent\n        for(int i = 0; i < n; i++) {\n            parent[i] = i;\n        }\n    }\n\n    // Find with path compression\n    int find(int x) {\n        if(parent[x] != x)\n            parent[x] = find(parent[x]);\n        return parent[x];\n    }\n\n    // Union by rank\n    void unite(int x, int y) {\n        int px = find(x);\n        int py = find(y);\n\n        if(px == py) return;\n\n        if(rank[px] < rank[py])\n            parent[px] = py;\n        else if(rank[px] > rank[py])\n            parent[py] = px;\n        else {\n            parent[py] = px;\n            rank[px]++;\n        }\n    }\n};\n\n// Solution class to calculate operations\nclass Solution {\npublic:\n    // Function to find minimum operations to make the graph connected\n    int makeConnected(int n, vector<vector<int>>& connections) {\n        // If edges are less than n - 1, we can't connect\n        if(connections.size() < n - 1) return -1;\n\n        DSU dsu(n);\n\n        // Connect components\n        for(auto& edge : connections) {\n            dsu.unite(edge[0], edge[1]);\n        }\n\n        // Count number of unique components\n        unordered_set<int> components;\n        for(int i = 0; i < n; i++) {\n            components.insert(dsu.find(i));\n        }\n\n        // Return number of operations needed\n        return components.size() - 1;\n    }\n};\n\n// Driver code\nint main() {\n    int n = 6;\n    vector<vector<int>> connections = {{0,1},{0,2},{0,3},{1,4}};\n    Solution sol;\n    cout << sol.makeConnected(n, connections) << endl;\n    return 0;\n}",
+      "Java": "import java.util.*;\n\nclass Solution {\n    // Find parent with path compression\n    private int find(int[] parent, int x) {\n        if (parent[x] != x)\n            parent[x] = find(parent, parent[x]);\n        return parent[x];\n    }\n\n    // Union by rank\n    private void union(int[] parent, int[] rank, int x, int y) {\n        int px = find(parent, x);\n        int py = find(parent, y);\n        if (px == py) return;\n\n        if (rank[px] < rank[py]) parent[px] = py;\n        else if (rank[px] > rank[py]) parent[py] = px;\n        else {\n            parent[py] = px;\n            rank[px]++;\n        }\n    }\n    \n    // Function to find minimum operations to make the graph connected\n    public int makeConnected(int n, int[][] connections) {\n        // If not enough edges, return -1\n        if (connections.length < n - 1) return -1;\n\n        int[] parent = new int[n];\n        int[] rank = new int[n];\n\n        // Initialize parent\n        for (int i = 0; i < n; i++) parent[i] = i;\n\n        // Union all edges\n        for (int[] edge : connections)\n            union(parent, rank, edge[0], edge[1]);\n\n        // Count unique parents\n        Set<Integer> components = new HashSet<>();\n        for (int i = 0; i < n; i++)\n            components.add(find(parent, i));\n\n        return components.size() - 1;\n    }\n}\n\n// Main class\npublic class Main {\n    public static void main(String[] args) {\n        Solution sol = new Solution();\n        int[][] connections = {{0,1},{0,2},{0,3},{1,4}};\n        int n = 6;\n        System.out.println(sol.makeConnected(n, connections));\n    }\n}",
+      "Python3": "class DSU:\n    def __init__(self, n):\n        # Initialize parent and rank\n        self.parent = [i for i in range(n)]\n        self.rank = [0] * n\n\n    # Find with path compression\n    def find(self, x):\n        if self.parent[x] != x:\n            self.parent[x] = self.find(self.parent[x])\n        return self.parent[x]\n\n    # Union by rank\n    def union(self, x, y):\n        px = self.find(x)\n        py = self.find(y)\n        if px == py:\n            return\n        if self.rank[px] < self.rank[py]:\n            self.parent[px] = py\n        elif self.rank[px] > self.rank[py]:\n            self.parent[py] = px\n        else:\n            self.parent[py] = px\n            self.rank[px] += 1\n\nclass Solution:\n    # Function to find minimum operations to make the graph connected\n    def makeConnected(self, n, connections):\n        # If not enough edges\n        if len(connections) < n - 1:\n            return -1\n\n        dsu = DSU(n)\n\n        # Union edges\n        for u, v in connections:\n            dsu.union(u, v)\n\n        # Count unique components\n        components = set()\n        for i in range(n):\n            components.add(dsu.find(i))\n\n        return len(components) - 1\n\n# Driver code\nn = 6\nconnections = [[0,1],[0,2],[0,3],[1,4]]\nsol = Solution()\nprint(sol.makeConnected(n, connections))",
+      "JavaScript": "class DSU {\n    constructor(n) {\n        this.parent = Array(n).fill(0).map((_, i) => i);\n        this.rank = Array(n).fill(0);\n    }\n\n    // Find with path compression\n    find(x) {\n        if (this.parent[x] !== x)\n            this.parent[x] = this.find(this.parent[x]);\n        return this.parent[x];\n    }\n\n    // Union by rank\n    union(x, y) {\n        let px = this.find(x);\n        let py = this.find(y);\n        if (px === py) return;\n\n        if (this.rank[px] < this.rank[py]) this.parent[px] = py;\n        else if (this.rank[px] > this.rank[py]) this.parent[py] = px;\n        else {\n            this.parent[py] = px;\n            this.rank[px]++;\n        }\n    }\n}\n\nclass Solution {\n    // Function to find minimum operations to make the graph connected\n    makeConnected(n, connections) {\n        // If not enough edges\n        if (connections.length < n - 1) return -1;\n\n        const dsu = new DSU(n);\n\n        // Union all edges\n        for (let [u, v] of connections) {\n            dsu.union(u, v);\n        }\n\n        // Count unique components\n        const components = new Set();\n        for (let i = 0; i < n; i++) {\n            components.add(dsu.find(i));\n        }\n\n        return components.size - 1;\n    }\n}\n\n// Driver code\nconst n = 6;\nconst connections = [[0,1],[0,2],[0,3],[1,4]];\nconst sol = new Solution();\nconsole.log(sol.makeConnected(n, connections));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

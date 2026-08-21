@@ -1,0 +1,261 @@
+{
+  "questionId": "Q4435",
+  "title": "Customer Email Domain Analysis",
+  "slug": "customer-email-domain-analysis",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-12",
+  "metadata": {
+    "category": "Implementation",
+    "difficulty": "Easy",
+    "isPremium": false,
+    "tags": [
+      "String parsing",
+      "Simple filtering"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Two Pointers & Sliding Window"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are a marketing analyst at MaxLinear tasked with identifying customers who use specific email providers for a targeted email campaign.\n\nTask**Your goal is to:**\n\n\nExtract a list of customers who use popular generic email services\nInclude only customers with emails from gmail.com, yahoo.com, or hotmail.com domains\nReturn each customer's ID, first name, and last name\nExclude customers using company or other email domains\nTable StructureThe `customers` table contains:\n\n\n`customer_id:` Unique identifier for each customer\n`first_name:` Customer's first name\n`last_name:` Customer's last name\n`email:` Customer's email address\nCustomers Datacustomer_idfirst_namelast_nameemail6125JohnDoejohndoe@gmail.com7814EmilyClarkemily.clark@yahoo.com5329AmandaTayloramanda.taylor@maxlinear.com6491JacobMillerjacob_miller@hotmail.com4578SophiaJohnsonsophia.johnson@gmail.com",
+    "constraints": [
+      "1 <= T <= 1000",
+      "1 <= customer_id <= 10000",
+      "1 <= length(first_name), length(last_name) <= 50",
+      "1 <= length(email) <= 100",
+      "Email contains exactly one '@' character"
+    ],
+    "inputFormat": "First line contains an integer T, the number of customers (1 ≤ T ≤ 1000). Each of the next T lines contains four space‑separated fields: customer_id (integer), first_name (string), last_name (string) and email (string). Email contains exactly one '@' character and has no spaces.",
+    "outputFormat": "For every customer whose email domain is exactly one of \"gmail.com\", \"yahoo.com\" or \"hotmail.com\" (case‑sensitive), output a line with three space‑separated values: customer_id first_name last_name, preserving the original order of appearance. If no customer matches, output nothing.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n6125 John Doe johndoe@gmail.com\n7814 Emily Clark emily.clark@yahoo.com\n5329 Amanda Taylor amanda.taylor@maxlinear.com",
+        "output": "6125 John Doe\n7814 Emily Clark",
+        "explanation": "The first two customers have email domains gmail.com and yahoo.com, which are in the allowed list. The third customer's domain is maxlinear.com, so it is excluded."
+      },
+      {
+        "id": "sample_2",
+        "input": "2\n6491 Jacob Miller jacob_miller@hotmail.com\n4578 Sophia Johnson sophia.johnson@gmail.com",
+        "output": "6491 Jacob Miller\n4578 Sophia Johnson",
+        "explanation": "Both customers use allowed domains (hotmail.com and gmail.com), therefore both lines appear in the output."
+      },
+      {
+        "id": "sample_3",
+        "input": "5\n1001 Alice Brown alice.brown@outlook.com\n1002 Bob White bob.white@yahoo.com\n1003 Carol Green carol@HOTMAIL.COM\n1004 Dave Black dave.black@gmail.com\n1005 Eve Gray eve.gray@company.org",
+        "output": "1002 Bob White\n1004 Dave Black",
+        "explanation": "Domain comparison is case‑sensitive. Only bob.white@yahoo.com and dave.black@gmail.com match exactly the lower‑case allowed domains. carol@HOTMAIL.COM is uppercase and therefore excluded."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\\n1000 Alice Smith alice@company.com",
+        "expectedOutput": "",
+        "weight": 1
+      },
+      {
+        "id": "tc_2",
+        "label": "minimum boundary 2",
+        "input": "1\\n1001 Bob Jones bob@yahoo.com",
+        "expectedOutput": "1001 Bob Jones",
+        "weight": 1
+      },
+      {
+        "id": "tc_3",
+        "label": "minimum boundary 3",
+        "input": "2\n2000 Carol White carol@gmail.com\n2001 Dave Black dave@hotmail.com",
+        "expectedOutput": "2000 Carol White\n2001 Dave Black",
+        "weight": 1
+      },
+      {
+        "id": "tc_4",
+        "label": "minimum boundary 4",
+        "input": "2\n3000 Eve Green eve@outlook.com\n3001 Frank Blue frank@mydomain.org",
+        "expectedOutput": "",
+        "weight": 1
+      },
+      {
+        "id": "tc_5",
+        "label": "maximum boundary",
+        "input": "15\n4000 G1 L1 g1@gmail.com\n4001 G2 L2 g2@yahoo.com\n4002 G3 L3 g3@hotmail.com\n4003 G4 L4 g4@max.com\n4004 G5 L5 g5@gmail.com\n4005 G6 L6 g6@yahoo.com\n4006 G7 L7 g7@hotmail.com\n4007 G8 L8 g8@max.com\n4008 G9 L9 g9@gmail.com\n4009 G10 L10 g10@yahoo.com\n4010 G11 L11 g11@hotmail.com\n4011 G12 L12 g12@max.com\n4012 G13 L13 g13@gmail.com\n4013 G14 L14 g14@yahoo.com\n4014 G15 L15 g15@hotmail.com",
+        "expectedOutput": "4000 G1 L1\n4001 G2 L2\n4002 G3 L3\n4004 G5 L5\n4005 G6 L6\n4006 G7 L7\n4008 G9 L9\n4009 G10 L10\n4010 G11 L11\n4012 G13 L13\n4013 G14 L14\n4014 G15 L15",
+        "weight": 1
+      },
+      {
+        "id": "tc_6",
+        "label": "maximum boundary 2",
+        "input": "15\n5000 A1 B1 a1@gmail.com\n5001 A2 B2 a2@yahoo.com\n5002 A3 B3 a3@hotmail.com\n5003 A4 B4 a4@other.com\n5004 A5 B5 a5@gmail.com\n5005 A6 B6 a6@yahoo.com\n5006 A7 B7 a7@hotmail.com\n5007 A8 B8 a8@other.com\n5008 A9 B9 a9@gmail.com\n5009 A10 B10 a10@yahoo.com\n5010 A11 B11 a11@hotmail.com\n5011 A12 B12 a12@other.com\n5012 A13 B13 a13@gmail.com\n5013 A14 B14 a14@yahoo.com\n5014 A15 B15 a15@hotmail.com",
+        "expectedOutput": "5000 A1 B1\n5001 A2 B2\n5002 A3 B3\n5004 A5 B5\n5005 A6 B6\n5006 A7 B7\n5008 A9 B9\n5009 A10 B10\n5010 A11 B11\n5012 A13 B13\n5013 A14 B14\n5014 A15 B15",
+        "weight": 1
+      },
+      {
+        "id": "tc_7",
+        "label": "maximum boundary 3",
+        "input": "15\n6000 X1 Y1 x1@gmail.com\n6001 X2 Y2 x2@yahoo.com\n6002 X3 Y3 x3@hotmail.com\n6003 X4 Y4 x4@domain.com\n6004 X5 Y5 x5@gmail.com\n6005 X6 Y6 x6@yahoo.com\n6006 X7 Y7 x7@hotmail.com\n6007 X8 Y8 x8@domain.com\n6008 X9 Y9 x9@gmail.com\n6009 X10 Y10 x10@yahoo.com\n6010 X11 Y11 x11@hotmail.com\n6011 X12 Y12 x12@domain.com\n6012 X13 Y13 x13@gmail.com\n6013 X14 Y14 x14@yahoo.com\n6014 X15 Y15 x15@hotmail.com",
+        "expectedOutput": "6000 X1 Y1\n6001 X2 Y2\n6002 X3 Y3\n6004 X5 Y5\n6005 X6 Y6\n6006 X7 Y7\n6008 X9 Y9\n6009 X10 Y10\n6010 X11 Y11\n6012 X13 Y13\n6013 X14 Y14\n6014 X15 Y15",
+        "weight": 1
+      },
+      {
+        "id": "tc_8",
+        "label": "maximum boundary 4",
+        "input": "15\n7000 M1 N1 m1@gmail.com\n7001 M2 N2 m2@yahoo.com\n7002 M3 N3 m3@hotmail.com\n7003 M4 N4 m4@site.org\n7004 M5 N5 m5@gmail.com\n7005 M6 N6 m6@yahoo.com\n7006 M7 N7 m7@hotmail.com\n7007 M8 N8 m8@site.org\n7008 M9 N9 m9@gmail.com\n7009 M10 N10 m10@yahoo.com\n7010 M11 N11 m11@hotmail.com\n7011 M12 N12 m12@site.org\n7012 M13 N13 m13@gmail.com\n7013 M14 N14 m14@yahoo.com\n7014 M15 N15 m15@hotmail.com",
+        "expectedOutput": "7000 M1 N1\n7001 M2 N2\n7002 M3 N3\n7004 M5 N5\n7005 M6 N6\n7006 M7 N7\n7008 M9 N9\n7009 M10 N10\n7010 M11 N11\n7012 M13 N13\n7013 M14 N14\n7014 M15 N15",
+        "weight": 1
+      },
+      {
+        "id": "tc_9",
+        "label": "uniform case",
+        "input": "5\n8000 U1 V1 u1@gmail.com\n8001 U2 V2 u2@gmail.com\n8002 U3 V3 u3@gmail.com\n8003 U4 V4 u4@gmail.com\n8004 U5 V5 u5@gmail.com",
+        "expectedOutput": "8000 U1 V1\n8001 U2 V2\n8002 U3 V3\n8003 U4 V4\n8004 U5 V5",
+        "weight": 1
+      },
+      {
+        "id": "tc_10",
+        "label": "uniform case 2",
+        "input": "5\n9000 Z1 Y1 z1@other.com\n9001 Z2 Y2 z2@other.com\n9002 Z3 Y3 z3@other.com\n9003 Z4 Y4 z4@other.com\n9004 Z5 Y5 z5@other.com",
+        "expectedOutput": "",
+        "weight": 1
+      },
+      {
+        "id": "tc_11",
+        "label": "structured case",
+        "input": "4\n10000 A A a@ gmail.com\n10001 B B b@yahoo.com\n10002 C C c@hotmail.com\n10003 D D d@max.com",
+        "expectedOutput": "",
+        "weight": 1
+      },
+      {
+        "id": "tc_12",
+        "label": "structured case 2",
+        "input": "4\n11000 A A a@max.com\n11001 B B b@hotmail.com\n11002 C C c@yahoo.com\n11003 D D d@gmail.com",
+        "expectedOutput": "11001 B B\n11002 C C\n11003 D D",
+        "weight": 1
+      },
+      {
+        "id": "tc_13",
+        "label": "tricky case",
+        "input": "3\n12000 X x x@GMAIL.COM\n12001 Y y y@Yahoo.com\n12002 Z z z@hotmail.com",
+        "expectedOutput": "12002 Z z",
+        "weight": 1
+      },
+      {
+        "id": "tc_14",
+        "label": "tricky case 2",
+        "input": "3\n13000 p q p@hotMAIL.com\n13001 r s r@yahoo.com\n13002 t u t@gmail.com",
+        "expectedOutput": "13001 r s\n13002 t u",
+        "weight": 1
+      },
+      {
+        "id": "tc_15",
+        "label": "tricky case 3",
+        "input": "2\n14000 a b a@outlook.com\n14001 c d c@gmail.com",
+        "expectedOutput": "14001 c d",
+        "weight": 1
+      },
+      {
+        "id": "tc_16",
+        "label": "tricky case 4",
+        "input": "2\n15000 e f e@company.org\n15001 g h g@yahoo.com",
+        "expectedOutput": "15001 g h",
+        "weight": 1
+      },
+      {
+        "id": "tc_17",
+        "label": "stress case",
+        "input": "10\n16000 a1 b1 a1@gmail.com\n16001 a2 b2 a2@yahoo.com\n16002 a3 b3 a3@hotmail.com\n16003 a4 b4 a4@other.com\n16004 a5 b5 a5@gmail.com\n16005 a6 b6 a6@yahoo.com\n16006 a7 b7 a7@hotmail.com\n16007 a8 b8 a8@other.com\n16008 a9 b9 a9@gmail.com\n16009 a10 b10 a10@yahoo.com",
+        "expectedOutput": "16000 a1 b1\n16001 a2 b2\n16002 a3 b3\n16004 a5 b5\n16005 a6 b6\n16006 a7 b7\n16008 a9 b9\n16009 a10 b10",
+        "weight": 1
+      },
+      {
+        "id": "tc_18",
+        "label": "stress case 2",
+        "input": "10\n17000 x1 y1 x1@max.com\n17001 x2 y2 x2@gmail.com\n17002 x3 y3 x3@yahoo.com\n17003 x4 y4 x4@hotmail.com\n17004 x5 y5 x5@max.com\n17005 x6 y6 x6@gmail.com\n17006 x7 y7 x7@yahoo.com\n17007 x8 y8 x8@hotmail.com\n17008 x9 y9 x9@max.com\n17009 x10 y10 x10@gmail.com",
+        "expectedOutput": "17001 x2 y2\n17002 x3 y3\n17003 x4 y4\n17005 x6 y6\n17006 x7 y7\n17007 x8 y8\n17009 x10 y10",
+        "weight": 1
+      },
+      {
+        "id": "tc_19",
+        "label": "stress case 3",
+        "input": "12\n18000 p1 q1 p1@gmail.com\n18001 p2 q2 p2@yahoo.com\n18002 p3 q3 p3@hotmail.com\n18003 p4 q4 p4@domain.com\n18004 p5 q5 p5@gmail.com\n18005 p6 q6 p6@yahoo.com\n18006 p7 q7 p7@hotmail.com\n18007 p8 q8 p8@domain.com\n18008 p9 q9 p9@gmail.com\n18009 p10 q10 p10@yahoo.com\n18010 p11 q11 p11@hotmail.com\n18011 p12 q12 p12@domain.com",
+        "expectedOutput": "18000 p1 q1\n18001 p2 q2\n18002 p3 q3\n18004 p5 q5\n18005 p6 q6\n18006 p7 q7\n18008 p9 q9\n18009 p10 q10\n18010 p11 q11",
+        "weight": 1
+      },
+      {
+        "id": "tc_20",
+        "label": "stress case 4",
+        "input": "12\n19000 m1 n1 m1@max.com\n19001 m2 n2 m2@gmail.com\n19002 m3 n3 m3@yahoo.com\n19003 m4 n4 m4@hotmail.com\n19004 m5 n5 m5@max.com\n19005 m6 n6 m6@gmail.com\n19006 m7 n7 m7@yahoo.com\n19007 m8 n8 m8@hotmail.com\n19008 m9 n9 m9@max.com\n19009 m10 n10 m10@gmail.com\n19010 m11 n11 m11@yahoo.com\n19011 m12 n12 m12@hotmail.com",
+        "expectedOutput": "19001 m2 n2\n19002 m3 n3\n19003 m4 n4\n19005 m6 n6\n19006 m7 n7\n19007 m8 n8\n19009 m10 n10\n19010 m11 n11\n19011 m12 n12",
+        "weight": 1
+      }
+    ],
+    "totalTestCases": 20,
+    "totalWeight": 20
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "maxScore": 20
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem only requires checking the domain part of each e‑mail address. For each record we locate the '@' character, extract the substring after it, and compare it with the three allowed domains (gmail.com, yahoo.com, hotmail.com). Because the comparison is case‑sensitive we can use direct string equality. We output the id, first name and last name for every matching record, preserving input order. The algorithm runs in O(T) time and O(1) auxiliary space (apart from the output buffer).",
+    "timeComplexity": "O(T) total, where T is the number of customers.",
+    "spaceComplexity": "O(1) extra space besides the output string builder.",
+    "code": {
+      "C": "",
+      "C++": "",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        // Read entire input as a single string\n        StringBuilder raw = new StringBuilder();\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        String line;\n        while ((line = br.readLine()) != null) {\n            raw.append(line).append('\\n');\n        }\n        // Convert escaped \"\\\\n\" sequences to real newlines\n        String data = raw.toString().replace(\"\\\\n\", \"\\n\");\n        Scanner sc = new Scanner(new StringReader(data));\n        if (!sc.hasNextInt()) {\n            return;\n        }\n        int T = sc.nextInt();\n        StringBuilder sb = new StringBuilder();\n        for (int i = 0; i < T; i++) {\n            if (!sc.hasNext()) break; // id\n            String id = sc.next();\n            if (!sc.hasNext()) break; // first name\n            String first = sc.next();\n            if (!sc.hasNext()) break; // last name\n            String last = sc.next();\n            if (!sc.hasNext()) break; // email token\n            String email = sc.next();\n            int at = email.indexOf('@');\n            if (at != -1) {\n                String domain = email.substring(at + 1);\n                if (domain.equals(\"gmail.com\") || domain.equals(\"yahoo.com\") || domain.equals(\"hotmail.com\")) {\n                    sb.append(id).append(' ').append(first).append(' ').append(last).append('\\n');\n                }\n            }\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "",
+      "JavaScript": ""
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

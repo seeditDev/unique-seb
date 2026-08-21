@@ -1,0 +1,141 @@
+{
+  "questionId": "Q7957",
+  "title": "Total Overlap",
+  "slug": "total-overlap",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Geometry | Sorting",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Sweep line",
+      "Intervals",
+      "Sorting",
+      "Prefix sum"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Data Structures"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given two sets of segments on a line, AAA and BBB. Set AAA contains NNN segments (numbered 111 through NNN); for each valid iii, the iii-th of these segments is SA,i=[LA,i,RA,i]S_{A,i} = [L_{A,i}, R_{A,i}]SA,i​=[LA,i​,RA,i​]. Set BBB contains MMM segments (numbered 111 through MMM); for each valid iii, the iii-th of these segments is SB,i=[LB,i,RB,i]S_{B,i} = [L_{B,i}, R_{B,i}]SB,i​=[LB,i​,RB,i​].\n\nFind ∑i=1N∑j=1M∣SA,i∩SB,j∣\\sum_{i=1}^N \\sum_{j=1}^M |S_{A,i} \\cap S_{B,j}|∑i=1N​∑j=1M​∣SA,i​∩SB,j​∣, where ∣SA,i∩SB,j∣|S_{A,i} \\cap S_{B,j}|∣SA,i​∩SB,j​∣ denotes the length of the intersection of the iii-th segment from set AAA and the jjj-th segment from set BBB. Note that the length of a segment [l,r][l, r][l,r] is r−lr-lr−l.",
+    "constraints": [
+      "1 <= T <= 10^5",
+      "1 <= N, M <= 10^5 (sum of N over all test cases ≤ 2·10^5, sum of M over all test cases ≤ 2·10^5)",
+      "1 <= L < R <= 10^8"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case: first line contains two integers N and M. The next N lines each contain two integers L_A_i and R_A_i describing segment i of set A. The following M lines each contain two integers L_B_i and R_B_i describing segment i of set B.",
+    "outputFormat": "For each test case output a single line with one integer – the sum of lengths of intersections of all pairs of segments from the two sets.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n2 2\n1 2\n3 4\n1 3\n2 4\n1 1\n1 2\n3 4\n2 1\n5 6\n6 8\n5 8",
+        "output": "2\n0\n3",
+        "explanation": "First test case: overlapping parts are [1,2] and [3,4] giving total length 2. Second test case: segments do not intersect, total 0. Third test case: overlaps are [5,6] (length 1) and [6,8]∩[5,8]=[6,8] (length 2), total 3."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n1 1\n1 2\n1 2",
+        "output": "1",
+        "explanation": "Both sets contain the same segment [1,2]; intersection length is 1."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n2 2\n1 3\n5 7\n3 5\n7 9",
+        "output": "0",
+        "explanation": "All intersections are at single points (3,5,7) which have length 0, so the sum is 0."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For a fixed point x on the line the contribution to the answer is (number of A‑segments covering x) × (number of B‑segments covering x). While sweeping from left to right the counts of covering A‑segments and B‑segments stay constant between two consecutive event positions. Create events (position, deltaA, deltaB): at L_A add +1 to countA, at R_A add -1; similarly for B. Sort all events by position. Iterate over sorted events, keeping current counts cntA and cntB. For each gap [prevPos, curPos) add (curPos‑prevPos) * cntA * cntB to the answer. Complexity O((N+M) log(N+M)) per test case, memory O(N+M).",
+    "timeComplexity": "O((N+M) log(N+M)) per test case",
+    "spaceComplexity": "O(N+M)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\ntypedef struct {int x; int dA; int dB;} Event;\nint cmp(const void *a, const void *b){\n    return ((Event*)a)->x - ((Event*)b)->x;\n}\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    while(T--){\n        int N,M; scanf(\"%d %d\", &N, &M);\n        int total = N+M;\n        Event *ev = (Event*)malloc(sizeof(Event)*(2*total));\n        int idx=0;\n        for(int i=0;i<N;i++){\n            int L,R; scanf(\"%d %d\", &L, &R);\n            ev[idx++] = (Event){L, 1, 0};\n            ev[idx++] = (Event){R, -1, 0};\n        }\n        for(int i=0;i<M;i++){\n            int L,R; scanf(\"%d %d\", &L, &R);\n            ev[idx++] = (Event){L, 0, 1};\n            ev[idx++] = (Event){R, 0, -1};\n        }\n        qsort(ev, idx, sizeof(Event), cmp);\n        long long ans=0;\n        long long cntA=0, cntB=0;\n        int prev = ev[0].x;\n        for(int i=0;i<idx;i++){\n            int cur = ev[i].x;\n            if(cur>prev && cntA && cntB) ans += (long long)(cur-prev)*cntA*cntB;\n            cntA += ev[i].dA;\n            cntB += ev[i].dB;\n            prev = cur;\n        }\n        printf(\"%lld\\n\", ans);\n        free(ev);\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nstruct Event{int x; int dA; int dB;};\nint main(){ios::sync_with_stdio(false);cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0; while(T--){\n        int N,M;cin>>N>>M; vector<Event> ev; ev.reserve(2*(N+M));\n        for(int i=0;i<N;i++){int L,R;cin>>L>>R; ev.push_back({L,1,0}); ev.push_back({R,-1,0});}\n        for(int i=0;i<M;i++){int L,R;cin>>L>>R; ev.push_back({L,0,1}); ev.push_back({R,0,-1});}\n        sort(ev.begin(), ev.end(), [](const Event&a,const Event&b){return a.x<b.x;});\n        long long ans=0, cntA=0, cntB=0; int prev=ev[0].x;\n        for(const auto &e: ev){\n            if(e.x>prev && cntA && cntB) ans += (long long)(e.x-prev)*cntA*cntB;\n            cntA+=e.dA; cntB+=e.dB; prev=e.x;\n        }\n        cout<<ans<<\"\\n\";\n    }\n    return 0; }\n",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    static class Event {\n        int x, dA, dB;\n        Event(int x, int dA, int dB){this.x=x; this.dA=dA; this.dB=dB;}\n    }\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st = new StringTokenizer(br.readLine());\n        int T = Integer.parseInt(st.nextToken());\n        StringBuilder out = new StringBuilder();\n        while(T-- > 0){\n            st = new StringTokenizer(br.readLine());\n            int N = Integer.parseInt(st.nextToken());\n            int M = Integer.parseInt(st.nextToken());\n            List<Event> ev = new ArrayList<>(2*(N+M));\n            for(int i=0;i<N;i++){\n                st = new StringTokenizer(br.readLine());\n                int L = Integer.parseInt(st.nextToken());\n                int R = Integer.parseInt(st.nextToken());\n                ev.add(new Event(L,1,0));\n                ev.add(new Event(R,-1,0));\n            }\n            for(int i=0;i<M;i++){\n                st = new StringTokenizer(br.readLine());\n                int L = Integer.parseInt(st.nextToken());\n                int R = Integer.parseInt(st.nextToken());\n                ev.add(new Event(L,0,1));\n                ev.add(new Event(R,0,-1));\n            }\n            ev.sort(Comparator.comparingInt(e->e.x));\n            long ans=0, cntA=0, cntB=0;\n            int prev = ev.get(0).x;\n            for(Event e: ev){\n                if(e.x>prev && cntA>0 && cntB>0) ans += (long)(e.x-prev)*cntA*cntB;\n                cntA += e.dA; cntB += e.dB; prev = e.x;\n            }\n            out.append(ans).append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}\n",
+      "Python3": "import sys\n\ndef solve():\n    data = list(map(int, sys.stdin.read().split()))\n    it = iter(data)\n    T = next(it)\n    out_lines = []\n    for _ in range(T):\n        N = next(it); M = next(it)\n        events = []\n        for _ in range(N):\n            L = next(it); R = next(it)\n            events.append((L, 1, 0))\n            events.append((R, -1, 0))\n        for _ in range(M):\n            L = next(it); R = next(it)\n            events.append((L, 0, 1))\n            events.append((R, 0, -1))\n        events.sort(key=lambda x: x[0])\n        cntA = cntB = 0\n        prev = events[0][0]\n        ans = 0\n        for x, dA, dB in events:\n            if x > prev and cntA and cntB:\n                ans += (x - prev) * cntA * cntB\n            cntA += dA\n            cntB += dB\n            prev = x\n        out_lines.append(str(ans))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst data = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/).map(Number);\nlet idx = 0;\nconst T = data[idx++];\nlet output = [];\nfor (let t = 0; t < T; t++) {\n  const N = data[idx++];\n  const M = data[idx++];\n  let events = [];\n  for (let i = 0; i < N; i++) {\n    const L = data[idx++];\n    const R = data[idx++];\n    events.push([L, 1, 0]);\n    events.push([R, -1, 0]);\n  }\n  for (let i = 0; i < M; i++) {\n    const L = data[idx++];\n    const R = data[idx++];\n    events.push([L, 0, 1]);\n    events.push([R, 0, -1]);\n  }\n  events.sort((a, b) => a[0] - b[0]);\n  let cntA = 0, cntB = 0;\n  let prev = events[0][0];\n  let ans = 0n;\n  for (const [x, dA, dB] of events) {\n    if (x > prev && cntA && cntB) {\n      ans += BigInt(x - prev) * BigInt(cntA) * BigInt(cntB);\n    }\n    cntA += dA;\n    cntB += dB;\n    prev = x;\n  }\n  output.push(ans.toString());\n}\nconsole.log(output.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

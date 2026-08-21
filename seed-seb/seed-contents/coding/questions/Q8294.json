@@ -1,0 +1,131 @@
+{
+  "questionId": "Q8294",
+  "title": "Maximise the Subsequence Sum",
+  "slug": "maximise-the-subsequence-sum",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Arrays | Greedy",
+    "difficulty": "Easy",
+    "isPremium": true,
+    "tags": [
+      "Sorting",
+      "Greedy",
+      "Subsequence",
+      "Sign Flipping"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Ad-hoc & Implementation"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef has an array AAA containing NNN integers. The integers of the array can be positive, negative, or even zero.\n\nChef allows you to choose at most KKK elements of the array and multiply them by −1-1−1.\n\nFind the **maximum** sum of a subsequence you can obtain if you choose the elements of the subsequence optimally.\n\n**Note**: A sequence aaa is a subsequence of a sequence bbb if aaa can be obtained from bbb by deletion of several (possibly, zero or all) elements. For example, [3,1][3,1][3,1] is a subsequence of [3,2,1][3,2,1][3,2,1] and [4,3,1][4,3,1][4,3,1], but not a subsequence of [1,3,3,7][1,3,3,7][1,3,3,7] and [3,10,4][3,10,4][3,10,4]. Note that empty sequence is also a subsequence.\n\n\nInput Format\n\nThe first line of the input contains a single integer TTT denoting the number of test cases. The description of TTT test cases follows.\nThe first line of each test case contains two space-separated integers N,KN, KN,K.\nThe second line of each test case contains NNN space-separated integers A1,A2,...,ANA_1, A_2,..., A_NA1​,A2​,...,AN​\n\n\nOutput Format\nFor each test case, print a single line containing one integer - the maximum sum of a subsequence you can obtain.",
+    "constraints": [
+      "1 ≤ T ≤ 15",
+      "1 ≤ N ≤ 10^5",
+      "0 ≤ K ≤ N",
+      "-10^4 ≤ Ai ≤ 10^4",
+      "Sum of N over all test cases ≤ 10^6"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case consists of two lines. The first line contains two integers N and K — the size of the array and the maximum number of elements you may multiply by -1. The second line contains N space‑separated integers A1, A2, …, AN.",
+    "outputFormat": "For each test case, output a single line containing the maximum possible sum of a subsequence after performing at most K sign flips.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n6 2\n6 -10 -1 0 -4 2\n5 0\n-1 -1 -1 -1 -1\n3 3\n1 2 3",
+        "output": "22\n0\n6",
+        "explanation": "Test case 1: Flip -10 and -4 to become 10 and 4, then take subsequence [6,10,4,2] → sum 22.\\nTest case 2: No flips allowed, all numbers are negative, best is empty subsequence → sum 0.\\nTest case 3: No need to flip, take all positive numbers → sum 6."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 0\n-5",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n15 15\n-1 -2 -3 -4 -5 -6 -7 -8 -9 -10 -11 -12 -13 -14 -15",
+        "expectedOutput": "120",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case with zeros and no negatives",
+        "input": "1\n5 3\n0 5 0 2 3",
+        "expectedOutput": "10",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n6 2\n-4 7 -2 -1 5 -3",
+        "expectedOutput": "19",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n8 3\n-10 4 -5 6 -1 2 -8 3",
+        "expectedOutput": "38",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each test case, the subsequence can be any subset of the array after we optionally flip the sign of up to K elements. Flipping a negative value -x (x>0) to +x allows us to include x in the sum, increasing the total by x. Flipping a non‑negative value never helps because we can simply ignore it. Therefore the optimal strategy is:\n1. Add all original positive numbers to the answer (they can always be taken). \n2. Collect the absolute values of all negative numbers. Sort them in descending order. \n3. Flip the K largest (by absolute value) negatives, i.e., add the sum of the first min(K, countNeg) absolute values to the answer.\n4. The empty subsequence yields sum 0, but the above sum is never negative, so the result is already optimal.\nThe algorithm runs in O(N log N) per test case due to sorting the negatives; this satisfies the constraints.",
+    "timeComplexity": "O(N log N) per test case (sorting the negative numbers).",
+    "spaceComplexity": "O(N) in the worst case to store the negative values.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nint cmp_desc(const void *a, const void *b) {\n    int x = *(int *)b - *(int *)a; // descending\n    return x;\n}\n\nint main() {\n    int T; if (scanf(\"%d\", &T)!=1) return 0;\n    while (T--) {\n        int N, K; scanf(\"%d %d\", &N, &K);\n        long long sumPos = 0;\n        int *neg = (int *)malloc(N * sizeof(int));\n        int negCnt = 0;\n        for (int i = 0; i < N; ++i) {\n            int x; scanf(\"%d\", &x);\n            if (x >= 0) sumPos += x;\n            else { neg[negCnt++] = -x; } // store absolute value\n        }\n        qsort(neg, negCnt, sizeof(int), cmp_desc);\n        long long add = 0;\n        int take = K < negCnt ? K : negCnt;\n        for (int i = 0; i < take; ++i) add += neg[i];\n        printf(\"%lld\\n\", sumPos + add);\n        free(neg);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N,K;cin>>N>>K;\n        long long sumPos=0;\n        vector<int> neg;\n        for(int i=0;i<N;++i){\n            int x;cin>>x;\n            if(x>=0) sumPos+=x;\n            else neg.push_back(-x); // store absolute\n        }\n        sort(neg.rbegin(), neg.rend()); // descending\n        long long add=0;\n        for(int i=0;i<min(K,(int)neg.size());++i) add+=neg[i];\n        cout<<sumPos+add<<\"\\n\";\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st;\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder out = new StringBuilder();\n        while (T-- > 0) {\n            st = new StringTokenizer(br.readLine());\n            int N = Integer.parseInt(st.nextToken());\n            int K = Integer.parseInt(st.nextToken());\n            st = new StringTokenizer(br.readLine());\n            long sumPos = 0;\n            List<Integer> neg = new ArrayList<>();\n            for (int i = 0; i < N; ++i) {\n                int x = Integer.parseInt(st.nextToken());\n                if (x >= 0) sumPos += x;\n                else neg.add(-x); // absolute value\n            }\n            Collections.sort(neg, Collections.reverseOrder());\n            long add = 0;\n            for (int i = 0; i < Math.min(K, neg.size()); ++i) add += neg.get(i);\n            out.append(sumPos + add).append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it)); K = int(next(it))\n        sum_pos = 0\n        neg = []\n        for _ in range(N):\n            x = int(next(it))\n            if x >= 0:\n                sum_pos += x\n            else:\n                neg.append(-x)  # absolute value\n        neg.sort(reverse=True)\n        add = sum(neg[:min(K, len(neg))])\n        out_lines.append(str(sum_pos + add))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet outputs = [];\nfor (let t = 0; t < T; ++t) {\n  const N = Number(input[idx++]);\n  const K = Number(input[idx++]);\n  let sumPos = 0;\n  let neg = [];\n  for (let i = 0; i < N; ++i) {\n    const x = Number(input[idx++]);\n    if (x >= 0) sumPos += x;\n    else neg.push(-x); // absolute value\n  }\n  neg.sort((a, b) => b - a); // descending\n  let add = 0;\n  const take = Math.min(K, neg.length);\n  for (let i = 0; i < take; ++i) add += neg[i];\n  outputs.push(String(sumPos + add));\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

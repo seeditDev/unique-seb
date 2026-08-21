@@ -1,0 +1,140 @@
+{
+  "questionId": "Q5746",
+  "title": "Petya and Sequence",
+  "slug": "petya-and-sequence",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Linear Algebra",
+      "Matrix Rank"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Mathematics"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Little Petya likes integer numbers a lot. Recently he has received a sequence of integers as a gift from his mother. Petya calls a sequence of **N** integers **Ai** beautiful if there exist a sequence of **N** integer numbers **Bi** for which the following conditions hold:\n\n\n\n At least one number **Bi** differs from 0. \n For every **j** from 0 to **N**-1 the following holds: \n **A0* Bj** + **A1* B(j + 1) mod N** + ... + **AN-1* B(j + N - 1) mod N** = 0.\n\n**Ai**\n\n&nbsp;",
+    "constraints": [
+      "1 <= T <= 100",
+      "1 <= N <= 3 * 10^4",
+      "-1000 <= Ai <= 1000",
+      "Sum of N for all test cases in a single input file will not exceed 150 000"
+    ],
+    "inputFormat": "First line contains T, the number of test cases. Each test case contains a single integer N on the first line, followed by N space-separated integers A0, A1, ..., AN-1 on the second line.",
+    "outputFormat": "For each test case, print YES if Petya's sequence is beautiful and NO otherwise.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4\n3\n1 0 0\n3\n1 1 1\n4\n2 -4 1 1\n5\n1 3 2 1 5",
+        "output": "NO\nYES\nYES\nNO",
+        "explanation": "For the first test case, there is no sequence B that satisfies the conditions. For the second test case, one possible sequence B is (1, -1, 0). For the third test case, one possible sequence B is (1, 1, 1, 1). For the fourth test case, there is no sequence B that satisfies the conditions."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n1\n0",
+        "output": "YES",
+        "explanation": "For the test case, one possible sequence B is (0)."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n2\n1 1",
+        "output": "YES",
+        "explanation": "For the test case, one possible sequence B is (1, -1)."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n0",
+        "expectedOutput": "YES",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n30000\n1000",
+        "expectedOutput": "NO",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n3\n1 1 1",
+        "expectedOutput": "YES",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n4\n1 2 3 4",
+        "expectedOutput": "NO",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "2\n3\n1 0 0\n4\n2 -4 1 1",
+        "expectedOutput": "NO\nYES",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved by constructing a matrix from the given sequence and checking its rank. If the rank of the matrix is less than N, then the sequence is beautiful. Otherwise, it is not. The matrix is constructed by shifting the sequence and taking the dot product with the original sequence.",
+    "timeComplexity": "O(N^3) per test case, O(T * N^3) total. The dominant operation is the computation of the rank of the matrix.",
+    "spaceComplexity": "O(N^2) — the dominant structure is the matrix.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#define MAXN 30000\n\nint** createMatrix(int n) {\n    int** matrix = (int**)malloc(n * sizeof(int*));\n    for (int i = 0; i < n; i++) {\n        matrix[i] = (int*)malloc(n * sizeof(int));\n    }\n    return matrix;\n}\n\nvoid freeMatrix(int** matrix, int n) {\n    for (int i = 0; i < n; i++) {\n        free(matrix[i]);\n    }\n    free(matrix);\n}\n\nint main() {\n    int t;\n    scanf(\"%d\", &t);\n    while (t--) {\n        int n;\n        scanf(\"%d\", &n);\n        int* a = (int*)malloc(n * sizeof(int));\n        for (int i = 0; i < n; i++) {\n            scanf(\"%d\", &a[i]);\n        }\n        int** matrix = createMatrix(n);\n        for (int i = 0; i < n; i++) {\n            for (int j = 0; j < n; j++) {\n                matrix[i][j] = a[(i + j) % n];\n            }\n        }\n        int rank = 0;\n        for (int i = 0; i < n; i++) {\n            int maxRow = i;\n            for (int j = i + 1; j < n; j++) {\n                if (abs(matrix[j][i]) > abs(matrix[maxRow][i])) {\n                    maxRow = j;\n                }\n            }\n            if (maxRow != i) {\n                int* temp = matrix[i];\n                matrix[i] = matrix[maxRow];\n                matrix[maxRow] = temp;\n            }\n            if (matrix[i][i] != 0) {\n                rank++;\n                for (int j = i + 1; j < n; j++) {\n                    int factor = matrix[j][i] / matrix[i][i];\n                    for (int k = i; k < n; k++) {\n                        matrix[j][k] -= factor * matrix[i][k];\n                    }\n                }\n            }\n        }\n        if (rank < n) {\n            printf(\"YES\\n\");\n        } else {\n            printf(\"NO\\n\");\n        }\n        freeMatrix(matrix, n);\n        free(a);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\nusing namespace std;\n\nint main() {\n    int t;\n    cin >> t;\n    while (t--) {\n        int n;\n        cin >> n;\n        vector<int> a(n);\n        for (int i = 0; i < n; i++) {\n            cin >> a[i];\n        }\n        vector<vector<int>> matrix(n, vector<int>(n));\n        for (int i = 0; i < n; i++) {\n            for (int j = 0; j < n; j++) {\n                matrix[i][j] = a[(i + j) % n];\n            }\n        }\n        int rank = 0;\n        for (int i = 0; i < n; i++) {\n            int maxRow = i;\n            for (int j = i + 1; j < n; j++) {\n                if (abs(matrix[j][i]) > abs(matrix[maxRow][i])) {\n                    maxRow = j;\n                }\n            }\n            if (maxRow != i) {\n                swap(matrix[i], matrix[maxRow]);\n            }\n            if (matrix[i][i] != 0) {\n                rank++;\n                for (int j = i + 1; j < n; j++) {\n                    int factor = matrix[j][i] / matrix[i][i];\n                    for (int k = i; k < n; k++) {\n                        matrix[j][k] -= factor * matrix[i][k];\n                    }\n                }\n            }\n        }\n        if (rank < n) {\n            cout << \"YES\" << endl;\n        } else {\n            cout << \"NO\" << endl;\n        }\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int t = scanner.nextInt();\n        while (t-- > 0) {\n            int n = scanner.nextInt();\n            int[] a = new int[n];\n            for (int i = 0; i < n; i++) {\n                a[i] = scanner.nextInt();\n            }\n            int[][] matrix = new int[n][n];\n            for (int i = 0; i < n; i++) {\n                for (int j = 0; j < n; j++) {\n                    matrix[i][j] = a[(i + j) % n];\n                }\n            }\n            int rank = 0;\n            for (int i = 0; i < n; i++) {\n                int maxRow = i;\n                for (int j = i + 1; j < n; j++) {\n                    if (Math.abs(matrix[j][i]) > Math.abs(matrix[maxRow][i])) {\n                        maxRow = j;\n                    }\n                }\n                if (maxRow != i) {\n                    int[] temp = matrix[i];\n                    matrix[i] = matrix[maxRow];\n                    matrix[maxRow] = temp;\n                }\n                if (matrix[i][i] != 0) {\n                    rank++;\n                    for (int j = i + 1; j < n; j++) {\n                        int factor = matrix[j][i] / matrix[i][i];\n                        for (int k = i; k < n; k++) {\n                            matrix[j][k] -= factor * matrix[i][k];\n                        }\n                    }\n                }\n            }\n            if (rank < n) {\n                System.out.println(\"YES\");\n            } else {\n                System.out.println(\"NO\");\n            }\n        }\n    }\n}",
+      "Python3": "import sys\ninput = sys.stdin.readline\ndef main():\n    t = int(input())\n    for _ in range(t):\n        n = int(input())\n        a = list(map(int, input().split()))\n        matrix = [[a[(i + j) % n] for j in range(n)] for i in range(n)]\n        rank = 0\n        for i in range(n):\n            max_row = i\n            for j in range(i + 1, n):\n                if abs(matrix[j][i]) > abs(matrix[max_row][i]):\n                    max_row = j\n            if max_row != i:\n                matrix[i], matrix[max_row] = matrix[max_row], matrix[i]\n            if matrix[i][i] != 0:\n                rank += 1\n                for j in range(i + 1, n):\n                    factor = matrix[j][i] // matrix[i][i]\n                    for k in range(i, n):\n                        matrix[j][k] -= factor * matrix[i][k]\n        if rank < n:\n            print('YES')\n        else:\n            print('NO')\n\nif __name__ == '__main__':\n    main()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nfunction readline() {\n    return input[idx++];\n}\n\nfunction main() {\n    let t = parseInt(readline());\n    while (t--) {\n        let n = parseInt(readline());\n        let a = readline().split(' ').map(x => parseInt(x));\n        let matrix = [];\n        for (let i = 0; i < n; i++) {\n            let row = [];\n            for (let j = 0; j < n; j++) {\n                row.push(a[(i + j) % n]);\n            }\n            matrix.push(row);\n        }\n        let rank = 0;\n        for (let i = 0; i < n; i++) {\n            let maxRow = i;\n            for (let j = i + 1; j < n; j++) {\n                if (Math.abs(matrix[j][i]) > Math.abs(matrix[maxRow][i])) {\n                    maxRow = j;\n                }\n            }\n            if (maxRow !== i) {\n                [matrix[i], matrix[maxRow]] = [matrix[maxRow], matrix[i]];\n            }\n            if (matrix[i][i] !== 0) {\n                rank++;\n                for (let j = i + 1; j < n; j++) {\n                    let factor = matrix[j][i] / matrix[i][i];\n                    for (let k = i; k < n; k++) {\n                        matrix[j][k] -= factor * matrix[i][k];\n                    }\n                }\n            }\n        }\n        if (rank < n) {\n            console.log('YES');\n        } else {\n            console.log('NO');\n        }\n    }\n}\n\nmain();"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

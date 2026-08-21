@@ -1,0 +1,139 @@
+{
+  "questionId": "Q8598",
+  "title": "Find Integer",
+  "slug": "find-integer",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Greedy",
+      "Brute Force",
+      "Digit Manipulation"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Recursion & Backtracking"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given an integer XXX. Find the smallest number YYY such that :\n\n\nYYY is greater than XXX.\nAll digits of YYY are pairwise different.\n\nInput Format\n\nFirst-line will contain TTT, the number of test cases. Then the test cases follow.\nEach test case contains a single line of input, a single integer XXX.\n\n\nOutput Format\nFor each test case, output in a single line the smallest integer YYY which satisfies the given conditions.",
+    "constraints": [
+      "1 <= T <= 2000",
+      "1 <= X <= 100000"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Then T lines follow, each containing a single integer X.",
+    "outputFormat": "For each test case output a single line containing the smallest integer Y such that Y > X and all digits of Y are pairwise different.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n5\n9\n990",
+        "output": "6\n10\n1023",
+        "explanation": "For X=5 the next integer with distinct digits is 6. For X=9 the next is 10 (digits 1 and 0). For X=990 the numbers 991‑999 have repeated digits, 1000‑1022 contain repeated 0, and 1023 is the first with all distinct digits."
+      },
+      {
+        "id": "sample_2",
+        "input": "2\n98\n1234",
+        "output": "102\n1235",
+        "explanation": "98 → 102 (99 repeats, 100 repeats 0, 101 repeats 1, 102 is distinct). 1234 → 1235 (1235 is the immediate next number and its digits are all different)."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n9999",
+        "output": "10234",
+        "explanation": "All numbers from 10000 to 10233 contain a repeated digit (mostly 0). 10234 is the smallest number greater than 9999 with all distinct digits."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n100000",
+        "expectedOutput": "102345",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case with large distinct digits",
+        "input": "1\n987654321",
+        "expectedOutput": "1023456789",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n55555",
+        "expectedOutput": "56012",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n1203",
+        "expectedOutput": "1204",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each test case we start from X+1 and increase the number until we find one whose decimal representation contains no repeated digit. To test a number we scan its digits and keep a bitmask of seen digits; if a digit is already set the number is invalid. Because X ≤ 10^5 the gap to the next valid number is small (at most a few thousand), so a simple linear scan is fast enough. The algorithm runs in O(answer - X) per test case, which is well within limits.",
+    "timeComplexity": "O(T * D) where D is the distance from X to the answer (worst‑case a few thousand).",
+    "spaceComplexity": "O(1) additional space.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdbool.h>\n\nbool unique(int n) {\n    int mask = 0;\n    while (n > 0) {\n        int d = n % 10;\n        if (mask & (1 << d)) return false;\n        mask |= 1 << d;\n        n /= 10;\n    }\n    return true;\n}\n\nint main() {\n    int T; if (scanf(\"%d\", &T)!=1) return 0;\n    while (T--) {\n        int X; scanf(\"%d\", &X);\n        int Y = X + 1;\n        while (!unique(Y)) ++Y;\n        printf(\"%d\\n\", Y);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nbool uniqueDigits(int n) {\n    int mask = 0;\n    while (n > 0) {\n        int d = n % 10;\n        if (mask & (1 << d)) return false;\n        mask |= 1 << d;\n        n /= 10;\n    }\n    return true;\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while (T--) {\n        int X; cin >> X;\n        int Y = X + 1;\n        while (!uniqueDigits(Y)) ++Y;\n        cout << Y << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    private static boolean unique(int n) {\n        int mask = 0;\n        while (n > 0) {\n            int d = n % 10;\n            if ((mask & (1 << d)) != 0) return false;\n            mask |= 1 << d;\n            n /= 10;\n        }\n        return true;\n    }\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder sb = new StringBuilder();\n        for (int i = 0; i < T; i++) {\n            int X = Integer.parseInt(br.readLine().trim());\n            int Y = X + 1;\n            while (!unique(Y)) Y++;\n            sb.append(Y).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef unique(n: int) -> bool:\n    mask = 0\n    while n:\n        d = n % 10\n        if mask & (1 << d):\n            return False\n        mask |= 1 << d\n        n //= 10\n    return True\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    t = int(data[0])\n    out = []\n    idx = 1\n    for _ in range(t):\n        x = int(data[idx]); idx += 1\n        y = x + 1\n        while not unique(y):\n            y += 1\n        out.append(str(y))\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    solve()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet pos = 0;\nconst T = Number(input[pos++]);\nlet results = [];\nfunction unique(n) {\n  let mask = 0;\n  while (n > 0) {\n    const d = n % 10;\n    if (mask & (1 << d)) return false;\n    mask |= 1 << d;\n    n = Math.floor(n / 10);\n  }\n  return true;\n}\nfor (let i = 0; i < T; i++) {\n  let X = Number(input[pos++]);\n  let Y = X + 1;\n  while (!unique(Y)) Y++;\n  results.push(String(Y));\n}\nconsole.log(results.join('\\n'));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

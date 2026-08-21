@@ -1,0 +1,133 @@
+{
+  "questionId": "Q8350",
+  "title": "Yet another SOD problem",
+  "slug": "yet-another-sod-problem",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math | Dynamic Programming",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Digit DP",
+      "Modulo",
+      "Number Theory"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Mathematics"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Ujan is a software developer. He is developing a software that takes two integers LLL and RRR and outputs the count of integers in the sequence L,L+1,…,R−1,RL,L+1,\\ldots,R-1,RL,L+1,…,R−1,R whose sum of digits (SOD) is divisible by 333.\n\nHe has developed the user interface (UI) quite easily. He is having a hard time finding the logic to solve the problem. As you are not only a good friend of Ujan but also a good problem solver, he asks you to help him out.\n\nCan you solve the problem for your friend, Ujan?\n\n\nInput Format\n\nThe first line of the input contains a single integer TTT denoting the number of test cases. The description of TTT test cases follows.\nThe only line of each test case contains two integer L,RL,RL,R.\n\n\nOutput Format\nFor each test case, print a single line containing one integer equal to the count of of integers in the sequence, whose sum of digits is divisible by 333 .",
+    "constraints": [
+      "1 ≤ T ≤ 10^4",
+      "1 ≤ L ≤ R ≤ 10^18"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains two integers L and R (1 ≤ L ≤ R ≤ 10^18), separated by a space.",
+    "outputFormat": "For each test case output a single line containing the count of integers X in the interval [L, R] whose sum of decimal digits is divisible by 3.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "5\\n139 141\\n100 1235\\n1000 2537\\n998244353 1000000007\\n27182818284 31415926535897",
+        "output": "1\\n378\\n512\\n585218\\n10462914572538",
+        "explanation": "For each interval we count numbers whose digit sum is a multiple of 3. In the first case only 141 (1+4+1=6) satisfies, giving 1. In the second case roughly one third of the 1136 numbers have digit sum divisible by 3, exactly 378, and similarly for the remaining cases."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n1 9",
+        "output": "3",
+        "explanation": "Numbers 3, 6 and 9 have digit sums 3, 6 and 9 respectively, all divisible by 3."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For a number X we need to know whether the sum of its decimal digits is 0 (mod 3). The property depends only on the remainder of the digit sum modulo 3, which has only three states (0,1,2). We can count how many numbers ≤ X have digit‑sum ≡ 0 (mod 3) using a classic digit DP:\n1. Process the decimal representation of X from the most significant digit to the least.\n2. DP state: (position, current_mod, tight) where tight indicates whether the prefix built so far is exactly equal to the prefix of X.\n3. Transition: try all possible next digits (0‑9, limited by tight). New_mod = (current_mod + digit) % 3.\n4. When all positions are processed, return 1 if current_mod == 0 else 0.\nThe DP runs in O(number_of_digits * 3 * 2) ≈ 19*6 operations per query, which is trivial for T up to 10^4. The answer for a test case is f(R) - f(L‑1), where f(Y) is the DP count for numbers ≤ Y.\nThe implementation uses memoisation (or an iterative table) and works with 64‑bit integers.",
+    "timeComplexity": "O(T * D * 3) where D ≤ 19 (number of decimal digits of 10^18). Effectively O(T).",
+    "spaceComplexity": "O(D * 3 * 2) for the memo table, i.e., O(1) extra memory.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n#include <stdint.h>\n\nstatic long long dp[20][3][2];\nstatic int digits[20];\nstatic int len;\n\nlong long dfs(int pos, int mod, int tight) {\n    if (pos == len) return mod == 0 ? 1 : 0;\n    long long *memo = &dp[pos][mod][tight];\n    if (*memo != -1) return *memo;\n    long long res = 0;\n    int limit = tight ? digits[pos] : 9;\n    for (int d = 0; d <= limit; ++d) {\n        int ntight = tight && (d == limit);\n        res += dfs(pos + 1, (mod + d) % 3, ntight);\n    }\n    return *memo = res;\n}\n\nlong long count_upto(long long x) {\n    if (x < 0) return 0;\n    len = 0;\n    // extract digits\n    char buf[32];\n    sprintf(buf, \"%lld\", x);\n    len = strlen(buf);\n    for (int i = 0; i < len; ++i) digits[i] = buf[i] - '0';\n    memset(dp, -1, sizeof(dp));\n    return dfs(0, 0, 1);\n}\n\nint main() {\n    int T; if (scanf(\"%d\", &T)!=1) return 0;\n    while (T--) {\n        long long L, R; scanf(\"%lld %lld\", &L, &R);\n        long long ans = count_upto(R) - count_upto(L - 1);\n        printf(\"%lld\\n\", ans);\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nusing int64 = long long;\n\nint64 dp[20][3][2];\nvector<int> dig;\n\nint64 dfs(int pos, int mod, int tight) {\n    if (pos == (int)dig.size()) return mod == 0 ? 1 : 0;\n    int64 &res = dp[pos][mod][tight];\n    if (res != -1) return res;\n    res = 0;\n    int limit = tight ? dig[pos] : 9;\n    for (int d = 0; d <= limit; ++d) {\n        res += dfs(pos + 1, (mod + d) % 3, tight && (d == limit));\n    }\n    return res;\n}\n\nint64 countUpto(int64 x) {\n    if (x < 0) return 0;\n    dig.clear();\n    string s = to_string(x);\n    for (char c : s) dig.push_back(c - '0');\n    memset(dp, -1, sizeof(dp));\n    return dfs(0, 0, 1);\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while (T--) {\n        int64 L,R; cin>>L>>R;\n        cout << countUpto(R) - countUpto(L-1) << '\\n';\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    static long[][][] dp;\n    static int[] digits;\n    static int len;\n\n    static long dfs(int pos, int mod, int tight) {\n        if (pos == len) return mod == 0 ? 1 : 0;\n        if (dp[pos][mod][tight] != -1) return dp[pos][mod][tight];\n        long res = 0;\n        int limit = tight == 1 ? digits[pos] : 9;\n        for (int d = 0; d <= limit; d++) {\n            int ntight = (tight == 1 && d == limit) ? 1 : 0;\n            res += dfs(pos + 1, (mod + d) % 3, ntight);\n        }\n        dp[pos][mod][tight] = res;\n        return res;\n    }\n\n    static long countUpto(long x) {\n        if (x < 0) return 0;\n        String s = Long.toString(x);\n        len = s.length();\n        digits = new int[len];\n        for (int i = 0; i < len; i++) digits[i] = s.charAt(i) - '0';\n        dp = new long[len][3][2];\n        for (int i = 0; i < len; i++)\n            for (int j = 0; j < 3; j++)\n                Arrays.fill(dp[i][j], -1);\n        return dfs(0, 0, 1);\n    }\n\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder out = new StringBuilder();\n        int T = Integer.parseInt(br.readLine().trim());\n        for (int t = 0; t < T; t++) {\n            StringTokenizer st = new StringTokenizer(br.readLine());\n            long L = Long.parseLong(st.nextToken());\n            long R = Long.parseLong(st.nextToken());\n            long ans = countUpto(R) - countUpto(L - 1);\n            out.append(ans).append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}\n",
+      "Python3": "import sys\n\ndef count_upto(x: int) -> int:\n    if x < 0:\n        return 0\n    s = str(x)\n    n = len(s)\n    from functools import lru_cache\n    @lru_cache(maxsize=None)\n    def dfs(pos: int, mod: int, tight: bool) -> int:\n        if pos == n:\n            return 1 if mod == 0 else 0\n        limit = int(s[pos]) if tight else 9\n        total = 0\n        for d in range(limit + 1):\n            total += dfs(pos + 1, (mod + d) % 3, tight and d == limit)\n        return total\n    return dfs(0, 0, True)\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        L = int(next(it)); R = int(next(it))\n        ans = count_upto(R) - count_upto(L - 1)\n        out_lines.append(str(ans))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet results = [];\nfunction countUpto(x) {\n  if (x < 0) return 0n;\n  const s = x.toString();\n  const n = s.length;\n  const memo = new Map();\n  function dfs(pos, mod, tight) {\n    if (pos === n) return mod === 0 ? 1n : 0n;\n    const key = pos + ',' + mod + ',' + (tight ? 1 : 0);\n    if (memo.has(key)) return memo.get(key);\n    const limit = tight ? Number(s[pos]) : 9;\n    let res = 0n;\n    for (let d = 0; d <= limit; d++) {\n      res += dfs(pos + 1, (mod + d) % 3, tight && d === limit);\n    }\n    memo.set(key, res);\n    return res;\n  }\n  return dfs(0, 0, true);\n}\nfor (let t = 0; t < T; ++t) {\n  const L = BigInt(input[idx++]);\n  const R = BigInt(input[idx++]);\n  const ans = countUpto(R) - countUpto(L - 1n);\n  results.push(ans.toString());\n}\nconsole.log(results.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

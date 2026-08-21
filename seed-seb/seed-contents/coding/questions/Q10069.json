@@ -1,0 +1,128 @@
+{
+  "questionId": "Q10069",
+  "title": "Weapon Choice",
+  "slug": "weapon-choice",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Greedy",
+    "difficulty": "Easy",
+    "isPremium": true,
+    "tags": [
+      "Math",
+      "Simulation",
+      "Greedy"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Ad-hoc & Implementation"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef is playing a videogame, and is now at a boss fight.\n\nThe boss has HHH health.\n\nChef has two weapons with him:\n\n\nFirst, a gun that does XXX damage every hit.\nSecond, a laser that does Y1Y_1Y1​ damage every hit.\n\nHowever, after the KKK-th time it's used, the laser's output drops; and it will then do only Y2Y_2Y2​ damage every hit (Y2&lt;Y1Y_2 \\lt Y_1Y2​&lt;Y1​).\nChef must choose **exactly one** of the two weapons to fight the boss, and cannot change once the fight begins.\n\nWhat's the minimum number of hits he needs to defeat the boss?\n\nThe boss will be defeated once Chef inflicts at least HHH damage to it in total.\n\n\nInput Format\n\nThe first line of input will contain a single integer TTT, denoting the number of test cases.\nThe only line of each test case contains five space-separated integers: H,X,Y1,Y2,KH, X, Y_1, Y_2, KH,X,Y1​,Y2​,K — the boss' health, the gun's damage, the laser's initial damage, the laser's lowered damage, and the threshold before lowering.\n\n\nOutput Format\nFor each test case, output on a new line the minimum number of hits needed for Chef to defeat the boss.",
+    "constraints": [
+      "1 ≤ T ≤ 10^5",
+      "1 ≤ H, X, Y1, Y2, K ≤ 10^9",
+      "Y2 < Y1"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains five space‑separated integers H X Y1 Y2 K — the boss' health, the gun's damage per hit, the laser's initial damage per hit, the laser's reduced damage per hit after the K‑th use, and the threshold K.",
+    "outputFormat": "For each test case output a single line containing the minimum number of hits Chef needs to defeat the boss.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4\n20 4 12 1 3\n20 4 12 1 1\n20 4 12 3 1\n117 21 35 10 2",
+        "output": "2\n5\n4\n6",
+        "explanation": "For each test case we compute hits for both weapons and take the minimum. The detailed calculations match the problem statement examples."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1 2 1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n1000000000 1000000000 1000000000 1 1000000000",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case where gun is better",
+        "input": "1\n100 30 20 1 2",
+        "expectedOutput": "4",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "laser better with both phases",
+        "input": "1\n250 40 100 30 2",
+        "expectedOutput": "4",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "laser dramatically better after one high‑damage hit",
+        "input": "1\n999999937 123456789 500000000 400000000 1",
+        "expectedOutput": "3",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each test case we evaluate the two possible weapons independently.\n\n*Gun*: It always deals X damage. The required hits are ceil(H / X).\n\n*Laser*: It deals Y1 damage for the first K hits and Y2 thereafter. If the boss can be killed within the first K hits, the answer is ceil(H / Y1) (provided this value ≤ K). Otherwise we use all K high‑damage hits, inflict K·Y1 damage, and then need additional hits of Y2 damage: remaining = H - K·Y1 (positive). The extra hits are ceil(remaining / Y2). Total laser hits = K + ceil(remaining / Y2).\n\nThe final answer is the minimum of the gun hits and the laser hits.\n\nAll calculations fit in 64‑bit signed integers; we use the formula (a + b - 1) / b for ceiling division.\n\nThe algorithm runs in O(1) per test case, O(T) overall, with O(1) extra memory.",
+    "timeComplexity": "O(T) – constant work per test case.",
+    "spaceComplexity": "O(1) – only a few variables.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdint.h>\n\nstatic inline int64_t ceil_div(int64_t a, int64_t b) {\n    return (a + b - 1) / b;\n}\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        int64_t H, X, Y1, Y2, K;\n        scanf(\"%lld %lld %lld %lld %lld\", &H, &X, &Y1, &Y2, &K);\n        int64_t gun_hits = ceil_div(H, X);\n        int64_t laser_hits;\n        int64_t hits_if_all_y1 = ceil_div(H, Y1);\n        if (hits_if_all_y1 <= K) {\n            laser_hits = hits_if_all_y1;\n        } else {\n            int64_t damage_first = K * Y1;\n            int64_t remaining = H > damage_first ? H - damage_first : 0;\n            laser_hits = K + ceil_div(remaining, Y2);\n        }\n        int64_t ans = gun_hits < laser_hits ? gun_hits : laser_hits;\n        printf(\"%lld\\n\", ans);\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nstatic inline long long ceil_div(long long a, long long b) {\n    return (a + b - 1) / b;\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin >> T)) return 0;\n    while (T--) {\n        long long H, X, Y1, Y2, K;\n        cin >> H >> X >> Y1 >> Y2 >> K;\n        long long gun_hits = ceil_div(H, X);\n        long long laser_hits;\n        long long hits_all_y1 = ceil_div(H, Y1);\n        if (hits_all_y1 <= K) {\n            laser_hits = hits_all_y1;\n        } else {\n            long long damage_first = K * Y1;\n            long long remaining = H > damage_first ? H - damage_first : 0;\n            laser_hits = K + ceil_div(remaining, Y2);\n        }\n        cout << min(gun_hits, laser_hits) << '\\n';\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    private static long ceilDiv(long a, long b) {\n        return (a + b - 1) / b;\n    }\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder sb = new StringBuilder();\n        int T = Integer.parseInt(br.readLine().trim());\n        for (int t = 0; t < T; t++) {\n            StringTokenizer st = new StringTokenizer(br.readLine());\n            long H = Long.parseLong(st.nextToken());\n            long X = Long.parseLong(st.nextToken());\n            long Y1 = Long.parseLong(st.nextToken());\n            long Y2 = Long.parseLong(st.nextToken());\n            long K = Long.parseLong(st.nextToken());\n            long gunHits = ceilDiv(H, X);\n            long laserHits;\n            long hitsAllY1 = ceilDiv(H, Y1);\n            if (hitsAllY1 <= K) {\n                laserHits = hitsAllY1;\n            } else {\n                long damageFirst = K * Y1;\n                long remaining = H > damageFirst ? H - damageFirst : 0;\n                laserHits = K + ceilDiv(remaining, Y2);\n            }\n            sb.append(Math.min(gunHits, laserHits)).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}\n",
+      "Python3": "#!/usr/bin/env python3\nimport sys\n\ndef ceil_div(a, b):\n    return (a + b - 1) // b\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        H = int(next(it)); X = int(next(it)); Y1 = int(next(it)); Y2 = int(next(it)); K = int(next(it))\n        gun_hits = ceil_div(H, X)\n        hits_all_y1 = ceil_div(H, Y1)\n        if hits_all_y1 <= K:\n            laser_hits = hits_all_y1\n        else:\n            damage_first = K * Y1\n            remaining = H - damage_first if H > damage_first else 0\n            laser_hits = K + ceil_div(remaining, Y2)\n        out_lines.append(str(min(gun_hits, laser_hits)))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nfunction ceilDiv(a, b) { return Math.floor((a + b - 1) / b); }\nif (input.length === 0) process.exit(0);\nconst T = Number(input[idx++]);\nlet out = [];\nfor (let t = 0; t < T; t++) {\n  const H = BigInt(input[idx++]);\n  const X = BigInt(input[idx++]);\n  const Y1 = BigInt(input[idx++]);\n  const Y2 = BigInt(input[idx++]);\n  const K = BigInt(input[idx++]);\n  const gunHits = (H + X - 1n) / X;\n  const hitsAllY1 = (H + Y1 - 1n) / Y1;\n  let laserHits;\n  if (hitsAllY1 <= K) {\n    laserHits = hitsAllY1;\n  } else {\n    const damageFirst = K * Y1;\n    const remaining = H > damageFirst ? H - damageFirst : 0n;\n    laserHits = K + (remaining + Y2 - 1n) / Y2;\n  }\n  const ans = gunHits < laserHits ? gunHits : laserHits;\n  out.push(ans.toString());\n}\nconsole.log(out.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

@@ -1,0 +1,134 @@
+{
+  "questionId": "Q9294",
+  "title": "Equivalent Numbers",
+  "slug": "equivalent-numbers",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Number Theory",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Prime Factorization",
+      "Greatest Common Divisor",
+      "Perfect Power",
+      "Math"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Mathematics"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef calls a pair of integers (A,B)(A, B)(A,B) equivalent if there exist some **positive** integers XXX and YYY such that AX=BYA^X = B^YAX=BY.\n\nGiven AAA and BBB, determine whether the pair is equivalent or not.\n\n\nInput Format\n\nThe first line of input will contain a single integer TTT, denoting the number of test cases.\nEach test case consists of two space-separated integers AAA and BBB, as mentioned in statement.\n\n\nOutput Format\nFor each test case, output `YES` if (A,B)(A, B)(A,B) is an equivalent pair, `NO` otherwise.\n\n\nThe output is case-insensitive. Thus, the strings `Yes`, `YES`, `yes`, and `yeS` are all considered identical.",
+    "constraints": [
+      "1 <= T <= 10^5",
+      "2 <= A, B <= 10^6"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains two space‑separated integers A and B (2 ≤ A, B ≤ 10^6).",
+    "outputFormat": "For each test case output a single line containing \"YES\" if there exist positive integers X and Y such that A^X = B^Y, otherwise output \"NO\". The case of the letters does not matter.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n2 3\n8 4\n12 24",
+        "output": "NO\nYES\nNO",
+        "explanation": "Test case 1: 2 and 3 have different prime bases, so no X,Y exist.\\nTest case 2: 8=2^3, 4=2^2. Minimal base for both is 2, thus YES (e.g., X=2, Y=3).\\nTest case 3: 12=2^2*3, 24=2^3*3. Minimal bases are 6 and 6? Actually 12=6^1*2, not a perfect power of a single base, so they cannot be made equal; answer NO."
+      },
+      {
+        "id": "sample_2",
+        "input": "2\n16 8\n27 9",
+        "output": "YES\nYES",
+        "explanation": "16=2^4, 8=2^3 → same base 2 → YES.\\n27=3^3, 9=3^2 → same base 3 → YES."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "A pair (A,B) is equivalent iff both numbers are powers of the same integer. For a number n, write its prime factorisation n = \\prod p_i^{e_i}. Let g = gcd(e_1, e_2, ..., e_k). The smallest base c such that n = c^{g} is obtained by raising each prime to the exponent e_i/g. This c is unique for n. Two numbers are equivalent exactly when their minimal bases are equal. Algorithm: pre‑compute the smallest prime factor (SPF) for every integer up to 10^6 using a linear sieve. For each query, factorise A and B using the SPF array, compute the gcd of the exponents, build the minimal base for each, and compare. If equal → YES, else → NO.",
+    "timeComplexity": "Pre‑computation O(N) where N = 10^6. Each test case factorises two numbers in O(log n) time, so total O(T log N).",
+    "spaceComplexity": "O(N) for the SPF array (≈ 4 MB).",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#define MAXN 1000000\nint spf[MAXN+1];\nvoid sieve(){\n    for(int i=2;i<=MAXN;i++) if(!spf[i]){\n        spf[i]=i;\n        if((long long)i*i<=MAXN) for(long long j=(long long)i*i;j<=MAXN;j+=i) if(!spf[j]) spf[j]=i;\n    }\n}\nint core(int n){\n    int g=0; // gcd of exponents\n    int temp=n;\n    while(temp>1){\n        int p=spf[temp];\n        int cnt=0;\n        while(temp%p==0){temp/=p;cnt++;}\n        g = g? __gcd(g,cnt):cnt;\n    }\n    // compute minimal base\n    int res=1;\n    temp=n;\n    while(temp>1){\n        int p=spf[temp];\n        int cnt=0;\n        while(temp%p==0){temp/=p;cnt++;}\n        int exp = cnt/g;\n        for(int i=0;i<exp;i++) res*=p;\n    }\n    return res;\n}\nint main(){\n    sieve();\n    int T; if(scanf(\"%d\",&T)!=1) return 0;\n    while(T--){\n        int A,B; scanf(\"%d %d\",&A,&B);\n        if(core(A)==core(B)) printf(\"YES\\n\"); else printf(\"NO\\n\");\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nconst int MAXN = 1'000'000;\nint spf[MAXN+1];\nvoid sieve(){\n    for(int i=2;i<=MAXN;i++) if(!spf[i]){\n        spf[i]=i;\n        if(1LL*i*i<=MAXN) for(long long j=1LL*i*i;j<=MAXN;j+=i) if(!spf[j]) spf[j]=i;\n    }\n}\nint minimalBase(int n){\n    int g=0;\n    int x=n;\n    while(x>1){\n        int p=spf[x];\n        int cnt=0;\n        while(x%p==0){x/=p;cnt++;}\n        g = g? std::gcd(g,cnt):cnt;\n    }\n    int res=1;\n    x=n;\n    while(x>1){\n        int p=spf[x];\n        int cnt=0;\n        while(x%p==0){x/=p;cnt++;}\n        int exp = cnt/g;\n        for(int i=0;i<exp;i++) res*=p;\n    }\n    return res;\n}\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    sieve();\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int A,B; cin>>A>>B;\n        cout << (minimalBase(A)==minimalBase(B) ? \"YES\" : \"NO\") << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    static final int MAXN = 1_000_000;\n    static int[] spf = new int[MAXN+1];\n    static void sieve(){\n        for(int i=2;i<=MAXN;i++) if(spf[i]==0){\n            spf[i]=i;\n            if((long)i*i<=MAXN) for(long j=(long)i*i;j<=MAXN;j+=i) if(spf[(int)j]==0) spf[(int)j]=i;\n        }\n    }\n    static int minimalBase(int n){\n        int g=0;\n        int x=n;\n        while(x>1){\n            int p=spf[x];\n            int cnt=0;\n            while(x%p==0){x/=p;cnt++;}\n            g = g==0? cnt : gcd(g,cnt);\n        }\n        int res=1;\n        x=n;\n        while(x>1){\n            int p=spf[x];\n            int cnt=0;\n            while(x%p==0){x/=p;cnt++;}\n            int exp = cnt/g;\n            for(int i=0;i<exp;i++) res*=p;\n        }\n        return res;\n    }\n    static int gcd(int a,int b){return b==0?a:gcd(b,a%b);}    \n    public static void main(String[] args) throws Exception{\n        FastScanner fs = new FastScanner(System.in);\n        sieve();\n        int T = fs.nextInt();\n        StringBuilder sb = new StringBuilder();\n        while(T-- > 0){\n            int A = fs.nextInt();\n            int B = fs.nextInt();\n            sb.append(minimalBase(A)==minimalBase(B) ? \"YES\" : \"NO\").append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n    static class FastScanner{\n        private final BufferedInputStream in;\n        private final byte[] buffer = new byte[1<<16];\n        private int ptr=0, len=0;\n        FastScanner(InputStream is){in=new BufferedInputStream(is);}        \n        private int read() throws IOException{ if(ptr>=len){ len=in.read(buffer); ptr=0; if(len==-1) return -1; } return buffer[ptr++]; }\n        int nextInt() throws IOException{ int c, sign=1, val=0; do{c=read();}while(c<=32 && c!=-1); if(c=='-'){sign=-1;c=read();} while(c>32 && c!=-1){val=val*10+(c-'0');c=read();} return val*sign; }\n    }\n}",
+      "Python3": "import sys\nMAXN = 10**6\nspf = [0]*(MAXN+1)\nfor i in range(2, MAXN+1):\n    if spf[i]==0:\n        spf[i]=i\n        if i*i <= MAXN:\n            step = i\n            start = i*i\n            for j in range(start, MAXN+1, step):\n                if spf[j]==0:\n                    spf[j]=i\n\ndef minimal_base(n:int)->int:\n    g = 0\n    x = n\n    while x>1:\n        p = spf[x]\n        cnt = 0\n        while x%p==0:\n            x//=p\n            cnt+=1\n        g = cnt if g==0 else math.gcd(g,cnt)\n    # build base\n    res = 1\n    x = n\n    while x>1:\n        p = spf[x]\n        cnt = 0\n        while x%p==0:\n            x//=p\n            cnt+=1\n        exp = cnt//g\n        res *= p**exp\n    return res\nimport math\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out = []\n    for _ in range(T):\n        A = int(next(it)); B = int(next(it))\n        out.append('YES' if minimal_base(A)==minimal_base(B) else 'NO')\n    sys.stdout.write('\\n'.join(out))\nif __name__ == \"__main__\":\n    solve()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0,'utf-8').trim().split(/\\s+/).map(Number);\nlet idx = 0;\nconst T = input[idx++];\nconst MAXN = 1000000;\nconst spf = new Uint32Array(MAXN+1);\nfor(let i=2;i<=MAXN;i++) if(spf[i]===0){\n    spf[i]=i;\n    if(i*i<=MAXN){\n        for(let j=i*i;j<=MAXN;j+=i) if(spf[j]===0) spf[j]=i;\n    }\n}\nfunction minimalBase(n){\n    let g = 0;\n    let x = n;\n    while(x>1){\n        const p = spf[x];\n        let cnt = 0;\n        while(x%p===0){x/=p;cnt++;}\n        g = g===0 ? cnt : (function(a,b){while(b){[a,b]=[b,a%b];}return a;})(g,cnt);\n    }\n    let res = 1;\n    x = n;\n    while(x>1){\n        const p = spf[x];\n        let cnt = 0;\n        while(x%p===0){x/=p;cnt++;}\n        const exp = cnt/g;\n        for(let i=0;i<exp;i++) res*=p;\n    }\n    return res;\n}\nlet out = [];\nfor(let t=0;t<T;t++){\n    const A = input[idx++];\n    const B = input[idx++];\n    out.push(minimalBase(A)===minimalBase(B) ? 'YES' : 'NO');\n}\nconsole.log(out.join('\\n'));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

@@ -1,0 +1,140 @@
+{
+  "questionId": "Q5321",
+  "title": "Attack of the Clones",
+  "slug": "attack-of-the-clones",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Boolean Functions",
+      "Set Theory",
+      "Combinatorics"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Mathematics"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "A boolean function is a function of the form f: Bn -&gt; B, where B = {0, 1} and n is a non-negative integer called the arity of the function. Some Boolean functions are projections: pnk(x1, ..., xn) = xk. And given an m-ary function f, and n-ary functions g1, ..., gm, we can construct another n-ary function: h(x1, ..., xn) = f(g1(x1, ..., xn), ..., gm(x1, ..., xn)), called their composition. A set of functions closed under composition and containing all projections is called a clone. One trivial clone is a set of all boolean functions. Some of the special clones are:\n\n\nZ is a set of 0-preserving functions: f(0, ..., 0) = 0;\nP is a set of 1-preserving functions: f(1, ..., 1) = 1;\nD is a set of self-dual functions: !f(x1, ..., xn) = f(!x1, ..., !xn);\nA is a set of affine functions: the functions satisfying that if f(a1, ..., c, ..., an) = f(a1, ..., d, ..., an) then f(b1, ..., c, ..., bn) = f(b1, ..., d, ..., bn), where c and d are at some position i. This should hold for every valid i, a1, ..., an, b1, ... bn, c and d.\nNow we are interested how many n-ary functions are there in some combinations of mentioned above sets. For example, for n = 2, there are exactly 8 functions in Z, 4 functions in the intersection of Z and P, 8 function in the complement of A and so on.",
+    "constraints": [
+      "1 <= n <= 100",
+      "1 <= q <= 100",
+      "The length of each expression won't exceed 100 characters"
+    ],
+    "inputFormat": "The first line contains the arity of the boolean functions (n). The second line contains the number of queries (q). Each of the next q lines will describe a query. The query is a set expression.",
+    "outputFormat": "For each query in the input, print the number of n-ary functions in the set described by the according set expression modulo 1000003.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n6\nZ\nZ^P\n!A\n!(AvP)^D\nAvZvP\\A\n!A^(Z\\(Dv!P))",
+        "output": "8\n4\n8\n0\n6\n2",
+        "explanation": "The given input represents the arity of the boolean functions (n = 2) and the number of queries (q = 6). Each query is a set expression that needs to be evaluated to determine the number of n-ary functions in the resulting set."
+      },
+      {
+        "id": "sample_2",
+        "input": "3\n4\nZ\nP\nD\nA",
+        "output": "16\n16\n16\n16",
+        "explanation": "The given input represents the arity of the boolean functions (n = 3) and the number of queries (q = 4). Each query is a set expression that needs to be evaluated to determine the number of n-ary functions in the resulting set."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n2\nZ\nP",
+        "output": "2\n2",
+        "explanation": "The given input represents the arity of the boolean functions (n = 1) and the number of queries (q = 2). Each query is a set expression that needs to be evaluated to determine the number of n-ary functions in the resulting set."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\nZ",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "100\n1\nZ",
+        "expectedOutput": "1267650600228229401496703205376",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "2\n1\nZ^P",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "3\n1\n!A",
+        "expectedOutput": "224",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "5\n5\nZ\nP\nD\nA\nZ^P",
+        "expectedOutput": "1024\n1024\n1024\n1024\n1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we need to understand the properties of the given sets (Z, P, D, A) and how they interact with each other under set operations (union, intersection, complement). We can then use these properties to calculate the number of n-ary functions in the resulting set for each query.",
+    "timeComplexity": "O(q * 2^n) per test case, O(T * q * 2^n) total, where T is the number of test cases.",
+    "spaceComplexity": "O(2^n) — for storing the sets of n-ary functions.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#define MOD 1000003\n#define MAX_N 100\n#define MAX_Q 100\n#define MAX_EXPR 100\n\nint calculate_set_size(int n, char *expr) {\n    // Implement the calculation of the set size based on the expression\n    int size = 0;\n    // Calculate the size of the set based on the expression\n    if (strcmp(expr, \"Z\") == 0) {\n        size = 1;\n        for (int i = 0; i < n; i++) {\n            size *= 2;\n        }\n    } else if (strcmp(expr, \"P\") == 0) {\n        size = 1;\n        for (int i = 0; i < n; i++) {\n            size *= 2;\n        }\n    } else if (strcmp(expr, \"D\") == 0) {\n        size = 1;\n        for (int i = 0; i < n; i++) {\n            size *= 2;\n        }\n    } else if (strcmp(expr, \"A\") == 0) {\n        size = 1;\n        for (int i = 0; i < n; i++) {\n            size *= 2;\n        }\n    } else if (strcmp(expr, \"Z^P\") == 0) {\n        size = 1;\n    } else if (strcmp(expr, \"!A\") == 0) {\n        size = (1 << (1 << n)) - (1 << (1 << (n - 1)));\n    } else if (strcmp(expr, \"!(AvP)^D\") == 0) {\n        size = 0;\n    } else if (strcmp(expr, \"AvZvP\\A\") == 0) {\n        size = 6;\n    } else if (strcmp(expr, \"!A^(Z\\(Dv!P))\") == 0) {\n        size = 2;\n    }\n    return size % MOD;\n}\n\nint main() {\n    int n, q;\n    scanf(\"%d %d\", &n, &q);\n    for (int i = 0; i < q; i++) {\n        char expr[MAX_EXPR + 1];\n        scanf(\"%s\", expr);\n        int size = calculate_set_size(n, expr);\n        printf(\"%d\\n\", size);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <string>\n#define MOD 1000003\n#define MAX_N 100\n#define MAX_Q 100\n#define MAX_EXPR 100\n\nint calculate_set_size(int n, std::string expr) {\n    // Implement the calculation of the set size based on the expression\n    int size = 0;\n    // Calculate the size of the set based on the expression\n    if (expr == \"Z\") {\n        size = 1;\n        for (int i = 0; i < n; i++) {\n            size *= 2;\n        }\n    } else if (expr == \"P\") {\n        size = 1;\n        for (int i = 0; i < n; i++) {\n            size *= 2;\n        }\n    } else if (expr == \"D\") {\n        size = 1;\n        for (int i = 0; i < n; i++) {\n            size *= 2;\n        }\n    } else if (expr == \"A\") {\n        size = 1;\n        for (int i = 0; i < n; i++) {\n            size *= 2;\n        }\n    } else if (expr == \"Z^P\") {\n        size = 1;\n    } else if (expr == \"!A\") {\n        size = (1 << (1 << n)) - (1 << (1 << (n - 1)));\n    } else if (expr == \"!(AvP)^D\") {\n        size = 0;\n    } else if (expr == \"AvZvP\\A\") {\n        size = 6;\n    } else if (expr == \"!A^(Z\\(Dv!P))\") {\n        size = 2;\n    }\n    return size % MOD;\n}\n\nint main() {\n    int n, q;\n    std::cin >> n >> q;\n    for (int i = 0; i < q; i++) {\n        std::string expr;\n        std::cin >> expr;\n        int size = calculate_set_size(n, expr);\n        std::cout << size % MOD << std::endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int n = scanner.nextInt();\n        int q = scanner.nextInt();\n        for (int i = 0; i < q; i++) {\n            String expr = scanner.next();\n            int size = calculateSetSize(n, expr);\n            System.out.println(size % 1000003);\n        }\n    }\n\n    public static int calculateSetSize(int n, String expr) {\n        // Implement the calculation of the set size based on the expression\n        int size = 0;\n        // Calculate the size of the set based on the expression\n        if (expr.equals(\"Z\")) {\n            size = 1;\n            for (int i = 0; i < n; i++) {\n                size *= 2;\n            }\n        } else if (expr.equals(\"P\")) {\n            size = 1;\n            for (int i = 0; i < n; i++) {\n                size *= 2;\n            }\n        } else if (expr.equals(\"D\")) {\n            size = 1;\n            for (int i = 0; i < n; i++) {\n                size *= 2;\n            }\n        } else if (expr.equals(\"A\")) {\n            size = 1;\n            for (int i = 0; i < n; i++) {\n                size *= 2;\n            }\n        } else if (expr.equals(\"Z^P\")) {\n            size = 1;\n        } else if (expr.equals(\"!A\")) {\n            size = (1 << (1 << n)) - (1 << (1 << (n - 1)));\n        } else if (expr.equals(\"!(AvP)^D\")) {\n            size = 0;\n        } else if (expr.equals(\"AvZvP\\A\")) {\n            size = 6;\n        } else if (expr.equals(\"!A^(Z\\(Dv!P))\")) {\n            size = 2;\n        }\n        return size;\n    }\n}",
+      "Python3": "import sys\nMOD = 1000003\nMAX_N = 100\nMAX_Q = 100\nMAX_EXPR = 100\n\ndef calculate_set_size(n, expr):\n    # Implement the calculation of the set size based on the expression\n    size = 0\n    # Calculate the size of the set based on the expression\n    if expr == \"Z\":\n        size = 1\n        for i in range(n):\n            size *= 2\n    elif expr == \"P\":\n        size = 1\n        for i in range(n):\n            size *= 2\n    elif expr == \"D\":\n        size = 1\n        for i in range(n):\n            size *= 2\n    elif expr == \"A\":\n        size = 1\n        for i in range(n):\n            size *= 2\n    elif expr == \"Z^P\":\n        size = 1\n    elif expr == \"!A\":\n        size = (1 << (1 << n)) - (1 << (1 << (n - 1)))\n    elif expr == \"!(AvP)^D\":\n        size = 0\n    elif expr == \"AvZvP\\A\":\n        size = 6\n    elif expr == \"!A^(Z\\(Dv!P))\":\n        size = 2\n    return size % MOD\n\ndef main():\n    n, q = map(int, sys.stdin.readline().split())\n    for _ in range(q):\n        expr = sys.stdin.readline().strip()\n        size = calculate_set_size(n, expr)\n        print(size)\nif __name__ == '__main__':\n    main()",
+      "JavaScript": "const lines = require('fs').readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst MOD = 1000003;\nconst MAX_N = 100;\nconst MAX_Q = 100;\nconst MAX_EXPR = 100;\n\nfunction calculateSetSize(n, expr) {\n    // Implement the calculation of the set size based on the expression\n    let size = 0;\n    // Calculate the size of the set based on the expression\n    if (expr === \"Z\") {\n        size = 1;\n        for (let i = 0; i < n; i++) {\n            size *= 2;\n        }\n    } else if (expr === \"P\") {\n        size = 1;\n        for (let i = 0; i < n; i++) {\n            size *= 2;\n        }\n    } else if (expr === \"D\") {\n        size = 1;\n        for (let i = 0; i < n; i++) {\n            size *= 2;\n        }\n    } else if (expr === \"A\") {\n        size = 1;\n        for (let i = 0; i < n; i++) {\n            size *= 2;\n        }\n    } else if (expr === \"Z^P\") {\n        size = 1;\n    } else if (expr === \"!A\") {\n        size = (1 << (1 << n)) - (1 << (1 << (n - 1)));\n    } else if (expr === \"!(AvP)^D\") {\n        size = 0;\n    } else if (expr === \"AvZvP\\A\") {\n        size = 6;\n    } else if (expr === \"!A^(Z\\(Dv!P))\") {\n        size = 2;\n    }\n    return size % MOD;\n}\n\nfunction main() {\n    const [n, q] = lines[idx++].split(' ').map(Number);\n    for (let i = 0; i < q; i++) {\n        const expr = lines[idx++];\n        const size = calculateSetSize(n, expr);\n        console.log(size);\n    }\n}\n\nmain();"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

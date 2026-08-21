@@ -1,0 +1,131 @@
+{
+  "questionId": "Q11388",
+  "title": "Longest Repeating Character Replacement",
+  "slug": "longest-repeating-character-replacement",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "String Manipulation",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Sliding Window",
+      "Character Replacement"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Given an integer k and a string s, any character in the string can be selected and changed to any other uppercase English character. This operation can be performed up to k times. After completing these steps, return \nthe length of the longest substring that contains the same letter.",
+    "constraints": [
+      "1 <= k <= 10^4",
+      "1 <= length of s <= 10^4",
+      "s consists only of uppercase English letters"
+    ],
+    "inputFormat": "s = string of uppercase English letters, k = integer",
+    "outputFormat": "length of the longest substring that contains the same letter",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "s = \"BAABAABBBAAA\", k = 2",
+        "output": "6",
+        "explanation": "We can change the B at index 0 and 3 (0-based indexing) to A. The new string becomes \"AAAAAABBBAAA\". The substring \"AAAAAA\" is the longest substring with the same letter, and its length is 6."
+      },
+      {
+        "id": "sample_2",
+        "input": "s = \"AABABBA\", k = 1",
+        "output": "4",
+        "explanation": "We can change one character to get the new string \"AABBBBA\". The substring \"BBBB\" is the longest with the same character. There are other ways to achieve this result as well."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "s = \"A\", k = 0",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "s = \"AAAAAAAAAA\", k = 10",
+        "expectedOutput": "10",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform case",
+        "input": "s = \"AAAAAAAAAA\", k = 0",
+        "expectedOutput": "10",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "s = \"ABABABAB\", k = 4",
+        "expectedOutput": "8",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "mixed case",
+        "input": "s = \"ABCABCABC\", k = 2",
+        "expectedOutput": "6",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Use a sliding window approach to track the maximum frequency of a character in the current window and calculate the number of replacements needed to make all characters the same.",
+    "timeComplexity": "O(n^2)",
+    "spaceComplexity": "O(1)",
+    "code": {
+      "C": "#include <stdio.h>\nint characterReplacement(char * s, int k) {\n    int max_length = 0;\n    for (int i = 0; i < strlen(s); i++) {\n        int freq[26] = {0};\n        int max_freq = 0;\n        for (int j = i; j < strlen(s); j++) {\n            freq[s[j] - 'A']++;\n            max_freq = (max_freq > freq[s[j] - 'A']) ? max_freq : freq[s[j] - 'A'];\n            int window_len = j - i + 1;\n            int replace = window_len - max_freq;\n            if (replace <= k) {\n                max_length = (max_length > window_len) ? max_length : window_len;\n            }\n        }\n    }\n    return max_length;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nclass Solution {\npublic:\n    int characterReplacement(string s, int k) {\n        int maxLength = 0;\n        for (int i = 0; i < s.length(); i++) {\n            vector<int> freq(26, 0);\n            int maxFreq = 0;\n            for (int j = i; j < s.length(); j++) {\n                freq[s[j] - 'A']++;\n                maxFreq = max(maxFreq, freq[s[j] - 'A']);\n                int windowLength = j - i + 1;\n                int replace = windowLength - maxFreq;\n                if (replace <= k) {\n                    maxLength = max(maxLength, windowLength);\n                }\n            }\n        }\n        return maxLength;\n    }\n};",
+      "Java": "import java.util.*;\nclass Solution {\n    public int characterReplacement(String s, int k) {\n        int maxLength = 0;\n        for (int i = 0; i < s.length(); i++) {\n            int[] freq = new int[26];\n            int maxFreq = 0;\n            for (int j = i; j < s.length(); j++) {\n                freq[s.charAt(j) - 'A']++;\n                maxFreq = Math.max(maxFreq, freq[s.charAt(j) - 'A']);\n                int windowSize = j - i + 1;\n                int replacements = windowSize - maxFreq;\n                if (replacements <= k) {\n                    maxLength = Math.max(maxLength, windowSize);\n                }\n            }\n        }\n        return maxLength;\n    }\n}",
+      "Python3": "class Solution:\n    def characterReplacement(self, s: str, k: int) -> int:\n        max_length = 0\n        for i in range(len(s)):\n            freq = [0] * 26\n            max_freq = 0\n            for j in range(i, len(s)):\n                freq[ord(s[j]) - ord('A')] += 1\n                max_freq = max(max_freq, freq[ord(s[j]) - ord('A')])\n                window_len = j - i + 1\n                replace = window_len - max_freq\n                if replace <= k:\n                    max_length = max(max_length, window_len)\n        return max_length",
+      "JavaScript": "class Solution {\n    characterReplacement(s, k) {\n        let maxLength = 0;\n        for (let i = 0; i < s.length; i++) {\n            const freq = new Array(26).fill(0);\n            let maxFreq = 0;\n            for (let j = i; j < s.length; j++) {\n                freq[s.charCodeAt(j) - 65]++;\n                maxFreq = Math.max(maxFreq, freq[s.charCodeAt(j) - 65]);\n                const windowSize = j - i + 1;\n                const replace = windowSize - maxFreq;\n                if (replace <= k) {\n                    maxLength = Math.max(maxLength, windowSize);\n                }\n            }\n        }\n        return maxLength;\n    }\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

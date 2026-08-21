@@ -1,0 +1,129 @@
+{
+  "questionId": "Q6813",
+  "title": "Number Game",
+  "slug": "number-game",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math | Dynamic Programming | Number Theory",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Number Theory",
+      "Dynamic Programming",
+      "Modular Arithmetic"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Graphs"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are playing a game with a robot. The game starts with two integers: **A** and **M**. The robot makes exactly one move in the entire game, and it does so at the very beginning - it will remove exactly 1 digit from **A** and output it as the starting value (say X). Note that the value **A** remains intact. It is not changed by the robot. After the robot makes its moves, it is your turn. You can make an unlimited number of moves. In each move, you must remove exactly 1 digit from A and append it to X (to the right side of X). Again note that none of your moves change the value of **A**. You win if you can eventually make X a multiple of M (i.e. Xmod  M=0X \\mod M = 0XmodM=0). How many possible starting moves bot can make such that you are guaranteed to win assuming you play optimally?\n\nHere is an example of a game:\nSuppose the numbers are **A** = 1003, **M** = 4. The robot can make four possible starting moves: 003 by removing 1st digit, 103 by removing 2nd or 3rd digit (both count as a separate possibilities even though the starting X will be same) or 100 by removing the 4th digit.\nLet us say the robot chooses 003 as the starting move. Then you can win by appending 100 (by removing the 4th digit) making X = 003100 which is divisible by 4.\n\n\nInput Format\n\nThe first line of the input contains an integer **T** denoting the number of test cases. The description of **T** test cases follows.\nThe only line of each test case contains 2 integers **A** and **M**.\n\n\nOutput Format\n\nFor each test case, output a single line containing the number of possible first moves that the robot can make such that you can force a win.",
+    "constraints": [
+      "1 <= T <= 100",
+      "10 <= A < 10^10^6",
+      "1 <= M <= 1000",
+      "The sum of number of digits of A over all test cases will not exceed 5 * 10^6"
+    ],
+    "inputFormat": "The first line of the input contains an integer T denoting the number of test cases. The description of T test cases follows. The only line of each test case contains 2 integers A and M.",
+    "outputFormat": "For each test case, output a single line containing the number of possible first moves that the robot can make such that you can force a win.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "5\n1003 4\n11 4\n2004 3\n123 1\n100000 27",
+        "output": "4\n0\n4\n3\n6",
+        "explanation": "Explanation:\nTestcase 1: Whatever the robot's starting move is, you can win by appending 100.\nTestcase 2: It is not possible to win, whatever the starting move of the robot."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n10 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n999999999999999999 1000",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n100 4",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n1234 5",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n5678 3",
+        "expectedOutput": "2",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use dynamic programming and modular arithmetic. We need to find all possible first moves that the robot can make such that we can force a win. We can do this by iterating over all possible first moves and checking if we can make the resulting number a multiple of M by appending digits from A.",
+    "timeComplexity": "O(T * 10^6 * M) — explain: per query is O(10^6 * M), total is O(T * 10^6 * M)",
+    "spaceComplexity": "O(10^6) — explain: we need to store the dynamic programming table",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n#define MAX 1000001\nint dp[MAX];\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        char A[1000001];\n        int M;\n        scanf(\"%s %d\", A, &M);\n        int n = strlen(A);\n        int count = 0;\n        for (int i = 0; i < n; i++) {\n            int num = 0;\n            for (int j = 0; j < n; j++) {\n                if (j != i) {\n                    num = num * 10 + (A[j] - '0');\n                }\n            }\n            int rem = num % M;\n            int flag = 0;\n            for (int j = 0; j < n; j++) {\n                if (j != i) {\n                    int digit = A[j] - '0';\n                    if ((rem * 10 + digit) % M == 0) {\n                        flag = 1;\n                        break;\n                    }\n                    rem = (rem * 10 + digit) % M;\n                }\n            }\n            if (flag) {\n                count++;\n            }\n        }\n        printf(\"%d\\n\", count);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <string>\nusing namespace std;\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        string A;\n        int M;\n        cin >> A >> M;\n        int n = A.size();\n        int count = 0;\n        for (int i = 0; i < n; i++) {\n            int num = 0;\n            for (int j = 0; j < n; j++) {\n                if (j != i) {\n                    num = num * 10 + (A[j] - '0');\n                }\n            }\n            int rem = num % M;\n            int flag = 0;\n            for (int j = 0; j < n; j++) {\n                if (j != i) {\n                    int digit = A[j] - '0';\n                    if ((rem * 10 + digit) % M == 0) {\n                        flag = 1;\n                        break;\n                    }\n                    rem = (rem * 10 + digit) % M;\n                }\n            }\n            if (flag) {\n                count++;\n            }\n        }\n        cout << count << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n        while (T-- > 0) {\n            String A = sc.next();\n            int M = sc.nextInt();\n            int n = A.length();\n            int count = 0;\n            for (int i = 0; i < n; i++) {\n                int num = 0;\n                for (int j = 0; j < n; j++) {\n                    if (j != i) {\n                        num = num * 10 + (A.charAt(j) - '0');\n                    }\n                }\n                int rem = num % M;\n                int flag = 0;\n                for (int j = 0; j < n; j++) {\n                    if (j != i) {\n                        int digit = A.charAt(j) - '0';\n                        if ((rem * 10 + digit) % M == 0) {\n                            flag = 1;\n                            break;\n                        }\n                        rem = (rem * 10 + digit) % M;\n                    }\n                }\n                if (flag) {\n                    count++;\n                }\n            }\n            System.out.println(count);\n        }\n    }\n}",
+      "Python3": "import sys\nT = int(input())\nfor _ in range(T):\n    A = input()\n    M = int(input())\n    n = len(A)\n    count = 0\n    for i in range(n):\n        num = 0\n        for j in range(n):\n            if j != i:\n                num = num * 10 + int(A[j])\n        rem = num % M\n        flag = 0\n        for j in range(n):\n            if j != i:\n                digit = int(A[j])\n                if (rem * 10 + digit) % M == 0:\n                    flag = 1\n                    break\n                rem = (rem * 10 + digit) % M\n        if flag:\n            count += 1\n    print(count)",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst readline = () => lines[idx++];\nconst T = parseInt(readline());\nfor (let i = 0; i < T; i++) {\n    const [A, M] = readline().split(' ');\n    const n = A.length;\n    let count = 0;\n    for (let j = 0; j < n; j++) {\n        let num = 0;\n        for (let k = 0; k < n; k++) {\n            if (k !== j) {\n                num = num * 10 + parseInt(A[k]);\n            }\n        }\n        let rem = num % M;\n        let flag = 0;\n        for (let k = 0; k < n; k++) {\n            if (k !== j) {\n                const digit = parseInt(A[k]);\n                if ((rem * 10 + digit) % M === 0) {\n                    flag = 1;\n                    break;\n                }\n                rem = (rem * 10 + digit) % M;\n            }\n        }\n        if (flag) {\n            count++;\n        }\n    }\n    console.log(count);\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

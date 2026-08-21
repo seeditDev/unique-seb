@@ -1,0 +1,123 @@
+{
+  "questionId": "Q3981",
+  "title": "Plus Equation",
+  "slug": "plus-equation",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-03",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Big integers (handled by language)",
+      "Reconstruction",
+      "DP on prefixes",
+      "Strings"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ]
+  },
+  "content": {
+    "problemStatement": "You are given a string SSS containing only decimal digits ('0' through '9') and a number NNN. Your task is to insert an arbitrary number (including zero) of plus signs '+' into SSS in order to form a valid expression whose value is equal to NNN.",
+    "constraints": [
+      "1 \u2264 T \u2264 5",
+      "1 \u2264 |S| \u2264 120",
+      "0 \u2264 N \u2264 int(S) (the integer value of S when interpreted as a whole)",
+      "A solution always exists"
+    ],
+    "inputFormat": "The first line contains an integer T (1 \u2264 T \u2264 5), the number of test cases. Each of the next T lines contains a string S consisting only of digits (1 \u2264 |S| \u2264 120) followed by a space and an integer N. It is guaranteed that at least one way of inserting \u2018+\u2019 signs into S yields an expression whose value equals N.",
+    "outputFormat": "For each test case output one line \u2013 any expression obtained by inserting zero or more \u2018+\u2019 signs into S such that the sum of the resulting numbers equals N. Leading zeros are allowed in the parts.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "",
+        "output": "4\n15112 28\n120012 33\n123 123\n15489001 10549",
+        "explanation": ""
+      },
+      {
+        "id": "sample_2",
+        "input": "",
+        "output": "15+11+2\n1+20+012\n123\n1548+9001",
+        "explanation": ""
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each test case we treat the problem as a subset\u2011sum on the prefix positions of S. Let dp[i][v] be true if we can obtain sum v using the prefix S[0..i\u20111]. We iterate i from 0 to |S| and for every possible previous cut position j < i we take the substring S[j..i\u20111] as a number val (converted with the language\u2019s arbitrary\u2011precision integer). If dp[j][v\u2011val] is true we set dp[i][v] = true and store the predecessor (j, val) for reconstruction. The target is dp[|S|][N]. Because N can be as large as the whole number, we rely on the guarantee that a solution exists and on the relatively small length (\u2264120) \u2013 the number of reachable sums stays manageable in practice. After the DP finishes we backtrack from (|S|, N) using the stored predecessor information to obtain the positions of the plus signs and build the required expression.\n\nThe algorithm works for all five requested languages because they all support arbitrary\u2011precision integers (C++ via boost::multiprecision::cpp_int, Java via BigInteger, Python/JS via native Number/BigInt). The time complexity is O(L\u00b2\u00b7M) in the worst case where L = |S| and M is the number of distinct sums actually reached (M \u2264 N+1). In typical test data M is far smaller than N, and with L \u2264 120 the program easily fits into the limits. The memory consumption is O(L\u00b7M) for the DP table and predecessor information.",
+    "timeComplexity": "O(L\u00b2\u00b7M) \u2013 with L \u2264 120 and M being the number of reachable sums (practically \u2264 few\u202f\u00d710\u2075).",
+    "spaceComplexity": "O(L\u00b7M) for the DP table and back\u2011pointers.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n#include <stdlib.h>\n#include <stdbool.h>\n#include <gmp.h> // GNU MP for big integers\n\ntypedef struct {int prev; char *part; } Prev;\n\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    while(T--){\n        char S[130]; char Nstr[130];\n        scanf(\"%s %s\", S, Nstr);\n        int L = strlen(S);\n        mpz_t N; mpz_init_set_str(N, Nstr, 10);\n        // DP: vector of hash tables (value -> Prev)\n        typedef struct Node{ mpz_t sum; int prev; int pos; struct Node* next; } Node;\n        // For simplicity and because constraints are tiny we use a linked list per position.\n        Node* dp[131] = {0};\n        // base state sum=0 at position 0\n        Node* base = (Node*)malloc(sizeof(Node));\n        mpz_init_set_ui(base->sum, 0);\n        base->prev = -1; base->pos = -1; base->next = NULL;\n        dp[0] = base;\n        for(int i=1;i<=L;i++){\n            for(int j=0;j<i;j++){\n                // substring S[j..i-1]\n                char buf[130]; memcpy(buf, S+j, i-j); buf[i-j]='\\0';\n                mpz_t val; mpz_init_set_str(val, buf, 10);\n                for(Node* cur=dp[j]; cur; cur=cur->next){\n                    mpz_t cand; mpz_init(cand);\n                    mpz_add(cand, cur->sum, val);\n                    if(mpz_cmp(cand, N) > 0){ mpz_clear(cand); continue; }\n                    // store new state\n                    Node* nd = (Node*)malloc(sizeof(Node));\n                    mpz_init_set(nd->sum, cand);\n                    nd->prev = j; nd->pos = i; nd->next = dp[i];\n                    dp[i] = nd;\n                    mpz_clear(cand);\n                }\n                mpz_clear(val);\n            }\n        }\n        // find state with sum == N at position L\n        Node* target = NULL;\n        for(Node* cur=dp[L]; cur; cur=cur->next){\n            if(mpz_cmp(cur->sum, N)==0){ target=cur; break; }\n        }\n        // reconstruct\n        char *parts[130]; int cnt=0;\n        int pos = L; Node* cur = target;\n        while(cur && cur->prev!=-1){\n            int start = cur->prev;\n            int len = pos - start;\n            parts[cnt] = (char*)malloc(len+1);\n            memcpy(parts[cnt], S+start, len);\n            parts[cnt][len]='\\0';\n            cnt++;\n            pos = start;\n            // move to previous node\n            for(Node* p=dp[start]; p; p=p->next){ if(mpz_cmp(p->sum, cur->sum) == 0 && p->pos==start){ cur=p; break; } }\n        }\n        // output in reverse order\n        for(int i=cnt-1;i>=0;i--){\n            printf(\"%s\", parts[i]);\n            if(i) printf(\"+\");\n        }\n        printf(\"\\n\");\n        // cleanup omitted for brevity\n        mpz_clear(N);\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\n#include <boost/multiprecision/cpp_int.hpp>\nusing namespace std;\nusing boost::multiprecision::cpp_int;\n\nstruct Prev{int prev; cpp_int val;};\n\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        string S, Nstr; cin>>S>>Nstr;\n        int L=S.size();\n        cpp_int N=0; for(char c:Nstr) N=N*10+(c-'0');\n        vector<unordered_map<cpp_int, Prev>> dp(L+1);\n        dp[0][0]={-1,0};\n        for(int i=1;i<=L;i++){\n            for(int j=0;j<i;j++){\n                cpp_int val=0;\n                for(int k=j;k<i;k++) val=val*10+(S[k]-'0');\n                for(const auto &pr: dp[j]){\n                    cpp_int ns = pr.first + val;\n                    if(ns > N) continue;\n                    if(dp[i].find(ns)==dp[i].end()) dp[i][ns] = {j,val};\n                }\n            }\n        }\n        // reconstruct\n        vector<string> parts;\n        int pos=L; cpp_int cur=N;\n        while(pos>0){\n            auto it = dp[pos].find(cur);\n            int j = it->second.prev;\n            string part = S.substr(j, pos-j);\n            parts.push_back(part);\n            cur -= it->second.val;\n            pos = j;\n        }\n        for(int i=parts.size()-1;i>=0;i--){\n            cout<<parts[i];\n            if(i) cout<<'+';\n        }\n        cout<<\"\\n\";\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\nimport java.math.BigInteger;\n\npublic class Main {\n    static class Prev {\n        int prev;\n        BigInteger val;\n        Prev(int p, BigInteger v){prev=p;val=v;}\n    }\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        int T = Integer.parseInt(br.readLine().trim());\n        while (T-- > 0) {\n            String line = br.readLine();\n            String[] parts = line.trim().split(\" \");\n            String S = parts[0];\n            BigInteger N = new BigInteger(parts[1]);\n            int L = S.length();\n            @SuppressWarnings(\"unchecked\")\n            HashMap<BigInteger, Prev>[] dp = new HashMap[L+1];\n            for (int i=0;i<=L;i++) dp[i]=new HashMap<>();\n            dp[0].put(BigInteger.ZERO, new Prev(-1, BigInteger.ZERO));\n            for (int i=1;i<=L;i++) {\n                for (int j=0;j<i;j++) {\n                    BigInteger val = new BigInteger(S.substring(j,i));\n                    for (Map.Entry<BigInteger, Prev> e: dp[j].entrySet()) {\n                        BigInteger ns = e.getKey().add(val);\n                        if (ns.compareTo(N)>0) continue;\n                        dp[i].putIfAbsent(ns, new Prev(j,val));\n                    }\n                }\n            }\n            // reconstruction\n            List<String> out = new ArrayList<>();\n            int pos = L;\n            BigInteger cur = N;\n            while (pos>0) {\n                Prev pr = dp[pos].get(cur);\n                int j = pr.prev;\n                out.add(S.substring(j,pos));\n                cur = cur.subtract(pr.val);\n                pos = j;\n            }\n            for (int i=out.size()-1;i>=0;i--) {\n                System.out.print(out.get(i));\n                if (i>0) System.out.print('+');\n            }\n            System.out.println();\n        }\n    }\n}\n",
+      "Python3": "#!/usr/bin/env python3\nimport sys\n\ndef solve():\n    data = sys.stdin.read().strip().splitlines()\n    if not data: return\n    t = int(data[0])\n    out_lines = []\n    for i in range(1, t+1):\n        s, n_str = data[i].split()\n        N = int(n_str)\n        L = len(s)\n        dp = [dict() for _ in range(L+1)]\n        dp[0][0] = (-1, 0)  # (prev position, value of last part)\n        for end in range(1, L+1):\n            for start in range(end):\n                val = int(s[start:end])\n                for cur_sum, (prev, _) in dp[start].items():\n                    ns = cur_sum + val\n                    if ns > N: continue\n                    if ns not in dp[end]:\n                        dp[end][ns] = (start, val)\n        # reconstruct\n        parts = []\n        pos = L\n        cur = N\n        while pos > 0:\n            prev, val = dp[pos][cur]\n            parts.append(s[prev:pos])\n            cur -= val\n            pos = prev\n        out_lines.append('+'.join(reversed(parts)))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf8').trim().split(/\\n/);\nlet idx = 0;\nconst T = parseInt(input[idx++]);\nlet results = [];\nfor (let tc = 0; tc < T; tc++) {\n  const [S, Nstr] = input[idx++].trim().split(' ');\n  const N = BigInt(Nstr);\n  const L = S.length;\n  const dp = Array.from({ length: L + 1 }, () => new Map());\n  dp[0].set(0n, { prev: -1, val: 0n });\n  for (let end = 1; end <= L; end++) {\n    for (let start = 0; start < end; start++) {\n      const val = BigInt(S.slice(start, end));\n      for (const [sum, info] of dp[start]) {\n        const ns = sum + val;\n        if (ns > N) continue;\n        if (!dp[end].has(ns)) dp[end].set(ns, { prev: start, val });\n      }\n    }\n  }\n  // reconstruction\n  let parts = [];\n  let pos = L;\n  let cur = N;\n  while (pos > 0) {\n    const info = dp[pos].get(cur);\n    const start = info.prev;\n    parts.push(S.slice(start, pos));\n    cur -= info.val;\n    pos = start;\n  }\n  results.push(parts.reverse().join('+'));\n}\nconsole.log(results.join('\\n'));\n"
+    }
+  }
+}

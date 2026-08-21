@@ -1,0 +1,117 @@
+{
+  "questionId": "Q3028",
+  "title": "Filling the maze",
+  "slug": "filling-the-maze",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graphs",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Graph Traversal",
+      "Graphs",
+      "DFS",
+      "BFS",
+      "Probability"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Combinatorics & Probability"
+    ]
+  },
+  "content": {
+    "problemStatement": "Consider a maze like this one, encoded in ASCII as a grid of **R** by **C** cells, denoted by characters # (a wall) and o (a walkable cell). The top left cell of the maze is the start and the bottom right one is the goal. All walkable cells are initially white.\n\n\n\nCell B is reachable from cell A iff A and B are both walkable and it's possible to get to B by starting at A and moving only to walkable cells in the four cardinal directions \u2014 up, right, down and left.\n\n\n\nThe maze is complicated and you're too lazy. That's why you try to solve it using the following algorithm:\n\n\n\nPick a white walkable cell at random and click on it.\n\n\nThe cell you picked in the first step and all cells reachable from it turn red.\n\n\nIf there's a red path from the start to the goal, you have solved the maze.\n\nElse: goto first step.\n\n(Note that once a cell turns red, it will remain red until the maze is solved. Also note that this algorithm will always terminate.)\n\n\n\nWhat's the expected number of clicks (expectation value of the number of clicks) you'll have to make to solve the maze?",
+    "constraints": [
+      "1 <= T <= 100",
+      "1 <= R*C <= 50000",
+      "At least one path from the start to the goal exists in each test case"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case starts with a line containing two integers R and C, the number of rows and columns in the maze. The following R lines contain C characters each, representing the maze.",
+    "outputFormat": "For each test case, output a single real number representing the expected number of clicks necessary to solve the maze.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n3 3\no#o\noo#\n#oo\n2 2\noo\noo",
+        "output": "1.166667\n1.000000",
+        "explanation": "Explanation: Example case 1. With 5/6 chance, the first click you'll make will be on the only path from the start to the goal. With 1/6 chance, you'll click on the top right cell before that. The expected number of clicks is therefore 5/6*1+1/6*2."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1\no",
+        "expectedOutput": "1.000000",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n50000 1\no\".repeat(50000)",
+        "expectedOutput": "1.000000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n2 2\noo\noo",
+        "expectedOutput": "1.000000",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n3 3\no#o\noo#\n#oo",
+        "expectedOutput": "1.166667",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n4 4\no###\n#o##\n##o#\n###o",
+        "expectedOutput": "4.000000",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a combination of graph traversal algorithms (BFS or DFS) to find all reachable cells from the start and the goal. We then calculate the probability of reaching the goal from the start in one click, which is the number of cells that can reach the goal divided by the total number of reachable cells from the start. The expected number of clicks is then calculated using the formula for the expected value of a geometric distribution.",
+    "timeComplexity": "O(T * (R*C)^2) \u2014 because in the worst case, we might need to perform BFS or DFS from each cell in the maze for each test case.",
+    "spaceComplexity": "O(R*C) \u2014 for storing the maze and the visited cells during BFS or DFS.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#define MAX 50005\n\nint R, C;\nchar maze[MAX][MAX];\nint visited[MAX][MAX];\nint directions[][2] = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};\n\nint is_valid(int x, int y) {\n    return x >= 0 && x < R && y >= 0 && y < C && maze[x][y] == 'o' && !visited[x][y];\n}\n\nvoid bfs(int x, int y) {\n    visited[x][y] = 1;\n    for (int i = 0; i < 4; i++) {\n        int nx = x + directions[i][0];\n        int ny = y + directions[i][1];\n        if (is_valid(nx, ny)) {\n            bfs(nx, ny);\n        }\n    }\n}\n\nint count_reachable_cells(int x, int y) {\n    memset(visited, 0, sizeof(visited));\n    bfs(x, y);\n    int count = 0;\n    for (int i = 0; i < R; i++) {\n        for (int j = 0; j < C; j++) {\n            if (visited[i][j]) {\n                count++;\n            }\n        }\n    }\n    return count;\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        scanf(\"%d %d\", &R, &C);\n        for (int i = 0; i < R; i++) {\n            scanf(\"%s\", maze[i]);\n        }\n        int start_reachable = count_reachable_cells(0, 0);\n        int goal_reachable = count_reachable_cells(R-1, C-1);\n        double probability = (double)goal_reachable / start_reachable;\n        double expected_clicks = 1 / probability;\n        printf(\"%.6f\\n\", expected_clicks);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\n#include <queue>\nusing namespace std;\n\nconst int MAX = 50005;\nconst int directions[][2] = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};\n\nint R, C;\nchar maze[MAX][MAX];\nbool visited[MAX][MAX];\n\nbool is_valid(int x, int y) {\n    return x >= 0 && x < R && y >= 0 && y < C && maze[x][y] == 'o' && !visited[x][y];\n}\n\nvoid bfs(int x, int y) {\n    visited[x][y] = true;\n    for (int i = 0; i < 4; i++) {\n        int nx = x + directions[i][0];\n        int ny = y + directions[i][1];\n        if (is_valid(nx, ny)) {\n            bfs(nx, ny);\n        }\n    }\n}\n\nint count_reachable_cells(int x, int y) {\n    memset(visited, 0, sizeof(visited));\n    bfs(x, y);\n    int count = 0;\n    for (int i = 0; i < R; i++) {\n        for (int j = 0; j < C; j++) {\n            if (visited[i][j]) {\n                count++;\n            }\n        }\n    }\n    return count;\n}\n\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        cin >> R >> C;\n        for (int i = 0; i < R; i++) {\n            cin >> maze[i];\n        }\n        int start_reachable = count_reachable_cells(0, 0);\n        int goal_reachable = count_reachable_cells(R-1, C-1);\n        double probability = (double)goal_reachable / start_reachable;\n        double expected_clicks = 1 / probability;\n        cout << fixed << setprecision(6) << expected_clicks << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    static final int MAX = 50005;\n    static int R, C;\n    static char[][] maze = new char[MAX][MAX];\n    static boolean[][] visited = new boolean[MAX][MAX];\n    static int[][] directions = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};\n\n    public static boolean is_valid(int x, int y) {\n        return x >= 0 && x < R && y >= 0 && y < C && maze[x][y] == 'o' && !visited[x][y];\n    }\n\n    public static void bfs(int x, int y) {\n        visited[x][y] = true;\n        for (int i = 0; i < 4; i++) {\n            int nx = x + directions[i][0];\n            int ny = y + directions[i][1];\n            if (is_valid(nx, ny)) {\n                bfs(nx, ny);\n            }\n        }\n    }\n\n    public static int count_reachable_cells(int x, int y) {\n        for (boolean[] row : visited) {\n            for (int i = 0; i < row.length; i++) {\n                row[i] = false;\n            }\n        }\n        bfs(x, y);\n        int count = 0;\n        for (int i = 0; i < R; i++) {\n            for (int j = 0; j < C; j++) {\n                if (visited[i][j]) {\n                    count++;\n                }\n            }\n        }\n        return count;\n    }\n\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int T = scanner.nextInt();\n        while (T-- > 0) {\n            R = scanner.nextInt();\n            C = scanner.nextInt();\n            for (int i = 0; i < R; i++) {\n                String row = scanner.next();\n                maze[i] = row.toCharArray();\n            }\n            int start_reachable = count_reachable_cells(0, 0);\n            int goal_reachable = count_reachable_cells(R-1, C-1);\n            double probability = (double)goal_reachable / start_reachable;\n            double expected_clicks = 1 / probability;\n            System.out.printf(\"%.6f\\n\", expected_clicks);\n        }\n    }\n}",
+      "Python3": "import sys\n\nMAX = 50005\ndirections = [[0, 1], [0, -1], [1, 0], [-1, 0]]\n\ndef is_valid(x, y, R, C, maze, visited):\n    return 0 <= x < R and 0 <= y < C and maze[x][y] == 'o' and not visited[x][y]\n\ndef bfs(x, y, R, C, maze, visited):\n    visited[x][y] = True\n    for dx, dy in directions:\n        nx, ny = x + dx, y + dy\n        if is_valid(nx, ny, R, C, maze, visited):\n            bfs(nx, ny, R, C, maze, visited)\n\ndef count_reachable_cells(x, y, R, C, maze):\n    visited = [[False]*C for _ in range(R)]\n    bfs(x, y, R, C, maze, visited)\n    return sum(sum(row) for row in visited)\n\ninput = sys.stdin.readline\nT = int(input())\nfor _ in range(T):\n    R, C = map(int, input().split())\n    maze = [list(input().rstrip()) for _ in range(R)]\n    start_reachable = count_reachable_cells(0, 0, R, C, maze)\n    goal_reachable = count_reachable_cells(R-1, C-1, R, C, maze)\n    probability = goal_reachable / start_reachable\n    expected_clicks = 1 / probability\n    print(f'{expected_clicks:.6f}')",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst readline = () => input[idx++];\n\nconst MAX = 50005;\nconst directions = [[0, 1], [0, -1], [1, 0], [-1, 0]];\n\nfunction is_valid(x, y, R, C, maze, visited) {\n    return x >= 0 && x < R && y >= 0 && y < C && maze[x][y] === 'o' && !visited[x][y];\n}\n\nfunction bfs(x, y, R, C, maze, visited) {\n    visited[x][y] = true;\n    for (const [dx, dy] of directions) {\n        const nx = x + dx;\n        const ny = y + dy;\n        if (is_valid(nx, ny, R, C, maze, visited)) {\n            bfs(nx, ny, R, C, maze, visited);\n        }\n    }\n}\n\nfunction count_reachable_cells(x, y, R, C, maze) {\n    const visited = Array(R).fill(0).map(() => Array(C).fill(false));\n    bfs(x, y, R, C, maze, visited);\n    return visited.reduce((acc, row) => acc + row.filter(Boolean).length, 0);\n}\n\nconst T = parseInt(readline());\nfor (let i = 0; i < T; i++) {\n    const [R, C] = readline().split(' ').map(Number);\n    const maze = Array(R).fill(0).map(() => readline().trim().split(''));\n    const start_reachable = count_reachable_cells(0, 0, R, C, maze);\n    const goal_reachable = count_reachable_cells(R-1, C-1, R, C, maze);\n    const probability = goal_reachable / start_reachable;\n    const expected_clicks = 1 / probability;\n    console.log(expected_clicks.toFixed(6));\n}"
+    }
+  }
+}

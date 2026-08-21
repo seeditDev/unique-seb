@@ -1,0 +1,126 @@
+{
+  "questionId": "Q3002",
+  "title": "String Matching",
+  "slug": "string-matching",
+  "version": 2,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-09",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Strings",
+      "Hashing",
+      "Hamming Distance"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Divide & Conquer"
+    ]
+  },
+  "content": {
+    "problemStatement": "In this problem we define:\n\n\u2022 Binary string: a string consisting only of '0' and '1'.\n\u2022 Hamming distance: for two binary strings of equal length, the number of positions at which they differ.\n\u2022 Substring: a contiguous segment of a string.\n\nYou are given a fixed binary string A.\nFor each query string B, compute the Hamming distance between B and every substring of A having length |B|.\n\nLet the resulting sequence be d0,d1,...,dt.\n\nCompute the hash as:\n\nMOD = 1000000007\nBASE = 100001\n\nhash = 0\nfor every distance d:\n    hash = (hash * BASE + d) % MOD\n\nOutput the final hash for every query.\n",
+    "constraints": [
+      "1 <= |B| <= |A| <= 100000",
+      "1 <= K <= 5"
+    ],
+    "inputFormat": "First line contains binary string A. Second line contains integer K. Each of the next K lines contains one binary string B.",
+    "outputFormat": "For every query print the polynomial hash of the Hamming-distance sequence.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "10101\n3\n101\n00\n0101",
+        "output": "300003\n400008\n400004",
+        "explanation": "Distances are [0,3,0], [1,1,1,1] and [4,0] respectively."
+      },
+      {
+        "id": "sample_2",
+        "input": "1100\n2\n11\n00",
+        "output":  "100003\n499863",
+        "explanation": "Distances are [0,1,2] and [2,1,0]."
+      },
+      {
+        "id": "sample_3",
+        "input": "1111\n2\n11\n11",
+        "output": "0\n0",
+        "explanation": "Distances are [0,0,0] for both queries."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "0\n1\n0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1111111111111111\n1\n1111111111111111",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform",
+        "input": "0000000000\n1\n0000000000",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "alternating",
+        "input": "1010101010\n1\n1010101010",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general",
+        "input": "1100110011001100\n2\n1100\n0011",
+        "expectedOutput": "563948599\n7407392",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Slide over every substring of A having length M, compute Hamming distance, then compute the polynomial hash.",
+    "timeComplexity": "O(K × (N - M + 1) × M)",
+"spaceComplexity": "O(N - M + 1)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n#define MOD 1000000007\n#define BASE 100001\nint hammingDistance(char *a, char *b, int len) {\n    int dist = 0;\n    for (int i = 0; i < len; i++) {\n        if (a[i] != b[i]) {\n            dist++;\n        }\n    }\n    return dist;\n}\nlong long hashValue(int *distances, int len) {\n    long long hash = 0;\n    for (int i = 0; i < len; i++) {\n        hash = (hash * BASE + distances[i]) % MOD;\n    }\n    return hash;\n}\nint main() {\n    char A[100001];\n    int K;\n    scanf(\"%s\", A);\n    scanf(\"%d\", &K);\n    int N = strlen(A);\n    for (int i = 0; i < K; i++) {\n        char B[100001];\n        scanf(\"%s\", B);\n        int M = strlen(B);\n        int distances[N - M + 1];\n        for (int j = 0; j <= N - M; j++) {\n            char subStr[M + 1];\n            strncpy(subStr, A + j, M);\n            subStr[M] = '\\0';\n            distances[j] = hammingDistance(subStr, B, M);\n        }\n        printf(\"%lld\\n\", hashValue(distances, N - M + 1));\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <string>\nusing namespace std;\n#define MOD 1000000007\n#define BASE 100001\nint hammingDistance(string a, string b) {\n    int dist = 0;\n    for (int i = 0; i < b.length(); i++) {\n        if (a[i] != b[i]) {\n            dist++;\n        }\n    }\n    return dist;\n}\nlong long hashValue(int *distances, int len) {\n    long long hash = 0;\n    for (int i = 0; i < len; i++) {\n        hash = (hash * BASE + distances[i]) % MOD;\n    }\n    return hash;\n}\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(NULL);\n    string A;\n    int K;\n    cin >> A;\n    cin >> K;\n    int N = A.length();\n    for (int i = 0; i < K; i++) {\n        string B;\n        cin >> B;\n        int M = B.length();\n        int distances[N - M + 1];\n        for (int j = 0; j <= N - M; j++) {\n            string subStr = A.substr(j, M);\n            distances[j] = hammingDistance(subStr, B);\n        }\n        printf(\"%lld\\n\", hashValue(distances, N - M + 1));\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    static final int MOD = 1000000007;\n    static final int BASE = 100001;\n    public static int hammingDistance(String a, String b) {\n        int dist = 0;\n        for (int i = 0; i < b.length(); i++) {\n            if (a.charAt(i) != b.charAt(i)) {\n                dist++;\n            }\n        }\n        return dist;\n    }\n    public static long hashValue(int[] distances) {\n        long hash = 0;\n        for (int i = 0; i < distances.length; i++) {\n            hash = (hash * BASE + distances[i]) % MOD;\n        }\n        return hash;\n    }\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        String A = sc.next();\n        int K = sc.nextInt();\n        int N = A.length();\n        for (int i = 0; i < K; i++) {\n            String B = sc.next();\n            int M = B.length();\n            int[] distances = new int[N - M + 1];\n            for (int j = 0; j <= N - M; j++) {\n                String subStr = A.substring(j, j + M);\n                distances[j] = hammingDistance(subStr, B);\n            }\n            System.out.println(hashValue(distances));\n        }\n    }\n}",
+      "Python3": "MOD = 1000000007\nBASE = 100001\ndef hamming_distance(a, b):\n    return sum(c1 != c2 for c1, c2 in zip(a, b))\ndef hash_value(distances):\n    hash = 0\n    for dist in distances:\n        hash = (hash * BASE + dist) % MOD\n    return hash\nimport sys\nA = sys.stdin.readline().strip()\nK = int(sys.stdin.readline().strip())\nN = len(A)\nfor _ in range(K):\n    B = sys.stdin.readline().strip()\n    M = len(B)\n    distances = [hamming_distance(A[j:j+M], B) for j in range(N-M+1)]\n    print(hash_value(distances))",
+      "JavaScript": "const lines = require('fs').readFileSync(0, 'utf-8').trim().split('\\n');\nlet i = 0;\nconst MOD = 1000000007;\nconst BASE = 100001;\nfunction hammingDistance(a, b) {\n    let dist = 0;\n    for (let i = 0; i < b.length; i++) {\n        if (a[i] !== b[i]) {\n            dist++;\n        }\n    }\n    return dist;\n}\nfunction hashValue(distances) {\n    let hash = 0;\n    for (let i = 0; i < distances.length; i++) {\n        hash = (hash * BASE + distances[i]) % MOD;\n    }\n    return hash;\n}\nfunction main() {\n    const A = lines[i++];\n    const K = parseInt(lines[i++]);\n    const N = A.length;\n    for (let i = 0; i < K; i++) {\n        const B = lines[i + 1];\n        const M = B.length;\n        const distances = [];\n        for (let j = 0; j <= N - M; j++) {\n            const subStr = A.substring(j, j + M);\n            distances.push(hammingDistance(subStr, B));\n        }\n        console.log(hashValue(distances));\n    }\n}\nmain();"
+    }
+	}
+}

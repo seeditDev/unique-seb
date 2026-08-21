@@ -1,0 +1,129 @@
+{
+  "questionId": "Q8853",
+  "title": "Missing Numbers",
+  "slug": "missing-numbers",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Brute Force",
+      "Permutations",
+      "Integer Arithmetic"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Ad-hoc & Implementation"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Alice (uniformly and independently) randomly picks two integers a,ba, ba,b from the range [1,104][1,10^4][1,104], and writes down the values of a+ba + ba+b, a−ba - ba−b, a⋅ba \\cdot ba⋅b and ⌊ab⌋\\lfloor \\frac{a}{b} \\rfloor⌊ba​⌋ (integer division) in some random order. Unfortunately, she forgot the values of aaa and bbb. You need to help her to find out if there exists two integers a,ba, ba,b such that 1≤a,b≤1041 \\leq a, b \\leq 10^41≤a,b≤104 and a+ba + ba+b, a−ba - ba−b, a⋅ba \\cdot ba⋅b, ⌊ab⌋\\lfloor \\frac{a}{b} \\rfloor⌊ba​⌋ are the numbers she has written down.\n\nIf a solution exists, it is guaranteed to be unique.\n\n\nInput Format\n\nThe first line of input contains a single integer TTT, denoting the number of testcases. The description of TTT testcases follows.\nEach testcase consists of a single line of input, containing four space-separated integers A,B,C,DA, B, C, DA,B,C,D — the values written down by Alice. It is guaranteed that at most one of the four numbers A,B,C,DA,B,C,DA,B,C,D will be negative.\n\n\nOutput Format\n\nFor each testcase, output in a single line, separated by a space, the two numbers Alice has chosen **in order** (i.e, if the solution is a=1a = 1a=1 and b=2b = 2b=2, print 1&nbsp;21 \\ 21&nbsp;2 and not 2&nbsp;12 \\ 12&nbsp;1). If there does not exist any such choice of integers, print −1-1−1 **twice**, separated by a space, instead.",
+    "constraints": [
+      "1 ≤ T ≤ 10^5",
+      "1 ≤ a, b ≤ 10^4",
+      "-10^9 ≤ A, B, C, D ≤ 10^9",
+      "At most one of A, B, C, D is negative"
+    ],
+    "inputFormat": "The first line contains an integer T (1 ≤ T ≤ 10^5), the number of test cases. Each of the next T lines contains four space‑separated integers A, B, C, D – the four numbers written down by Alice (in arbitrary order). It is guaranteed that at most one of the four numbers is negative.",
+    "outputFormat": "For each test case output a single line with two integers a and b (1 ≤ a, b ≤ 10^4) in the order a b if a unique pair exists. If no such pair exists output \"-1 -1\".",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n-1 72 0 17\n1 4 5 6",
+        "output": "8 9\n-1 -1",
+        "explanation": "First test case: the numbers correspond to a-b=-1, a*b=72, floor(a/b)=0, a+b=17, giving a=8, b=9. Second test case: no pair (a,b) in [1,10000] produces the four numbers."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 2 0 1",
+        "expectedOutput": "1 1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "general case",
+        "input": "1\n10 7 3 2",
+        "expectedOutput": "5 2",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "maximum values",
+        "input": "1\n10000 9999 10001 10000",
+        "expectedOutput": "10000 1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "no solution",
+        "input": "1\n2 3 4 5",
+        "expectedOutput": "-1 -1",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "duplicate values",
+        "input": "1\n72 1 17 1",
+        "expectedOutput": "9 8",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each test case we try all 4! = 24 ways to assign the four given numbers to the four expressions sum = a+b, diff = a-b, prod = a*b and div = floor(a/b). For a particular assignment we can recover a and b from sum and diff: a = (sum + diff) / 2, b = (sum - diff) / 2. Both must be integers, lie in [1, 10^4] and satisfy a*b == prod and a / b (integer division) == div. As soon as a valid pair is found we output it (the statement guarantees uniqueness). If none of the permutations work we output -1 -1. The work per test case is constant (24 permutations, O(1) each), so the total complexity is O(T).",
+    "timeComplexity": "O(T) – 24 constant‑time checks per test case.",
+    "spaceComplexity": "O(1) besides input storage.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdbool.h>\n\nvoid sort_perm(int *p) {\n    // generate next permutation (lexicographic) for 4 elements\n    int i = 2;\n    while (i >= 0 && p[i] > p[i+1]) i--;\n    if (i < 0) { p[0]=0; p[1]=1; p[2]=2; p[3]=3; return; }\n    int j = 3;\n    while (p[j] < p[i]) j--;\n    int tmp = p[i]; p[i] = p[j]; p[j] = tmp;\n    // reverse suffix\n    int l = i+1, r = 3;\n    while (l < r) { tmp = p[l]; p[l] = p[r]; p[r] = tmp; l++; r--; }\n}\n\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    while(T--){\n        long long v[4];\n        for(int i=0;i<4;i++) scanf(\"%lld\", &v[i]);\n        int perm[4] = {0,1,2,3};\n        bool found = false;\n        long long aAns= -1, bAns = -1;\n        for(int cnt=0; cnt<24 && !found; cnt++){\n            long long sum = v[perm[0]];\n            long long diff = v[perm[1]];\n            long long prod = v[perm[2]];\n            long long div = v[perm[3]];\n            // a and b must be integers\n            if(((sum + diff) & 1LL) || ((sum - diff) & 1LL)) { sort_perm(perm); continue; }\n            long long a = (sum + diff) / 2;\n            long long b = (sum - diff) / 2;\n            if(a < 1 || b < 1 || a > 10000 || b > 10000) { sort_perm(perm); continue; }\n            if(a * b != prod) { sort_perm(perm); continue; }\n            if(b == 0) { sort_perm(perm); continue; }\n            if(a / b != div) { sort_perm(perm); continue; }\n            aAns = a; bAns = b; found = true;\n        }\n        if(found) printf(\"%lld %lld\\n\", aAns, bAns);\n        else printf(\"-1 -1\\n\");\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        long long v[4];\n        for(int i=0;i<4;i++) cin>>v[i];\n        array<int,4> perm = {0,1,2,3};\n        bool ok=false; long long ansA=-1, ansB=-1;\n        do{\n            long long sum=v[perm[0]], diff=v[perm[1]], prod=v[perm[2]], div=v[perm[3]];\n            if(((sum+diff)&1LL) || ((sum-diff)&1LL)) continue;\n            long long a=(sum+diff)/2, b=(sum-diff)/2;\n            if(a<1||b<1||a>10000||b>10000) continue;\n            if(a*b!=prod) continue;\n            if(b==0) continue;\n            if(a/b!=div) continue;\n            ansA=a; ansB=b; ok=true; break;\n        }while(next_permutation(perm.begin(), perm.end()));\n        if(ok) cout<<ansA<<' '<<ansB<<\"\\n\";\n        else cout<<\"-1 -1\\n\";\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    private static boolean nextPerm(int[] p){\n        int i = p.length - 2;\n        while(i>=0 && p[i] > p[i+1]) i--;\n        if(i<0) return false;\n        int j = p.length - 1;\n        while(p[j] < p[i]) j--;\n        int tmp = p[i]; p[i] = p[j]; p[j] = tmp;\n        for(int l=i+1, r=p.length-1; l<r; l++, r--){\n            tmp = p[l]; p[l] = p[r]; p[r] = tmp;\n        }\n        return true;\n    }\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder out = new StringBuilder();\n        int T = Integer.parseInt(br.readLine().trim());\n        while(T-- > 0){\n            StringTokenizer st = new StringTokenizer(br.readLine());\n            long[] v = new long[4];\n            for(int i=0;i<4;i++) v[i] = Long.parseLong(st.nextToken());\n            int[] perm = {0,1,2,3};\n            boolean found = false; long aAns=-1,bAns=-1;\n            do{\n                long sum=v[perm[0]], diff=v[perm[1]], prod=v[perm[2]], div=v[perm[3]];\n                if(((sum+diff)&1L)!=0L || ((sum-diff)&1L)!=0L) continue;\n                long a=(sum+diff)/2, b=(sum-diff)/2;\n                if(a<1||b<1||a>10000||b>10000) continue;\n                if(a*b!=prod) continue;\n                if(b==0) continue;\n                if(a/b!=div) continue;\n                aAns=a; bAns=b; found=true; break;\n            }while(nextPerm(perm));\n            if(found) out.append(aAns).append(' ').append(bAns).append('\\n');\n            else out.append(\"-1 -1\\n\");\n        }\n        System.out.print(out.toString());\n    }\n}\n",
+      "Python3": "#!/usr/bin/env python3\nimport sys, itertools\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        vals = [int(next(it)) for _ in range(4)]\n        found = False\n        for perm in itertools.permutations(range(4)):\n            s, d, p, q = (vals[perm[0]], vals[perm[1]], vals[perm[2]], vals[perm[3]])\n            if (s + d) & 1: continue\n            if (s - d) & 1: continue\n            a = (s + d) // 2\n            b = (s - d) // 2\n            if not (1 <= a <= 10000 and 1 <= b <= 10000):\n                continue\n            if a * b != p:\n                continue\n            if b == 0:\n                continue\n            if a // b != q:\n                continue\n            out_lines.append(f\"{a} {b}\")\n            found = True\n            break\n        if not found:\n            out_lines.append(\"-1 -1\")\n    sys.stdout.write(\"\\n\".join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/).map(Number);\nlet idx = 0;\nconst T = input[idx++];\nlet out = [];\nfunction nextPerm(arr){\n  let i = arr.length - 2;\n  while(i >= 0 && arr[i] > arr[i+1]) i--;\n  if(i < 0) return false;\n  let j = arr.length - 1;\n  while(arr[j] < arr[i]) j--;\n  [arr[i], arr[j]] = [arr[j], arr[i]];\n  for(let l = i+1, r = arr.length-1; l < r; l++, r--){\n    [arr[l], arr[r]] = [arr[r], arr[l]];\n  }\n  return true;\n}\nfor(let t=0; t<T; t++){\n  const vals = [input[idx++], input[idx++], input[idx++], input[idx++]];\n  let perm = [0,1,2,3];\n  let found = false;\n  do{\n    const s = vals[perm[0]], d = vals[perm[1]], p = vals[perm[2]], q = vals[perm[3]];\n    if(((s + d) & 1) || ((s - d) & 1)) continue;\n    const a = (s + d) >> 1; // integer division by 2, works because even\n    const b = (s - d) >> 1;\n    if(a < 1 || b < 1 || a > 10000 || b > 10000) continue;\n    if(a * b !== p) continue;\n    if(b === 0) continue;\n    if(Math.floor(a / b) !== q) continue;\n    out.push(`${a} ${b}`);\n    found = true;\n    break;\n  }while(nextPerm(perm));\n  if(!found) out.push('-1 -1');\n}\nconsole.log(out.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

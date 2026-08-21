@@ -1,0 +1,130 @@
+{
+  "questionId": "Q9965",
+  "title": "Problem-2",
+  "slug": "problem-2",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Greedy | Binary Search | Math",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Binary Search",
+      "Greedy",
+      "Simulation",
+      "Math"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Binary Search"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Hrishi's daughters likes to eat laddoos a lot. \\\n\n\nThere are **N** sets of laddoos prepared for Diwali; for each **i** (1 ≤ **i** ≤ **N**), the **i**-th set contains **Ai** laddoos.\n\n\n\nHrishi will come home in **H** hours and his daughters want to finish all the laddoos before he returns.\n\n\n\nHis daughters can eat **K** laddoos per hour. \\\nEach hour, they will choose some set of laddoos. \n- If this set contains at least **K** laddoos, then they will eat exactly **K** ladoos from it. \n- Otherwise, they eat the whole set but they wont eat from any other set during this hour.\n\nWhat is the **minimum** **K** such that they are able to eat all the laddoos in **H** hours.\n\n\nInput Format\nThe first line of the input contains a single integer **T** denoting the number of test cases. The description of **T** test cases follows.\nThe first line of each test case contains two space-separated integers **N** and **H** denoting the number of sets and the number of hours after which Hrishi will come home.\nThe second line contains **N** space-separated integers **A1, A2, ..., AN**.\nOutput\nFor each test case, print a single line containing one integer — the minimum possible value of **K**.",
+    "constraints": [
+      "1 ≤ T ≤ 10",
+      "1 ≤ N ≤ 10^5",
+      "N ≤ H ≤ 10^9",
+      "1 ≤ Ai ≤ 10^9"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, the first line contains two space‑separated integers N and H. The second line contains N space‑separated integers A1, A2, ..., AN.",
+    "outputFormat": "For each test case output a single line with the minimum integer K such that the daughters can finish all laddoos within H hours.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n3 3\n1 2 3\n3 4\n1 2 3\n4 5\n4 3 2 7",
+        "output": "3\n2\n4",
+        "explanation": "Test case 1: With K=3 each set finishes in one hour, total 3 hours.\nTest case 2: K=2 gives hours = 1+1+2 = 4, which fits H=4.\nTest case 3: K=4 gives hours = 1+1+1+2 = 5, exactly H."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\\n5 1000000000\\n1000000000 1000000000 1000000000 1000000000 1000000000",
+        "expectedOutput": "5",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\\n3 3\\n100 1 1",
+        "expectedOutput": "100",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\\n5 7\\n9 8 7 6 5",
+        "expectedOutput": "7",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n6 10\n10 10 10 10 10 10",
+        "expectedOutput": "10",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For a fixed eating speed K, the number of hours needed for a set with Ai laddoos is ceil(Ai / K). Because each hour the daughters work on exactly one set, the total hours required is sum_{i=1..N} ceil(Ai / K). The condition we need is sum ceil(Ai / K) ≤ H. The function f(K) = sum ceil(Ai / K) is monotonic non‑increasing with K, therefore we can binary‑search the smallest K in the range [1, max(Ai)]. For each mid value we compute the sum, stopping early if it already exceeds H to keep the check O(N). The overall complexity per test case is O(N log maxAi).",
+    "timeComplexity": "O(N log M) per test case, where M = max(Ai) (≤ 10^9).",
+    "spaceComplexity": "O(1) besides the input array.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    while(T--){\n        int N; long long H; scanf(\"%d %lld\", &N, &H);\n        long long *A = (long long*)malloc(N*sizeof(long long));\n        long long maxA = 0;\n        for(int i=0;i<N;i++){\n            scanf(\"%lld\", &A[i]);\n            if(A[i]>maxA) maxA = A[i];\n        }\n        long long lo = 1, hi = maxA, ans = maxA;\n        while(lo<=hi){\n            long long mid = lo + (hi-lo)/2;\n            __int128 total = 0; // use 128 to avoid overflow in intermediate sum\n            for(int i=0;i<N;i++){\n                total += (A[i] + mid - 1) / mid;\n                if(total > H) break;\n            }\n            if(total <= H){\n                ans = mid;\n                hi = mid - 1;\n            }else{\n                lo = mid + 1;\n            }\n        }\n        printf(\"%lld\\n\", ans);\n        free(A);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N; long long H; cin>>N>>H;\n        vector<long long> A(N);\n        long long maxA=0;\n        for(int i=0;i<N;i++){\n            cin>>A[i];\n            maxA = max(maxA, A[i]);\n        }\n        long long lo=1, hi=maxA, ans=maxA;\n        while(lo<=hi){\n            long long mid = lo + (hi-lo)/2;\n            __int128 hours=0;\n            for(long long x: A){\n                hours += (x + mid - 1)/mid;\n                if(hours>H) break;\n            }\n            if(hours<=H){\n                ans=mid; hi=mid-1;\n            }else lo=mid+1;\n        }\n        cout<<ans<<\"\\n\";\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner(System.in);\n        int T = fs.nextInt();\n        StringBuilder sb = new StringBuilder();\n        while (T-- > 0) {\n            int N = fs.nextInt();\n            long H = fs.nextLong();\n            long[] A = new long[N];\n            long maxA = 0;\n            for (int i = 0; i < N; i++) {\n                A[i] = fs.nextLong();\n                if (A[i] > maxA) maxA = A[i];\n            }\n            long lo = 1, hi = maxA, ans = maxA;\n            while (lo <= hi) {\n                long mid = lo + (hi - lo) / 2;\n                long hours = 0;\n                for (long x : A) {\n                    hours += (x + mid - 1) / mid;\n                    if (hours > H) break;\n                }\n                if (hours <= H) {\n                    ans = mid;\n                    hi = mid - 1;\n                } else {\n                    lo = mid + 1;\n                }\n            }\n            sb.append(ans).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n\n    // Fast scanner for large input\n    static class FastScanner {\n        private final InputStream in;\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        FastScanner(InputStream in) { this.in = in; }\n        private int readByte() throws IOException {\n            if (ptr >= len) {\n                len = in.read(buffer);\n                ptr = 0;\n                if (len <= 0) return -1;\n            }\n            return buffer[ptr++];\n        }\n        long nextLong() throws IOException { return Long.parseLong(next()); }\n        int nextInt() throws IOException { return Integer.parseInt(next()); }\n        String next() throws IOException {\n            StringBuilder sb = new StringBuilder();\n            int c;\n            while ((c = readByte()) != -1 && c <= ' ') ; // skip whitespace\n            if (c == -1) return \"\";\n            do {\n                sb.append((char) c);\n                c = readByte();\n            } while (c > ' ');\n            return sb.toString();\n        }\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it)); H = int(next(it))\n        A = [int(next(it)) for _ in range(N)]\n        lo, hi = 1, max(A)\n        ans = hi\n        while lo <= hi:\n            mid = (lo + hi) // 2\n            hours = 0\n            for x in A:\n                hours += (x + mid - 1) // mid\n                if hours > H:\n                    break\n            if hours <= H:\n                ans = mid\n                hi = mid - 1\n            else:\n                lo = mid + 1\n        out_lines.append(str(ans))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet outputs = [];\nfor (let t = 0; t < T; t++) {\n  const N = Number(input[idx++]);\n  const H = BigInt(input[idx++]);\n  let A = new Array(N);\n  let maxA = 0n;\n  for (let i = 0; i < N; i++) {\n    const val = BigInt(input[idx++]);\n    A[i] = val;\n    if (val > maxA) maxA = val;\n  }\n  let lo = 1n, hi = maxA, ans = maxA;\n  while (lo <= hi) {\n    const mid = lo + (hi - lo) / 2n;\n    let hours = 0n;\n    for (let x of A) {\n      hours += (x + mid - 1n) / mid;\n      if (hours > H) break;\n    }\n    if (hours <= H) {\n      ans = mid;\n      hi = mid - 1n;\n    } else {\n      lo = mid + 1n;\n    }\n  }\n  outputs.push(ans.toString());\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

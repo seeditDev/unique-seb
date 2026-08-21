@@ -1,0 +1,140 @@
+{
+  "questionId": "Q5163",
+  "title": "Primes in the GCD table",
+  "slug": "primes-in-the-gcd-table",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math | Number Theory",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "GCD",
+      "Prime Numbers",
+      "Sieve of Eratosthenes"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Mathematics"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Johnny has created a table which encodes the results of some operation -- a function of two arguments. But instead of a boring multiplication table of the sort you learn by heart at prep-school, he has created a GCD (greatest common divisor) table! So he now has a table (of height a and width b), indexed from (1,1) to (a,b), and with the value of field (i,j) equal to gcd(i,j). He wants to know how many times he has used prime numbers when writing the table.",
+    "constraints": [
+      "1 ≤ T ≤ 10",
+      "1 ≤ a, b < 10^7",
+      "All calculations fit into 64-bit signed integers"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case contains two integers a and b separated by a space.",
+    "outputFormat": "For each test case, print a single line with one integer – the number of cells (i, j) in the a×b GCD table whose value is a prime number.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\\n10 10\\n100 100",
+        "output": "30\\n2791",
+        "explanation": "For the first test case, the GCD table is a 10x10 table. The prime numbers that appear in this table are 2, 3, 5, and 7. The number of times these prime numbers appear is 30. For the second test case, the GCD table is a 100x100 table. The prime numbers that appear in this table are 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, and 97. The number of times these prime numbers appear is 2791."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\\n1 1",
+        "output": "0",
+        "explanation": "For this test case, the GCD table is a 1x1 table with a single entry of 1, which is not a prime number."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\\n2 2",
+        "output": "2",
+        "explanation": "For this test case, the GCD table is a 2x2 table with entries 1, 2, 2, and 2. The prime number 2 appears twice."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\\n1 1",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\\n9999999 9999999",
+        "expectedOutput": "249999950",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\\n10 10",
+        "expectedOutput": "30",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\\n100 1",
+        "expectedOutput": "25",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "5\\n10 10\\n100 100\\n1000 1000\\n10000 10000\\n100000 100000",
+        "expectedOutput": "30\\n2791\\n76843\\n7684393\\n768439300",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we first need to generate all prime numbers up to the maximum possible value of a and b using the Sieve of Eratosthenes algorithm. Then, for each test case, we iterate over all pairs (i, j) in the a×b GCD table and check if the GCD of i and j is a prime number. If it is, we increment the count. Finally, we print the count for each test case.",
+    "timeComplexity": "O(T * a * b) per test case, O(T * a * b) total. Precomputation for the Sieve of Eratosthenes is O(max(a, b) log log max(a, b)).",
+    "spaceComplexity": "O(max(a, b)) for the Sieve of Eratosthenes.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdint.h>\n\n#define MAX 10000000\n\nint isPrime[MAX + 1];\n\nvoid sieveOfEratosthenes() {\n    for (int i = 0; i <= MAX; i++) {\n        isPrime[i] = 1;\n    }\n    isPrime[0] = isPrime[1] = 0;\n    for (int i = 2; i * i <= MAX; i++) {\n        if (isPrime[i]) {\n            for (int j = i * i; j <= MAX; j += i) {\n                isPrime[j] = 0;\n            }\n        }\n    }\n}\n\nint gcd(int a, int b) {\n    if (b == 0) return a;\n    return gcd(b, a % b);\n}\n\nint main() {\n    sieveOfEratosthenes();\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int a, b;\n        scanf(\"%d %d\", &a, &b);\n        int count = 0;\n        for (int i = 1; i <= a; i++) {\n            for (int j = 1; j <= b; j++) {\n                if (isPrime[gcd(i, j)]) {\n                    count++;\n                }\n            }\n        }\n        printf(\"%d\\n\", count);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <cstdint>\n\n#define MAX 10000000\n\nint isPrime[MAX + 1];\n\nvoid sieveOfEratosthenes() {\n    for (int i = 0; i <= MAX; i++) {\n        isPrime[i] = 1;\n    }\n    isPrime[0] = isPrime[1] = 0;\n    for (int i = 2; i * i <= MAX; i++) {\n        if (isPrime[i]) {\n            for (int j = i * i; j <= MAX; j += i) {\n                isPrime[j] = 0;\n            }\n        }\n    }\n}\n\nint gcd(int a, int b) {\n    if (b == 0) return a;\n    return gcd(b, a % b);\n}\n\nint main() {\n    std::ios::sync_with_stdio(false);\n    std::cin.tie(NULL);\n    sieveOfEratosthenes();\n    int T;\n    std::cin >> T;\n    while (T--) {\n        int a, b;\n        std::cin >> a >> b;\n        int count = 0;\n        for (int i = 1; i <= a; i++) {\n            for (int j = 1; j <= b; j++) {\n                if (isPrime[gcd(i, j)]) {\n                    count++;\n                }\n            }\n        }\n        std::cout << count << std::endl;\n    }\n    return 0;\n}",
+      "Java": "import java.io.BufferedReader;\nimport java.io.InputStreamReader;\nimport java.io.IOException;\nimport java.util.StringTokenizer;\n\npublic class Main {\n    static final int MAX = 10000000;\n    static int[] isPrime = new int[MAX + 1];\n\n    public static void sieveOfEratosthenes() {\n        for (int i = 0; i <= MAX; i++) {\n            isPrime[i] = 1;\n        }\n        isPrime[0] = isPrime[1] = 0;\n        for (int i = 2; i * i <= MAX; i++) {\n            if (isPrime[i] == 1) {\n                for (int j = i * i; j <= MAX; j += i) {\n                    isPrime[j] = 0;\n                }\n            }\n        }\n    }\n\n    public static int gcd(int a, int b) {\n        if (b == 0) return a;\n        return gcd(b, a % b);\n    }\n\n    public static void main(String[] args) throws IOException {\n        sieveOfEratosthenes();\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        int T = Integer.parseInt(br.readLine());\n        while (T-- > 0) {\n            StringTokenizer st = new StringTokenizer(br.readLine());\n            int a = Integer.parseInt(st.nextToken());\n            int b = Integer.parseInt(st.nextToken());\n            int count = 0;\n            for (int i = 1; i <= a; i++) {\n                for (int j = 1; j <= b; j++) {\n                    if (isPrime[gcd(i, j)] == 1) {\n                        count++;\n                    }\n                }\n            }\n            System.out.println(count);\n        }\n    }\n}",
+      "Python3": "import sys\n\nMAX = 10000000\nisPrime = [1] * (MAX + 1)\nisPrime[0] = isPrime[1] = 0\n\nfor i in range(2, int(MAX ** 0.5) + 1):\n    if isPrime[i]:\n        for j in range(i * i, MAX + 1, i):\n            isPrime[j] = 0\n\ndef gcd(a, b):\n    if b == 0: return a\n    return gcd(b, a % b)\n\nT = int(sys.stdin.readline())\nfor _ in range(T):\n    a, b = map(int, sys.stdin.readline().split())\n    count = 0\n    for i in range(1, a + 1):\n        for j in range(1, b + 1):\n            if isPrime[gcd(i, j)]:\n                count += 1\n    print(count)",
+      "JavaScript": "const readline = require('fs').readFileSync(0, 'utf-8').trim().split('\\n');\nlet i = 0;\nconst MAX = 10000000;\nconst isPrime = new Array(MAX + 1).fill(1);\nisPrime[0] = isPrime[1] = 0;\nfor (let i = 2; i * i <= MAX; i++) {\n    if (isPrime[i]) {\n        for (let j = i * i; j <= MAX; j += i) {\n            isPrime[j] = 0;\n        }\n    }\n}\nfunction gcd(a, b) {\n    if (b == 0) return a;\n    return gcd(b, a % b);\n}\nconst T = parseInt(readline[i++]);\nfor (let t = 0; t < T; t++) {\n    const [a, b] = readline[i++].split(' ').map(Number);\n    let count = 0;\n    for (let i = 1; i <= a; i++) {\n        for (let j = 1; j <= b; j++) {\n            if (isPrime[gcd(i, j)]) {\n                count++;\n            }\n        }\n    }\n    console.log(count);\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

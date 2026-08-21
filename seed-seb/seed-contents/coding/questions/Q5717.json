@@ -1,0 +1,128 @@
+{
+  "questionId": "Q5717",
+  "title": "Fibonacci Number",
+  "slug": "fibonacci-number",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Number Theory",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Fibonacci",
+      "Discrete Logarithm",
+      "Tonelli‑Shanks",
+      "Baby‑Step Giant‑Step",
+      "Modular Square Root",
+      "Prime Modulus"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Mathematics"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Problem Statement\nAs we know, Fibonacci Number is defined as \n\n\n\n\n\n**Fn=n if n  ≤ 1 **\n\n**Fn=Fn-1+Fn-2, otherwise**\n\nNow this problem is quite simple: you are given one  prime number  **P** and one non-negative integer **C**\r\n\n\nYou are expected to find the smallest non-negative integer  **n**, such that\n\n**Fn≡C(mod P)**\n\n\nhere\n\n&nbsp;",
+    "constraints": [
+      "1 ≤ T ≤ 100",
+      "11 ≤ P ≤ 2·10^9, P is prime",
+      "P mod 10 ∈ {0,1,4,5,6,9}",
+      "0 ≤ C ≤ P‑1"
+    ],
+    "inputFormat": "The first line contains an integer T (1 ≤ T ≤ 100), the number of test cases. Each of the next T lines contains two integers C and P separated by a space, where P is a prime (11 ≤ P ≤ 2·10^9) such that P mod 10 is a square (i.e., 0,1,4,5,6 or 9) and 0 ≤ C ≤ P‑1.",
+    "outputFormat": "For each test case output a single line containing the smallest non‑negative integer n such that the n‑th Fibonacci number Fₙ satisfies Fₙ ≡ C (mod P). If no such n exists output -1.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4\n0 11\n16 19\n18 19\n4 19",
+        "output": "0\n14\n16\n-1",
+        "explanation": "For the first test case, the smallest n such that F_n ≡ 0 (mod 11) is 0. For the second test case, the smallest n such that F_n ≡ 16 (mod 19) is 14. For the third test case, the smallest n such that F_n ≡ 18 (mod 19) is 16. For the fourth test case, there is no n such that F_n ≡ 4 (mod 19)."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Because P is prime and P mod 10 is a square, 5 is a quadratic residue modulo P. Hence we can work in the field GF(P) and use the closed form of Fibonacci numbers (Binet's formula). Let sqrt5 be a square root of 5 modulo P, inv2 = (P+1)/2, and φ = (1+sqrt5)*inv2 (mod P). Then ψ = (1‑sqrt5)*inv2 = -φ⁻¹ (mod P) and\n    Fₙ = (φⁿ – ψⁿ) * inv_sqrt5 (mod P).\nMultiplying by sqrt5 gives A = C·sqrt5 (mod P) and the equation\n    φⁿ – (‑1)ⁿ·φ⁻ⁿ ≡ A (mod P).\nSetting y = φⁿ we obtain a quadratic depending on the parity of n:\n    even n:  y² – A·y – 1 ≡ 0\n    odd  n:  y² – A·y + 1 ≡ 0.\nFor each parity we compute the discriminant D (A²±4) and, if D is a quadratic residue, its square roots s. Each root yields a candidate y = (A + s)·inv2 (mod P). The required n is a discrete logarithm: φⁿ ≡ y (mod P). The multiplicative group of GF(P) has order P‑1, so we can find n with the Baby‑Step Giant‑Step (BSGS) algorithm in O(√P) time. We test all candidates, keep those whose parity matches the case, and finally output the smallest n (n=0 is handled separately because F₀=0). If no candidate works we output -1.\nThe algorithm per test case:\n1. If C==0 → answer 0.\n2. Compute sqrt5 using Tonelli‑Shanks.\n3. Compute φ, inv2, and A = C·sqrt5 mod P.\n4. For parity = 0 (even) and 1 (odd):\n   a. D = (A*A ± 4) mod P (plus for even, minus for odd).\n   b. If D is a quadratic residue, obtain its two square roots s.\n   c. For each s compute y = (A + s)·inv2 mod P.\n   d. n = discrete_log(φ, y, P) via BSGS.\n   e. If n!=-1 and n%2 matches the parity, keep the minimum.\n5. Output the minimum found or -1.\nAll operations are performed modulo P using 64‑bit integers to avoid overflow.",
+    "timeComplexity": "For each test case O(√P) due to the BSGS discrete logarithm (at most four BSGS runs). All other steps are O(log P).",
+    "spaceComplexity": "O(√P) for the hash table used in BSGS.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <inttypes.h>\n#include <string.h>\n#include <math.h>\n\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

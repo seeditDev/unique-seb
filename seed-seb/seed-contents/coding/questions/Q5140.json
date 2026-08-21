@@ -1,0 +1,139 @@
+{
+  "questionId": "Q5140",
+  "title": "Bytelandian gold coins",
+  "slug": "bytelandian-gold-coins",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Easy",
+    "isPremium": true,
+    "tags": [
+      "Memoization",
+      "Recursion",
+      "Divide and Conquer"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "In Byteland they have a very strange monetary system.\n\n\n\n\nEach Bytelandian gold coin has an integer number written on it. A coin n\ncan be exchanged in a bank into three coins: n/2, n/3 and n/4.\nBut these numbers are all rounded down (the banks have to make a profit).\n\n\n\nYou can also sell Bytelandian coins for American dollars. The exchange\nrate is 1:1. But you can not buy Bytelandian coins.\n\n\n\nYou have one gold coin. What is the maximum amount of American dollars\nyou can get for it?\n\n\n\nInput Format\nThe input will contain several test cases (not more than 10). \n\nEach testcase is a single line with a number n, it is the number written on your coin.\n\n\n\nOutput Format\nFor each test case output a single line, containing the maximum amount of American dollars you can make.",
+    "constraints": [
+      "0 ≤ n ≤ 10^9",
+      "Number of test cases ≤ 10"
+    ],
+    "inputFormat": "The input consists of up to 10 lines. Each line contains a single non‑negative integer n (0 ≤ n ≤ 10^9). The file ends with EOF.",
+    "outputFormat": "For each input line output a single integer on its own line – the maximum amount of American dollars obtainable from a coin with value n.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "12\\n2",
+        "output": "13\\n2",
+        "explanation": "For n=12, exchanging gives 6+4+3=13 which is better than keeping 12. For n=2, exchanging yields 1+0+0=1 < 2, so we keep the coin."
+      },
+      {
+        "id": "sample_2",
+        "input": "0\\n1\\n11",
+        "output": "0\\n1\\n11",
+        "explanation": "Values smaller than 12 are never exchanged because the sum of the three parts is never larger than the original value."
+      },
+      {
+        "id": "sample_3",
+        "input": "24",
+        "output": "27",
+        "explanation": "24 → 12+8+6 = 13+8+6 = 27, which is larger than 24."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "small value below threshold",
+        "input": "11",
+        "expectedOutput": "11",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "value just above threshold",
+        "input": "12",
+        "expectedOutput": "13",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "medium value",
+        "input": "100",
+        "expectedOutput": "120",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "larger value",
+        "input": "200",
+        "expectedOutput": "253",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For a coin of value n we can either keep it (gain n dollars) or exchange it into three smaller coins of values floor(n/2), floor(n/3) and floor(n/4). The optimal result for n is therefore max(n, f(n/2)+f(n/3)+f(n/4)). This recurrence has overlapping sub‑problems, so we store already computed results in a hash‑map (memoization). The base case is n < 12 because for those values exchanging never yields a larger sum, thus f(n)=n. The algorithm reads each n, computes f(n) recursively with memoization and prints the answer.",
+    "timeComplexity": "Each distinct value of n encountered is computed once. For a given input the number of distinct values is O(number of nodes in the recursion tree) which is roughly O(n^{log_2 3}) but for n ≤ 10^9 it is well below a few hundred thousand. Practically the running time is O(k) where k is the number of memoized states.",
+    "spaceComplexity": "O(k) for the memoization table, where k is the number of distinct n values visited (at most a few hundred thousand).",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n\ntypedef struct Node {\n    long long key;\n    long long value;\n    struct Node *next;\n} Node;\n\n#define TABLE_SIZE 2000003\nstatic Node *table[TABLE_SIZE];\n\nstatic unsigned long long hash_key(long long x) {\n    return (unsigned long long)x % TABLE_SIZE;\n}\n\nstatic long long get_memo(long long x) {\n    unsigned long long h = hash_key(x);\n    for (Node *p = table[h]; p; p = p->next) {\n        if (p->key == x) return p->value;\n    }\n    return -1;\n}\n\nstatic void set_memo(long long x, long long v) {\n    unsigned long long h = hash_key(x);\n    Node *p = (Node*)malloc(sizeof(Node));\n    p->key = x; p->value = v; p->next = table[h];\n    table[h] = p;\n}\n\nstatic long long solve(long long n) {\n    long long cached = get_memo(n);\n    if (cached != -1) return cached;\n    if (n < 12) {\n        set_memo(n, n);\n        return n;\n    }\n    long long res = solve(n/2) + solve(n/3) + solve(n/4);\n    if (res < n) res = n;\n    set_memo(n, res);\n    return res;\n}\n\nint main() {\n    long long n;\n    while (scanf(\"%lld\", &n) == 1) {\n        printf(\"%lld\\n\", solve(n));\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nunordered_map<long long,long long> memo;\n\nlong long solve(long long n){\n    if(n < 12) return n;\n    auto it = memo.find(n);\n    if(it != memo.end()) return it->second;\n    long long val = solve(n/2) + solve(n/3) + solve(n/4);\n    if(val < n) val = n;\n    return memo[n] = val;\n}\n\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    long long n;\n    while(cin >> n){\n        cout << solve(n) << '\\n';\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    private static final Map<Long, Long> memo = new HashMap<>();\n    private static long solve(long n){\n        if(n < 12) return n;\n        Long cached = memo.get(n);\n        if(cached != null) return cached;\n        long val = solve(n/2) + solve(n/3) + solve(n/4);\n        if(val < n) val = n;\n        memo.put(n, val);\n        return val;\n    }\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        String line;\n        StringBuilder sb = new StringBuilder();\n        while((line = br.readLine()) != null){\n            line = line.trim();\n            if(line.isEmpty()) continue;\n            long n = Long.parseLong(line);\n            sb.append(solve(n)).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}\n",
+      "Python3": "#!/usr/bin/env python3\nimport sys\nsys.setrecursionlimit(1000000)\nmemo = {i: i for i in range(12)}  # base cases 0..11\n\ndef solve(n):\n    if n < 12:\n        return n\n    if n in memo:\n        return memo[n]\n    val = solve(n//2) + solve(n//3) + solve(n//4)\n    if val < n:\n        val = n\n    memo[n] = val\n    return val\n\nout = []\nfor token in sys.stdin.read().split():\n    n = int(token)\n    out.append(str(solve(n)))\nprint('\\n'.join(out))\n",
+      "JavaScript": "const fs = require('fs');\nconst data = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nconst memo = new Map();\nfunction solve(n){\n  if (n < 12) return n;\n  if (memo.has(n)) return memo.get(n);\n  const val = solve(Math.floor(n/2)) + solve(Math.floor(n/3)) + solve(Math.floor(n/4));\n  const res = val < n ? n : val;\n  memo.set(n, res);\n  return res;\n}\nlet out = [];\nfor (const token of data){\n  if (token.length === 0) continue;\n  const n = Number(token);\n  out.push(String(solve(n)));\n}\nconsole.log(out.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

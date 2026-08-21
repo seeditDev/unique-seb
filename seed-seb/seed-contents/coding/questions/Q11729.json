@@ -1,0 +1,118 @@
+{
+  "questionId": "Q11729",
+  "title": "Koko eating bananas",
+  "slug": "koko-eating-bananas",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Binary Search",
+      "Math"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "A monkey Koko is given ‘n’ piles of bananas, whereas the 'ith' pile has ‘a[i]’ bananas. An integer ‘h’ is also given, which denotes the time (in hours) for all the bananas to be eaten.\n\n\n\nEach hour, the monkey chooses a non-empty pile of bananas and eats ‘k’ bananas. If the pile contains less than ‘k’ bananas, then the monkey consumes all the bananas and won’t eat any more bananas in that hour.\n\n\n\nFind the minimum number of bananas ‘k’ to eat per hour so that the monkey can eat all the bananas within ‘h’ hours.",
+    "constraints": [
+      "1 <= n <= 10^5",
+      "1 <= a[i] <= 10^9",
+      "1 <= h <= 10^12"
+    ],
+    "inputFormat": "The input consists of two lines. The first line contains an integer 'n' representing the number of piles of bananas. The second line contains 'n' space-separated integers representing the number of bananas in each pile. The third line contains an integer 'h' representing the time in hours.",
+    "outputFormat": "The minimum number of bananas 'k' to eat per hour so that the monkey can eat all the bananas within 'h' hours.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "1\n1\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "5\n1000000000 1000000000 1000000000 1000000000 1000000000\n5000000000",
+        "expectedOutput": "1000000000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform case",
+        "input": "5\n2 2 2 2 2\n5",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n1\n2",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": "4\n3 6 7 11\n8",
+        "expectedOutput": "4",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Use binary search to find the minimum eating speed 'k' such that the total hours to eat all bananas is less than or equal to 'h'.",
+    "timeComplexity": "O(n log m)",
+    "spaceComplexity": "O(1)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <math.h>\n\nint minEatingSpeed(int* a, int n, int h) {\n    int maxVal = a[0];\n    for (int i = 1; i < n; i++) {\n        if (a[i] > maxVal) {\n            maxVal = a[i];\n        }\n    }\n\n    int low = 1, high = maxVal;\n    while (low < high) {\n        int mid = (low + high) / 2;\n        long long totalHours = 0;\n        for (int i = 0; i < n; i++) {\n            totalHours += (a[i] + mid - 1) / mid;\n        }\n        if (totalHours > h) {\n            low = mid + 1;\n        } else {\n            high = mid;\n        }\n    }\n    return low;\n}\n\nint main() {\n    int n;\n    scanf(\"%d\", &n);\n    int a[n];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &a[i]);\n    }\n    int h;\n    scanf(\"%d\", &h);\n    printf(\"%d\\n\", minEatingSpeed(a, n, h));\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nclass Solution {\npublic:\n    // Function to calculate total hours for given speed\n    int calculateTotalHours(vector<int>& a, int hourly) {\n        int totalHours = 0;\n        for (int pile : a) {\n            // Add hours using ceil\n            totalHours += (pile + hourly - 1) / hourly;\n        }\n        return totalHours;\n    }\n\n    // Function to find minimum eating speed\n    int minEatingSpeed(vector<int>& a, int h) {\n        // Find maximum pile size\n        int maxVal = *max_element(a.begin(), a.end());\n\n        // Try every possible speed\n        int low = 1, high = maxVal;\n        while (low < high) {\n            int mid = (low + high) / 2;\n            int hours = calculateTotalHours(a, mid);\n\n            // If hours fit within h\n            if (hours <= h) {\n                high = mid;\n            } else {\n                low = mid + 1;\n            }\n        }\n        return low;\n    }\n};\n\nint main() {\n    // Input array\n    int n;\n    cin >> n;\n    vector<int> a(n);\n    for (int i = 0; i < n; i++) {\n        cin >> a[i];\n    }\n    // Hours allowed\n    int h;\n    cin >> h;\n\n    Solution obj;\n    cout << obj.minEatingSpeed(a, h);\n    return 0;\n}",
+      "Java": "import java.util.*;\n\nclass Solution {\n    // Function to calculate total hours for given speed\n    public int calculateTotalHours(int[] a, int hourly) {\n        int totalHours = 0;\n        for (int pile : a) {\n            // Add hours using ceil\n            totalHours += (pile + hourly - 1) / hourly;\n        }\n        return totalHours;\n    }\n\n    // Function to find minimum eating speed\n    public int minEatingSpeed(int[] a, int h) {\n        // Find maximum pile size\n        int maxVal = Arrays.stream(a).max().getAsInt();\n\n        // Try every possible speed\n        int low = 1, high = maxVal;\n        while (low < high) {\n            int mid = (low + high) / 2;\n            int hours = calculateTotalHours(a, mid);\n\n            // If hours fit within h\n            if (hours <= h) {\n                high = mid;\n            } else {\n                low = mid + 1;\n            }\n        }\n        return low;\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        // Input array\n        Scanner sc = new Scanner(System.in);\n        int n = sc.nextInt();\n        int[] a = new int[n];\n        for (int i = 0; i < n; i++) {\n            a[i] = sc.nextInt();\n        }\n        // Hours allowed\n        int h = sc.nextInt();\n\n        Solution obj = new Solution();\n        System.out.println(obj.minEatingSpeed(a, h));\n    }\n}",
+      "Python3": "import math\n\nclass Solution:\n    # Function to calculate total hours for given speed\n    def calculateTotalHours(self, a, hourly):\n        totalHours = 0\n        for pile in a:\n            # Add hours using ceil\n            totalHours += math.ceil(pile / hourly)\n        return totalHours\n\n    # Function to find minimum eating speed\n    def minEatingSpeed(self, a, h):\n        # Find maximum pile size\n        maxVal = max(a)\n\n        # Try every possible speed\n        low, high = 1, maxVal\n        while low < high:\n            mid = (low + high) // 2\n            hours = self.calculateTotalHours(a, mid)\n\n            # If hours fit within h\n            if hours <= h:\n                high = mid\n            else:\n                low = mid + 1\n        return low\n\n# Driver code\nn = int(input())\na = list(map(int, input().split()))\nh = int(input())\nobj = Solution()\nprint(obj.minEatingSpeed(a, h))",
+      "JavaScript": "class Solution {\n    // Function to calculate total hours for given speed\n    calculateTotalHours(a, hourly) {\n        let totalHours = 0;\n        for (let pile of a) {\n            // Add hours using ceil\n            totalHours += Math.ceil(pile / hourly);\n        }\n        return totalHours;\n    }\n\n    // Function to find minimum eating speed\n    minEatingSpeed(a, h) {\n        // Find maximum pile size\n        let maxVal = Math.max(...a);\n\n        // Try every possible speed\n        let low = 1, high = maxVal;\n        while (low < high) {\n            let mid = Math.floor((low + high) / 2);\n            let hours = this.calculateTotalHours(a, mid);\n\n            // If hours fit within h\n            if (hours <= h) {\n                high = mid;\n            } else {\n                low = mid + 1;\n            }\n        }\n        return low;\n    }\n}\n\n// Driver code\nlet input = readline().split(' ');\nlet n = parseInt(input[0]);\nlet a = readline().split(' ').map(x => parseInt(x));\nlet h = parseInt(readline());\nlet obj = new Solution();\nprint(obj.minEatingSpeed(a, h));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

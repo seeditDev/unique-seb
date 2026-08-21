@@ -1,0 +1,141 @@
+{
+  "questionId": "Q8493",
+  "title": "Avoid Fixed Points",
+  "slug": "avoid-fixed-points",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Greedy",
+    "difficulty": "Easy",
+    "isPremium": true,
+    "tags": [
+      "Greedy",
+      "Array",
+      "Simulation"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Constructive Algorithms"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef has a sequence of NNN integers A=[A1,A2,…,AN]A = [A_1, A_2,\\dots,A_N]A=[A1​,A2​,…,AN​]. He can perform the following operation any number of times (possibly, zero):\n\n\nChoose **any** positive integer KKK and insert it at any position of the sequence (possibly the beginning or end of the sequence, or in between any two elements).\nFor example, if A=[5,3,4]A=[5,3,4]A=[5,3,4] and Chef selects K=2K=2K=2, then after the operation he can obtain one of the sequences [2‾,5,3,4],[5,2‾,3,4],[5,3,2‾,4][\\underline{2},5,3,4], [5,\\underline{2},3,4], [5,3,\\underline{2},4][2​,5,3,4],[5,2​,3,4],[5,3,2​,4], or [5,3,4,2‾][5,3,4,\\underline{2}][5,3,4,2​].\n\nChef wants this sequence to satisfy the following condition: for each 1≤i≤∣A∣1\\le i \\le \\mid A \\mid 1≤i≤∣A∣, Ai≠iA_i \\neq iAi​=i. Here, ∣A∣\\mid A\\mid∣A∣ denotes the length of AAA.",
+    "constraints": [
+      "1 ≤ T ≤ 10^4",
+      "1 ≤ N ≤ 10^5",
+      "1 ≤ Ai ≤ 10^9",
+      "Sum of N over all test cases ≤ 2·10^5"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Then for each test case:\n- A line with an integer N, the length of the sequence.\n- A line with N space‑separated integers A1, A2, …, AN.",
+    "outputFormat": "For each test case output a single line containing the minimum number of insert operations required so that in the final sequence no element equals its 1‑based index.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n3\n2 4 5\n3\n4 1 3\n4\n3 2 4 2",
+        "output": "0\n1\n2",
+        "explanation": "Test case 1: No element equals its index, so 0 insertions.\nTest case 2: Only A3=3 is a fixed point. One insertion before position 3 shifts it, giving answer 1.\nTest case 3: A2=2 is a fixed point, after inserting once before it A3 becomes 4 at index 4, creating a new fixed point. A second insertion resolves that, so answer 2."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n5\n1 2 3 4 5",
+        "output": "5",
+        "explanation": "Every position is a fixed point. The greedy scan inserts before each of them, resulting in 5 insertions."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n4\n10 20 30 40",
+        "output": "0",
+        "explanation": "All values are far from their indices; no insertion is needed."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n5\n1000000000 1000000000 1000000000 1000000000 1000000000",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case with consecutive conflicts",
+        "input": "1\n6\n1 2 3 4 5 6",
+        "expectedOutput": "6",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n7\n2 1 4 3 6 5 7",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n8\n1 3 3 4 5 6 7 8",
+        "expectedOutput": "5",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "We scan the original array from left to right while keeping cnt = number of insertions already performed before the current position. After cnt insertions, the original element Ai will finally appear at index i+cnt. If Ai equals i+cnt, the element would become a fixed point, so we must insert one more element somewhere before (or at) this position. Inserting one element increases cnt by 1 and shifts this element to index i+cnt+1, guaranteeing Ai ≠ i+cnt+1. The greedy choice of inserting exactly when a conflict appears is optimal because each insertion resolves the current conflict and cannot be avoided later. The algorithm therefore counts how many times the condition Ai == i+cnt occurs while updating cnt.\n\nPseudo‑code:\n```\nread T\nrepeat T times:\n    read N\n    read array A[1..N]\n    cnt = 0\n    for i from 1 to N:\n        if A[i] == i + cnt:\n            cnt += 1\n    print cnt\n```\nThe inserted numbers themselves can always be chosen not to be fixed (pick any K ≠ its final position), so they never create additional problems.\n\n**Correctness proof sketch**:\n- Let cnt be the number of insertions performed before processing position i. The final index of Ai is i+cnt.\n- If Ai ≠ i+cnt, Ai is already safe and no insertion is needed for it.\n- If Ai = i+cnt, any solution must shift Ai to a larger index, otherwise it remains a fixed point. The only way to shift it is to insert at least one element before (or at) its current position, which increases cnt by at least 1. Our algorithm inserts exactly one element, the minimum possible, and updates cnt accordingly.\n- Inserting earlier cannot help later elements more than this greedy step, because cnt is monotone and each insertion only adds 1 to all subsequent indices. Therefore the greedy algorithm yields the minimal total number of insertions.\n\n**Complexity analysis**: Each test case is processed in O(N) time and O(1) additional memory. Over all test cases the total time is O(ΣN) ≤ O(2·10^5).",
+    "timeComplexity": "O(N) per test case, O(ΣN) overall",
+    "spaceComplexity": "O(1) extra space",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nint main() {\n    ios:\n    int T; if (scanf(\"%d\", &T)!=1) return 0;\n    while (T--) {\n        int N; scanf(\"%d\", &N);\n        long long cnt = 0; // number of insertions so far\n        for (int i = 1; i <= N; ++i) {\n            long long a; scanf(\"%lld\", &a);\n            if (a == i + cnt) cnt++;\n        }\n        printf(\"%lld\\n\", cnt);\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--) {\n        int N; cin>>N;\n        long long cnt = 0;\n        for(int i=1;i<=N;++i){\n            long long a; cin>>a;\n            if(a == i + cnt) ++cnt;\n        }\n        cout<<cnt<<\"\\n\";\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner(System.in);\n        int T = fs.nextInt();\n        StringBuilder sb = new StringBuilder();\n        while (T-- > 0) {\n            int N = fs.nextInt();\n            long cnt = 0;\n            for (int i = 1; i <= N; i++) {\n                long a = fs.nextLong();\n                if (a == i + cnt) cnt++;\n            }\n            sb.append(cnt).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n\n    // Fast scanner for large input\n    static class FastScanner {\n        private final InputStream in;\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        FastScanner(InputStream in) { this.in = in; }\n        private int readByte() throws IOException {\n            if (ptr >= len) {\n                len = in.read(buffer);\n                ptr = 0;\n                if (len <= 0) return -1;\n            }\n            return buffer[ptr++];\n        }\n        long nextLong() throws IOException {\n            int c; do { c = readByte(); } while (c <= ' ');\n            boolean neg = false;\n            if (c == '-') { neg = true; c = readByte(); }\n            long val = 0;\n            while (c > ' ') {\n                val = val * 10 + (c - '0');\n                c = readByte();\n            }\n            return neg ? -val : val;\n        }\n        int nextInt() throws IOException { return (int) nextLong(); }\n    }\n}\n",
+      "Python3": "import sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it))\n        cnt = 0\n        for i in range(1, N + 1):\n            a = int(next(it))\n            if a == i + cnt:\n                cnt += 1\n        out_lines.append(str(cnt))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nif (input.length === 0) process.exit(0);\nconst T = Number(input[idx++]);\nlet outputs = [];\nfor (let t = 0; t < T; ++t) {\n  const N = Number(input[idx++]);\n  let cnt = 0;\n  for (let i = 1; i <= N; ++i) {\n    const a = Number(input[idx++]);\n    if (a === i + cnt) cnt++;\n  }\n  outputs.push(String(cnt));\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "questionId": "Q5676",
+  "title": "Maxim and Dividers",
+  "slug": "maxim-and-dividers",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Number Theory",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Lucky Numbers",
+      "Divisors",
+      "Precomputation",
+      "Brute Force"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Mathematics"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Problem Statement\n\nMaxim likes dividers of the numbers. Also Maxim is fond of **lucky numbers**&nbsp;\n\n**lucky numbers****4****7****47****744****4****5****17****467**&nbsp;\n\n**n****overlucky**&nbsp;\n\n**overlucky****72344****2****3****744****223**&nbsp;",
+    "constraints": [
+      "1 ≤ T ≤ 10",
+      "1 ≤ n ≤ 1 000 000 000"
+    ],
+    "inputFormat": "The first line contains an integer T (1 ≤ T ≤ 10) – the number of test cases. Each of the next T lines contains a single integer n (1 ≤ n ≤ 10^9).",
+    "outputFormat": "For each test case output a single integer on its own line – the number of divisors of n that are lucky numbers (numbers whose decimal representation consists only of digits 4 and 7).",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "10\n1\n2\n3\n4\n5\n6\n7\n8\n9\n10",
+        "output": "0\n0\n0\n1\n0\n0\n1\n1\n0\n0",
+        "explanation": "Lucky numbers ≤10 are 4 and 7. For each n we count how many of these divide n. Only 4 divides 4, 7 divides 7, and 4 divides 8, giving a count of 1 for those cases; all other numbers have no lucky divisor."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "All lucky numbers not larger than 10^9 are generated once by a depth‑first recursion that appends digit 4 or 7. Their total count is only about 2^10 ≈ 1022, so they can be stored in a vector/array. For each query n we simply iterate over the pre‑computed lucky numbers (stopping when the lucky number exceeds n) and count those that divide n. This yields O(L) work per test case where L is the number of lucky numbers (≈1022), easily fast for T ≤ 10.",
+    "timeComplexity": "Precomputation O(L) where L ≈ 1022. Each test case O(L) in the worst case, so total O(T·L) ≤ 10·1022 ≈ 1e4 operations.",
+    "spaceComplexity": "O(L) to store all lucky numbers (≈1022 64‑bit integers).",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nvoid genLucky(long long cur, long long limit, long long *arr, int *cnt) {\n    if (cur > limit) return;\n    if (cur != 0) arr[(*cnt)++] = cur;\n    genLucky(cur * 10 + 4, limit, arr, cnt);\n    genLucky(cur * 10 + 7, limit, arr, cnt);\n}\n\nint cmp(const void *a, const void *b) {\n    long long x = *(const long long*)a, y = *(const long long*)b;\n    return (x > y) - (x < y);\n}\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    const long long LIM = 1000000000LL;\n    long long lucky[2000];\n    int luckyCnt = 0;\n    genLucky(0, LIM, lucky, &luckyCnt);\n    qsort(lucky, luckyCnt, sizeof(long long), cmp);\n    while (T--) {\n        long long n;\n        scanf(\"%lld\", &n);\n        int ans = 0;\n        for (int i = 0; i < luckyCnt && lucky[i] <= n; ++i) {\n            if (n % lucky[i] == 0) ++ans;\n        }\n        printf(\"%d\\n\", ans);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nvoid genLucky(long long cur, long long limit, vector<long long>& vec) {\n    if (cur > limit) return;\n    if (cur != 0) vec.push_back(cur);\n    genLucky(cur * 10 + 4, limit, vec);\n    genLucky(cur * 10 + 7, limit, vec);\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin >> T)) return 0;\n    const long long LIM = 1'000'000'000LL;\n    vector<long long> lucky;\n    genLucky(0, LIM, lucky);\n    sort(lucky.begin(), lucky.end());\n    while (T--) {\n        long long n; cin >> n;\n        int ans = 0;\n        for (long long x : lucky) {\n            if (x > n) break;\n            if (n % x == 0) ++ans;\n        }\n        cout << ans << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    static final long LIMIT = 1_000_000_000L;\n    static List<Long> lucky = new ArrayList<>();\n\n    static void genLucky(long cur) {\n        if (cur > LIMIT) return;\n        if (cur != 0) lucky.add(cur);\n        genLucky(cur * 10 + 4);\n        genLucky(cur * 10 + 7);\n    }\n\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder sb = new StringBuilder();\n        genLucky(0);\n        Collections.sort(lucky);\n        int T = Integer.parseInt(br.readLine().trim());\n        for (int t = 0; t < T; ++t) {\n            long n = Long.parseLong(br.readLine().trim());\n            int ans = 0;\n            for (long x : lucky) {\n                if (x > n) break;\n                if (n % x == 0) ++ans;\n            }\n            sb.append(ans).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys\n\ndef gen_lucky(limit):\n    res = []\n    def dfs(cur):\n        if cur > limit:\n            return\n        if cur != 0:\n            res.append(cur)\n        dfs(cur * 10 + 4)\n        dfs(cur * 10 + 7)\n    dfs(0)\n    res.sort()\n    return res\n\ndef main():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    lucky = gen_lucky(1_000_000_000)\n    out = []\n    for _ in range(T):\n        n = int(next(it))\n        cnt = 0\n        for x in lucky:\n            if x > n:\n                break\n            if n % x == 0:\n                cnt += 1\n        out.append(str(cnt))\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    main()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nconst LIMIT = 1_000_000_000;\nfunction genLucky(cur, arr) {\n  if (cur > LIMIT) return;\n  if (cur !== 0) arr.push(cur);\n  genLucky(cur * 10 + 4, arr);\n  genLucky(cur * 10 + 7, arr);\n}\nconst lucky = [];\ngenLucky(0, lucky);\nlucky.sort((a, b) => a - b);\nlet out = [];\nfor (let t = 0; t < T; ++t) {\n  const n = Number(input[idx++]);\n  let cnt = 0;\n  for (const x of lucky) {\n    if (x > n) break;\n    if (n % x === 0) cnt++;\n  }\n  out.push(String(cnt));\n}\nconsole.log(out.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "questionId": "Q3142",
+  "title": "Puppy and GCD",
+  "slug": "puppy-and-gcd",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Math",
+      "Euler Totient",
+      "Summatory Totient",
+      "Recursive Memoization",
+      "Mobius Inversion"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Mathematics"
+    ]
+  },
+  "content": {
+    "problemStatement": "One fine sunny day Tuzik was waiting for his master Vanka near their house. Time kept going by but the boy just wouldn't come out of the house. \"Oh no, maybe he is participating in some programming contest like Lunchtime again. If I help him, we can go and start playing some interesting game outdoors sooner.\" - thought Tuzik, so he went into the house.\n\nVanka was struggling with the last problem indeed. The statement was: \"Given integers **N** and **D**, find how many pairs of integers **(i, j)** such that **1 \u2264 i \u2264 j \u2264 N** have the greatest common divisor exactly **D**.\"\n\n\"LOL, even I can solve it faster than him.\" - thought Tuzik. Unfortunately he is just a little puppy so he can't explain or code up the solution. But he wants to go outdoors with his master, so please help Vanka solve this problem for Tuzik's sake.",
+    "constraints": [
+      "1 \u2264 T \u2264 10",
+      "1 \u2264 N, D \u2264 5\u00b710^8"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains two space\u2011separated integers N and D.",
+    "outputFormat": "For each test case output a single line containing the number of pairs (i, j) such that 1 \u2264 i \u2264 j \u2264 N and gcd(i, j) = D.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n12 3",
+        "output": "6",
+        "explanation": "Explanation: 6 such pairs: (3, 3), (3, 6), (3, 9), (3, 12), (6, 9), and (9, 12)."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n10 1",
+        "output": "55",
+        "explanation": "Explanation: All pairs of integers (i, j) such that 1 <= i <= j <= 10 have a greatest common divisor of 1."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n5 5",
+        "output": "1",
+        "explanation": "Explanation: Only one pair of integers (5, 5) has a greatest common divisor of 5."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "If D > N there is no valid pair. Otherwise write i = a\u00b7D, j = b\u00b7D. The condition becomes 1 \u2264 a \u2264 b \u2264 M where M = \u230aN/D\u230b and gcd(a, b) = 1. For a fixed b, the number of a < b with gcd(a, b)=1 equals \u03c6(b). Adding the pair (1,1) (\u03c6(1)=1) we obtain the answer as S(M) = \u03a3_{k=1}^{M} \u03c6(k). The problem therefore reduces to computing the summatory totient function S(n). A well\u2011known recurrence is:\n    S(n) = n\u00b7(n+1)/2 \u2013 \u03a3_{i=2}^{n} S(\u230an/i\u230b)\nUsing memoisation (hash map) this recurrence runs in O(\u221an) time because the values \u230an/i\u230b change only O(\u221an) times. For each test case we compute M = N/D and evaluate S(M). All arithmetic fits in 64\u2011bit signed integers (max answer \u2248 1.25\u00b710^17).",
+    "timeComplexity": "O(\u221aM) per test case, where M = \u230aN/D\u230b (worst case \u221a5\u00b710^8 \u2248 2.3\u00b710^4).",
+    "spaceComplexity": "O(\u221aM) for the memoisation table.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n\ntypedef struct { long long n; long long val; } MemoEntry;\nstatic MemoEntry memo[200000];\nstatic int memoSize = 0;\n\nlong long getMemo(long long n) {\n    for (int i = 0; i < memoSize; ++i) if (memo[i].n == n) return memo[i].val;\n    return -1;\n}\n\nvoid setMemo(long long n, long long v) {\n    memo[memoSize].n = n;\n    memo[memoSize].val = v;\n    ++memoSize;\n}\n\nlong long sumPhi(long long n) {\n    if (n <= 0) return 0;\n    long long cached = getMemo(n);\n    if (cached != -1) return cached;\n    long long res = n * (n + 1) / 2; // initial term\n    long long i = 2;\n    while (i <= n) {\n        long long q = n / i;\n        long long next = n / q;\n        res -= (next - i + 1) * sumPhi(q);\n        i = next + 1;\n    }\n    setMemo(n, res);\n    return res;\n}\n\nint main() {\n    int T; if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        long long N, D; scanf(\"%lld %lld\", &N, &D);\n        if (D > N) {\n            printf(\"0\\n\");\n            continue;\n        }\n        long long M = N / D;\n        long long ans = sumPhi(M);\n        printf(\"%lld\\n\", ans);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nusing int64 = long long;\n\nunordered_map<int64,int64> memo;\n\nint64 sumPhi(int64 n){\n    if(n<=0) return 0;\n    auto it = memo.find(n);\n    if(it!=memo.end()) return it->second;\n    int64 res = n*(n+1)/2; // n*(n+1)/2 = \u03a3_{i=1}^n i\n    for(int64 i=2;i<=n;){\n        int64 q = n/i;\n        int64 nxt = n/q;\n        res -= (nxt - i + 1) * sumPhi(q);\n        i = nxt + 1;\n    }\n    memo[n]=res;\n    return res;\n}\n\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int64 N,D; cin>>N>>D;\n        if(D> N){\n            cout<<0<<\"\\n\";\n            continue;\n        }\n        int64 M = N/D;\n        cout<<sumPhi(M)<<\"\\n\";\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    static HashMap<Long, Long> memo = new HashMap<>();\n    static long sumPhi(long n) {\n        if (n <= 0) return 0;\n        Long cached = memo.get(n);\n        if (cached != null) return cached;\n        long res = n * (n + 1) / 2;\n        long i = 2;\n        while (i <= n) {\n            long q = n / i;\n            long nxt = n / q;\n            res -= (nxt - i + 1) * sumPhi(q);\n            i = nxt + 1;\n        }\n        memo.put(n, res);\n        return res;\n    }\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder out = new StringBuilder();\n        int T = Integer.parseInt(br.readLine().trim());\n        for (int t = 0; t < T; ++t) {\n            StringTokenizer st = new StringTokenizer(br.readLine());\n            long N = Long.parseLong(st.nextToken());\n            long D = Long.parseLong(st.nextToken());\n            if (D > N) {\n                out.append(0).append('\\n');\n                continue;\n            }\n            long M = N / D;\n            out.append(sumPhi(M)).append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "import sys\nsys.setrecursionlimit(1 << 25)\n\ndef sum_phi(n, memo):\n    if n <= 0:\n        return 0\n    if n in memo:\n        return memo[n]\n    res = n * (n + 1) // 2\n    i = 2\n    while i <= n:\n        q = n // i\n        nxt = n // q\n        res -= (nxt - i + 1) * sum_phi(q, memo)\n        i = nxt + 1\n    memo[n] = res\n    return res\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    memo = {}\n    for _ in range(T):\n        N = int(next(it)); D = int(next(it))\n        if D > N:\n            out_lines.append('0')\n            continue\n        M = N // D\n        out_lines.append(str(sum_phi(M, memo)))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nconst memo = new Map();\nfunction sumPhi(n) {\n  if (n <= 0) return 0n;\n  if (memo.has(n)) return memo.get(n);\n  let res = BigInt(n) * BigInt(n + 1) / 2n;\n  let i = 2n;\n  const Nbig = BigInt(n);\n  while (i <= Nbig) {\n    const q = Nbig / i;\n    const nxt = Nbig / q;\n    res -= (nxt - i + 1n) * sumPhi(Number(q));\n    i = nxt + 1n;\n  }\n  memo.set(n, res);\n  return res;\n}\nlet out = [];\nfor (let t = 0; t < T; ++t) {\n  const N = Number(input[idx++]);\n  const D = Number(input[idx++]);\n  if (D > N) {\n    out.push('0');\n    continue;\n  }\n  const M = Math.floor(N / D);\n  out.push(String(sumPhi(M)));\n}\nconsole.log(out.join('\\n'));"
+    }
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "questionId": "Q1366",
+  "title": "Counting sort",
+  "slug": "counting-sort",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Sorting",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "Sorting",
+      "Counting Sort",
+      "Frequency Sort",
+      "Stable Sorting"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Sorting"
+    ]
+  },
+  "content": {
+    "problemStatement": "You are given a list of integers. Your task is to sort the list based on the frequency of each integer in ascending order. If two integers have the same frequency, the one with the smaller value should come first.\n\n\nInput Format\n\nThe first line contains a single integer nnn, the number of integers in the list.\nThe second line contains nnn space separated integers a1,a2,\u2026,ana1,a2,\u2026,ana1,a2,\u2026,an.\n\n\nOutput Format\nPrint the sorted list based on the frequency of each integer.",
+    "constraints": [
+      "1 \u2264 T \u2264 10",
+      "1 \u2264 n \u2264 100",
+      "1 \u2264 ai \u2264 100"
+    ],
+    "inputFormat": "First line contains an integer T, the number of test cases. Each test case consists of two lines: the first line contains an integer n (1 \u2264 n \u2264 100), the number of integers in the list. The second line contains n space-separated integers a1, a2, \u2026, an (1 \u2264 ai \u2264 100).",
+    "outputFormat": "For each test case output a single line containing the integers of the list sorted by increasing frequency. If two integers have the same frequency, the smaller integer comes first. Numbers are separated by a single space.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n4\n1 2 3 2",
+        "output": "1 3 2 2",
+        "explanation": "Frequencies: 1\u21921, 2\u21922, 3\u21921. Sorted by frequency gives 1 and 3 first (both freq 1) and 2 later (freq 2). Between 1 and 3 the smaller value 1 comes first."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n4\n2 1 1 1",
+        "output": "2 1 1 1",
+        "explanation": "Frequencies: 2\u21921, 1\u21923. 2 (freq 1) appears before all 1s (freq 3)."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n5\n1 2 2 3 3",
+        "output": "1 2 2 3 3",
+        "explanation": "Frequencies: 1\u21921, 2\u21922, 3\u21922. 1 comes first, then 2 and 3 are ordered by value because they share the same frequency."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary (compact)",
+        "input": "1\n15\n100 99 100 98 99 98 97 96 95 95 95 94 94 94 94",
+        "expectedOutput": "96 97 98 98 99 99 100 100 95 95 95 94 94 94 94",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform input",
+        "input": "1\n7\n5 5 5 5 5 5 5",
+        "expectedOutput": "5 5 5 5 5 5 5",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky ordering with equal frequencies",
+        "input": "1\n6\n3 3 2 2 1 1",
+        "expectedOutput": "1 1 2 2 3 3",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general multiple cases",
+        "input": "3\n5\n4 4 4 2 2\n4\n10 9 8 7\n8\n1 2 2 3 3 3 4 4",
+        "expectedOutput": "2 2 4 4 4\n7 8 9 10\n1 2 2 4 4 3 3 3",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Count the occurrences of each value (the range is only 1..100, so a simple array of size 101 is enough). Build a list of pairs (value, frequency) for all values that appear. Sort this list primarily by frequency (ascending) and secondarily by value (ascending). Finally, output each value repeated its frequency in the order given by the sorted list.",
+    "timeComplexity": "O(n + m log m) per test case (n \u2013 number of elements, m \u2013 distinct values, m \u2264 100). Overall O(T\u00b7n) for the whole input.",
+    "spaceComplexity": "O(m) additional space for the frequency array and the list of pairs (at most 101 integers).",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\ntypedef struct {int val; int cnt;} Pair;\n\nint cmp(const void *a, const void *b) {\n    const Pair *x = (const Pair *)a;\n    const Pair *y = (const Pair *)b;\n    if (x->cnt != y->cnt) return x->cnt - y->cnt;\n    return x->val - y->val;\n}\n\nint main() {\n    int T; if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        int n; scanf(\"%d\", &n);\n        int freq[101] = {0};\n        for (int i = 0; i < n; ++i) {\n            int x; scanf(\"%d\", &x);\n            freq[x]++;\n        }\n        Pair arr[101];\n        int m = 0;\n        for (int v = 1; v <= 100; ++v) if (freq[v]) { arr[m].val = v; arr[m].cnt = freq[v]; ++m; }\n        qsort(arr, m, sizeof(Pair), cmp);\n        int first = 1;\n        for (int i = 0; i < m; ++i) {\n            for (int j = 0; j < arr[i].cnt; ++j) {\n                if (!first) printf(\" \");\n                printf(\"%d\", arr[i].val);\n                first = 0;\n            }\n        }\n        printf(\"\\n\");\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nstruct Pair{int val;int cnt;};\nint main(){ios::sync_with_stdio(false);cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0; while(T--){int n;cin>>n;int freq[101]{};for(int i=0;i<n;++i){int x;cin>>x;freq[x]++;}\n        vector<Pair> v;for(int vval=1;vval<=100;++vval) if(freq[vval]) v.push_back({vval,freq[vval]});\n        sort(v.begin(),v.end(),[](const Pair&a,const Pair&b){if(a.cnt!=b.cnt) return a.cnt<b.cnt;return a.val<b.val;});\n        bool first=true;for(const auto &p:v){for(int i=0;i<p.cnt;++i){if(!first) cout<<' ';cout<<p.val;first=false;}}\n        cout<<'\\n';}\n    return 0;}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    static class Pair{int val,cnt;Pair(int v,int c){val=v;cnt=c;}}\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st = new StringTokenizer(br.readLine());\n        int T = Integer.parseInt(st.nextToken());\n        StringBuilder sb = new StringBuilder();\n        while (T-- > 0) {\n            int n = Integer.parseInt(br.readLine().trim());\n            st = new StringTokenizer(br.readLine());\n            int[] freq = new int[101];\n            for (int i = 0; i < n; i++) {\n                int x = Integer.parseInt(st.nextToken());\n                freq[x]++;\n            }\n            List<Pair> list = new ArrayList<>();\n            for (int v = 1; v <= 100; v++) if (freq[v] > 0) list.add(new Pair(v, freq[v]));\n            list.sort((a,b)-> a.cnt!=b.cnt ? a.cnt-b.cnt : a.val-b.val);\n            boolean first = true;\n            for (Pair p : list) {\n                for (int i = 0; i < p.cnt; i++) {\n                    if (!first) sb.append(' ');\n                    sb.append(p.val);\n                    first = false;\n                }\n            }\n            sb.append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "import sys\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        n = int(next(it))\n        freq = [0]*101\n        for _ in range(n):\n            x = int(next(it))\n            freq[x] += 1\n        pairs = [(v, freq[v]) for v in range(1,101) if freq[v]]\n        pairs.sort(key=lambda p: (p[1], p[0]))\n        res = []\n        for v,c in pairs:\n            res.extend([str(v)]*c)\n        out_lines.append(' '.join(res))\n    sys.stdout.write('\\n'.join(out_lines))\nif __name__ == \"__main__\":\n    solve()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet outputs = [];\nfor (let t = 0; t < T; t++) {\n  const n = Number(input[idx++]);\n  const freq = new Array(101).fill(0);\n  for (let i = 0; i < n; i++) {\n    const x = Number(input[idx++]);\n    freq[x]++;\n  }\n  const pairs = [];\n  for (let v = 1; v <= 100; v++) if (freq[v]) pairs.push([v, freq[v]]);\n  pairs.sort((a, b) => a[1] !== b[1] ? a[1] - b[1] : a[0] - b[0]);\n  const line = [];\n  for (const [val, cnt] of pairs) {\n    for (let i = 0; i < cnt; i++) line.push(String(val));\n  }\n  outputs.push(line.join(' '));\n}\nconsole.log(outputs.join('\\n'));"
+    }
+  }
+}

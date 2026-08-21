@@ -1,0 +1,118 @@
+{
+  "questionId": "Q11781",
+  "title": "Burst balloons",
+  "slug": "burst-balloons",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Burst Balloons",
+      "Dynamic Programming",
+      "Recursion"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given n balloons, indexed from 0 to n - 1. Each balloon is painted with a number on it represented by an array. You are asked to burst all the balloons.",
+    "constraints": [
+      "1 <= n <= 500",
+      "1 <= nums[i] <= 1000"
+    ],
+    "inputFormat": "An array of integers representing the numbers on the balloons",
+    "outputFormat": "The maximum number of coins that can be obtained by bursting all the balloons",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "[3]",
+        "expectedOutput": "3",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "[1, 2, 3, 4, 5, 6, 7, 8, 9]",
+        "expectedOutput": "16796",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform case",
+        "input": "[1, 1, 1, 1, 1]",
+        "expectedOutput": "5",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "[1, 1000, 1]",
+        "expectedOutput": "1000",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "mixed case",
+        "input": "[3, 1, 5, 8]",
+        "expectedOutput": "167",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Use dynamic programming to store the maximum coins that can be obtained by bursting balloons in the range [i, j]",
+    "timeComplexity": "O(n^3)",
+    "spaceComplexity": "O(n^2)",
+    "code": {
+      "C": "#include <stdio.h>\nint maxCoins(int* nums, int numsSize) {\n    int n = numsSize + 2;\n    int* newNums = (int*)malloc(n * sizeof(int));\n    newNums[0] = 1;\n    newNums[n - 1] = 1;\n    for (int i = 0; i < numsSize; i++) {\n        newNums[i + 1] = nums[i];\n    }\n    int** dp = (int**)malloc(n * sizeof(int*));\n    for (int i = 0; i < n; i++) {\n        dp[i] = (int*)malloc(n * sizeof(int));\n    }\n    for (int length = 1; length < n; length++) {\n        for (int i = 0; i < n - length; i++) {\n            int j = i + length;\n            int maxCoins = 0;\n            for (int k = i; k <= j; k++) {\n                int coins = newNums[i] * newNums[k] * newNums[j + 1];\n                if (k > i) coins += dp[i][k - 1];\n                if (k < j) coins += dp[k + 1][j];\n                maxCoins = maxCoins > coins ? maxCoins : coins;\n            }\n            dp[i][j] = maxCoins;\n        }\n    }\n    int result = dp[0][n - 1];\n    free(newNums);\n    for (int i = 0; i < n; i++) {\n        free(dp[i]);\n    }\n    free(dp);\n    return result;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nclass Solution{\n// Recursive function to calculate the maximum coins obtained\nint maxCoinsHelper(int i, int j, vector<int> &nums) {\n    if (i > j) return 0;\n    int maxCoins = INT_MIN;\n    \n    // Iterate through each possible balloon to burst last\n    for (int k = i; k <= j; k++) {\n        // Calculate the coins obtained by bursting the k-th balloon last\n        int coins = nums[i - 1] * nums[k] * nums[j + 1];\n        \n        // Recursively calculate the maximum coins for the remaining balloons\n        int remainingCoins = maxCoinsHelper(i, k - 1, nums) + maxCoinsHelper(k + 1, j, nums);\n        \n        // Update the maximum coins\n        maxCoins = max(maxCoins, coins + remainingCoins);\n    }\n    \n    return maxCoins;\n}\n\n// Function to calculate the maximum coins obtained\nint maxCoins(vector<int> &nums) {\n    int n = nums.size();\n    \n    // Add 1 to the beginning and end of the nums array\n    nums.insert(nums.begin(), 1);\n    nums.push_back(1);\n    \n    // Call the helper function to compute the maximum coins\n    return maxCoinsHelper(1, n, nums);\n}\n\nint main() {\n    vector<int> nums = {3, 1, 5, 8};\n    int maxCoinsResult = maxCoins(nums);\n    cout << \"Maximum coins obtained: \" << maxCoinsResult << \"\\n\";\n    \n    return 0;\n}",
+      "Java": "import java.util.*;\n\npublic class Solution{\n    // Function to recursively calculate the maximum coins\n    static int maxCoins(int i, int j, ArrayList<Integer> a) {\n        if (i > j) return 0;\n        int maxi = Integer.MIN_VALUE;\n        for (int ind = i; ind <= j; ind++) {\n            int cost = a.get(i - 1) * a.get(ind) * a.get(j + 1)\n                       + maxCoins(i, ind - 1, a) + maxCoins(ind + 1, j, a);\n            maxi = Math.max(maxi, cost);\n        }\n        return maxi;\n    }\n\n    // Wrapper function to calculate the maximum coins\n    static int maxCoins(ArrayList<Integer> a) {\n        int n = a.size();\n        a.add(1);\n        a.add(0, 1);\n        return maxCoins(1, n, a);\n    }\n\n    public static void main(String[] args) {\n        ArrayList<Integer> a = new ArrayList<>(Arrays.asList(3, 1, 5, 8));\n        int ans = maxCoins(a);\n        System.out.println(ans);\n    }\n}",
+      "Python3": "def maxCoins(a):\n    n = len(a)\n    a.insert(0, 1)\n    a.append(1)\n\n    # Create a 2D DP table initialized with zeros\n    dp = [[0] * (n + 2) for _ in range(n + 2)]\n\n    # Calculate the maximum coins using dynamic programming\n    for length in range(1, n + 1):\n        for i in range(1, n - length + 2):\n            j = i + length - 1\n            maxi = float('-inf')\n            \n            for ind in range(i, j + 1):\n                cost = a[i - 1] * a[ind] * a[j + 1] + dp[i][ind - 1] + dp[ind + 1][j]\n                maxi = max(maxi, cost)\n            \n            dp[i][j] = maxi\n    \n    return dp[1][n]\n\nif __name__ == \"__main__\":\n    a = [3, 1, 5, 8]\n    ans = maxCoins(a)\n    print(ans)",
+      "JavaScript": "function findMaxCoins(a) {\n    // Function f implements the recursive calculation\n    function f(i, j, a) {\n        // Base case: if i > j, return 0\n        if (i > j) return 0;\n        \n        let maxi = -Infinity;\n\n        // Iterate through all possible balloon indices from i to j\n        for (let ind = i; ind <= j; ind++) {\n            // Calculate the cost for bursting balloon ind\n            let cost = a[i - 1] * a[ind] * a[j + 1] +\n                       f(i, ind - 1, a) + f(ind + 1, j, a);\n            \n            // Update the maximum cost\n            maxi = Math.max(maxi, cost);\n        }\n        \n        return maxi;\n    }\n\n    // Add 1 to the beginning and end of the array 'a'\n    a.unshift(1);\n    a.push(1);\n\n    // Call the recursive function 'f' with initial values\n    return f(1, a.length - 2, a);\n}\n\n// Define the input values\nlet a = [3, 1, 5, 8];\n\n// Call the function and print the result\nlet ans = findMaxCoins(a);\nconsole.log(ans);"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

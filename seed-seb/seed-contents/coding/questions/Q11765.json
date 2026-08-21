@@ -1,0 +1,133 @@
+{
+  "questionId": "Q11765",
+  "title": "Distinct subsequences",
+  "slug": "distinct-subsequences",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "String",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Dynamic Programming",
+      "Subsequences"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "**Problem Statement :** Given two strings s and t, return the number of distinct subsequences of s that equal t.\n\n\n\n\n\nA subsequence of a string is a new string generated from the original string with some characters (can be none) deleted without changing the relative order of the remaining characters. For example, \"ace\" is a subsequence of \"abcde\" while \"aec\" is not.\n\n\n\n\n\nThe task is to count how many different ways we can form t from s by deleting some (or no) characters from s.\n\n\n\n\n\n\n    \n        \n            **\n                    Examples\n                **\n            </spa",
+    "constraints": [
+      "1 <= length of s <= 10^5",
+      "1 <= length of t <= 10^5",
+      "s and t consist of lowercase English letters"
+    ],
+    "inputFormat": "Two strings s and t",
+    "outputFormat": "The number of distinct subsequences of s that equal t",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": {
+          "s": "a",
+          "t": "a"
+        },
+        "expectedOutput": 1,
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": {
+          "s": "abcdefghijklmnopqrstuvwxyz",
+          "t": "abcdefghijklmnopqrstuvwxyz"
+        },
+        "expectedOutput": 1,
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": {
+          "s": "aaaaaa",
+          "t": "aa"
+        },
+        "expectedOutput": 6,
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case / empty-like",
+        "input": {
+          "s": "abc",
+          "t": ""
+        },
+        "expectedOutput": 0,
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": {
+          "s": "babgbag",
+          "t": "bag"
+        },
+        "expectedOutput": 5,
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Use dynamic programming to store the number of distinct subsequences of s that equal t up to each position",
+    "timeComplexity": "O(length of s * length of t)",
+    "spaceComplexity": "O(length of s * length of t)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n\nint numDistinct(char * s, char * t) {\n    int m = strlen(s), n = strlen(t);\n    int dp[m + 1][n + 1];\n    for (int i = 0; i <= m; i++) {\n        dp[i][n] = 1;\n    }\n    for (int i = m - 1; i >= 0; i--) {\n        for (int j = n - 1; j >= 0; j--) {\n            if (s[i] == t[j]) {\n                dp[i][j] = dp[i + 1][j + 1] + dp[i + 1][j];\n            } else {\n                dp[i][j] = dp[i + 1][j];\n            }\n        }\n    }\n    return dp[0][0];\n}\n\nint main() {\n    char s[] = \"babgbag\";\n    char t[] = \"bag\";\n    printf(\"%d\\n\", numDistinct(s, t));\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nclass Solution {\npublic:\n    // Recursive helper function with memoization\n    // i -> current index in s\n    // j -> current index in t\n    // dp -> memoization table\n    int helper(int i, int j, string &s, string &t,\n               vector<vector<int>> &dp) {\n        // If we have matched all characters of t\n        // then we found one valid subsequence\n        if (j == t.size()) return 1;\n\n        // If we have exhausted s but not t\n        // then no valid subsequence can be formed\n        if (i == s.size()) return 0;\n\n        // If this state has been already computed\n        if (dp[i][j] != -1) return dp[i][j];\n\n        // If current characters of s and t match\n        if (s[i] == t[j]) {\n            // Option 1: take this character and move both indices\n            int take = helper(i + 1, j + 1, s, t, dp);\n\n            // Option 2: skip this character of s and move only in s\n            int notTake = helper(i + 1, j, s, t, dp);\n\n            // Store result in dp table\n            return dp[i][j] = take + notTake;\n        } else {\n            // If characters do not match, we can only skip s[i]\n            return dp[i][j] = helper(i + 1, j, s, t, dp);\n        }\n    }\n\n    // Main function to count distinct subsequences\n    int numDistinct(string s, string t) {\n        // Initialize dp table with -1 (uncomputed states)\n        vector<vector<int>> dp(s.size(),\n                               vector<int>(t.size(), -1));\n\n        // Start recursion from index 0 of s and t\n        return helper(0, 0, s, t, dp);\n    }\n};\n\n// Driver code\nint main() {\n    Solution sol;\n\n    // Input strings\n    string s = \"babgbag\";\n    string t = \"bag\";\n\n    // Print number of distinct subsequences\n    cout << sol.numDistinct(s, t) << endl;\n    return 0;\n}",
+      "Java": "import java.util.*;\n\nclass Solution {\n    // Recursive helper function with memoization\n    int helper(int i, int j, String s, String t,\n               int[][] dp) {\n        // If we have matched all characters of t\n        if (j == t.length()) return 1;\n\n        // If we have exhausted s but not t\n        if (i == s.length()) return 0;\n\n        // If already computed\n        if (dp[i][j] != -1) return dp[i][j];\n\n        // If characters match\n        if (s.charAt(i) == t.charAt(j)) {\n            // Option 1: take current character\n            int take = helper(i + 1, j + 1, s, t, dp);\n\n            // Option 2: skip current character of s\n            int notTake = helper(i + 1, j, s, t, dp);\n\n            // Store result\n            dp[i][j] = take + notTake;\n        } else {\n            // If mismatch, skip character of s\n            dp[i][j] = helper(i + 1, j, s, t, dp);\n        }\n        return dp[i][j];\n    }\n\n    // Main function to count distinct subsequences\n    public int numDistinct(String s, String t) {\n        // Initialize dp array with -1\n        int[][] dp = new int[s.length()][t.length()];\n        for (int[] row : dp) Arrays.fill(row, -1);\n\n        // Start recursion\n        return helper(0, 0, s, t, dp);\n    }\n}\n\n// Driver class\npublic class Main {\n    public static void main(String[] args) {\n        Solution sol = new Solution();\n\n        // Input strings\n        String s = \"babgbag\";\n        String t = \"bag\";\n\n        // Print answer\n        System.out.println(sol.numDistinct(s, t));\n    }\n}",
+      "Python3": "class Solution:\n    # Recursive helper with memoization\n    def helper(self, i, j, s, t, dp):\n        # If we have matched all characters of t\n        if j == len(t):\n            return 1\n\n        # If we have exhausted s but not t\n        if i == len(s):\n            return 0\n\n        # If result already computed\n        if dp[i][j] != -1:\n            return dp[i][j]\n\n        # If characters match\n        if s[i] == t[j]:\n            # Option 1: take the character\n            take = self.helper(i + 1, j + 1, s, t, dp)\n\n            # Option 2: skip the character from s\n            notTake = self.helper(i + 1, j, s, t, dp)\n\n            # Store result\n            dp[i][j] = take + notTake\n        else:\n            # If mismatch, skip character of s\n            dp[i][j] = self.helper(i + 1, j, s, t, dp)\n\n        return dp[i][j]\n\n    # Main function to count distinct subsequences\n    def numDistinct(self, s: str, t: str) -> int:\n        # Initialize dp table with -1\n        dp = [[-1] * len(t) for _ in range(len(s))]\n\n        # Start recursion\n        return self.helper(0, 0, s, t, dp)\n\n\n# Driver code\nif __name__ == \"__main__\":\n    sol = Solution()\n\n    # Input strings\n    s = \"babgbag\"\n    t = \"bag\"\n\n    # Print result\n    print(sol.numDistinct(s, t))",
+      "JavaScript": "class Solution {\n    // Recursive helper function with memoization\n    helper(i, j, s, t, dp) {\n        // If we have matched all characters of t\n        if (j === t.length) return 1;\n\n        // If we have exhausted s but not t\n        if (i === s.length) return 0;\n\n        // If already computed\n        if (dp[i][j] !== -1) return dp[i][j];\n\n        // If characters match\n        if (s[i] === t[j]) {\n            // Option 1: take current character\n            let take = this.helper(i + 1, j + 1, s, t, dp);\n\n            // Option 2: skip current character of s\n            let notTake = this.helper(i + 1, j, s, t, dp);\n\n            // Store result\n            dp[i][j] = take + notTake;\n        } else {\n            // If mismatch, skip character of s\n            dp[i][j] = this.helper(i + 1, j, s, t, dp);\n        }\n        return dp[i][j];\n    }\n\n    // Main function to count distinct subsequences\n    numDistinct(s, t) {\n        // Initialize dp array with -1\n        let dp = Array.from({ length: s.length },\n            () => new Array(t.length).fill(-1));\n\n        // Start recursion\n        return this.helper(0, 0, s, t, dp);\n    }\n}\n\n// Driver code\nlet sol = new Solution();\n\n// Input strings\nlet s = \"babgbag\";\nlet t = \"bag\";\n\n// Print result\nconsole.log(sol.numDistinct(s, t));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "questionId": "Q2406",
+  "title": "Ciel and Battle Arena",
+  "slug": "ciel-and-battle-arena",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Probability",
+      "Simulation",
+      "Math"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ]
+  },
+  "content": {
+    "problemStatement": "Chef Ciel bought a new video game for guests to kill time until their orders arrive.\nIn this game, you are a fighter in a battle arena, and you will fight against a fighter called Shindannin.\nIn Japan, many people believe that the next day will be a happy day if they beat Shindannin, otherwise the next day will be an unhappy day.\n\n\n\nLet's start by defintions of some variables.\n**VA** and **VB** denote your initial HP (health points) and Shindannin's initial HP respectively.\n**SA** and **SB** denote your strength and Shindannin's strength respectively.\n**MA** denotes your initial MP (magical points), which is used when you use a skill. Note that only you can use a skill in the battle.\n\n\n\nIn each turn, the battle will go on as follows:\n\n\n\n  Firstly, you can use a skill as many times as you like as long as your MP is positive. If you use a skill, your HP and Shindannin's HP are decreased by half and your MP is decreased by 1. If HP becomes a non-integer, HP will be rounded up to the nearest integer. To be more precise, new HP will be ceil(old HP / 2).\n  Next, an integer **s** is chosen in [0, **SA**] uniformly randomly, and an integer **t** is chosen in [0, **SB**] uniformly randomly.\n  Then, your HP is decresed by **t**, and Shindannin's HP is decreased by **s** simultaneously.\n  If both fighter have positive HP, next turn will occur.\n\nWhen a fighter's HP is down to zero or a negative integer, this fighter loses.\nIf both fighters' HP is down to zero or negative integer simultaneously, you will fight against Shindannin again with the same conditions, that is, HP and MP are recovered completely before next battle.\nThere is no limit on the number of rematches.\nIf you fight optimally, what is your winning percentage?",
+    "constraints": [
+      "1 <= T <= 100",
+      "1 <= VA, VB <= 100",
+      "1 <= SA, SB <= 100",
+      "0 <= MA <= 5"
+    ],
+    "inputFormat": "First line contains T, the number of test cases. Each test case contains five integers VA, VB, SA, SB, and MA, representing the initial HP of the player and Shindannin, the strength of the player and Shindannin, and the initial MP of the player, respectively.",
+    "outputFormat": "For each test case, print the maximum winning percentage the player can achieve, with an absolute error of no more than 10^-6.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "15 5 3 3 0",
+        "output": "0.105000",
+        "explanation": "The player has 15 HP, Shindannin has 5 HP, the player's strength is 3, Shindannin's strength is 3, and the player has 0 MP. The player can only attack Shindannin without using any skills."
+      },
+      {
+        "id": "sample_2",
+        "input": "25 5 3 3 1",
+        "output": "0.205889",
+        "explanation": "The player has 25 HP, Shindannin has 5 HP, the player's strength is 3, Shindannin's strength is 3, and the player has 1 MP. The player can use a skill to reduce both HP by half and then attack Shindannin."
+      },
+      {
+        "id": "sample_3",
+        "input": "58 85 8 13 0",
+        "output": "0.300011",
+        "explanation": "The player has 58 HP, Shindannin has 85 HP, the player's strength is 8, Shindannin's strength is 13, and the player has 0 MP. The player can only attack Shindannin without using any skills."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1 1 1 1 0",
+        "expectedOutput": "0.000000",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "100 100 100 100 5",
+        "expectedOutput": "0.500000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "50 50 50 50 0",
+        "expectedOutput": "0.500000",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "10 10 10 10 1",
+        "expectedOutput": "0.500000",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "25 25 25 25 2",
+        "expectedOutput": "0.500000",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The key insight is to simulate the battle process and calculate the winning percentage. We can use a Monte Carlo simulation to estimate the winning percentage by simulating the battle many times and counting the number of wins.",
+    "timeComplexity": "O(T * NUM_SIMULATIONS) per test case, where NUM_SIMULATIONS is the number of simulations. The total time complexity is O(T * NUM_SIMULATIONS).",
+    "spaceComplexity": "O(1) \u2014 the space complexity is constant because we only use a fixed amount of space to store the input and output.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <time.h>\n#define MAX_VA 100\n#define MAX_VB 100\n#define MAX_SA 100\n#define MAX_SB 100\n#define MAX_MA 5\n#define NUM_SIMULATIONS 100000\n\nint simulate(int va, int vb, int sa, int sb, int ma) {\n    while (va > 0 && vb > 0) {\n        if (ma > 0) {\n            va = (va + 1) / 2;\n            vb = (vb + 1) / 2;\n            ma--;\n        }\n        int s = rand() % (sa + 1);\n        int t = rand() % (sb + 1);\n        va -= t;\n        vb -= s;\n    }\n    return va > 0;\n}\n\nint main() {\n    srand(time(NULL));\n    int t;\n    scanf(\"%d\", &t);\n    for (int i = 0; i < t; i++) {\n        int va, vb, sa, sb, ma;\n        scanf(\"%d %d %d %d %d\", &va, &vb, &sa, &sb, &ma);\n        int wins = 0;\n        for (int j = 0; j < NUM_SIMULATIONS; j++) {\n            wins += simulate(va, vb, sa, sb, ma);\n        }\n        double winning_percentage = (double) wins / NUM_SIMULATIONS;\n        printf(\"%.6f\\n\", winning_percentage);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <cstdlib>\n#include <ctime>\n#define MAX_VA 100\n#define MAX_VB 100\n#define MAX_SA 100\n#define MAX_SB 100\n#define MAX_MA 5\n#define NUM_SIMULATIONS 100000\n\nint simulate(int va, int vb, int sa, int sb, int ma) {\n    while (va > 0 && vb > 0) {\n        if (ma > 0) {\n            va = (va + 1) / 2;\n            vb = (vb + 1) / 2;\n            ma--;\n        }\n        int s = rand() % (sa + 1);\n        int t = rand() % (sb + 1);\n        va -= t;\n        vb -= s;\n    }\n    return va > 0;\n}\n\nint main() {\n    srand(time(0));\n    int t;\n    std::cin >> t;\n    for (int i = 0; i < t; i++) {\n        int va, vb, sa, sb, ma;\n        std::cin >> va >> vb >> sa >> sb >> ma;\n        int wins = 0;\n        for (int j = 0; j < NUM_SIMULATIONS; j++) {\n            wins += simulate(va, vb, sa, sb, ma);\n        }\n        double winning_percentage = (double) wins / NUM_SIMULATIONS;\n        std::cout << std::fixed << std::setprecision(6) << winning_percentage << std::endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Random;\nimport java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int t = scanner.nextInt();\n        Random random = new Random();\n        for (int i = 0; i < t; i++) {\n            int va = scanner.nextInt();\n            int vb = scanner.nextInt();\n            int sa = scanner.nextInt();\n            int sb = scanner.nextInt();\n            int ma = scanner.nextInt();\n            int wins = 0;\n            int numSimulations = 100000;\n            for (int j = 0; j < numSimulations; j++) {\n                wins += simulate(va, vb, sa, sb, ma, random);\n            }\n            double winningPercentage = (double) wins / numSimulations;\n            System.out.printf(\"%.6f\\n\", winningPercentage);\n        }\n    }\n\n    public static int simulate(int va, int vb, int sa, int sb, int ma, Random random) {\n        while (va > 0 && vb > 0) {\n            if (ma > 0) {\n                va = (va + 1) / 2;\n                vb = (vb + 1) / 2;\n                ma--;\n            }\n            int s = random.nextInt(sa + 1);\n            int t = random.nextInt(sb + 1);\n            va -= t;\n            vb -= s;\n        }\n        return va > 0 ? 1 : 0;\n    }\n}",
+      "Python3": "import random\n\ndef simulate(va, vb, sa, sb, ma):\n    while va > 0 and vb > 0:\n        if ma > 0:\n            va = (va + 1) // 2\n            vb = (vb + 1) // 2\n            ma -= 1\n        s = random.randint(0, sa)\n        t = random.randint(0, sb)\n        va -= t\n        vb -= s\n    return va > 0\n\nnum_simulations = 100000\nfor _ in range(int(input())):\n    va, vb, sa, sb, ma = map(int, input().split())\n    wins = sum(simulate(va, vb, sa, sb, ma) for _ in range(num_simulations))\n    winning_percentage = wins / num_simulations\n    print(f\"{winning_percentage:.6f}\")",
+      "JavaScript": "const lines = require('fs').readFileSync(0, 'utf-8').trim().split('\\n');\nlet i = 0;\nconst readline = () => lines[i++];\n\nfunction simulate(va, vb, sa, sb, ma) {\n    while (va > 0 && vb > 0) {\n        if (ma > 0) {\n            va = Math.ceil(va / 2);\n            vb = Math.ceil(vb / 2);\n            ma--;\n        }\n        const s = Math.floor(Math.random() * (sa + 1));\n        const t = Math.floor(Math.random() * (sb + 1));\n        va -= t;\n        vb -= s;\n    }\n    return va > 0;\n}\n\nconst numSimulations = 100000;\nconst t = parseInt(readline());\nfor (let i = 0; i < t; i++) {\n    const [va, vb, sa, sb, ma] = readline().split(' ').map(Number);\n    let wins = 0;\n    for (let j = 0; j < numSimulations; j++) {\n        wins += simulate(va, vb, sa, sb, ma);\n    }\n    const winningPercentage = wins / numSimulations;\n    console.log(winningPercentage.toFixed(6));\n}"
+    }
+  }
+}

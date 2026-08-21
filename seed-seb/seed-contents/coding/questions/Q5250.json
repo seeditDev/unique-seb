@@ -1,0 +1,141 @@
+{
+  "questionId": "Q5250",
+  "title": "Count palindromes",
+  "slug": "count-palindromes",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming | Strings",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Palindrome",
+      "DP",
+      "String Partition",
+      "Modulo"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Each palindrome can be always created from the other palindromes, since a single character is also a palindrome. For example, the string \"bobseesanna\" can be created by some ways:\n\n* bobseesanna = bob + sees + anna\n\n* bobseesanna = bob + s + ee + s + anna\n\n* bobseesanna = b + o + b + sees + a + n + n + a\n\n...\n\nWe want to take the value of function CountPal(s) which is the number of different ways to use the palindromes to create the string s by the above method.",
+    "constraints": [
+      "1 ≤ T ≤ 10",
+      "1 ≤ |s| ≤ 1000",
+      "s contains only characters 'a'‑'z'"
+    ],
+    "inputFormat": "The first line contains an integer T (1 ≤ T ≤ 10), the number of test cases. Each of the next T lines contains a non‑empty string s consisting of only lowercase English letters (1 ≤ |s| ≤ 1000).",
+    "outputFormat": "For each test case output a single line containing CountPal(s) modulo 1 000 000 007 – the number of ways to split s into a sequence of palindromic substrings.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\\nbobseesanna\\nabba\\nabc",
+        "output": "18\n4\n1",
+        "explanation": "For \"bobseesanna\" there are 18 palindrome partitions, for \"abba\" there are 4 (a|b|b|a, a|bb|a, ab|ba, abba) and for \"abc\" only the trivial single‑character split."
+      },
+      {
+        "id": "sample_2",
+        "input": "2\\na\\naaaaaaaaaa",
+        "output": "1\n512",
+        "explanation": "\"a\" has exactly one way. \"aaaaaaaaaa\" (10 a's) every cut is optional, giving 2^(10‑1)=512 ways."
+      },
+      {
+        "id": "sample_3",
+        "input": "2\nabcde\naba",
+        "output": "1\n2",
+        "explanation": "\"abcde\" contains no palindrome longer than 1, so only one partition. \"aba\" can be split as a|b|a or aba, thus 2 ways."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\na",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary (length 100, all same character)",
+        "input": "1\na\".repeat(100)",
+        "expectedOutput": "1267650600228229401496703205376",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case – no multi‑character palindrome",
+        "input": "1\nabcde",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\naba",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\naab",
+        "expectedOutput": "2",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each string we pre‑compute a table isPal[i][j] (0‑based) that tells whether the substring s[i..j] is a palindrome. This can be done in O(n²) by expanding lengths: a substring of length 1 is always a palindrome, length 2 is a palindrome if the two characters are equal, and for longer substrings s[i]==s[j] && isPal[i+1][j-1].\n\nAfter the table is ready we use a DP array dp where dp[i] is the number of ways to partition the prefix s[0..i‑1]. dp[0]=1 (empty prefix). For each position i (1…n) we iterate over all possible previous cut positions j (0…i‑1); if isPal[j][i‑1] is true we add dp[j] to dp[i]. All operations are performed modulo MOD = 1 000 000 007.\n\nThe answer for the test case is dp[n]. The algorithm runs in O(n²) time and O(n²) memory per test case, which easily satisfies the limits (n ≤ 1000).",
+    "timeComplexity": "O(T·n²) where n is the length of each string (≤1000).",
+    "spaceComplexity": "O(n²) for the palindrome table plus O(n) for the DP array.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n#define MOD 1000000007\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T)!=1) return 0;\n    while (T--) {\n        char s[1005];\n        scanf(\"%s\", s);\n        int n = strlen(s);\n        static int isPal[1000][1000];\n        // pre‑compute palindromes\n        for (int i = 0; i < n; ++i) {\n            isPal[i][i] = 1;\n        }\n        for (int len = 2; len <= n; ++len) {\n            for (int i = 0; i + len - 1 < n; ++i) {\n                int j = i + len - 1;\n                if (s[i] == s[j]) {\n                    if (len == 2) isPal[i][j] = 1;\n                    else isPal[i][j] = isPal[i+1][j-1];\n                } else {\n                    isPal[i][j] = 0;\n                }\n            }\n        }\n        long long dp[1005] = {0};\n        dp[0] = 1;\n        for (int i = 1; i <= n; ++i) {\n            long long sum = 0;\n            for (int j = 0; j < i; ++j) {\n                if (isPal[j][i-1]) {\n                    sum += dp[j];\n                    if (sum >= MOD) sum -= MOD;\n                }\n            }\n            dp[i] = sum;\n        }\n        printf(\"%lld\\n\", dp[n] % MOD);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nconst int MOD = 1000000007;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--) {\n        string s; cin>>s;\n        int n = s.size();\n        vector<vector<char>> pal(n, vector<char>(n, 0));\n        for(int i=0;i<n;++i) pal[i][i]=1;\n        for(int len=2; len<=n; ++len){\n            for(int i=0;i+len-1<n;++i){\n                int j=i+len-1;\n                if(s[i]==s[j]){\n                    if(len==2) pal[i][j]=1;\n                    else pal[i][j]=pal[i+1][j-1];\n                }\n            }\n        }\n        vector<int> dp(n+1,0);\n        dp[0]=1;\n        for(int i=1;i<=n;++i){\n            long long cur=0;\n            for(int j=0;j<i;++j){\n                if(pal[j][i-1]){\n                    cur+=dp[j];\n                    if(cur>=MOD) cur-=MOD;\n                }\n            }\n            dp[i]=cur%MOD;\n        }\n        cout<<dp[n]%MOD<<\"\\n\";\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    static final int MOD = 1_000_000_007;\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder out = new StringBuilder();\n        for (int tc = 0; tc < T; ++tc) {\n            String s = br.readLine().trim();\n            int n = s.length();\n            boolean[][] pal = new boolean[n][n];\n            for (int i = 0; i < n; ++i) pal[i][i] = true;\n            for (int len = 2; len <= n; ++len) {\n                for (int i = 0; i + len - 1 < n; ++i) {\n                    int j = i + len - 1;\n                    if (s.charAt(i) == s.charAt(j)) {\n                        if (len == 2) pal[i][j] = true;\n                        else pal[i][j] = pal[i + 1][j - 1];\n                    }\n                }\n            }\n            long[] dp = new long[n + 1];\n            dp[0] = 1;\n            for (int i = 1; i <= n; ++i) {\n                long sum = 0;\n                for (int j = 0; j < i; ++j) {\n                    if (pal[j][i - 1]) {\n                        sum += dp[j];\n                        if (sum >= MOD) sum -= MOD;\n                    }\n                }\n                dp[i] = sum % MOD;\n            }\n            out.append(dp[n] % MOD).append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "import sys\nMOD = 1_000_000_007\n\ndef count_pal(s: str) -> int:\n    n = len(s)\n    pal = [[False] * n for _ in range(n)]\n    for i in range(n):\n        pal[i][i] = True\n    for length in range(2, n + 1):\n        for i in range(n - length + 1):\n            j = i + length - 1\n            if s[i] == s[j]:\n                if length == 2:\n                    pal[i][j] = True\n                else:\n                    pal[i][j] = pal[i + 1][j - 1]\n    dp = [0] * (n + 1)\n    dp[0] = 1\n    for i in range(1, n + 1):\n        total = 0\n        for j in range(i):\n            if pal[j][i - 1]:\n                total += dp[j]\n                if total >= MOD:\n                    total -= MOD\n        dp[i] = total % MOD\n    return dp[n]\n\ndef main():\n    data = sys.stdin.read().strip().splitlines()\n    if not data:\n        return\n    T = int(data[0])\n    out = []\n    for i in range(1, T + 1):\n        out.append(str(count_pal(data[i].strip())))\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    main()",
+      "JavaScript": "const fs = require('fs');\nconst MOD = 1000000007;\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst T = parseInt(lines[idx++], 10);\nlet results = [];\nfor (let t = 0; t < T; ++t) {\n  const s = lines[idx++].trim();\n  const n = s.length;\n  const pal = Array.from({ length: n }, () => Array(n).fill(false));\n  for (let i = 0; i < n; ++i) pal[i][i] = true;\n  for (let len = 2; len <= n; ++len) {\n    for (let i = 0; i + len - 1 < n; ++i) {\n      const j = i + len - 1;\n      if (s[i] === s[j]) {\n        if (len === 2) pal[i][j] = true;\n        else pal[i][j] = pal[i + 1][j - 1];\n      }\n    }\n  }\n  const dp = new Array(n + 1).fill(0);\n  dp[0] = 1;\n  for (let i = 1; i <= n; ++i) {\n    let cur = 0;\n    for (let j = 0; j < i; ++j) {\n      if (pal[j][i - 1]) {\n        cur += dp[j];\n        if (cur >= MOD) cur -= MOD;\n      }\n    }\n    dp[i] = cur % MOD;\n  }\n  results.push(String(dp[n] % MOD));\n}\nconsole.log(results.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

@@ -1,0 +1,127 @@
+{
+  "questionId": "Q2721",
+  "title": "Game",
+  "slug": "game",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Math",
+      "Modular Arithmetic",
+      "Dynamic Programming"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Ad-hoc & Implementation"
+    ]
+  },
+  "content": {
+    "problemStatement": "You are playing following game: given an array **A** of **N** natural numbers. All numbers in the array **A** are at most **M**. On every turn you may pick any two different elements **Ai** and **Aj** (**i**\u2260**j**), such that **Ai, Aj \u2264 M**, and add **K** to both. The game ends when you are not able to continue. That is, when there is no pair **(i,j)** left such that both of them are less than equal to **M**.\n\n\n\n**Let's call two arrays different if the sum of all their elements is different**. When the game ends, you note down the final array **A**. How many different final arrays can you have.",
+    "constraints": [
+      "1 <= N <= 10^5",
+      "1 <= M,K <= 10^12",
+      "1 <= Ai <= M"
+    ],
+    "inputFormat": "First line contains three integers N, M and K. N elements of the array follow in the next line.",
+    "outputFormat": "Output single integer - answer for the given problem modulo 10^9+7.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3 3 2\n1 2 3",
+        "output": "2",
+        "explanation": "All possible sums are 14 and 10. You can get them by, for example, these arrays: A=(5, 4, 5), A=(1, 4, 5)"
+      },
+      {
+        "id": "sample_2",
+        "input": "4 5 3\n1 2 3 4",
+        "output": "3",
+        "explanation": "All possible sums are 24, 21 and 18. You can get them by, for example, these arrays: A=(7, 6, 6, 5), A=(4, 6, 6, 5), A=(1, 6, 6, 5)"
+      },
+      {
+        "id": "sample_3",
+        "input": "2 10 5\n3 7",
+        "output": "2",
+        "explanation": "All possible sums are 20 and 15. You can get them by, for example, these arrays: A=(10, 10), A=(3, 12)"
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1 1 1\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "10 100 100\n1 2 3 4 5 6 7 8 9 10",
+        "expectedOutput": "10",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "5 5 5\n1 1 1 1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "3 3 2\n1 2 3",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "10 10 10\n1 2 3 4 5 6 7 8 9 10",
+        "expectedOutput": "10",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved using dynamic programming. We create a dp array where dp[i][j] represents the number of ways to get a sum of j using the first i elements of the array. We iterate over each element in the array and for each possible sum, we check if we can add K to the current element and the previous element to get the current sum. If we can, we add the number of ways to get the previous sum to the current dp value.",
+    "timeComplexity": "O(N * (sum + N * K)) per test case, O(T * N * (sum + N * K)) total.",
+    "spaceComplexity": "O(N * (sum + N * K)) \u2014 the dominant structure is the dp array.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#define MOD 1000000007\nint main() {\n    int T = 1;\n    while (T--) {\n        int N, M, K;\n        scanf(\"%d %d %d\", &N, &M, &K);\n        long long arr[N];\n        for (int i = 0; i < N; i++) {\n            scanf(\"%lld\", &arr[i]);\n        }\n        long long sum = 0;\n        for (int i = 0; i < N; i++) {\n            sum += arr[i];\n        }\n        long long dp[N + 1][sum + N * K + 1];\n        for (int i = 0; i <= N; i++) {\n            for (int j = 0; j <= sum + N * K; j++) {\n                dp[i][j] = 0;\n            }\n        }\n        dp[0][0] = 1;\n        for (int i = 1; i <= N; i++) {\n            for (int j = 0; j <= sum + N * K; j++) {\n                if (j - arr[i - 1] >= 0) {\n                    dp[i][j] = (dp[i][j] + dp[i - 1][j - arr[i - 1]]) % MOD;\n                }\n                if (j - arr[i - 1] - K >= 0) {\n                    dp[i][j] = (dp[i][j] + dp[i - 1][j - arr[i - 1] - K]) % MOD;\n                }\n            }\n        }\n        long long ans = 0;\n        for (int i = 0; i <= sum + N * K; i++) {\n            ans = (ans + dp[N][i]) % MOD;\n        }\n        printf(\"%lld\\n\", ans);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\n#define MOD 1000000007\nusing namespace std;\nint main() {\n    int T = 1;\n    while (T--) {\n        int N, M, K;\n        cin >> N >> M >> K;\n        vector<long long> arr(N);\n        for (int i = 0; i < N; i++) {\n            cin >> arr[i];\n        }\n        long long sum = 0;\n        for (int i = 0; i < N; i++) {\n            sum += arr[i];\n        }\n        vector<vector<long long>> dp(N + 1, vector<long long>(sum + N * K + 1, 0));\n        dp[0][0] = 1;\n        for (int i = 1; i <= N; i++) {\n            for (int j = 0; j <= sum + N * K; j++) {\n                if (j - arr[i - 1] >= 0) {\n                    dp[i][j] = (dp[i][j] + dp[i - 1][j - arr[i - 1]]) % MOD;\n                }\n                if (j - arr[i - 1] - K >= 0) {\n                    dp[i][j] = (dp[i][j] + dp[i - 1][j - arr[i - 1] - K]) % MOD;\n                }\n            }\n        }\n        long long ans = 0;\n        for (int i = 0; i <= sum + N * K; i++) {\n            ans = (ans + dp[N][i]) % MOD;\n        }\n        cout << ans << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = 1;\n        while (T-- > 0) {\n            int N = sc.nextInt();\n            int M = sc.nextInt();\n            int K = sc.nextInt();\n            long[] arr = new long[N];\n            for (int i = 0; i < N; i++) {\n                arr[i] = sc.nextLong();\n            }\n            long sum = 0;\n            for (int i = 0; i < N; i++) {\n                sum += arr[i];\n            }\n            long[][] dp = new long[N + 1][(int) (sum + N * K + 1)];\n            dp[0][0] = 1;\n            for (int i = 1; i <= N; i++) {\n                for (int j = 0; j <= sum + N * K; j++) {\n                    if (j - arr[i - 1] >= 0) {\n                        dp[i][j] = (dp[i][j] + dp[i - 1][j - (int) arr[i - 1]]) % 1000000007;\n                    }\n                    if (j - arr[i - 1] - K >= 0) {\n                        dp[i][j] = (dp[i][j] + dp[i - 1][j - (int) arr[i - 1] - K]) % 1000000007;\n                    }\n                }\n            }\n            long ans = 0;\n            for (int i = 0; i <= sum + N * K; i++) {\n                ans = (ans + dp[N][i]) % 1000000007;\n            }\n            System.out.println(ans);\n        }\n    }\n}",
+      "Python3": "import sys\nMOD = 1000000007\nfor T in range(1):\n    N, M, K = map(int, input().split())\n    arr = list(map(int, input().split()))\n    sum_val = sum(arr)\n    dp = [[0] * (sum_val + N * K + 1) for _ in range(N + 1)]\n    dp[0][0] = 1\n    for i in range(1, N + 1):\n        for j in range(sum_val + N * K + 1):\n            if j - arr[i - 1] >= 0:\n                dp[i][j] = (dp[i][j] + dp[i - 1][j - arr[i - 1]]) % MOD\n            if j - arr[i - 1] - K >= 0:\n                dp[i][j] = (dp[i][j] + dp[i - 1][j - arr[i - 1] - K]) % MOD\n    ans = sum(dp[N]) % MOD\n    print(ans)",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst MOD = 1000000007;\nconst T = 1;\nfor (let t = 0; t < T; t++) {\n    const [N, M, K] = input[idx++].split(' ').map(Number);\n    const arr = input[idx++].split(' ').map(Number);\n    let sum = 0;\n    for (let i = 0; i < N; i++) {\n        sum += arr[i];\n    }\n    const dp = Array(N + 1).fill(0).map(() => Array(sum + N * K + 1).fill(0));\n    dp[0][0] = 1;\n    for (let i = 1; i <= N; i++) {\n        for (let j = 0; j <= sum + N * K; j++) {\n            if (j - arr[i - 1] >= 0) {\n                dp[i][j] = (dp[i][j] + dp[i - 1][j - arr[i - 1]]) % MOD;\n            }\n            if (j - arr[i - 1] - K >= 0) {\n                dp[i][j] = (dp[i][j] + dp[i - 1][j - arr[i - 1] - K]) % MOD;\n            }\n        }\n    }\n    let ans = 0;\n    for (let i = 0; i <= sum + N * K; i++) {\n        ans = (ans + dp[N][i]) % MOD;\n    }\n    console.log(ans);\n}"
+    }
+  }
+}

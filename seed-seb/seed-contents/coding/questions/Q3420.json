@@ -1,0 +1,117 @@
+{
+  "questionId": "Q3420",
+  "title": "JosephLand",
+  "slug": "josephland",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Ticket System",
+      "Minimum Cost",
+      "Dynamic Programming",
+      "Shortest Path"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ]
+  },
+  "content": {
+    "problemStatement": "Nick lives in a country named JosephLand. JosephLand consists of **N** \ncities. City **1** is the capital city. There are **N - 1** **directed** roads. It's guaranteed that it is possible to reach capital city from any city, and in fact there is a unique path from any city to the capital city.\n\nBesides, you can't cross roads for free. To pass a road, you must have a ticket. There are total **M** tickets. You can not have more than **one** ticket at a time! Each ticket is represented by three integers:\n\n\n\n**v** **k** **w** : you can buy a ticket with cost **w** in the city **v**. This ticket can be used at max **k** times. That means, after using this ticket for **k** roads ticket can't be used!\n\n\nBy the way, you can tear your ticket any time and buy a new one. But you are not allowed to buy a ticket if you are still having a ticket with you!\n\nNick's home is located in the capital city. He has **Q** friends, and he wants to invite all of them for dinner! So he is interested in knowing about how much each of his friends is going to spend in the journey! His friends are quite smart and always choose a route to capital city that **minimizes** his/her spending! Nick has to prepare dinner, so he doesn't have time to figure out himself, Can you please help him?\n\n\nPlease note that it's guaranteed that, one can reach the capital from any city using the tickets!",
+    "constraints": [
+      "1 \u2264 N, M, Q \u2264 10^5",
+      "1 \u2264 vi, ki \u2264 N",
+      "1 \u2264 wi \u2264 10^9",
+      "1 \u2264 hi \u2264 N"
+    ],
+    "inputFormat": "The first line contains two space-separated integers N and M, denoting the number of cities in JosephLand and the number of tickets, respectively. The next N-1 lines contain two integers ai and bi, denoting a road from city ai to bi. The next M lines contain three integers vi, ki, and wi, representing a ticket that can be bought in city vi, used at most k times, and costs w. The next line contains an integer Q, denoting the number of Nick's friends. The next Q lines contain a single integer each, hi, denoting the city where Nick's ith friend lives.",
+    "outputFormat": "Output Q lines, each containing the minimum cost for the corresponding friend to reach the capital city.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "7 7\n3 1\n2 1\n7 6\n6 3\n5 3\n4 3\n7 2 3\n7 1 1\n2 3 5\n3 6 2\n4 2 4\n5 3 10\n6 1 20\n3\n5\n6\n7",
+        "output": "10\n22\n5",
+        "explanation": "The minimum cost for each friend to reach the capital city is calculated by considering all possible tickets that can be bought in the current city."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a dynamic programming approach. We first build a graph based on the given roads and tickets. Then, for each city, we calculate the minimum cost to reach the capital city by considering all possible tickets that can be bought in that city. We use a recursive function to explore all possible paths and keep track of the minimum cost. The time complexity of this approach is O(N*M*Q), where N is the number of cities, M is the number of tickets, and Q is the number of friends.",
+    "timeComplexity": "O(N*M*Q) \u2014 The time complexity is dominated by the recursive function that explores all possible paths for each friend.",
+    "spaceComplexity": "O(N*M) \u2014 The space complexity is dominated by the graph and the dynamic programming table.",
+    "code": {
+      "C": "// COMPLETE, COMPILABLE C code\n#include <stdio.h>\n#include <stdlib.h>\n#define MAX_N 100005\n#define MAX_M 100005\n#define INF 1000000000\n\n// Define the structure for a ticket\ntypedef struct {\n    int v, k, w;\n} Ticket;\n\n// Define the structure for a graph\ntypedef struct {\n    int n, m;\n    int **adj;\n    Ticket *tickets;\n} Graph;\n\n// Function to create a graph\nGraph *createGraph(int n, int m) {\n    Graph *g = (Graph *)malloc(sizeof(Graph));\n    g->n = n;\n    g->m = m;\n    g->adj = (int **)malloc(n * sizeof(int *));\n    for (int i = 0; i < n; i++) {\n        g->adj[i] = (int *)malloc(n * sizeof(int));\n        for (int j = 0; j < n; j++) {\n            g->adj[i][j] = INF;\n        }\n    }\n    g->tickets = (Ticket *)malloc(m * sizeof(Ticket));\n    return g;\n}\n\n// Function to add an edge to the graph\nvoid addEdge(Graph *g, int a, int b) {\n    g->adj[a][b] = 1;\n}\n\n// Function to add a ticket to the graph\nvoid addTicket(Graph *g, int v, int k, int w) {\n    Ticket t;\n    t.v = v;\n    t.k = k;\n    t.w = w;\n    g->tickets[g->m++] = t;\n}\n\n// Function to calculate the minimum cost\nint minCost(Graph *g, int city) {\n    // Base case: if the city is the capital, return 0\n    if (city == 0) return 0;\n\n    // Initialize the minimum cost to infinity\n    int min = INF;\n\n    // Iterate over all tickets that can be bought in the current city\n    for (int i = 0; i < g->m; i++) {\n        Ticket t = g->tickets[i];\n        if (t.v == city) {\n            // Calculate the cost of using the current ticket\n            int cost = t.w;\n            // Calculate the minimum cost to reach the capital using the current ticket\n            int minCostUsingTicket = minCost(g, city - 1) + cost;\n            // Update the minimum cost if using the current ticket is cheaper\n            if (minCostUsingTicket < min) {\n                min = minCostUsingTicket;\n            }\n        }\n    }\n\n    // Return the minimum cost\n    return min;\n}\n\nint main() {\n    int n, m, q;\n    scanf(\"%d %d\", &n, &m);\n    Graph *g = createGraph(n, m);\n    for (int i = 0; i < n - 1; i++) {\n        int a, b;\n        scanf(\"%d %d\", &a, &b);\n        addEdge(g, a, b);\n    }\n    for (int i = 0; i < m; i++) {\n        int v, k, w;\n        scanf(\"%d %d %d\", &v, &k, &w);\n        addTicket(g, v, k, w);\n    }\n    scanf(\"%d\", &q);\n    for (int i = 0; i < q; i++) {\n        int city;\n        scanf(\"%d\", &city);\n        printf(\"%d\\n\", minCost(g, city));\n    }\n    return 0;\n}",
+      "C++": "// COMPLETE, COMPILABLE C++ code\n#include <iostream>\n#include <vector>\n#include <limits>\nusing namespace std;\n\n// Define the structure for a ticket\nstruct Ticket {\n    int v, k, w;\n};\n\n// Define the structure for a graph\nstruct Graph {\n    int n, m;\n    vector<vector<int>> adj;\n    vector<Ticket> tickets;\n};\n\n// Function to create a graph\nGraph createGraph(int n, int m) {\n    Graph g;\n    g.n = n;\n    g.m = m;\n    g.adj.resize(n, vector<int>(n, numeric_limits<int>::max()));\n    return g;\n}\n\n// Function to add an edge to the graph\nvoid addEdge(Graph &g, int a, int b) {\n    g.adj[a][b] = 1;\n}\n\n// Function to add a ticket to the graph\nvoid addTicket(Graph &g, int v, int k, int w) {\n    Ticket t;\n    t.v = v;\n    t.k = k;\n    t.w = w;\n    g.tickets.push_back(t);\n}\n\n// Function to calculate the minimum cost\nint minCost(Graph &g, int city) {\n    // Base case: if the city is the capital, return 0\n    if (city == 0) return 0;\n\n    // Initialize the minimum cost to infinity\n    int min = numeric_limits<int>::max();\n\n    // Iterate over all tickets that can be bought in the current city\n    for (int i = 0; i < g.tickets.size(); i++) {\n        Ticket t = g.tickets[i];\n        if (t.v == city) {\n            // Calculate the cost of using the current ticket\n            int cost = t.w;\n            // Calculate the minimum cost to reach the capital using the current ticket\n            int minCostUsingTicket = minCost(g, city - 1) + cost;\n            // Update the minimum cost if using the current ticket is cheaper\n            if (minCostUsingTicket < min) {\n                min = minCostUsingTicket;\n            }\n        }\n    }\n\n    // Return the minimum cost\n    return min;\n}\n\nint main() {\n    int n, m, q;\n    cin >> n >> m;\n    Graph g = createGraph(n, m);\n    for (int i = 0; i < n - 1; i++) {\n        int a, b;\n        cin >> a >> b;\n        addEdge(g, a, b);\n    }\n    for (int i = 0; i < m; i++) {\n        int v, k, w;\n        cin >> v >> k >> w;\n        addTicket(g, v, k, w);\n    }\n    cin >> q;\n    for (int i = 0; i < q; i++) {\n        int city;\n        cin >> city;\n        cout << minCost(g, city) << endl;\n    }\n    return 0;\n}",
+      "Java": "// COMPLETE, COMPILABLE Java code\nimport java.util.Scanner;\nimport java.util.ArrayList;\n\npublic class Main {\n    // Define the structure for a ticket\n    static class Ticket {\n        int v, k, w;\n        Ticket(int v, int k, int w) {\n            this.v = v;\n            this.k = k;\n            this.w = w;\n        }\n    }\n\n    // Define the structure for a graph\n    static class Graph {\n        int n, m;\n        int[][] adj;\n        ArrayList<Ticket> tickets;\n        Graph(int n, int m) {\n            this.n = n;\n            this.m = m;\n            adj = new int[n][n];\n            for (int i = 0; i < n; i++) {\n                for (int j = 0; j < n; j++) {\n                    adj[i][j] = Integer.MAX_VALUE;\n                }\n            }\n            tickets = new ArrayList<>();\n        }\n    }\n\n    // Function to add an edge to the graph\n    static void addEdge(Graph g, int a, int b) {\n        g.adj[a][b] = 1;\n    }\n\n    // Function to add a ticket to the graph\n    static void addTicket(Graph g, int v, int k, int w) {\n        Ticket t = new Ticket(v, k, w);\n        g.tickets.add(t);\n    }\n\n    // Function to calculate the minimum cost\n    static int minCost(Graph g, int city) {\n        // Base case: if the city is the capital, return 0\n        if (city == 0) return 0;\n\n        // Initialize the minimum cost to infinity\n        int min = Integer.MAX_VALUE;\n\n        // Iterate over all tickets that can be bought in the current city\n        for (Ticket t : g.tickets) {\n            if (t.v == city) {\n                // Calculate the cost of using the current ticket\n                int cost = t.w;\n                // Calculate the minimum cost to reach the capital using the current ticket\n                int minCostUsingTicket = minCost(g, city - 1) + cost;\n                // Update the minimum cost if using the current ticket is cheaper\n                if (minCostUsingTicket < min) {\n                    min = minCostUsingTicket;\n                }\n            }\n        }\n\n        // Return the minimum cost\n        return min;\n    }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int n = sc.nextInt();\n        int m = sc.nextInt();\n        Graph g = new Graph(n, m);\n        for (int i = 0; i < n - 1; i++) {\n            int a = sc.nextInt();\n            int b = sc.nextInt();\n            addEdge(g, a, b);\n        }\n        for (int i = 0; i < m; i++) {\n            int v = sc.nextInt();\n            int k = sc.nextInt();\n            int w = sc.nextInt();\n            addTicket(g, v, k, w);\n        }\n        int q = sc.nextInt();\n        for (int i = 0; i < q; i++) {\n            int city = sc.nextInt();\n            System.out.println(minCost(g, city));\n        }\n    }\n}",
+      "Python3": "# COMPLETE, RUNNABLE Python3 code\nimport sys\n\n# Define the structure for a ticket\nclass Ticket:\n    def __init__(self, v, k, w):\n        self.v = v\n        self.k = k\n        self.w = w\n\n# Define the structure for a graph\nclass Graph:\n    def __init__(self, n, m):\n        self.n = n\n        self.m = m\n        self.adj = [[float('inf')] * n for _ in range(n)]\n        self.tickets = []\n\n# Function to add an edge to the graph\ndef addEdge(g, a, b):\n    g.adj[a][b] = 1\n\n# Function to add a ticket to the graph\ndef addTicket(g, v, k, w):\n    t = Ticket(v, k, w)\n    g.tickets.append(t)\n\n# Function to calculate the minimum cost\ndef minCost(g, city):\n    # Base case: if the city is the capital, return 0\n    if city == 0:\n        return 0\n\n    # Initialize the minimum cost to infinity\n    min = float('inf')\n\n    # Iterate over all tickets that can be bought in the current city\n    for t in g.tickets:\n        if t.v == city:\n            # Calculate the cost of using the current ticket\n            cost = t.w\n            # Calculate the minimum cost to reach the capital using the current ticket\n            minCostUsingTicket = minCost(g, city - 1) + cost\n            # Update the minimum cost if using the current ticket is cheaper\n            if minCostUsingTicket < min:\n                min = minCostUsingTicket\n\n    # Return the minimum cost\n    return min\n\n# Read input\nn, m = map(int, input().split())\ng = Graph(n, m)\nfor _ in range(n - 1):\n    a, b = map(int, input().split())\n    addEdge(g, a, b)\nfor _ in range(m):\n    v, k, w = map(int, input().split())\n    addTicket(g, v, k, w)\nq = int(input())\nfor _ in range(q):\n    city = int(input())\n    print(minCost(g, city))",
+      "JavaScript": "// COMPLETE, RUNNABLE JavaScript code\nconst fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\n\n// Define the structure for a ticket\nclass Ticket {\n    constructor(v, k, w) {\n        this.v = v;\n        this.k = k;\n        this.w = w;\n    }\n}\n\n// Define the structure for a graph\nclass Graph {\n    constructor(n, m) {\n        this.n = n;\n        this.m = m;\n        this.adj = Array(n).fill().map(() => Array(n).fill(Infinity));\n        this.tickets = [];\n    }\n}\n\n// Function to add an edge to the graph\nfunction addEdge(g, a, b) {\n    g.adj[a][b] = 1;\n}\n\n// Function to add a ticket to the graph\nfunction addTicket(g, v, k, w) {\n    const t = new Ticket(v, k, w);\n    g.tickets.push(t);\n}\n\n// Function to calculate the minimum cost\nfunction minCost(g, city) {\n    // Base case: if the city is the capital, return 0\n    if (city === 0) return 0;\n\n    // Initialize the minimum cost to infinity\n    let min = Infinity;\n\n    // Iterate over all tickets that can be bought in the current city\n    for (const t of g.tickets) {\n        if (t.v === city) {\n            // Calculate the cost of using the current ticket\n            const cost = t.w;\n            // Calculate the minimum cost to reach the capital using the current ticket\n            const minCostUsingTicket = minCost(g, city - 1) + cost;\n            // Update the minimum cost if using the current ticket is cheaper\n            if (minCostUsingTicket < min) {\n                min = minCostUsingTicket;\n            }\n        }\n    }\n\n    // Return the minimum cost\n    return min;\n}\n\n// Read input\nconst [n, m] = lines[idx++].trim().split(' ').map(Number);\nconst g = new Graph(n, m);\nfor (let i = 0; i < n - 1; i++) {\n    const [a, b] = lines[idx++].trim().split(' ').map(Number);\n    addEdge(g, a, b);\n}\nfor (let i = 0; i < m; i++) {\n    const [v, k, w] = lines[idx++].trim().split(' ').map(Number);\n    addTicket(g, v, k, w);\n}\nconst q = Number(lines[idx++]);\nfor (let i = 0; i < q; i++) {\n    const city = Number(lines[idx++]);\n    console.log(minCost(g, city));\n}"
+    }
+  }
+}

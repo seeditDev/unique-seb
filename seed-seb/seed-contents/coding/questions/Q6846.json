@@ -1,0 +1,129 @@
+{
+  "questionId": "Q6846",
+  "title": "Chef and Average on a Tree",
+  "slug": "chef-and-average-on-a-tree",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graph | Dynamic Programming",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Tree Decomposition",
+      "Dynamic Programming",
+      "Graph Algorithms"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Trees"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef has a tree with **N** nodes. Each node of the tree has an integer weight associated with it.\n\nLet's define the cost of a sequence of numbers as the arithmetic mean of all elements of the sequence.\n\nNext, let's define the cost of a path in the tree as the cost of the sequence of weights of all nodes belonging to the path. (It's possible for a path to contain only one node.)\n\nA set of paths in the tree is called a correct path decomposition if each node of the tree belongs to exactly one of the paths from this set. The cost of a correct decomposition is defined as the minimum of costs of all paths in this decomposition.\n\nChef would like to find the maximum cost of a correct decomposition. Can you help him?",
+    "constraints": [
+      "1 ≤ T ≤ 20",
+      "1 ≤ N ≤ 100,000",
+      "1 ≤ sum of N over all test cases ≤ 200,000",
+      "1 ≤ Ai ≤ 100,000"
+    ],
+    "inputFormat": "The first line of the input contains a single integer T denoting the number of test cases. The description of T test cases follows. The first line of each test case contains a single integer N. The second line contains N space-separated integers A1, A2, ..., AN denoting the weights of nodes of the tree. Each of the following N-1 lines contains two space-separated integers x and y denoting an edge between nodes x and y.",
+    "outputFormat": "For each test case, print the maximum possible cost among all correct decompositions. The answer will be considered correct if its absolute error does not exceed 10^-6.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n2\n2 3\n1 2\n5\n4 3 5 2 1\n5 3\n1 3\n2 1\n3 4",
+        "output": "2.500000\n2.666667",
+        "explanation": "For the first test case, the maximum cost of a correct decomposition is (2 + 3) / 2 = 2.5. For the second test case, the maximum cost of a correct decomposition is (5 + 2 + 1) / 3 = 2.666667."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n1",
+        "expectedOutput": "1.000000",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n100000\n100000",
+        "expectedOutput": "100000.000000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n2\n1 1\n1 2",
+        "expectedOutput": "1.000000",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n3\n1 2 3\n1 2\n2 3",
+        "expectedOutput": "2.000000",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n4\n1 2 3 4\n1 2\n2 3\n3 4",
+        "expectedOutput": "2.500000",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a dynamic programming approach. We will calculate the maximum cost of a correct decomposition for each subtree rooted at each node. We will consider all possible ways to decompose the subtree into paths and calculate the cost of each decomposition. We will then choose the decomposition with the maximum cost.",
+    "timeComplexity": "O(N^2) — The time complexity is O(N^2) because we are iterating over all nodes and for each node, we are iterating over all its children.",
+    "spaceComplexity": "O(N) — The space complexity is O(N) because we are storing the maximum cost of a correct decomposition for each node.",
+    "code": {
+      "C": "// COMPLETE, COMPILABLE C code\n#include <stdio.h>\n#include <stdlib.h>\n#define MAXN 100005\n#define MAXM 200005\n#define INF 1e18\n\n// Define the structure for a tree node\ntypedef struct Node {\n    int id;\n    int weight;\n    struct Node** children;\n    int numChildren;\n} Node;\n\n// Function to create a new node\nNode* createNode(int id, int weight) {\n    Node* node = (Node*)malloc(sizeof(Node));\n    node->id = id;\n    node->weight = weight;\n    node->children = NULL;\n    node->numChildren = 0;\n    return node;\n}\n\n// Function to add a child to a node\nvoid addChild(Node* node, Node* child) {\n    node->numChildren++;\n    node->children = (Node**)realloc(node->children, node->numChildren * sizeof(Node*));\n    node->children[node->numChildren - 1] = child;\n}\n\n// Function to calculate the maximum cost of a correct decomposition for a subtree\ndouble calculateMaxCost(Node* node) {\n    if (node->numChildren == 0) {\n        return node->weight;\n    }\n    double maxCost = -INF;\n    for (int i = 0; i < node->numChildren; i++) {\n        double childCost = calculateMaxCost(node->children[i]);\n        maxCost = fmax(maxCost, childCost);\n    }\n    return fmax(maxCost, (node->weight + maxCost) / 2.0);\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int N;\n        scanf(\"%d\", &N);\n        Node** nodes = (Node**)malloc(N * sizeof(Node*));\n        for (int i = 0; i < N; i++) {\n            int weight;\n            scanf(\"%d\", &weight);\n            nodes[i] = createNode(i, weight);\n        }\n        for (int i = 0; i < N - 1; i++) {\n            int x, y;\n            scanf(\"%d %d\", &x, &y);\n            addChild(nodes[x - 1], nodes[y - 1]);\n        }\n        double maxCost = calculateMaxCost(nodes[0]);\n        printf(\"%.6f\\n\", maxCost);\n    }\n    return 0;\n}",
+      "C++": "// COMPLETE, COMPILABLE C++ code\n#include <iostream>\n#include <vector>\n#include <algorithm>\nusing namespace std;\n\nconst int MAXN = 100005;\nconst int MAXM = 200005;\nconst double INF = 1e18;\n\nstruct Node {\n    int id;\n    int weight;\n    vector<Node*> children;\n    Node(int id, int weight) : id(id), weight(weight) {}\n};\n\ndouble calculateMaxCost(Node* node) {\n    if (node->children.empty()) {\n        return node->weight;\n    }\n    double maxCost = -INF;\n    for (Node* child : node->children) {\n        double childCost = calculateMaxCost(child);\n        maxCost = max(maxCost, childCost);\n    }\n    return max(maxCost, (node->weight + maxCost) / 2.0);\n}\n\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        int N;\n        cin >> N;\n        Node** nodes = new Node*[N];\n        for (int i = 0; i < N; i++) {\n            int weight;\n            cin >> weight;\n            nodes[i] = new Node(i, weight);\n        }\n        for (int i = 0; i < N - 1; i++) {\n            int x, y;\n            cin >> x >> y;\n            nodes[x - 1]->children.push_back(nodes[y - 1]);\n        }\n        double maxCost = calculateMaxCost(nodes[0]);\n        printf(\"%.6f\\n\", maxCost);\n    }\n    return 0;\n}",
+      "Java": "// COMPLETE, COMPILABLE Java code\nimport java.util.ArrayList;\nimport java.util.List;\nimport java.util.Scanner;\n\npublic class Main {\n    static class Node {\n        int id;\n        int weight;\n        List<Node> children;\n        Node(int id, int weight) {\n            this.id = id;\n            this.weight = weight;\n            this.children = new ArrayList<>();\n        }\n    }\n\n    public static double calculateMaxCost(Node node) {\n        if (node.children.isEmpty()) {\n            return node.weight;\n        }\n        double maxCost = Double.NEGATIVE_INFINITY;\n        for (Node child : node.children) {\n            double childCost = calculateMaxCost(child);\n            maxCost = Math.max(maxCost, childCost);\n        }\n        return Math.max(maxCost, (node.weight + maxCost) / 2.0);\n    }\n\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int T = scanner.nextInt();\n        while (T-- > 0) {\n            int N = scanner.nextInt();\n            Node[] nodes = new Node[N];\n            for (int i = 0; i < N; i++) {\n                int weight = scanner.nextInt();\n                nodes[i] = new Node(i, weight);\n            }\n            for (int i = 0; i < N - 1; i++) {\n                int x = scanner.nextInt() - 1;\n                int y = scanner.nextInt() - 1;\n                nodes[x].children.add(nodes[y]);\n            }\n            double maxCost = calculateMaxCost(nodes[0]);\n            System.out.printf(\"%.6f\\n\", maxCost);\n        }\n    }\n}",
+      "Python3": "# COMPLETE, RUNNABLE Python3 code\nimport sys\n\nclass Node:\n    def __init__(self, id, weight):\n        self.id = id\n        self.weight = weight\n        self.children = []\n\ndef calculate_max_cost(node):\n    if not node.children:\n        return node.weight\n    max_cost = float('-inf')\n    for child in node.children:\n        child_cost = calculate_max_cost(child)\n        max_cost = max(max_cost, child_cost)\n    return max(max_cost, (node.weight + max_cost) / 2.0)\n\nT = int(input())\nfor _ in range(T):\n    N = int(input())\n    nodes = [Node(i, int(x)) for i, x in enumerate(input().split())]\n    for _ in range(N - 1):\n        x, y = map(int, input().split())\n        nodes[x - 1].children.append(nodes[y - 1])\n    max_cost = calculate_max_cost(nodes[0])\n    print(f'{max_cost:.6f}')",
+      "JavaScript": "// COMPLETE, RUNNABLE JavaScript code\nconst fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\n\nclass Node {\n    constructor(id, weight) {\n        this.id = id;\n        this.weight = weight;\n        this.children = [];\n    }\n}\n\nfunction calculateMaxCost(node) {\n    if (node.children.length === 0) {\n        return node.weight;\n    }\n    let maxCost = -Infinity;\n    for (let child of node.children) {\n        let childCost = calculateMaxCost(child);\n        maxCost = Math.max(maxCost, childCost);\n    }\n    return Math.max(maxCost, (node.weight + maxCost) / 2.0);\n}\n\nlet T = parseInt(lines[idx++]);\nwhile (T-- > 0) {\n    let N = parseInt(lines[idx++]);\n    let nodes = [];\n    let weights = lines[idx++].split(' ').map(x => parseInt(x));\n    for (let i = 0; i < N; i++) {\n        nodes.push(new Node(i, weights[i]));\n    }\n    for (let i = 0; i < N - 1; i++) {\n        let [x, y] = lines[idx++].split(' ').map(x => parseInt(x));\n        nodes[x - 1].children.push(nodes[y - 1]);\n    }\n    let maxCost = calculateMaxCost(nodes[0]);\n    console.log(maxCost.toFixed(6));\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

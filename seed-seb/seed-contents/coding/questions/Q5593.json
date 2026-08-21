@@ -1,0 +1,130 @@
+{
+  "questionId": "Q5593",
+  "title": "Festivals",
+  "slug": "festivals",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Tree",
+      "LCA",
+      "Binary Lifting",
+      "Diameter of a Subset",
+      "Distance Queries"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Trees"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "The Chef is enjoying his vacation at the Tree city. As the name of it says, in this city, **N** locations, numbered from **1** to **N**, are connected by **N − 1** bidirectional roads. Each road connects two cities and you can travel between any pair of cities through this roads system. Each road has the length, which is some positive integer. For any two locations the distance between them is the sum of the roads lengths for the path that connects them.\n\nSome festivals are regularly held in each location. Someday, several festivals (at least 2) take place at different locations. On that day people often participate in two festivals such that the distance between their locations is as large as possible. They move between these two locations to enjoy the festivals. Note that there may be more than one pair of locations satisfying this condition. The path connecting two such locations is called an ideal path.\n\nKnowing this, the Chef wants to find an optimal road where he will open temporary fast-food restaurant to earn as much money as possible from hungry festival participants that move by this road. In his honest opinion the best such road is **the shortest road belonging to each ideal path**.\n\nMore formally he is asking you two questions as follows. Suppose in day **X**, there are **K** festivals that take place at **K** locations **F1**, **F2**, ..., **FK** respectively.\n\n\n\nFind the distance between two furthest locations among the **K** locations listed above. Denote this value as **A**.\nFind the road with the minimal length belonging to each ideal path. That is, each path of length **A**, that connects **Fi** and **Fj** for some **i** and **j**, should contain this road. Denote the length of this road as **B**. If there is no such road than **B** is set to **-1**.\nOf course, Chef wants to know values **A** and **B**.",
+    "constraints": [
+      "1 ≤ N ≤ 100000",
+      "1 ≤ U, V ≤ N, U ≠ V",
+      "1 ≤ C ≤ 10000",
+      "1 ≤ Q ≤ 100000",
+      "2 ≤ K ≤ N",
+      "All Fi are distinct",
+      "Σ K over all queries ≤ 200000"
+    ],
+    "inputFormat": "The first line contains an integer N – the number of locations in the tree. The next N‑1 lines each contain three integers U, V and C, meaning there is a bidirectional road of length C between locations U and V. The next line contains an integer Q – the number of questions. Each of the next Q lines starts with an integer K (K ≥ 2) followed by K distinct integers F1 … FK – the locations where festivals are held on that day.",
+    "outputFormat": "For each of the Q questions output a line with two space‑separated integers A and B. A is the maximum distance between any two of the given K locations. B is the length of the shortest road that belongs to every path of length A (i.e. to every ideal path). If no road belongs to all such paths, output B = -1.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "6\n1 2 3\n1 4 2\n1 5 2\n2 3 3\n2 6 3\n2\n2 2 5\n4 3 4 5 6",
+        "output": "5 2\n8 3",
+        "explanation": "For the first question, the only ideal path is between locations 2 and 5. The shortest road on this path is the road between locations 5 and 1, which has a length of 2. For the second question, the ideal paths are between locations 3 and 4, 4 and 6, 5 and 3, and 5 and 6. The shortest road that belongs to all these paths is the road between locations 1 and 2, which has a length of 3."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Pre‑process the tree for LCA using binary lifting. For each node store its depth (in edges) and the distance from the root (sum of edge lengths). Distance between any two nodes can then be obtained in O(log N) as dist(u)+dist(v)-2*dist(lca(u,v)).\nFor a query with set S:\n1. Pick any node s in S.\n2. Scan all nodes in S and find u – the node farthest from s (using the distance formula). This is one endpoint of the diameter of S.\n3. Scan S again to find v – the node farthest from u. The distance A = dist(u,v) is the required maximum distance.\n4. Let half = A / 2 (real number). If there exists a node exactly at distance half from u on the u‑v path, then the centre of all longest paths is a node, therefore no edge belongs to every ideal path and B = -1.\n5. Otherwise the centre lies inside a unique edge. Find the node x that is floor(half) distance from u on the path and its neighbour y that is one step further. The edge (x, y) is present in every longest path, and B is its length.\nFinding the k‑th node on the path is done with binary lifting: if k ≤ dist(u, lca) we lift u up k steps, otherwise we lift v up (dist(v, lca) - (k - dist(u, lca))) steps.\nOverall complexity per query is O(K log N) and the total over all queries respects the given limits.",
+    "timeComplexity": "Pre‑processing: O(N log N). Each query: O(K log N). Total: O((N + ΣK) log N) ≤ O(200000 log 100000).",
+    "spaceComplexity": "O(N log N) for the binary‑lifting tables and O(N) for adjacency lists.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#define MAXN 100000\n#define LOG 17"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

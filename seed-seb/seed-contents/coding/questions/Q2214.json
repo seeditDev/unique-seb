@@ -1,0 +1,127 @@
+{
+  "questionId": "Q2214",
+  "title": "The Reversed World",
+  "slug": "the-reversed-world",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "String Comparison",
+      "Strings",
+      "Permutations"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Constructive Algorithms"
+    ]
+  },
+  "content": {
+    "problemStatement": "Given three numbers A, B and C all having N digits, little Johnny needs to write a program to permute the digits of the number C so that the new number is greater than both A and B.\n\nThis problem would be so easy if Johnny's teacher didn't require that Johnny's program must be correct in both the real world and the reversed world. What happens once the world is reversed? One thing Johnny knows for sure is that all the numbers are also reversed. The second thing, the \"greater than\"  relation becomes the \n\"smaller than\" relation. \n\n\nFor the sake of clarity, we will use aR to denote the number a in the reversed world (for instance, 113R = 311).\n\n\nThus Johnny task is now permute the digits of C so that the new number is greater than both A and B. In additional, the reverse of the new number should be smaller than both AR and BR. If there are multiple possible solutions, Johnny needs to find the smallest one.\n\nAs usual, please help Little Johnny with his task!",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 1000000",
+      "A, B, and C are numbers with N digits"
+    ],
+    "inputFormat": "First line contains T, the number of test cases. Each test case contains four lines: N (the number of digits), A, B, and C.",
+    "outputFormat": "For each test case, print the smallest permutation of C that is greater than both A and B, and its reverse is smaller than both AR and BR. If no such permutation exists, print -1.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n2\n12\n23\n32\n3\n124\n324\n335",
+        "output": "-1\n353",
+        "explanation": "For the first test case, there is no permutation of the number 32 that is greater than both 12 and 23. For the second test case, the permutation 353 is greater than both 124 and 324, and its reverse 353 is smaller than both 421 and 423."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n3\n123\n456\n789",
+        "output": "987",
+        "explanation": "The permutation 987 is greater than both 123 and 456, and its reverse 789 is smaller than both 321 and 654."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n2\n12\n34\n56",
+        "output": "-1",
+        "explanation": "There is no permutation of the number 56 that is greater than both 12 and 34."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n1\n1\n1",
+        "expectedOutput": "-1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n6\n123456\n654321\n123456",
+        "expectedOutput": "654321",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n3\n111\n111\n111",
+        "expectedOutput": "111",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n4\n1000\n2000\n3000",
+        "expectedOutput": "3000",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "2\n3\n123\n456\n789\n4\n1000\n2000\n3000\n4000",
+        "expectedOutput": "987\n3000",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Generate all permutations of C and check if each permutation is greater than both A and B, and its reverse is smaller than both AR and BR. Keep track of the smallest permutation that satisfies these conditions.",
+    "timeComplexity": "O(N! * N) per test case, O(T * N! * N) total.",
+    "spaceComplexity": "O(N) \u2014 for storing the permutations and the input strings.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nint compare(const void *a, const void *b) {\n    return *(char*)a - *(char*)b;\n}\n\nvoid swap(char *a, char *b) {\n    char temp = *a;\n    *a = *b;\n    *b = temp;\n}\n\nvoid permute(char *str, int left, int right, char *A, char *B, char *C, int N) {\n    if (left == right) {\n        // Check if the permutation is greater than both A and B\n        if (strcmp(str, A) > 0 && strcmp(str, B) > 0) {\n            // Check if the reverse of the permutation is smaller than both AR and BR\n            char rev[N + 1];\n            strcpy(rev, str);\n            strrev(rev);\n            if (strcmp(rev, A) < 0 && strcmp(rev, B) < 0) {\n                printf(\"%s\\n\", str);\n            }\n        }\n    } else {\n        for (int i = left; i <= right; i++) {\n            swap((str + left), (str + i));\n            permute(str, left + 1, right, A, B, C, N);\n            swap((str + left), (str + i));\n        }\n    }\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int N;\n        scanf(\"%d\", &N);\n        char A[N + 1], B[N + 1], C[N + 1];\n        scanf(\"%s\", A);\n        scanf(\"%s\", B);\n        scanf(\"%s\", C);\n        qsort(C, N, sizeof(char), compare);\n        permute(C, 0, N - 1, A, B, C, N);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <algorithm>\n#include <string>\nusing namespace std;\n\nvoid permute(string str, int left, int right, string A, string B, string C, int N) {\n    if (left == right) {\n        // Check if the permutation is greater than both A and B\n        if (str > A && str > B) {\n            // Check if the reverse of the permutation is smaller than both AR and BR\n            string rev = str;\n            reverse(rev.begin(), rev.end());\n            if (rev < A && rev < B) {\n                cout << str << endl;\n            }\n        }\n    } else {\n        for (int i = left; i <= right; i++) {\n            swap(str[left], str[i]);\n            permute(str, left + 1, right, A, B, C, N);\n            swap(str[left], str[i]);\n        }\n    }\n}\n\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        int N;\n        cin >> N;\n        string A, B, C;\n        cin >> A >> B >> C;\n        sort(C.begin(), C.end());\n        permute(C, 0, N - 1, A, B, C, N);\n    }\n    return 0;\n}",
+      "Java": "import java.util.Arrays;\nimport java.util.Scanner;\npublic class Main {\n    public static void permute(char[] str, int left, int right, String A, String B, String C, int N) {\n        if (left == right) {\n            // Check if the permutation is greater than both A and B\n            if (new String(str).compareTo(A) > 0 && new String(str).compareTo(B) > 0) {\n                // Check if the reverse of the permutation is smaller than both AR and BR\n                String rev = new StringBuilder(new String(str)).reverse().toString();\n                if (rev.compareTo(A) < 0 && rev.compareTo(B) < 0) {\n                    System.out.println(new String(str));\n                }\n            }\n        } else {\n            for (int i = left; i <= right; i++) {\n                swap(str, left, i);\n                permute(str, left + 1, right, A, B, C, N);\n                swap(str, left, i);\n            }\n        }\n    }\n\n    public static void swap(char[] str, int i, int j) {\n        char temp = str[i];\n        str[i] = str[j];\n        str[j] = temp;\n    }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n        while (T-- > 0) {\n            int N = sc.nextInt();\n            String A = sc.next();\n            String B = sc.next();\n            String C = sc.next();\n            char[] arr = C.toCharArray();\n            Arrays.sort(arr);\n            permute(arr, 0, N - 1, A, B, C, N);\n        }\n    }\n}",
+      "Python3": "import sys\nimport itertools\n\ndef permute(str, A, B, C, N):\n    # Check if the permutation is greater than both A and B\n    if str > A and str > B:\n        # Check if the reverse of the permutation is smaller than both AR and BR\n        rev = str[::-1]\n        if rev < A and rev < B:\n            print(str)\n\ndef main():\n    T = int(input())\n    while T > 0:\n        N = int(input())\n        A = input()\n        B = input()\n        C = input()\n        perms = set(''.join(p) for p in itertools.permutations(sorted(C)))\n        for perm in sorted(perms):\n            permute(perm, A, B, C, N)\n        T -= 1\n\nif __name__ == '__main__':\n    main()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\n\nfunction permute(str, left, right, A, B, C, N) {\n    if (left == right) {\n        // Check if the permutation is greater than both A and B\n        if (str > A && str > B) {\n            // Check if the reverse of the permutation is smaller than both AR and BR\n            let rev = str.split('').reverse().join('');\n            if (rev < A && rev < B) {\n                console.log(str);\n            }\n        }\n    } else {\n        for (let i = left; i <= right; i++) {\n            let temp = str[left];\n            str[left] = str[i];\n            str[i] = temp;\n            permute(str, left + 1, right, A, B, C, N);\n            temp = str[left];\n            str[left] = str[i];\n            str[i] = temp;\n        }\n    }\n}\n\nfunction main() {\n    let T = parseInt(input[idx++]);\n    while (T-- > 0) {\n        let N = parseInt(input[idx++]);\n        let A = input[idx++];\n        let B = input[idx++];\n        let C = input[idx++];\n        let arr = C.split('').sort().join('');\n        permute(arr.split(''), 0, N - 1, A, B, C, N);\n    }\n}\n\nmain();"
+    }
+  }
+}

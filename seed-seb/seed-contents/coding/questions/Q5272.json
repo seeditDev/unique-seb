@@ -1,0 +1,140 @@
+{
+  "questionId": "Q5272",
+  "title": "N Knights Problem",
+  "slug": "n-knights-problem",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Backtracking",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Knights",
+      "Chessboard",
+      "Backtracking"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Flow & Matching"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Dave recently mastered the problem of placing N queens on a chessboard so\nthat no two queens attack eachother.\nNow he wants to see how many knights he can place on a chessboard so\nthat no two knights attack eachother.\nNormally this would be a simple task, but some of the squares of the\nchessboard have been marked as unusable and hence cannot have a knight placed\non them.\n\nRecall that a knight can attack another knight if their vertical distance\nis 2 and their horizontal distance is 1, or if their vertical distance is 1 and\ntheir horizontal distance is 2.  Only one knight may be placed on each square\nof the chessboard",
+    "constraints": [
+      "1 <= T <= 50",
+      "1 <= M <= 30",
+      "1 <= N <= 30"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case begins with a line containing two integers M and N, denoting the number of rows and columns of the chessboard. M lines follow, each containing exactly N characters. The j-th character of the i-th line is '.' if a knight may be placed in the j-th column of the i-th row, and '#' if the square is unusable.",
+    "outputFormat": "For each test case, output on a single line the maximum number of knights that may be placed on the chessboard such that no two attack each other.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n2 4\n....\n....\n5 5\n..#..\n#..#.\n##...\n...##\n.....",
+        "output": "4\n11",
+        "explanation": "Explanation: The following image represents the chessboard and a possible solution to the second test case:"
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n3 3\n...\n...\n...",
+        "output": "5",
+        "explanation": "Explanation: The following image represents the chessboard and a possible solution to the test case:"
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n1 1\n#",
+        "output": "0",
+        "explanation": "Explanation: The following image represents the chessboard and a possible solution to the test case:"
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1\n.",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n30 30\n.",
+        "expectedOutput": "360",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n5 5\n#",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n5 5\n.....\n.....\n.....\n.....\n.....",
+        "expectedOutput": "13",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "5\n3 3\n...\n...\n...\n3 3\n...\n...\n...\n3 3\n...\n...\n...\n3 3\n...\n...\n...\n3 3\n...\n...\n...",
+        "expectedOutput": "5\n5\n5\n5\n5",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved using a backtracking approach. We start by initializing an empty board and then try to place a knight in each position. If it's safe to place a knight in a position, we mark it as occupied and recursively try to place knights in the remaining positions. If we can't place a knight in any position, we backtrack and try a different position.",
+    "timeComplexity": "O(M*N*8^(M*N)) per test case, O(T*M*N*8^(M*N)) total. The time complexity is exponential due to the backtracking approach.",
+    "spaceComplexity": "O(M*N) — the dominant structure is the board.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdbool.h>\n#define MAX_M 30\n#define MAX_N 30\n\nbool isSafe(int board[MAX_M][MAX_N], int m, int n, int row, int col) {\n    int knight_moves[][2] = {{-2, -1}, {-2, 1}, {-1, -2}, {-1, 2}, {1, -2}, {1, 2}, {2, -1}, {2, 1}};\n    for (int i = 0; i < 8; i++) {\n        int new_row = row + knight_moves[i][0];\n        int new_col = col + knight_moves[i][1];\n        if (new_row >= 0 && new_row < m && new_col >= 0 && new_col < n && board[new_row][new_col] == 1) {\n            return false;\n        }\n    }\n    return true;\n}\n\nint place_knights(int board[MAX_M][MAX_N], int m, int n, int row, int col, int count) {\n    if (row == m) {\n        return count;\n    }\n    if (col == n) {\n        return place_knights(board, m, n, row + 1, 0, count);\n    }\n    if (board[row][col] == -1) {\n        return place_knights(board, m, n, row, col + 1, count);\n    }\n    if (isSafe(board, m, n, row, col)) {\n        board[row][col] = 1;\n        int new_count = place_knights(board, m, n, row, col + 1, count + 1);\n        board[row][col] = 0;\n        return new_count;\n    }\n    return place_knights(board, m, n, row, col + 1, count);\n}\n\nint main() {\n    int t;\n    scanf(\"%d\", &t);\n    while (t--) {\n        int m, n;\n        scanf(\"%d %d\", &m, &n);\n        int board[MAX_M][MAX_N];\n        for (int i = 0; i < m; i++) {\n            for (int j = 0; j < n; j++) {\n                char c;\n                scanf(\" %c\", &c);\n                if (c == '.') {\n                    board[i][j] = 0;\n                } else {\n                    board[i][j] = -1;\n                }\n            }\n        }\n        printf(\"%d\\n\", place_knights(board, m, n, 0, 0, 0));\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\nusing namespace std;\n#define MAX_M 30\n#define MAX_N 30\n\nbool isSafe(vector<vector<int>>& board, int m, int n, int row, int col) {\n    int knight_moves[][2] = {{-2, -1}, {-2, 1}, {-1, -2}, {-1, 2}, {1, -2}, {1, 2}, {2, -1}, {2, 1}};\n    for (int i = 0; i < 8; i++) {\n        int new_row = row + knight_moves[i][0];\n        int new_col = col + knight_moves[i][1];\n        if (new_row >= 0 && new_row < m && new_col >= 0 && new_col < n && board[new_row][new_col] == 1) {\n            return false;\n        }\n    }\n    return true;\n}\n\nint place_knights(vector<vector<int>>& board, int m, int n, int row, int col, int count) {\n    if (row == m) {\n        return count;\n    }\n    if (col == n) {\n        return place_knights(board, m, n, row + 1, 0, count);\n    }\n    if (board[row][col] == -1) {\n        return place_knights(board, m, n, row, col + 1, count);\n    }\n    if (isSafe(board, m, n, row, col)) {\n        board[row][col] = 1;\n        int new_count = place_knights(board, m, n, row, col + 1, count + 1);\n        board[row][col] = 0;\n        return new_count;\n    }\n    return place_knights(board, m, n, row, col + 1, count);\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(NULL);\n    int t;\n    cin >> t;\n    while (t--) {\n        int m, n;\n        cin >> m >> n;\n        vector<vector<int>> board(m, vector<int>(n));\n        for (int i = 0; i < m; i++) {\n            for (int j = 0; j < n; j++) {\n                char c;\n                cin >> c;\n                if (c == '.') {\n                    board[i][j] = 0;\n                } else {\n                    board[i][j] = -1;\n                }\n            }\n        }\n        cout << place_knights(board, m, n, 0, 0, 0) << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    static final int MAX_M = 30;\n    static final int MAX_N = 30;\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int t = scanner.nextInt();\n        while (t-- > 0) {\n            int m = scanner.nextInt();\n            int n = scanner.nextInt();\n            int[][] board = new int[m][n];\n            for (int i = 0; i < m; i++) {\n                String line = scanner.next();\n                for (int j = 0; j < n; j++) {\n                    if (line.charAt(j) == '.') {\n                        board[i][j] = 0;\n                    } else {\n                        board[i][j] = -1;\n                    }\n                }\n            }\n            System.out.println(placeKnights(board, m, n, 0, 0, 0));\n        }\n    }\n\n    public static boolean isSafe(int[][] board, int m, int n, int row, int col) {\n        int[][] knightMoves = {{-2, -1}, {-2, 1}, {-1, -2}, {-1, 2}, {1, -2}, {1, 2}, {2, -1}, {2, 1}};\n        for (int i = 0; i < 8; i++) {\n            int newRow = row + knightMoves[i][0];\n            int newCol = col + knightMoves[i][1];\n            if (newRow >= 0 && newRow < m && newCol >= 0 && newCol < n && board[newRow][newCol] == 1) {\n                return false;\n            }\n        }\n        return true;\n    }\n\n    public static int placeKnights(int[][] board, int m, int n, int row, int col, int count) {\n        if (row == m) {\n            return count;\n        }\n        if (col == n) {\n            return placeKnights(board, m, n, row + 1, 0, count);\n        }\n        if (board[row][col] == -1) {\n            return placeKnights(board, m, n, row, col + 1, count);\n        }\n        if (isSafe(board, m, n, row, col)) {\n            board[row][col] = 1;\n            int newCount = placeKnights(board, m, n, row, col + 1, count + 1);\n            board[row][col] = 0;\n            return newCount;\n        }\n        return placeKnights(board, m, n, row, col + 1, count);\n    }\n}",
+      "Python3": "def is_safe(board, m, n, row, col):\n    knight_moves = [[-2, -1], [-2, 1], [-1, -2], [-1, 2], [1, -2], [1, 2], [2, -1], [2, 1]]\n    for i in range(8):\n        new_row = row + knight_moves[i][0]\n        new_col = col + knight_moves[i][1]\n        if 0 <= new_row < m and 0 <= new_col < n and board[new_row][new_col] == 1:\n            return False\n    return True\n\ndef place_knights(board, m, n, row, col, count):\n    if row == m:\n        return count\n    if col == n:\n        return place_knights(board, m, n, row + 1, 0, count)\n    if board[row][col] == -1:\n        return place_knights(board, m, n, row, col + 1, count)\n    if is_safe(board, m, n, row, col):\n        board[row][col] = 1\n        new_count = place_knights(board, m, n, row, col + 1, count + 1)\n        board[row][col] = 0\n        return new_count\n    return place_knights(board, m, n, row, col + 1, count)\n\nt = int(input())\nwhile t > 0:\n    m, n = map(int, input().split())\n    board = [[0] * n for _ in range(m)]\n    for i in range(m):\n        line = input()\n        for j in range(n):\n            if line[j] == '.':\n                board[i][j] = 0\n            else:\n                board[i][j] = -1\n    print(place_knights(board, m, n, 0, 0, 0))\n    t -= 1",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst readline = () => lines[idx++];\n\nfunction isSafe(board, m, n, row, col) {\n    const knightMoves = [[-2, -1], [-2, 1], [-1, -2], [-1, 2], [1, -2], [1, 2], [2, -1], [2, 1]];\n    for (let i = 0; i < 8; i++) {\n        const newRow = row + knightMoves[i][0];\n        const newCol = col + knightMoves[i][1];\n        if (newRow >= 0 && newRow < m && newCol >= 0 && newCol < n && board[newRow][newCol] === 1) {\n            return false;\n        }\n    }\n    return true;\n}\n\nfunction placeKnights(board, m, n, row, col, count) {\n    if (row === m) {\n        return count;\n    }\n    if (col === n) {\n        return placeKnights(board, m, n, row + 1, 0, count);\n    }\n    if (board[row][col] === -1) {\n        return placeKnights(board, m, n, row, col + 1, count);\n    }\n    if (isSafe(board, m, n, row, col)) {\n        board[row][col] = 1;\n        const newCount = placeKnights(board, m, n, row, col + 1, count + 1);\n        board[row][col] = 0;\n        return newCount;\n    }\n    return placeKnights(board, m, n, row, col + 1, count);\n}\n\nconst t = parseInt(readline());\nfor (let i = 0; i < t; i++) {\n    const [m, n] = readline().split(' ').map(Number);\n    const board = Array(m).fill(0).map(() => Array(n).fill(0));\n    for (let j = 0; j < m; j++) {\n        const line = readline();\n        for (let k = 0; k < n; k++) {\n            if (line[k] === '.') {\n                board[j][k] = 0;\n            } else {\n                board[j][k] = -1;\n            }\n        }\n    }\n    console.log(placeKnights(board, m, n, 0, 0, 0));\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

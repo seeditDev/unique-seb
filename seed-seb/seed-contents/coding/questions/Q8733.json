@@ -1,0 +1,142 @@
+{
+  "questionId": "Q8733",
+  "title": "Really Secret Algorithm",
+  "slug": "really-secret-algorithm",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "String",
+      "DP",
+      "Decoding",
+      "Modulo"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "The Chef is really into cyber security. Recently he's learning about the brand new Really Secret Algorithm. It goes like this: given a message of uppercase alphabet letters ('A'-'Z'), each letter is converted in its index (for example 'A' to 1, 'B' to 2, ..., 'Z' to 26). For example, the string \"ABCZ\" is encrypted into 12326.\n\nHowever, there is a problem with this algorithm - there is no unique reverse algorithm, because some encryptions are not unique. For example 12326 is encryption of \"ABCZ\", but \"ABCBF\" is the valid solution as well. The Chef is interested in the number of valid messages given the encryption.\n\nComplete the function \"calculateRSA\" in the code snippet that takes a single argument: a string XXX - representing the message. The function returns an integer representing the answer to the problem. Since the solution may be large, return the solution mod 109+710^9+7109+7. The function will be called multiple times.\n\n\nInput Format\n\nFirst line will contain TTT, number of times the function will be called.\nEach of the next TTT lines contains a string XXX - representing the message\n\nNote: You need to complete the functions in the submit solution tab:\n\n\nint calculateRSA(string X){...}\n\n\n\nOutput Format\nFor each testcase, output will be in a single line containing a single integer passed by function calculateRSA and it should be an integer modulo 109+710^9+7109+7.",
+    "constraints": [
+      "1 <= T <= 1000",
+      "1 <= |X| <= 100000",
+      "Sum of |X| over all test cases does not exceed 200000",
+      "X contains only characters '0'‑'9'"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains a non‑empty string X consisting only of digits ('0'‑'9'), representing the encrypted message.",
+    "outputFormat": "For each test case output a single line with the number of possible original messages modulo 1000000007.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\\n123\\n321",
+        "output": "3\\n2",
+        "explanation": "For \"123\": possible decodings are ABC (1‑2‑3), AW (1‑23), LC (12‑3) → 3 ways. For \"321\": decodings are CBA (3‑2‑1) and CU (3‑21) → 2 ways."
+      },
+      {
+        "id": "sample_2",
+        "input": "2\\n0\\n10",
+        "output": "0\\n1",
+        "explanation": "\"0\" cannot be decoded, so 0 ways. \"10\" can only be decoded as J (10) → 1 way."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\\n226",
+        "output": "3",
+        "explanation": "Decodings: BBF (2‑2‑6), BZ (2‑26), VF (22‑6) → 3 ways."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "repeated ones (20 digits)",
+        "input": "1\\n11111111111111111111",
+        "expectedOutput": "17711",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "zeros only as valid pairs",
+        "input": "1\\n1010",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "mixed valid and zero",
+        "input": "1\\n11106",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "two‑digit >26",
+        "input": "1\\n27",
+        "expectedOutput": "1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Let dp[i] be the number of ways to decode the prefix of length i (first i characters). dp[0] = 1 (empty string). For each position i (1‑based):\n- If X[i‑1] != '0', we can decode the i‑th character as a single letter, so add dp[i‑1].\n- If i >= 2 and the two‑digit number formed by X[i‑2]X[i‑1] is between 10 and 26 inclusive, we can decode these two digits together, so add dp[i‑2].\nAll additions are performed modulo MOD = 1e9+7. The answer is dp[|X|]. This runs in O(|X|) time and O(|X|) memory (can be reduced to O(1) but O(|X|) fits the limits).",
+    "timeComplexity": "O(N) per test case, where N = |X|. Total O(sum of |X|) ≤ 2·10^5.",
+    "spaceComplexity": "O(N) per test case for the dp array (can be O(1) with rolling variables).",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nconst int MOD = 1000000007;\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    char X[100005];\n    while (T--) {\n        scanf(\"%s\", X);\n        int n = strlen(X);\n        long long *dp = (long long *)malloc((n + 1) * sizeof(long long));\n        dp[0] = 1;\n        for (int i = 1; i <= n; ++i) {\n            dp[i] = 0;\n            if (X[i-1] != '0') {\n                dp[i] = (dp[i] + dp[i-1]) % MOD;\n            }\n            if (i >= 2) {\n                int val = (X[i-2] - '0') * 10 + (X[i-1] - '0');\n                if (val >= 10 && val <= 26) {\n                    dp[i] = (dp[i] + dp[i-2]) % MOD;\n                }\n            }\n        }\n        printf(\"%lld\\n\", dp[n]);\n        free(dp);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nconst int MOD = 1000000007;\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--) {\n        string X; cin>>X;\n        int n = X.size();\n        vector<int> dp(n+1,0);\n        dp[0]=1;\n        for(int i=1;i<=n;++i){\n            if(X[i-1]!='0') dp[i]=(dp[i]+dp[i-1])%MOD;\n            if(i>=2){\n                int val = (X[i-2]-'0')*10 + (X[i-1]-'0');\n                if(val>=10 && val<=26) dp[i]=(dp[i]+dp[i-2])%MOD;\n            }\n        }\n        cout<<dp[n]<<\"\\n\";\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    static final int MOD = 1_000_000_007;\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder sb = new StringBuilder();\n        for (int t = 0; t < T; t++) {\n            String X = br.readLine().trim();\n            int n = X.length();\n            long[] dp = new long[n+1];\n            dp[0] = 1;\n            for (int i = 1; i <= n; i++) {\n                if (X.charAt(i-1) != '0') {\n                    dp[i] = (dp[i] + dp[i-1]) % MOD;\n                }\n                if (i >= 2) {\n                    int val = (X.charAt(i-2)-'0')*10 + (X.charAt(i-1)-'0');\n                    if (val >= 10 && val <= 26) {\n                        dp[i] = (dp[i] + dp[i-2]) % MOD;\n                    }\n                }\n            }\n            sb.append(dp[n]).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "import sys\nMOD = 1_000_000_007\n\ndef calculateRSA(X: str) -> int:\n    n = len(X)\n    dp = [0] * (n + 1)\n    dp[0] = 1\n    for i in range(1, n + 1):\n        if X[i-1] != '0':\n            dp[i] = (dp[i] + dp[i-1]) % MOD\n        if i >= 2:\n            two = int(X[i-2:i])\n            if 10 <= two <= 26:\n                dp[i] = (dp[i] + dp[i-2]) % MOD\n    return dp[n]\n\nif __name__ == \"__main__\":\n    data = sys.stdin.read().strip().split()  # first token T then strings\n    if not data:\n        sys.exit(0)\n    t = int(data[0])\n    out = []\n    idx = 1\n    for _ in range(t):\n        out.append(str(calculateRSA(data[idx])))\n        idx += 1\n    sys.stdout.write(\"\\n\".join(out))\n",
+      "JavaScript": "const fs = require('fs');\nconst MOD = 1000000007n;\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet pos = 0;\nconst T = Number(input[pos++]);\nlet results = [];\nfor (let tc = 0; tc < T; tc++) {\n  const X = input[pos++];\n  const n = X.length;\n  const dp = new Array(n + 1).fill(0n);\n  dp[0] = 1n;\n  for (let i = 1; i <= n; i++) {\n    if (X[i - 1] !== '0') {\n      dp[i] = (dp[i] + dp[i - 1]) % MOD;\n    }\n    if (i >= 2) {\n      const two = Number(X.slice(i - 2, i));\n      if (X[i - 2] !== '0' && two >= 10 && two <= 26) {\n        dp[i] = (dp[i] + dp[i - 2]) % MOD;\n      }\n    }\n  }\n  results.push(String(dp[n]));\n}\nconsole.log(results.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

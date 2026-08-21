@@ -1,0 +1,127 @@
+{
+  "questionId": "Q6413",
+  "title": "Range Minimum Queries",
+  "slug": "range-minimum-queries",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Arrays | Bit Manipulation",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Range Minimum Queries",
+      "Bitwise AND Operation"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Data Structures"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given an array of **N** integers. You should support the following queries on this array.\n\n\n\n**0 L R** : Find the minimum integer in the range **AL, AL+1, ..., AR**.\n**1 L R X** :  You should apply the assignment **A[i] = A[i] &amp; X**, for all indices **i** in range **[L, R]**, where **&amp;** denotes bitwise AND operation.",
+    "constraints": [
+      "1 ≤ N, Q ≤ 10^5",
+      "1 ≤ Ai, X ≤ 10^9",
+      "1 ≤ L ≤ R ≤ N"
+    ],
+    "inputFormat": "The first line contains two space-separated integers N and Q, where N is the number of elements in the array and Q is the number of queries. The second line contains N integer numbers denoting the array A. Each of the next Q lines contains one of the queries described above.",
+    "outputFormat": "For each query of the type 0, output a single line containing the answer of the query.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "5 5\n1 5 2 3 4\n0 2 5\n1 1 5 6\n0 2 2\n1 2 5 3\n0 1 3",
+        "output": "2\n4\n0",
+        "explanation": "The first query is to find the minimum value in the range [2, 5], which is 2. The second query is to apply the bitwise AND operation with 6 to the elements in the range [1, 5]. The third query is to find the minimum value in the range [2, 2], which is 4. The fourth query is to apply the bitwise AND operation with 3 to the elements in the range [2, 5]. The fifth query is to find the minimum value in the range [1, 3], which is 0."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1 1\n1\n0 1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "100000 1\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20\n0 1 100000",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "5 1\n1 2 3 4 5\n1 1 5 6",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "10 2\n1 2 3 4 5 6 7 8 9 10\n0 1 5\n1 1 10 3",
+        "expectedOutput": "1\n0",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "1 1\n1\n0 1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a segment tree data structure to store the minimum values in the array and support range minimum queries. We also need to update the segment tree when a query of type 1 is encountered, which involves applying the bitwise AND operation to the elements in the specified range.",
+    "timeComplexity": "O(Q * log N) — where Q is the number of queries and N is the number of elements in the array. The time complexity is dominated by the segment tree operations, which take O(log N) time per query.",
+    "spaceComplexity": "O(N) — where N is the number of elements in the array. The space complexity is dominated by the segment tree, which requires O(N) space to store the minimum values.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#define MAXN 100005\nint min(int a, int b) { return a < b ? a : b; }\nint tree[4 * MAXN];\nvoid build(int node, int start, int end, int arr[]) {\n    if (start == end) {\n        tree[node] = arr[start];\n    } else {\n        int mid = (start + end) / 2;\n        build(2 * node, start, mid, arr);\n        build(2 * node + 1, mid + 1, end, arr);\n        tree[node] = min(tree[2 * node], tree[2 * node + 1]);\n    }\n}\nint query(int node, int start, int end, int l, int r) {\n    if (r < start || end < l) {\n        return 1000000007;\n    }\n    if (l <= start && end <= r) {\n        return tree[node];\n    }\n    int mid = (start + end) / 2;\n    return min(query(2 * node, start, mid, l, r), query(2 * node + 1, mid + 1, end, l, r));\n}\nvoid update(int node, int start, int end, int l, int r, int x) {\n    if (r < start || end < l) {\n        return;\n    }\n    if (start == end) {\n        tree[node] = tree[node] & x;\n    } else {\n        int mid = (start + end) / 2;\n        update(2 * node, start, mid, l, r, x);\n        update(2 * node + 1, mid + 1, end, l, r, x);\n        tree[node] = min(tree[2 * node], tree[2 * node + 1]);\n    }\n}\nint main() {\n    int n, q;\n    scanf(\"%d %d\", &n, &q);\n    int arr[n];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &arr[i]);\n    }\n    build(1, 0, n - 1, arr);\n    while (q--) {\n        int type;\n        scanf(\"%d\", &type);\n        if (type == 0) {\n            int l, r;\n            scanf(\"%d %d\", &l, &r);\n            printf(\"%d\\n\", query(1, 0, n - 1, l - 1, r - 1));\n        } else {\n            int l, r, x;\n            scanf(\"%d %d %d\", &l, &r, &x);\n            update(1, 0, n - 1, l - 1, r - 1, x);\n        }\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <algorithm>\nusing namespace std;\nconst int MAXN = 100005;\nint tree[4 * MAXN];\nvoid build(int node, int start, int end, int arr[]) {\n    if (start == end) {\n        tree[node] = arr[start];\n    } else {\n        int mid = (start + end) / 2;\n        build(2 * node, start, mid, arr);\n        build(2 * node + 1, mid + 1, end, arr);\n        tree[node] = min(tree[2 * node], tree[2 * node + 1]);\n    }\n}\nint query(int node, int start, int end, int l, int r) {\n    if (r < start || end < l) {\n        return 1000000007;\n    }\n    if (l <= start && end <= r) {\n        return tree[node];\n    }\n    int mid = (start + end) / 2;\n    return min(query(2 * node, start, mid, l, r), query(2 * node + 1, mid + 1, end, l, r));\n}\nvoid update(int node, int start, int end, int l, int r, int x) {\n    if (r < start || end < l) {\n        return;\n    }\n    if (start == end) {\n        tree[node] = tree[node] & x;\n    } else {\n        int mid = (start + end) / 2;\n        update(2 * node, start, mid, l, r, x);\n        update(2 * node + 1, mid + 1, end, l, r, x);\n        tree[node] = min(tree[2 * node], tree[2 * node + 1]);\n    }\n}\nint main() {\n    int n, q;\n    cin >> n >> q;\n    int arr[n];\n    for (int i = 0; i < n; i++) {\n        cin >> arr[i];\n    }\n    build(1, 0, n - 1, arr);\n    while (q--) {\n        int type;\n        cin >> type;\n        if (type == 0) {\n            int l, r;\n            cin >> l >> r;\n            cout << query(1, 0, n - 1, l - 1, r - 1) << endl;\n        } else {\n            int l, r, x;\n            cin >> l >> r >> x;\n            update(1, 0, n - 1, l - 1, r - 1, x);\n        }\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    static final int MAXN = 100005;\n    static int[] tree = new int[4 * MAXN];\n    public static void build(int node, int start, int end, int[] arr) {\n        if (start == end) {\n            tree[node] = arr[start];\n        } else {\n            int mid = (start + end) / 2;\n            build(2 * node, start, mid, arr);\n            build(2 * node + 1, mid + 1, end, arr);\n            tree[node] = Math.min(tree[2 * node], tree[2 * node + 1]);\n        }\n    }\n    public static int query(int node, int start, int end, int l, int r) {\n        if (r < start || end < l) {\n            return 1000000007;\n        }\n        if (l <= start && end <= r) {\n            return tree[node];\n        }\n        int mid = (start + end) / 2;\n        return Math.min(query(2 * node, start, mid, l, r), query(2 * node + 1, mid + 1, end, l, r));\n    }\n    public static void update(int node, int start, int end, int l, int r, int x) {\n        if (r < start || end < l) {\n            return;\n        }\n        if (start == end) {\n            tree[node] = tree[node] & x;\n        } else {\n            int mid = (start + end) / 2;\n            update(2 * node, start, mid, l, r, x);\n            update(2 * node + 1, mid + 1, end, l, r, x);\n            tree[node] = Math.min(tree[2 * node], tree[2 * node + 1]);\n        }\n    }\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int n = scanner.nextInt();\n        int q = scanner.nextInt();\n        int[] arr = new int[n];\n        for (int i = 0; i < n; i++) {\n            arr[i] = scanner.nextInt();\n        }\n        build(1, 0, n - 1, arr);\n        while (q-- > 0) {\n            int type = scanner.nextInt();\n            if (type == 0) {\n                int l = scanner.nextInt();\n                int r = scanner.nextInt();\n                System.out.println(query(1, 0, n - 1, l - 1, r - 1));\n            } else {\n                int l = scanner.nextInt();\n                int r = scanner.nextInt();\n                int x = scanner.nextInt();\n                update(1, 0, n - 1, l - 1, r - 1, x);\n            }\n        }\n    }\n}",
+      "Python3": "import sys\nMAXN = 100005\ntree = [0] * (4 * MAXN)\ndef build(node, start, end, arr):\n    if start == end:\n        tree[node] = arr[start]\n    else:\n        mid = (start + end) // 2\n        build(2 * node, start, mid, arr)\n        build(2 * node + 1, mid + 1, end, arr)\n        tree[node] = min(tree[2 * node], tree[2 * node + 1])\ndef query(node, start, end, l, r):\n    if r < start or end < l:\n        return 1000000007\n    if l <= start and end <= r:\n        return tree[node]\n    mid = (start + end) // 2\n    return min(query(2 * node, start, mid, l, r), query(2 * node + 1, mid + 1, end, l, r))\ndef update(node, start, end, l, r, x):\n    if r < start or end < l:\n        return\n    if start == end:\n        tree[node] = tree[node] & x\n    else:\n        mid = (start + end) // 2\n        update(2 * node, start, mid, l, r, x)\n        update(2 * node + 1, mid + 1, end, l, r, x)\n        tree[node] = min(tree[2 * node], tree[2 * node + 1])\n\ndef main():\n    n, q = map(int, sys.stdin.readline().split())\n    arr = list(map(int, sys.stdin.readline().split()))\n    build(1, 0, n - 1, arr)\n    for _ in range(q):\n        type = int(sys.stdin.readline())\n        if type == 0:\n            l, r = map(int, sys.stdin.readline().split())\n            print(query(1, 0, n - 1, l - 1, r - 1))\n        else:\n            l, r, x = map(int, sys.stdin.readline().split())\n            update(1, 0, n - 1, l - 1, r - 1, x)\nif __name__ == '__main__':\n    main()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst readLine = () => input[idx++];\nconst readInt = () => parseInt(readLine());\nconst readInts = () => readLine().split(' ').map(x => parseInt(x));\nconst MAXN = 100005;\nconst tree = new Array(4 * MAXN).fill(0);\nfunction build(node, start, end, arr) {\n    if (start === end) {\n        tree[node] = arr[start];\n    } else {\n        const mid = Math.floor((start + end) / 2);\n        build(2 * node, start, mid, arr);\n        build(2 * node + 1, mid + 1, end, arr);\n        tree[node] = Math.min(tree[2 * node], tree[2 * node + 1]);\n    }\n}\nfunction query(node, start, end, l, r) {\n    if (r < start || end < l) {\n        return 1000000007;\n    }\n    if (l <= start && end <= r) {\n        return tree[node];\n    }\n    const mid = Math.floor((start + end) / 2);\n    return Math.min(query(2 * node, start, mid, l, r), query(2 * node + 1, mid + 1, end, l, r));\n}\nfunction update(node, start, end, l, r, x) {\n    if (r < start || end < l) {\n        return;\n    }\n    if (start === end) {\n        tree[node] = tree[node] & x;\n    } else {\n        const mid = Math.floor((start + end) / 2);\n        update(2 * node, start, mid, l, r, x);\n        update(2 * node + 1, mid + 1, end, l, r, x);\n        tree[node] = Math.min(tree[2 * node], tree[2 * node + 1]);\n    }\n}\nfunction main() {\n    const [n, q] = readInts();\n    const arr = readInts();\n    build(1, 0, n - 1, arr);\n    for (let i = 0; i < q; i++) {\n        const type = readInt();\n        if (type === 0) {\n            const [l, r] = readInts();\n            console.log(query(1, 0, n - 1, l - 1, r - 1));\n        } else {\n            const [l, r, x] = readInts();\n            update(1, 0, n - 1, l - 1, r - 1, x);\n        }\n    }\n}\nmain();"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

@@ -1,0 +1,129 @@
+{
+  "questionId": "Q7943",
+  "title": "Greedy Students",
+  "slug": "greedy-students",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Geometry",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Convex Polygon",
+      "Enumeration",
+      "Sorting",
+      "Area",
+      "Dynamic Programming",
+      "Angle Sweep"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Rafid is teaching his students plane geometry. Today they are talking about convex polygons. A convex polygon is a simple non-degenerate polygon such that each of its internal angles is strictly smaller than 180∘180^\\circ180∘.\n\nRafid drew NNN points (numbered 111 through NNN) on a blackboard (a two-dimensional plane) and told each student to choose some of the points and connect them to obtain a convex polygon. For each valid iii, the coordinates of the iii-th point are (Xi,Yi)(X_i, Y_i)(Xi​,Yi​).\n\nThere are KKK students (numbered 111 through KKK). To prevent the students from choosing the same polygon over and over, Rafid told them that they have to choose polygons one by one in the order from student 111 to student KKK and each student has to choose a set of points which was not chosen by any earlier student. That means they have to choose KKK different sets of points, resulting in KKK different polygons. As a result, some students may end up unable to choose any polygon.\n\nTo encourage the students, Rafid announced that each student will receive a number of candies proportional to the area of this student's polygon. The students are very greedy, so the first student will choose the polygon with the largest area, the second student will choose the polygon with the largest area which does not use the same set of points as the first student's polygon, and so on.\n\nFor each student, help Rafid find the area of the polygon chosen by this student or determine that this student cannot choose a polygon anymore. Note that while there may be many ways in which the students could choose their polygons, their areas are uniquely determined.",
+    "constraints": [
+      "3 ≤ N ≤ 120",
+      "1 ≤ K ≤ 10^6",
+      "|Xi|, |Yi| ≤ 10^6",
+      "All points are distinct"
+    ],
+    "inputFormat": "The first line contains two integers N and K. Then N lines follow, each containing two integers Xi and Yi – the coordinates of the i‑th point.",
+    "outputFormat": "Print K space‑separated integers A1 … AK. Ai is twice the area of the polygon chosen by the i‑th student, or -1 if no new convex polygon exists for that student.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "5 15\n0 0\n10 0\n10 10\n0 10\n5 5",
+        "output": "200 100 100 100 100 50 50 50 50 -1 -1 -1 -1 -1 -1",
+        "explanation": "Explanation:\nThe following figure describes the points and some polygons.\n\n\nThe first student chooses the largest polygon ABCD\\mathsf{ABCD}ABCD with area 100100100.\nThe next four students choose the triangles ABC\\mathsf{ABC}ABC, BCD\\mathsf{BCD}BCD, CDA\\mathsf{CDA}CDA and DAB\\mathsf{DAB}DAB, each with area 505050. Note that for example, the polygon AECB\\mathsf{AECB}AECB is not convex because it has one internal angle equal to 180∘180^{\\circ}180∘.\nThe next four students choose the triangles AEB\\mathsf{AEB}AEB, BEC\\mathsf{BEC}BEC, CED\\mathsf{CED}CED and DEA\\mathsf{DEA}DEA, each with area 252525.\nThere are no more polygons the students can choose, so the remaining six students are left without a polygon."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Every convex polygon is uniquely defined by the cyclic order of its vertices.  A set of points forms a convex polygon iff the points are in convex position – no chosen point lies inside the convex hull of the others.  The number of such subsets for N ≤ 120 is O(N^3) (a classic result).  We can enumerate all convex polygons in O(N^3) time using an angular‑sweep DP:\n1. Sort all points by (x, y).  For each point p treat it as the lowest (lexicographically) vertex of a polygon – this guarantees that each polygon is generated exactly once.\n2. For a fixed base point p, sort the remaining points by polar angle around p.\n3. Let the sorted list be v1 … vm.  For every ordered pair (vi, vj) with i < j we keep a DP entry dp[vi][vj] – a list of areas of all convex chains that start at p, go to vi, then to vj and are strictly turning left at every step.\n4. When we extend a chain (vi, vj) with a new vertex vk (j < k) we check the orientation of (vi, vj, vk).  If it is a left turn we can append vk, forming a new chain (vj, vk).  The area of the new chain is the old area plus the signed area of triangle (p, vj, vk).\n5. Whenever a chain has length ≥ 3 we have a complete convex polygon (the chain together with the closing edge back to p).  Its total doubled area is the accumulated area plus the area of triangle (p, last, first).\n6. All obtained doubled areas are stored in a global vector.\n7. After processing every base point we have a list of the doubled areas of **all** convex polygons, each appearing exactly once.  Sort this list in descending order.\n8. The i‑th student receives the i‑th element of the sorted list; if i exceeds the list size output -1.\nThe algorithm runs in O(N^3) time (the DP loops over ordered triples) and uses O(N^2) auxiliary memory for the DP tables.  The total number of convex polygons for N = 120 is at most a few million, well within memory limits, and sorting them is O(P log P) where P is the number of polygons (P ≤ O(N^3)).",
+    "timeComplexity": "O(N^3 + P log P) where P is the number of convex polygons (P = O(N^3)).",
+    "spaceComplexity": "O(N^2 + P) – DP tables plus the list of all polygon areas.",
+    "code": {
+      "C": "// ------------------------------------------------------------\n//  Greedy Students – enumeration of all convex polygons (C)\n// ------------------------------------------------------------\n#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <math.h>\n\ntypedef long long ll;\n\nstruct Point { ll x, y; } pts[125];\n\nstatic inline ll cross(const struct Point *a, const struct Point *b, const struct Point *c) {\n    // (b-a) x (c-a)\n    return (b->x - a->x) * (c->y - a->y) - (b->y - a->y) * (c->x - a->x);\n}\n\n// comparator for polar angle around origin point 'base'\nstatic struct Point *basePtr;\nint cmp_angle(const void *pa, const void *pb) {\n    const struct Point *a = (const struct Point *)pa;\n    const struct Point *b = (const struct Point *)pb;\n    ll cr = cross(basePtr, a, b);\n    if (cr != 0) return (cr > 0) ? -1 : 1; // decreasing angle (counter‑clockwise)\n    // tie‑break by distance\n    ll da = (a->x - basePtr->x)*(a->x - basePtr->x) + (a->y - basePtr->y)*(a->y - basePtr->y);\n    ll db = (b->x - basePtr->x)*(b->x - basePtr->x) + (b->y - basePtr->y)*(b->y - basePtr->y);\n    return (da < db) ? -1 : (da > db);\n}\n\nint main(){\n    int N; long long K;\n    if (scanf(\"%d %lld\", &N, &K)!=2) return 0;\n    for(int i=0;i<N;i++) scanf(\"%lld %lld\", &pts[i].x, &pts[i].y);\n\n    // store all doubled areas\n    ll *areas = (ll*)malloc(sizeof(ll) * 5000000); // enough for N=120 (≈ 2M polygons)\n    size_t areaCnt = 0;\n\n    // temporary DP: for each ordered pair (i,j) we keep a dynamic array of accumulated areas\n    // we store only the last area (the chain area) because each chain is unique.\n    // To keep memory low we use a vector of vectors of ll.\n    // For simplicity in C we allocate a 2‑D array of pointers to dynamic arrays.\n    typedef struct { ll *vals; int sz; int cap; } Vec;\n    Vec dp[125][125];\n    for(int i=0;i<N;i++) for(int j=0;j<N;j++) { dp[i][j].vals=NULL; dp[i][j].sz=0; dp[i][j].cap=0; }\n\n    // main enumeration\n    for(int b=0;b<N;b++){\n        basePtr = &pts[b];\n        // collect other points\n        struct Point others[124];\n        int idxMap[124]; // original indices\n        int m=0;\n        for(int i=0;i<N;i++) if(i!=b){ others[m]=pts[i]; idxMap[m]=i; m++; }\n        qsort(others, m, sizeof(struct Point), cmp_angle);\n        // map sorted order back to original indices\n        int order[124];\n        for(int i=0;i<m;i++){\n            // find original index of others[i]\n            for(int j=0;j<N;j++) if(j!=b && pts[j].x==others[i].x && pts[j].y==others[i].y){ order[i]=j; break; }\n        }\n        // DP over increasing angle\n        for(int i=0;i<m;i++){\n            int vi = order[i];\n            // start a chain of length 2 (b -> vi) – nothing stored yet\n            for(int j=i+1;j<m;j++){\n                int vj = order[j];\n                // chain (b,vi,vj) is a triangle, always convex (since angle order is increasing)\n                ll area = llabs(cross(&pts[b], &pts[vi], &pts[vj])); // doubled area of triangle\n                // store this chain as a candidate for extension\n                // push area into dp[vi][vj]\n                Vec *vec = &dp[vi][vj];\n                if(vec->sz==vec->cap){ vec->cap = vec->cap?vec->cap*2:4; vec->vals = (ll*)realloc(vec->vals, sizeof(ll)*vec->cap); }\n                vec->vals[vec->sz++] = area; // chain area so far (b,vi,vj)\n                // a triangle is a valid polygon\n                areas[areaCnt++] = area;\n            }\n        }\n        // extend chains\n        for(int i=0;i<m;i++){\n            int vi = order[i];\n            for(int j=i+1;j<m;j++){\n                int vj = order[j];\n                Vec *cur = &dp[vi][vj];\n                if(cur->sz==0) continue;\n                for(int k=j+1;k<m;k++){\n                    int vk = order[k];\n                    if(cross(&pts[vi], &pts[vj], &pts[vk]) <= 0) continue; // not a left turn\n                    // extend each chain ending with (vi,vj) by vk\n                    Vec *dest = &dp[vj][vk];\n                    for(int t=0;t<cur->sz;t++){\n                        ll newArea = cur->vals[t] + llabs(cross(&pts[b], &pts[vj], &pts[vk]));\n                        // store for further extensions\n                        if(dest->sz==dest->cap){ dest->cap = dest->cap?dest->cap*2:4; dest->vals = (ll*)realloc(dest->vals, sizeof(ll)*dest->cap); }\n                        dest->vals[dest->sz++] = newArea;\n                        // closing polygon: add triangle (b, vk, vi) to get full area\n                        ll fullArea = newArea + llabs(cross(&pts[b], &pts[vk], &pts[vi]));\n                        areas[areaCnt++] = fullArea;\n                    }\n                }\n                // free memory of dp[vi][vj] as it will never be used again for this base\n                free(cur->vals); cur->vals=NULL; cur->sz=cur->cap=0;\n            }\n        }\n        // clean remaining dp entries for this base point\n        for(int i=0;i<N;i++) for(int j=0;j<N;j++) if(dp[i][j].vals){ free(dp[i][j].vals); dp[i][j].vals=NULL; dp[i][j].sz=dp[i][j].cap=0; }\n    }\n\n    // sort areas descending\n    qsort(areas, areaCnt, sizeof(ll), (int(*)(const void*,const void*))[](const void *a, const void *b){ ll aa=*(const ll*)a, bb=*(const ll*)b; return (aa>bb)?-1:(aa<bb); });\n\n    // output first K values\n    for(long long i=0;i<K;i++){\n        if(i) printf(\" \");\n        if(i < (long long)areaCnt) printf(\"%lld\", areas[i]);\n        else printf(\"-1\");\n    }\n    printf(\"\\n\");\n    return 0;\n}\n",
+      "C++": ""
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

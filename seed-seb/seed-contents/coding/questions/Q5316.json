@@ -1,0 +1,142 @@
+{
+  "questionId": "Q5316",
+  "title": "Maximal Score Path",
+  "slug": "maximal-score-path",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Floyd-Warshall Algorithm",
+      "Widest Path",
+      "Graph Theory"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Graphs"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Problem Statement",
+    "constraints": [
+      "1 ≤ T ≤ 10",
+      "1 ≤ V ≤ 200",
+      "0 ≤ E ≤ V·(V-1)/2",
+      "0 ≤ w ≤ 10^9",
+      "The graph of each test case is connected."
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, the first line contains two integers V and E — the number of vertices (numbered from 0 to V-1) and the number of edges. Each of the next E lines contains three non-negative integers u, v, w describing an undirected edge between vertices u and v with score w.",
+    "outputFormat": "For each test case, output V lines. The v-th integer on the u-th line is 0 if u = v, otherwise it is the maximal possible minimal edge weight (the widest-path score) among all paths from u to v.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n3 3\n0 1 1\n1 2 2\n0 2 3",
+        "output": "0 2 3\n2 0 2\n3 2 0",
+        "explanation": "The widest path between 0 and 1 goes through vertex 2, giving a bottleneck of min(3,2)=2, which is larger than the direct edge weight 1. Similar reasoning yields the other entries."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n4 5\n0 1 2\n1 2 3\n2 3 4\n0 2 5\n0 3 6",
+        "output": "0 2 3 4\n2 0 3 4\n3 3 0 4\n4 4 4 0",
+        "explanation": "The widest path between each pair of vertices is calculated using the given edge weights."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n5 7\n0 1 1\n0 2 2\n1 2 3\n1 3 4\n2 3 5\n2 4 6\n3 4 7",
+        "output": "0 1 2 3 4\n1 0 3 4 5\n2 3 0 5 6\n3 4 5 0 7\n4 5 6 7 0",
+        "explanation": "The widest path between each pair of vertices is calculated using the given edge weights."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "1\n1 0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "1\n1 0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "1\n1 0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "1\n1 0",
+        "expectedOutput": "0",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved using the Floyd-Warshall algorithm, which is a dynamic programming approach to find the shortest path between all pairs of vertices in a weighted graph. However, in this case, we need to find the widest path, which is equivalent to finding the shortest path in a graph where the weights are the negative logarithms of the original weights. But since the weights are non-negative integers, we can simply use the minimum of the weights along the path instead of the sum. We initialize the distance matrix with the given edge weights and then apply the Floyd-Warshall algorithm to find the widest path between all pairs of vertices.",
+    "timeComplexity": "O(T*V^3) per test case, O(T*V^3) total. The precomputation is done once for each test case.",
+    "spaceComplexity": "O(V^2) — the dominant structure is the distance matrix.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    while(T--){\n        int V,E; scanf(\"%d %d\", &V, &E);\n        long long **best = (long long**)malloc(V*sizeof(long long*));\n        for(int i=0;i<V;i++){\n            best[i]=(long long*)malloc(V*sizeof(long long));\n            for(int j=0;j<V;j++) best[i][j]= (i==j)?0:-1;\n        }\n        for(int e=0;e<E;e++){\n            int u,v; long long w; scanf(\"%d %d %lld\", &u, &v, &w);\n            if(w>best[u][v]) best[u][v]=best[v][u]=w;\n        }\n        for(int k=0;k<V;k++)\n            for(int i=0;i<V;i++) if(i!=k)\n                for(int j=0;j<V;j++) if(j!=k && i!=j){\n                    long long via = best[i][k] < best[k][j] ? best[i][k] : best[k][j];\n                    if(via > best[i][j] || best[i][j] == -1) best[i][j]=via;\n                }\n        for(int i=0;i<V;i++){\n            for(int j=0;j<V;j++){\n                if(j) printf(\" \");\n                if(best[i][j] == -1) printf(\"0\");\n                else printf(\"%lld\", best[i][j]);\n            }\n            printf(\"\\n\");\n        }\n        for(int i=0;i<V;i++) free(best[i]);\n        free(best);\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(NULL);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int V,E; cin>>V>>E;\n        vector<vector<long long>> best(V, vector<long long>(V,-1));\n        for(int i=0;i<V;i++) best[i][i]=0;\n        for(int i=0;i<E;i++){\n            int u,v; long long w; cin>>u>>v>>w;\n            best[u][v]=best[v][u]=max(best[u][v], w);\n        }\n        for(int k=0;k<V;k++)\n            for(int i=0;i<V;i++) if(i!=k)\n                for(int j=0;j<V;j++) if(j!=k && i!=j){\n                    long long via = min(best[i][k], best[k][j]);\n                    best[i][j] = max(best[i][j], via);\n                }\n        for(int i=0;i<V;i++){\n            for(int j=0;j<V;j++){\n                if(j) cout<<' ';\n                if(best[i][j] == -1) cout<<0;\n                else cout<<best[i][j];\n            }\n            cout<<'\\n';\n        }\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner(System.in);\n        int T = fs.nextInt();\n        StringBuilder out = new StringBuilder();\n        while (T-- > 0) {\n            int V = fs.nextInt();\n            int E = fs.nextInt();\n            long[][] best = new long[V][V];\n            for (int i = 0; i < V; i++) {\n                for (int j = 0; j < V; j++) {\n                    best[i][j] = -1;\n                }\n            }\n            for (int i = 0; i < V; i++) best[i][i] = 0;\n            for (int i = 0; i < E; i++) {\n                int u = fs.nextInt();\n                int v = fs.nextInt();\n                long w = fs.nextLong();\n                best[u][v] = Math.max(best[u][v], w);\n                best[v][u] = Math.max(best[v][u], w);\n            }\n            for (int k = 0; k < V; k++) {\n                for (int i = 0; i < V; i++) if (i != k) {\n                    for (int j = 0; j < V; j++) if (j != k && i != j) {\n                        long via = Math.min(best[i][k], best[k][j]);\n                        if (via > best[i][j] || best[i][j] == -1) best[i][j] = via;\n                    }\n                }\n            }\n            for (int i = 0; i < V; i++) {\n                for (int j = 0; j < V; j++) {\n                    if (j > 0) out.append(' ');\n                    if(best[i][j] == -1) out.append('0');\n                    else out.append(best[i][j]);\n                }\n                out.append('\\n');\n            }\n        }\n        System.out.print(out.toString());\n    }\n    static class FastScanner {\n        private final BufferedInputStream in;\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        FastScanner(InputStream is) { in = new BufferedInputStream(is); }\n        private int readByte() throws IOException {\n            if (ptr >= len) {\n                len = in.read(buffer);\n                ptr = 0;\n                if (len <= 0) return -1;\n            }\n            return buffer[ptr++];\n        }\n        long nextLong() throws IOException { return Long.parseLong(next()); }\n        int nextInt() throws IOException { return Integer.parseInt(next()); }\n        String next() throws IOException {\n            StringBuilder sb = new StringBuilder();\n            int c;\n            while ((c = readByte()) != -1 && c <= ' ') {}\n            while (c != -1 && c > ' ') {\n                sb.append((char) c);\n                c = readByte();\n            }\n            return sb.toString();\n        }\n    }\n}\n",
+      "Python3": "import sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        V = int(next(it)); E = int(next(it))\n        best = [[-1]*V for _ in range(V)]\n        for i in range(V):\n            best[i][i] = 0\n        for _ in range(E):\n            u = int(next(it)); v = int(next(it)); w = int(next(it))\n            if w > best[u][v]:\n                best[u][v] = best[v][u] = w\n        for k in range(V):\n            bk = best[k]\n            for i in range(V):\n                if i == k: continue\n                bi = best[i]\n                bik = bi[k]\n                for j in range(V):\n                    if j == k or i == j: continue\n                    via = bik if bik < bk[j] else bk[j]\n                    if via > bi[j] or bi[j] == -1:\n                        bi[j] = via\n        for i in range(V):\n            out_lines.append(' '.join(str(x) if x != -1 else '0' for x in best[i]))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst data = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nif (data.length === 0) process.exit(0);\nconst T = Number(data[idx++]);\nlet output = [];\nfor (let t = 0; t < T; t++) {\n  const V = Number(data[idx++]);\n  const E = Number(data[idx++]);\n  const best = Array.from({length: V}, () => Array(V).fill(-1));\n  for (let i = 0; i < V; i++) best[i][i] = 0;\n  for (let e = 0; e < E; e++) {\n    const u = Number(data[idx++]);\n    const v = Number(data[idx++]);\n    const w = Number(data[idx++]);\n    if (w > best[u][v]) {\n      best[u][v] = best[v][u] = w;\n    }\n  }\n  for (let k = 0; k < V; k++) {\n    for (let i = 0; i < V; i++) if (i !== k) {\n      for (let j = 0; j < V; j++) if (j !== k && i !== j) {\n        const via = Math.min(best[i][k], best[k][j]);\n        if (via > best[i][j] || best[i][j] === -1) best[i][j] = via;\n      }\n    }\n  }\n  for (let i = 0; i < V; i++) {\n    output.push(best[i].map(x => x === -1 ? 0 : x).join(' '));\n  }\n}\nconsole.log(output.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

@@ -1,0 +1,141 @@
+{
+  "questionId": "Q10135",
+  "title": "Swap and Unite",
+  "slug": "swap-and-unite",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings | Greedy | Sliding Window",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Sliding Window",
+      "Frequency Counting",
+      "Greedy"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Two Pointers & Sliding Window"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You have a string SSS consisting of lowercase letters.\n\nYou can perform the following operation on SSS:\n\n\nChoose two indices iii and jjj (1≤i&lt;j≤∣S∣1 \\leq i \\lt j \\leq |S|1≤i&lt;j≤∣S∣), and swap SiS_iSi​ and SjS_jSj​.\n\nFor example, if S=codechefS = \\texttt{codechef}S=codechef, choosing i=3i = 3i=3 and j=6j = 6j=6 results in the string cohecdef\\texttt{cohecdef}cohecdef.\nYou've always liked unity.\nTo this end, find the **minimum** number of operations required so that for at least one character that appears in SSS, all its occurrences form a contiguous segment in SSS — in short, are united.\n\nFor example, if S=baabaS = \\texttt{baaba}S=baaba, swapping the first and third characters results in S=aabbaS = \\texttt{aabba}S=aabba.\n\nAll the occurrences of `'b'` form a contiguous segment now. Note that the `'a'`s don't form a contiguous segment, which is fine.\n\n\nInput Format\n\nThe first line of input will contain a single integer TTT, denoting the number of test cases.\nEach test case consists of one line of input, containing a string SSS.\n\n\nOutput Format\nFor each test case, output the minimum number of operations required to unite at least one character in the given string.",
+    "constraints": [
+      "1 <= T <= 2*10^4",
+      "1 <= |S| <= 2*10^5",
+      "Sum of |S| over all test cases does not exceed 2*10^5",
+      "S consists only of characters 'a'‑'z'"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains a non‑empty string S consisting of lowercase English letters.",
+    "outputFormat": "For each test case output a single integer – the minimum number of swap operations required so that the occurrences of at least one character become a contiguous segment.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4\\naba\\nabab\\nbaabba\\nppssppss",
+        "output": "0\n1\n1\n2",
+        "explanation": "For each string we compute the minimal swaps as described. 'aba' already has 'b' contiguous, so 0. 'abab' needs one swap to make all 'a's together, etc."
+      },
+      {
+        "id": "sample_2",
+        "input": "2\na\nabcde",
+        "output": "0\n0",
+        "explanation": "In both strings there is a character that appears only once, which is trivially contiguous."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\nabacbc",
+        "output": "1",
+        "explanation": "All characters appear at least twice. For each of 'a','b','c' the best window of length 2 contains only one of that character, so one swap is needed."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\na",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "1\na",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "1\na",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "1\na",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "1\na",
+        "expectedOutput": "0",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For a character c with total frequency cnt, we need a segment of length cnt that will finally contain only c. In any chosen segment, the positions already holding c need no change, while each other position must receive a c from outside – one swap per such position. Therefore, for character c the required swaps equal cnt minus the maximum number of c already present in any window of length cnt. The answer is the minimum of this value over all characters. We compute it by:\n1. Count frequencies of all 26 letters.\n2. For each letter with cnt>0, build a prefix sum array pref where pref[i] = number of that letter in S[0..i‑1].\n3. Scan all possible windows of length cnt using the prefix sums to obtain the maximal count inside any window.\n4. Keep the minimal (cnt - maxInside) across letters. If any letter appears only once, the answer is 0 immediately.\nThe algorithm runs in O(26·|S|) per test case, well within limits.",
+    "timeComplexity": "O(26 * N) per test case, where N = |S|. Overall O(total length of input).",
+    "spaceComplexity": "O(N) for the prefix array of one character (reused), plus O(1) extra.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    char s[200005];\n    while(T--){\n        scanf(\"%s\", s);\n        int n = strlen(s);\n        int freq[26] = {0};\n        for(int i=0;i<n;i++) freq[s[i]-'a']++;\n        int answer = n; // upper bound\n        for(int ch=0; ch<26; ++ch){\n            int cnt = freq[ch];\n            if(cnt<=1){ answer = 0; continue; }\n            // prefix sums for this character\n            static int pref[200006];\n            pref[0]=0;\n            for(int i=0;i<n;i++) pref[i+1]=pref[i]+(s[i]-'a'==ch);\n            int best = 0;\n            for(int i=0;i+cnt<=n;i++){\n                int inside = pref[i+cnt]-pref[i];\n                if(inside>best) best=inside;\n            }\n            int swaps = cnt - best;\n            if(swaps<answer) answer=swaps;\n        }\n        printf(\"%d\\n\", answer);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        string s; cin>>s;\n        int n=s.size();\n        int freq[26] = {};\n        for(char c: s) freq[c-'a']++;\n        int ans=n;\n        for(int ch=0; ch<26; ++ch){\n            int cnt=freq[ch];\n            if(cnt<=1){ ans=0; continue; }\n            vector<int> pref(n+1,0);\n            for(int i=0;i<n;i++) pref[i+1]=pref[i]+(s[i]-'a'==ch);\n            int best=0;\n            for(int i=0;i+cnt<=n;i++){\n                int inside=pref[i+cnt]-pref[i];\n                best=max(best,inside);\n            }\n            ans=min(ans,cnt-best);\n        }\n        cout<<ans<<\"\\n\";\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder out = new StringBuilder();\n        while (T-- > 0) {\n            String s = br.readLine().trim();\n            int n = s.length();\n            int[] freq = new int[26];\n            for (int i = 0; i < n; i++) freq[s.charAt(i) - 'a']++;\n            int ans = n;\n            for (int ch = 0; ch < 26; ch++) {\n                int cnt = freq[ch];\n                if (cnt <= 1) { ans = 0; continue; }\n                int[] pref = new int[n + 1];\n                for (int i = 0; i < n; i++) {\n                    pref[i + 1] = pref[i] + (s.charAt(i) - 'a' == ch ? 1 : 0);\n                }\n                int best = 0;\n                for (int i = 0; i + cnt <= n; i++) {\n                    int inside = pref[i + cnt] - pref[i];\n                    if (inside > best) best = inside;\n                }\n                ans = Math.min(ans, cnt - best);\n            }\n            out.append(ans).append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys\n\ndef solve():\n    data = sys.stdin.read().split()\n    if not data: return\n    t = int(data[0])\n    idx = 1\n    out_lines = []\n    for _ in range(t):\n        s = data[idx]; idx += 1\n        n = len(s)\n        freq = [0]*26\n        for ch in s:\n            freq[ord(ch)-97] += 1\n        ans = n\n        for ch in range(26):\n            cnt = freq[ch]\n            if cnt <= 1:\n                ans = 0\n                continue\n            # prefix sums for this character\n            pref = [0]*(n+1)\n            for i, c in enumerate(s,1):\n                pref[i] = pref[i-1] + (1 if ord(c)-97 == ch else 0)\n            best = 0\n            for i in range(0, n-cnt+1):\n                inside = pref[i+cnt] - pref[i]\n                if inside > best:\n                    best = inside\n            ans = min(ans, cnt - best)\n        out_lines.append(str(ans))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet pos = 0;\nconst T = Number(input[pos++]);\nlet results = [];\nfor (let tc = 0; tc < T; ++tc) {\n  const s = input[pos++];\n  const n = s.length;\n  const freq = new Array(26).fill(0);\n  for (let i = 0; i < n; ++i) freq[s.charCodeAt(i) - 97]++;\n  let ans = n;\n  for (let ch = 0; ch < 26; ++ch) {\n    const cnt = freq[ch];\n    if (cnt <= 1) { ans = 0; continue; }\n    const pref = new Array(n + 1).fill(0);\n    for (let i = 0; i < n; ++i) {\n      pref[i + 1] = pref[i] + (s.charCodeAt(i) - 97 === ch ? 1 : 0);\n    }\n    let best = 0;\n    for (let i = 0; i + cnt <= n; ++i) {\n      const inside = pref[i + cnt] - pref[i];\n      if (inside > best) best = inside;\n    }\n    const swaps = cnt - best;\n    if (swaps < ans) ans = swaps;\n  }\n  results.push(String(ans));\n}\nconsole.log(results.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

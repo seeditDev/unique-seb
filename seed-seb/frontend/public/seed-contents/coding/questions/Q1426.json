@@ -1,0 +1,127 @@
+{
+  "questionId": "Q1426",
+  "title": "Maximum Sum Rectangle in Matrix",
+  "slug": "maximum-sum-rectangle-in-matrix",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Kadane's Algorithm",
+      "Maximum Sum Rectangle",
+      "Dynamic Programming"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Matrices"
+    ]
+  },
+  "content": {
+    "problemStatement": "Given an M\u00d7NM\u00d7NM\u00d7N matrix of integers, find the rectangle (submatrix) that has the maximum sum of its elements. The rectangle can be of any size from 1\u00d711\u00d711\u00d71 up to M\u00d7NM\u00d7NM\u00d7N.\n\n\nInput Format\n\nFirst line contains TTT, number of test cases\nFor each test case:\n\nFirst line contains MMM and N,N,N, dimensions of matrix\nNext MMM lines contain NNN space-separated integers each\n\n\n\n\nOutput Format\n\nFor each test case, print the maximum sum possible from any rectangle in the matrix.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= M, N <= 100",
+      "-10^5 <= matrix element <= 10^5"
+    ],
+    "inputFormat": "First line contains T, the number of test cases. Each test case contains two integers M and N, the number of rows and columns of the matrix. Then M lines follow, each containing N space-separated integers.",
+    "outputFormat": "For each test case, print the maximum possible sum of any rectangular sub-matrix.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n4 5\n1 2 -1 -4 -20\n-8 -3 4 2 1\n3 8 10 1 3\n-4 -1 1 7 -6",
+        "output": "29",
+        "explanation": "The rectangle formed by rows 2-3 and columns 2-4 (0-based) gives the sum 29, which is the maximum possible."
+      },
+      {
+        "id": "sample_2",
+        "input": "2\n2 2\n1 1\n1 1\n3 3\n-1 -2 -3\n-4 -5 -6\n-7 -8 -9",
+        "output": "4\n-1",
+        "explanation": "Test case 1: all numbers are positive, so the whole matrix sum is 4.\nTest case 2: all numbers are negative, the best we can do is pick the largest element -1."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n3 3\n-2 -3 -1\n-5 -6 -4\n-7 -8 -9",
+        "output": "-1",
+        "explanation": "All entries are negative; the maximum sum rectangle is the single element -1."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n100 100\n100",
+        "expectedOutput": "100",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n3 3\n0 0 0\n0 0 0\n0 0 0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n3 3\n-1 -1 -1\n-1 -1 -1\n-1 -1 -1",
+        "expectedOutput": "-1",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "2\n3 3\n1 2 3\n4 5 6\n7 8 9\n3 3\n-1 -2 -3\n-4 -5 -6\n-7 -8 -9",
+        "expectedOutput": "45\n-1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved by using Kadane's algorithm to find the maximum sum of a subarray in a 1D array. We can apply this algorithm to each row of the matrix and then to each possible sub-matrix. The maximum sum of a sub-matrix can be found by iterating over all possible top and bottom rows and applying Kadane's algorithm to the sum of the elements in the rows.",
+    "timeComplexity": "O(T * M^2 * N) per test case, O(T * M^2 * N) total.",
+    "spaceComplexity": "O(N) \u2014 for storing the temporary array.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <limits.h>\n\nint kadane(int *arr, int n) {\n    int max_sofar = arr[0];\n    int cur_max = arr[0];\n    for (int i = 1; i < n; ++i) {\n        cur_max = (arr[i] > cur_max + arr[i]) ? arr[i] : cur_max + arr[i];\n        if (cur_max > max_sofar) max_sofar = cur_max;\n    }\n    return max_sofar;\n}\n\nint main() {\n    int T; scanf(\"%d\", &T);\n    while (T--) {\n        int M, N; scanf(\"%d %d\", &M, &N);\n        int mat[100][100];\n        for (int i = 0; i < M; ++i)\n            for (int j = 0; j < N; ++j)\n                scanf(\"%d\", &mat[i][j]);\n        int best = INT_MIN;\n        int temp[100];\n        for (int top = 0; top < M; ++top) {\n            for (int i = 0; i < N; ++i) temp[i] = 0;\n            for (int bottom = top; bottom < M; ++bottom) {\n                for (int col = 0; col < N; ++col)\n                    temp[col] += mat[bottom][col];\n                int cur = kadane(temp, N);\n                if (cur > best) best = cur;\n            }\n        }\n        printf(\"%d\\n\", best);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nint kadane(const vector<int>& a) {\n    int max_sofar = a[0], cur = a[0];\n    for (size_t i = 1; i < a.size(); ++i) {\n        cur = max(a[i], cur + a[i]);\n        max_sofar = max(max_sofar, cur);\n    }\n    return max_sofar;\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; cin >> T;\n    while (T--) {\n        int M, N; cin >> M >> N;\n        vector<vector<int>> mat(M, vector<int>(N));\n        for (int i = 0; i < M; ++i)\n            for (int j = 0; j < N; ++j)\n                cin >> mat[i][j];\n        int best = INT_MIN;\n        vector<int> temp(N);\n        for (int top = 0; top < M; ++top) {\n            fill(temp.begin(), temp.end(), 0);\n            for (int bottom = top; bottom < M; ++bottom) {\n                for (int col = 0; col < N; ++col)\n                    temp[col] += mat[bottom][col];\n                best = max(best, kadane(temp));\n            }\n        }\n        cout << best << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    private static int kadane(int[] arr) {\n        int maxSoFar = arr[0];\n        int cur = arr[0];\n        for (int i = 1; i < arr.length; i++) {\n            cur = Math.max(arr[i], cur + arr[i]);\n            maxSoFar = Math.max(maxSoFar, cur);\n        }\n        return maxSoFar;\n    }\n\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st = new StringTokenizer(br.readLine());\n        int T = Integer.parseInt(st.nextToken());\n        StringBuilder out = new StringBuilder();\n        while (T-- > 0) {\n            st = new StringTokenizer(br.readLine());\n            int M = Integer.parseInt(st.nextToken());\n            int N = Integer.parseInt(st.nextToken());\n            int[][] mat = new int[M][N];\n            for (int i = 0; i < M; i++) {\n                st = new StringTokenizer(br.readLine());\n                for (int j = 0; j < N; j++) {\n                    mat[i][j] = Integer.parseInt(st.nextToken());\n                }\n            }\n            int best = Integer.MIN_VALUE;\n            int[] temp = new int[N];\n            for (int top = 0; top < M; top++) {\n                Arrays.fill(temp, 0);\n                for (int bottom = top; bottom < M; bottom++) {\n                    for (int col = 0; col < N; col++) {\n                        temp[col] += mat[bottom][col];\n                    }\n                    best = Math.max(best, kadane(temp));\n                }\n            }\n            out.append(best).append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef kadane(arr):\n    max_sofar = arr[0]\n    cur = arr[0]\n    for x in arr[1:]:\n        cur = max(x, cur + x)\n        max_sofar = max(max_sofar, cur)\n    return max_sofar\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        M = int(next(it)); N = int(next(it))\n        mat = [[int(next(it)) for _ in range(N)] for __ in range(M)]\n        best = -10**18\n        temp = [0]*N\n        for top in range(M):\n            temp = [0]*N\n            for bottom in range(top, M):\n                for col in range(N):\n                    temp[col] += mat[bottom][col]\n                best = max(best, kadane(temp))\n        out_lines.append(str(best))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nfunction kadane(arr) {\n  let maxSoFar = arr[0];\n  let cur = arr[0];\n  for (let i = 1; i < arr.length; i++) {\n    cur = Math.max(arr[i], cur + arr[i]);\n    maxSoFar = Math.max(maxSoFar, cur);\n  }\n  return maxSoFar;\n}\nconst T = Number(input[idx++]);\nlet outputs = [];\nfor (let t = 0; t < T; t++) {\n  const M = Number(input[idx++]);\n  const N = Number(input[idx++]);\n  const mat = Array.from({ length: M }, () => Array.from({ length: N }, () => Number(input[idx++])));\n  let best = -Infinity;\n  const temp = new Array(N);\n  for (let top = 0; top < M; top++) {\n    temp.fill(0);\n    for (let bottom = top; bottom < M; bottom++) {\n      for (let col = 0; col < N; col++) {\n        temp[col] += mat[bottom][col];\n      }\n      best = Math.max(best, kadane(temp));\n    }\n  }\n  outputs.push(String(best));\n}\nconsole.log(outputs.join('\\n'));"
+    }
+  }
+}

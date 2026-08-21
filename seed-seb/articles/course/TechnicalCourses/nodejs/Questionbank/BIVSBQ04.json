@@ -1,0 +1,82 @@
+{
+  "questionId": "BIVSBQ04",
+  "title": "Password hashing with bcrypt",
+  "slug": "bivsbq04",
+  "version": 1,
+  "createdAt": "2026-07-13",
+  "updatedAt": "2026-07-13",
+  "source": {
+    "platform": "SEED-IT",
+    "courseSlug": "nodejs",
+    "contestCode": "OGHSPI",
+    "module": "User Authentication",
+    "submodule": "Authentication Basics",
+    "contentType": "mcq",
+    "originalUrl": "https://www.codechef.com/learn/course/nodejs/OGHSPI/problems/BIVSBQ04"
+  },
+  "metadata": {
+    "category": "Concept",
+    "difficulty": "Beginner",
+    "isPremium": false,
+    "tags": [
+      "javascript"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "User Authentication",
+      "Authentication Basics"
+    ],
+    "QBCategory": "SEED-IT"
+  },
+  "content": {
+    "problemStatement": "Welcome! In our last lesson, we learned the difference between authentication and authorization. Now, let's dive into a critical part of authentication: how to handle user passwords securely.\n\n### Why Not Just Store Passwords?\n\nImagine you're building an application using Express and MongoDB. A user signs up with an email and a password. The most straightforward idea might be to save their password directly in your user document in the database, like this:\n\n```json\n// In MongoDB\n{\n  \"email\": \"user@example.com\",\n  \"password\": \"mySuperSecretPassword123\" \n}\n```\n\nThis is **extremely dangerous!** If a hacker ever gained access to your database, they would instantly have the plain text passwords for all of your users. Since many people reuse passwords across different websites, this could compromise their email, bank, and social media accounts. We must **never** store passwords in plain text.\n\n### The Solution: Hashing\n\nThe solution is **hashing**. Hashing is a one-way process that transforms a piece of data (like a password) into a unique, fixed-length string of characters called a \"hash\".\n\nThink of it like a blender. You can put a banana and some milk in to make a smoothie. But you can't take the smoothie and get the original banana and milk back out. It's a one-way street.\n\nA key property of a simple hash function is that the same input will always produce the same output.\n`hash(\"password123\")` -> `j2g9d8f...` (always the same)\n\nThis is better, but still has a weakness. Attackers have pre-computed lists of hashes for common passwords, called \"rainbow tables\". They can quickly look up a hash and find the original password.\n\n### A Better Solution: bcrypt\n\nThis is where a library like **bcrypt** comes in. It's a special password-hashing function designed to be slow and secure. `bcrypt` improves on simple hashing in two major ways:\n\n1.  **Salting:** Before hashing a password, `bcrypt` adds a random string of data to it, called a \"salt\". This salt is then stored as part of the final hash. Because the salt is random for each user, two users with the same password will have completely different hashes stored in the database. This makes rainbow tables useless.\n\n2.  **Cost Factor (Work Factor):** `bcrypt` is intentionally slow. We can control how slow it is with a \"cost factor\" (also called salt rounds). A higher cost factor means it takes more computing power to calculate the hash. This is a good thing! It makes it incredibly difficult and time-consuming for an attacker to try and guess passwords (a \"brute-force\" attack).\n\n### Using bcrypt in Node.js\n\nLet's see how to use it. First, you need to install the package in your project:\n\n```bash\nnpm install bcrypt\n```\n\n**1. Hashing a Password**\n\nWhen a user registers, you'll hash their password before saving it. `bcrypt.hash()` is an asynchronous function, so we'll use `async/await`, which you learned about in \"Asynchronous JavaScript Basics\".\n\n```javascript\nconst bcrypt = require('bcrypt');\n\nasync function hashPassword() {\n  const myPassword = 'admin123';\n  \n  // The '10' is the cost factor. Higher is more secure but slower.\n  const saltRounds = 10; \n  \n  const hashedPassword = await bcrypt.hash(myPassword, saltRounds);\n  \n  console.log('Original Password:', myPassword);\n  console.log('Hashed Password:', hashedPassword);\n\n  // You would now save this 'hashedPassword' in your MongoDB user document\n  // instead of the original password.\n}\n\nhashPassword();\n```\nIf you run this, you'll see the original password and a long, complex hash. Notice the hash looks something like `$2b$10$...`. It actually contains the algorithm version, the cost factor, the salt, and the hash itself, all bundled together!\n\n**2. Comparing a Password**\n\nLater, when a user tries to log in, you need to check if the password they entered is correct. You **don't** hash the stored password again. Instead, you use `bcrypt.compare()` to compare the plain text password they entered with the hash you have stored in the database.\n\n`bcrypt` is smart enough to extract the salt from your stored hash and use it to perform the comparison.\n\n```javascript\nconst bcrypt = require('bcrypt');\n\nasync function checkPassword() {\n  const plainTextPassword = 'admin123'; // Password from login form\n  \n  // The hash you stored in your database during registration\n  const hashedPasswordFromDB = '$2b$10$wEHLd4J8dWTKAPdGz7h0z.01sB0iVz0z9fF6.LqG0Sg8q.1q.0q.S'; \n  \n  const isMatch = await bcrypt.compare(plainTextPassword, hashedPasswordFromDB);\n  \n  if (isMatch) {\n    console.log('Password is correct!');\n  } else {\n    console.log('Incorrect password.');\n  }\n}\n\ncheckPassword();\n```\n\nAnd that's the core of it! By using `bcrypt`, we can securely handle user passwords without ever storing them in a readable format.\n\nIn the next lesson, we will use this knowledge to build a complete \"User registration flow\" with an Express server and a MongoDB database.",
+    "constraints": [
+      "Time Limit: 1s",
+      "Memory Limit: 256MB"
+    ],
+    "inputFormat": "Standard input",
+    "outputFormat": "Standard output",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "input": "",
+        "expectedOutput": "expected",
+        "weight": 100
+      }
+    ],
+    "totalTestCases": 1,
+    "totalWeight": 100
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      100
+    ],
+    "maxScore": 100
+  },
+  "judging": {
+    "timeLimitMs": 1000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // Write your C code here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your C++ code here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) {\n        // Write your Java code here\n    }\n}",
+    "Python3": "# Write your Python code here\n",
+    "JavaScript": "// Write your JavaScript code here\n",
+    "Go": "package main\n\nimport \"fmt\"\n\nfunc main() {\n    // Write your Go code here\n}",
+    "Rust": "fn main() {\n    // Write your Rust code here\n}",
+    "C#": "using System;\n\nclass Program {\n    static void Main() {\n        // Write your C# code here\n    }\n}",
+    "SQL": "-- Write your SQL query here\n"
+  }
+}

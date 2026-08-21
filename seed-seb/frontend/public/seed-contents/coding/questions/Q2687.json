@@ -1,0 +1,127 @@
+{
+  "questionId": "Q2687",
+  "title": "Number of Factors",
+  "slug": "number-of-factors",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Prime Factorization",
+      "Number Theory",
+      "Math"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Mathematics"
+    ]
+  },
+  "content": {
+    "problemStatement": "Alice has learnt factorization recently. Bob doesn't think she has learnt it properly and hence he has decided to quiz her. Bob gives Alice a very large number and asks her to find out the number of factors of that number. To make it a little easier for her, he represents the number as a product of **N** numbers. Alice is frightened of big numbers and hence is asking you for help. Your task is simple. Given **N** numbers, you need to tell the number of distinct factors of the product of these **N** numbers.\n\nInput:**T**\n**N**\n**N****Ai**\nOutput:",
+    "constraints": [
+      "1 <= T <= 100",
+      "1 <= N <= 10",
+      "2 <= Ai <= 1000000"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case consists of two lines. The first line contains an integer N, the number of numbers. The second line contains N space-separated integers.",
+    "outputFormat": "For each test case, output the number of distinct factors of the product of the given numbers.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n3\n3 5 7\n3\n2 4 6\n2\n5 5",
+        "output": "8\n12\n3",
+        "explanation": "For the first test case, the prime factors are 3, 5, and 7. The number of distinct factors is (1 + 1) * (1 + 1) * (1 + 1) = 8. For the second test case, the prime factors are 2 and 3. The number of distinct factors is (3 + 1) * (1 + 1) = 8. For the third test case, the prime factors are 5. The number of distinct factors is (2 + 1) = 3."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n1\n2",
+        "output": "2",
+        "explanation": "The prime factor is 2. The number of distinct factors is (1 + 1) = 2."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n2\n2 2",
+        "output": "3",
+        "explanation": "The prime factor is 2. The number of distinct factors is (2 + 1) = 3."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n2",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n10\n2 3 5 7 11 13 17 19 23 29",
+        "expectedOutput": "1024",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n5\n2 2 2 2 2",
+        "expectedOutput": "6",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n3\n4 9 25",
+        "expectedOutput": "12",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "5\n3\n3 5 7\n3\n2 4 6\n2\n5 5\n1\n2\n1\n3",
+        "expectedOutput": "8\n12\n3\n2\n2\n2",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved by finding the prime factorization of each number and then combining the prime factors to find the total number of distinct factors. We can use the concept that if a number has prime factorization p1^a1 * p2^a2 * ... * pn^an, then the number of distinct factors is (a1+1) * (a2+1) * ... * (an+1).",
+    "timeComplexity": "O(T * N * log(max(Ai))) per test case, O(T * N * log(max(Ai))) total. The time complexity is dominated by the prime factorization of each number.",
+    "spaceComplexity": "O(max(Ai)) \u2014 the dominant structure is the array to store the prime factors.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdbool.h>\n#define MAX_SIZE 1000001\nconst long long mod = 1e9 + 7;\nconst long long inf = 1e18;\n// Function to initialize isPrime and smallestPrimeFactor arrays\nvoid sieve(bool isPrime[], int smallestPrimeFactor[]) {\n    isPrime[0] = false; // 0 is not prime\n    isPrime[1] = false; // 1 is not prime\n    for (int i = 2; i < MAX_SIZE; i++) {\n        isPrime[i] = true; // Assume all numbers are prime initially\n    }\n\n    for (int i = 2; i < MAX_SIZE; i++) {\n        if (isPrime[i]) {\n            smallestPrimeFactor[i] = i; // Initialize smallest prime factor\n            for (int j = i * 2; j < MAX_SIZE; j += i) {\n                isPrime[j] = false; // Mark multiples of i as non-prime\n                if (smallestPrimeFactor[j] == 0) {\n                    smallestPrimeFactor[j] = i; // Update smallest prime factor\n                }\n            }\n        }\n    }\n}\n\nint main() {\n    bool isPrime[MAX_SIZE];\n    int smallestPrimeFactor[MAX_SIZE];\n    sieve(isPrime, smallestPrimeFactor); // Precompute primes\n\n    int t;\n    scanf(\"%d\", &t); // Read number of test cases\n\n    while (t--) {\n        int n;\n        scanf(\"%d\", &n); // Read size of the array\n        int cnt[MAX_SIZE] = {0}; // Array to count occurrences of prime factors\n\n        for (int i = 0; i < n; i++) {\n            int x;\n            scanf(\"%d\", &x); // Read each number\n            while (x > 1) {\n                cnt[smallestPrimeFactor[x]]++; // Count the prime factor\n                x /= smallestPrimeFactor[x]; // Divide x by its smallest prime factor\n            }\n        }\n\n        long long ans = 1; // Initialize answer\n        for (int i = 2; i < MAX_SIZE; i++) {\n            if (cnt[i] > 0) {\n                ans *= (cnt[i] + 1); // Calculate the product of (count + 1)\n            }\n        }\n        printf(\"%lld\\n\", ans); // Output the result for the current test case\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nconst long long mod = 1e9 + 7;\nconst long long inf = 1e18;\nconst int MAX_SIZE = 1e6 + 1;\n// Function to initialize isPrime and smallestPrimeFactor arrays\nvoid sieve(vector < bool > & isPrime, vector < int > & smallestPrimeFactor) {\n    isPrime[0] = isPrime[1] = false; // 0 and 1 are not prime\n    for (int i = 2; i < MAX_SIZE; i++) {\n        if (isPrime[i]) {\n            smallestPrimeFactor[i] = i; // Initialize smallest prime factor\n            for (int j = i * 2; j < MAX_SIZE; j += i) {\n                isPrime[j] = false; // Mark multiples of i as non-prime\n                if (smallestPrimeFactor[j] == 0) {\n                    smallestPrimeFactor[j] = i; // Update smallest prime factor\n                }\n            }\n        }\n    }\n}\n\nint main() {\n    vector < bool > isPrime(MAX_SIZE, true);\n    vector < int > smallestPrimeFactor(MAX_SIZE, 0);\n    sieve(isPrime, smallestPrimeFactor); // Precompute primes\n\n    int t;\n    cin >> t; // Read number of test cases\n\n    while (t--) {\n        int n;\n        cin >> n; // Read size of the array\n        map < int, int > cnt; // Map to count occurrences of prime factors\n\n        for (int i = 0; i < n; i++) {\n            int x;\n            cin >> x; // Read each number\n            while (x > 1) {\n                cnt[smallestPrimeFactor[x]]++; // Count the prime factor\n                x /= smallestPrimeFactor[x]; // Divide x by its smallest prime factor\n            }\n        }\n\n        long long ans = 1; // Initialize answer\n        for (const auto & it: cnt) {\n            ans *= (it.second + 1); // Calculate the product of (count + 1)\n        }\n        cout << ans << '\\n'; // Output the result for the current test case\n    }\n    return 0;\n}",
+      "Java": "import java.util.*;\n\nclass Main {\n    static final long MOD = 1000000007;\n    static final long INF = 1000000000000000000L;\n    static final int MAX_SIZE = 1000001;\n\n    // Function to initialize isPrime and smallestPrimeFactor arrays\n    static void sieve(boolean[] isPrime, int[] smallestPrimeFactor) {\n        Arrays.fill(isPrime, true);\n        isPrime[0] = isPrime[1] = false; // 0 and 1 are not prime\n        for (int i = 2; i < MAX_SIZE; i++) {\n            if (isPrime[i]) {\n                smallestPrimeFactor[i] = i; // Initialize smallest prime factor\n                for (int j = i * 2; j < MAX_SIZE; j += i) {\n                    isPrime[j] = false; // Mark multiples of i as non-prime\n                    if (smallestPrimeFactor[j] == 0) {\n                        smallestPrimeFactor[j] = i; // Update smallest prime factor\n                    }\n                }\n            }\n        }\n    }\n\n    public static void main(String[] args) throws java.lang.Exception {\n        Scanner scanner = new Scanner(System.in);\n        boolean[] isPrime = new boolean[MAX_SIZE];\n        int[] smallestPrimeFactor = new int[MAX_SIZE];\n        sieve(isPrime, smallestPrimeFactor); // Precompute primes\n\n        int t = scanner.nextInt(); // Read number of test cases\n\n        while (t-- > 0) {\n            int n = scanner.nextInt(); // Read size of the array\n            Map<Integer, Integer> cnt = new HashMap<>(); // Map to count occurrences of prime factors\n\n            for (int i = 0; i < n; i++) {\n                int x = scanner.nextInt(); // Read each number\n                while (x > 1) {\n                    cnt.put(smallestPrimeFactor[x], cnt.getOrDefault(smallestPrimeFactor[x], 0) + 1); // Count the prime factor\n                    x /= smallestPrimeFactor[x]; // Divide x by its smallest prime factor\n                }\n            }\n\n            long ans = 1; // Initialize answer\n            for (int value : cnt.values()) {\n                ans = (ans * (value + 1)) % MOD; // Calculate the product of (count + 1)\n            }\n            System.out.println(ans); // Output the result for the current test case\n        }\n        scanner.close(); // Close the scanner\n    }\n}",
+      "Python3": "def sieve(max_size):\n    is_prime = [True] * (max_size + 1)\n    smallest_prime_factor = [0] * (max_size + 1)\n    is_prime[0] = is_prime[1] = False  # 0 and 1 are not prime\n\n    for i in range(2, max_size + 1):\n        if is_prime[i]:\n            smallest_prime_factor[i] = i  # Initialize smallest prime factor\n            for j in range(i * 2, max_size + 1, i):\n                is_prime[j] = False  # Mark multiples of i as non-prime\n                if smallest_prime_factor[j] == 0:\n                    smallest_prime_factor[j] = i  # Update smallest prime factor\n\n    return smallest_prime_factor\n\ndef main():\n    max_size = 10**6\n    smallest_prime_factor = sieve(max_size)  # Precompute smallest prime factors\n\n    t = int(input())  # Read number of test cases\n    results = []\n\n    for _ in range(t):\n        n = int(input())  # Read size of the array\n        count = {}  # Dictionary to count occurrences of prime factors\n\n        x_values = list(map(int, input().split()))  # Read each number\n\n        for x in x_values:\n            while x > 1:\n                spf = smallest_prime_factor[x]  # Get smallest prime factor\n                count[spf] = count.get(spf, 0) + 1  # Count the prime factor\n                x //= spf  # Divide x by its smallest prime factor\n\n        ans = 1  # Initialize answer\n        for freq in count.values():\n            ans *= (freq + 1)  # Calculate the product of (count + 1)\n\n        results.append(ans)  # Store the result for the current test case\n\n    # Output all results, each on a new line\n    print('\\n'.join(map(str, results)))\n\nif __name__ == \"__main__\":\n    main()\n",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst readline = () => lines[idx++];\n\nconst MAX_SIZE = 1e6 + 1;\n\n// Sieve of Eratosthenes to find smallest prime factors\nfunction sieve() {\n    const isPrime = new Array(MAX_SIZE).fill(true);\n    const smallestPrimeFactor = new Array(MAX_SIZE).fill(0);\n    isPrime[0] = isPrime[1] = false; // 0 and 1 are not prime\n\n    for (let i = 2; i < MAX_SIZE; i++) {\n        if (isPrime[i]) {\n            smallestPrimeFactor[i] = i; // Initialize smallest prime factor\n            for (let j = i * 2; j < MAX_SIZE; j += i) {\n                isPrime[j] = false; // Mark multiples of i as non-prime\n                if (smallestPrimeFactor[j] === 0) {\n                    smallestPrimeFactor[j] = i; // Update smallest prime factor\n                }\n            }\n        }\n    }\n    return smallestPrimeFactor;\n}\n\nconst smallestPrimeFactor = sieve(); // Precompute smallest prime factors\n\nlet t = +readline(); // Number of test cases\nlet output = '';\n\nfor (let i = 0; i < t; i++) {\n    const n = +readline(); // Size of the array\n    const cnt = new Map(); // Map to count occurrences of prime factors\n\n    const array = readline().split(' ').map(Number); // Next N numbers\n\n    array.forEach((x) => {\n        while (x > 1) {\n            const spf = smallestPrimeFactor[x];\n            cnt.set(spf, (cnt.get(spf) || 0) + 1); // Count the prime factor\n            x /= spf; // Divide x by its smallest prime factor\n        }\n    });\n\n    let ans = 1; // Initialize answer\n    for (const count of cnt.values()) {\n        ans *= (count + 1); // Calculate the product of (count + 1)\n    }\n    output += ans + '\\n'; // Store the result for the current test case\n}\nconsole.log(output.trim()); // Output all results at once\n"
+    }
+  }
+}

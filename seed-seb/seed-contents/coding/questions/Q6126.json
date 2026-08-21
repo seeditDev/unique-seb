@@ -1,0 +1,135 @@
+{
+  "questionId": "Q6126",
+  "title": "Cooking Machine",
+  "slug": "cooking-machine",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Easy",
+    "isPremium": true,
+    "tags": [
+      "Greedy",
+      "Bit Manipulation",
+      "Number Theory"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Bit Manipulation"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef is on a vacation these days, so his friend Chefza is trying to solve Chef's everyday tasks.\n\nToday's task is to make a sweet roll. Rolls are made by a newly invented cooking machine. The machine is pretty universal - it can make lots of dishes and Chefza is thrilled about this.\n\nTo make a roll, Chefza has to set all the settings to specified integer values. There are lots of settings, each of them set to some initial value. The machine is pretty complex and there is a lot of cooking to be done today, so Chefza has decided to use only two quick ways to change the settings. In a unit of time, he can pick one setting (let's say its current value is **v**) and change it in one of the following ways.\n\n\n\nIf **v** is even, change this setting to **v/2**. If **v** is odd, change it to **(v − 1)/2**.\nChange setting to **2 × v**\nThe receipt is given as a list of integer values the settings should be set to. It is guaranteed that each destination setting can be represented as an integer power of **2**.\n\nSince Chefza has just changed his profession, he has a lot of other things to do. Please help him find the **minimum** number of operations needed to set up a particular setting of the machine. You can prove that it can be done in finite time.",
+    "constraints": [
+      "1 ≤ T ≤ 200",
+      "1 ≤ A ≤ 10^7",
+      "1 ≤ B ≤ 10^7",
+      "B is a power of two"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains two integers A and B separated by a space, where 1 ≤ A, B ≤ 10^7 and B is guaranteed to be an integer power of 2.",
+    "outputFormat": "For each test case output a single line containing the minimum number of operations required to transform A into B using the allowed operations.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "6\n1 1\n2 4\n3 8\n4 16\n4 1\n1 4",
+        "output": "0\n1\n4\n2\n2\n2",
+        "explanation": "For each pair we choose the optimal moment to stop dividing so that the remaining value is a power of two not larger than the target, then multiply up. The computed minima match the given numbers."
+      },
+      {
+        "id": "sample_2",
+        "input": "3\\n10 8\\n7 2\\n1024 1",
+        "output": "4\n3\n10",
+        "explanation": "10→5→2→4→8 uses 4 steps. 7→3→1→2 uses 3 steps. 1024 needs 10 successive divisions to reach 1."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For a fixed test case we try all possible numbers of consecutive \"divide\" operations. After k divisions the value becomes v = floor(A / 2^k) (implemented as A >> k). The only useful intermediate values are those that are powers of two and not larger than B, because from such a value we can reach B by only multiplying by two. If v is a power of two and v ≤ B, the total operations needed are k (the divisions) plus (log2(B) - log2(v)) multiplications. We iterate k while v > 0, keep the minimum total. The number of iterations is at most log2(A) ≤ 24, so the algorithm is O(log A) per test case. Bit operations are used to test \"power of two\" ((v & (v‑1)) == 0) and to obtain log2 values (builtin count‑trailing‑zeros).",
+    "timeComplexity": "O(T · log A) – at most about 24·T elementary operations.",
+    "spaceComplexity": "O(1) – only a few integer variables.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <limits.h>\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        int A, B;\n        scanf(\"%d %d\", &A, &B);\n        int logB = __builtin_ctz(B); // because B is power of two\n        int best = INT_MAX;\n        int v = A;\n        for (int k = 0; v > 0; ++k) {\n            if (v <= B && (v & (v - 1)) == 0) { // v is power of two and not larger than B\n                int logV = __builtin_ctz(v);\n                int steps = k + (logB - logV);\n                if (steps < best) best = steps;\n            }\n            v >>= 1; // one more division (floor)\n        }\n        printf(\"%d\\n\", best);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--) {\n        long long A,B; cin>>A>>B;\n        int logB = __builtin_ctzll(B);\n        int best = INT_MAX;\n        long long v = A;\n        for(int k=0; v>0; ++k) {\n            if(v<=B && (v & (v-1))==0) {\n                int logV = __builtin_ctzll(v);\n                int steps = k + (logB - logV);\n                best = min(best, steps);\n            }\n            v >>= 1; // floor division by 2\n        }\n        cout << best << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder out = new StringBuilder();\n        int T = Integer.parseInt(br.readLine().trim());\n        for (int t = 0; t < T; ++t) {\n            StringTokenizer st = new StringTokenizer(br.readLine());\n            long A = Long.parseLong(st.nextToken());\n            long B = Long.parseLong(st.nextToken());\n            int logB = Long.numberOfTrailingZeros(B);\n            int best = Integer.MAX_VALUE;\n            long v = A;\n            for (int k = 0; v > 0; ++k) {\n                if (v <= B && (v & (v - 1)) == 0) {\n                    int logV = Long.numberOfTrailingZeros(v);\n                    int steps = k + (logB - logV);\n                    if (steps < best) best = steps;\n                }\n                v >>= 1; // floor division by 2\n            }\n            out.append(best).append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef is_power_of_two(x: int) -> bool:\n    return x > 0 and (x & (x - 1)) == 0\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        A = int(next(it))\n        B = int(next(it))\n        logB = B.bit_length() - 1  # because B is power of two\n        best = 10**9\n        v = A\n        k = 0\n        while v > 0:\n            if v <= B and is_power_of_two(v):\n                logV = v.bit_length() - 1\n                steps = k + (logB - logV)\n                if steps < best:\n                    best = steps\n            v >>= 1\n            k += 1\n        out_lines.append(str(best))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet output = [];\nfunction isPowerOfTwo(x) {\n  return x > 0 && (x & (x - 1)) === 0;\n}\nfor (let t = 0; t < T; ++t) {\n  let A = Number(input[idx++]);\n  let B = Number(input[idx++]);\n  const logB = Math.floor(Math.log2(B)); // B is power of two\n  let best = Number.MAX_SAFE_INTEGER;\n  let v = A;\n  let k = 0;\n  while (v > 0) {\n    if (v <= B && isPowerOfTwo(v)) {\n      const logV = Math.floor(Math.log2(v));\n      const steps = k + (logB - logV);\n      if (steps < best) best = steps;\n    }\n    v = v >> 1; // floor division by 2\n    k++;\n  }\n  output.push(String(best));\n}\nconsole.log(output.join('\\n'));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

@@ -1,0 +1,121 @@
+{
+  "questionId": "Q11812",
+  "title": "Why priority Queue is used in Djisktra's Algorithm",
+  "slug": "whypriorityqueueisusedindjisktrasalgorithm",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Graphs",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Dijkstra's Algorithm",
+      "Shortest Path",
+      "Priority Queue"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Given a weighted, undirected, and connected graph of V vertices and E edges, find the shortest distance of all the vertex's from the source vertex S.\n\n\nNote: The Graph doesn't contain any negative weight cycle.",
+    "constraints": [
+      "1 <= V <= 10^5",
+      "1 <= E <= 10^5",
+      "1 <= u, v <= V",
+      "1 <= w <= 10^5",
+      "1 <= S <= V"
+    ],
+    "inputFormat": "The first line contains two integers V and E, where V is the number of vertices and E is the number of edges. The next E lines contain three integers u, v, and w, where u and v are the vertices connected by an edge with weight w. The last line contains an integer S, which is the source vertex.",
+    "outputFormat": "The output should contain V lines, each containing the shortest distance from the source vertex S to vertex i.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "1 0\n1",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "10 9\n1 2 1\n1 3 1\n2 4 1\n3 4 1\n4 5 1\n5 6 1\n6 7 1\n7 8 1\n8 9 1\n9 10 1\n1",
+        "expectedOutput": "0\n1\n1\n2\n3\n4\n5\n6\n7\n8",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": "5 4\n1 2 1\n2 3 1\n3 4 1\n4 5 1\n1",
+        "expectedOutput": "0\n1\n2\n3\n4",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case/empty-like",
+        "input": "5 0\n1",
+        "expectedOutput": "0\n2147483647\n2147483647\n2147483647\n2147483647",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": "6 8\n1 2 2\n1 3 4\n2 3 1\n2 4 7\n3 4 3\n4 5 2\n4 6 1\n5 6 5\n1",
+        "expectedOutput": "0\n2\n3\n4\n6\n8",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Use Dijkstra's Algorithm to find the shortest distance from the source vertex to all other vertices.",
+    "timeComplexity": "O((V + E) log V)",
+    "spaceComplexity": "O(V + E)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <limits.h>\n\n// Structure to represent a graph edge\ntypedef struct Edge {\n    int src, dest, weight;\n} Edge;\n\n// Structure to represent a graph\ntypedef struct Graph {\n    int V, E;\n    Edge* edge;\n} Graph;\n\n// Function to create a graph\nGraph* createGraph(int V, int E) {\n    Graph* graph = (Graph*) malloc(sizeof(Graph));\n    graph->V = V;\n    graph->E = E;\n    graph->edge = (Edge*) malloc(E * sizeof(Edge));\n    return graph;\n}\n\n// Function to find the shortest distance using Dijkstra's Algorithm\nvoid dijkstra(Graph* graph, int src) {\n    int* dist = (int*) malloc(graph->V * sizeof(int));\n    for (int i = 0; i < graph->V; i++)\n        dist[i] = INT_MAX;\n    dist[src] = 0;\n\n    // Create a priority queue to store vertices to be processed\n    int* pq = (int*) malloc(graph->V * sizeof(int));\n    int pqSize = 0;\n    pq[pqSize++] = src;\n\n    while (pqSize > 0) {\n        int u = pq[0];\n        for (int i = 1; i < pqSize; i++)\n            if (dist[pq[i]] < dist[u])\n                u = pq[i];\n        pqSize--;\n        for (int i = 0; i < pqSize; i++)\n            if (pq[i] == u)\n                pq[i] = pq[pqSize];\n\n        for (int i = 0; i < graph->E; i++) {\n            int v = graph->edge[i].dest;\n            int w = graph->edge[i].weight;\n            if (dist[u] != INT_MAX && dist[u] + w < dist[v]) {\n                dist[v] = dist[u] + w;\n                pq[pqSize++] = v;\n            }\n        }\n    }\n\n    printf(\"Shortest distances from vertex %d:\\n\", src);\n    for (int i = 0; i < graph->V; i++)\n        printf(\"Vertex %d: %d\\n\", i, dist[i]);\n}\n\nint main() {\n    int V, E;\n    scanf(\"%d %d\", &V, &E);\n    Graph* graph = createGraph(V, E);\n    for (int i = 0; i < E; i++)\n        scanf(\"%d %d %d\", &graph->edge[i].src, &graph->edge[i].dest, &graph->edge[i].weight);\n    int src;\n    scanf(\"%d\", &src);\n    dijkstra(graph, src);\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nclass Solution {\npublic:\n    // Function to implement Dijkstra's Algorithm\n    vector<int> dijkstra(int V, vector<vector<pair<int,int>>>& adj, int src) {\n        // Distance array initialized to large value\n        vector<int> dist(V, 1e9);\n\n        // Min-heap storing {distance, node}\n        priority_queue<pair<int,int>, vector<pair<int,int>>, \n                       greater<pair<int,int>>> pq;\n\n        // Distance to source is 0\n        dist[src] = 0;\n\n        // Push source into heap\n        pq.push({0, src});\n\n        // Process nodes until heap is empty\n        while (!pq.empty()) {\n            // Extract node with minimum distance\n            int d = pq.top().first;\n            int node = pq.top().second;\n            pq.pop();\n\n            // Skip if this distance is outdated\n            if (d > dist[node]) continue;\n\n            // Traverse all adjacent neighbors\n            for (auto it : adj[node]) {\n                int next = it.first;\n                int wt = it.second;\n\n                // Relaxation check\n                if (dist[node] + wt < dist[next]) {\n                    // Update distance\n                    dist[next] = dist[node] + wt;\n\n                    // Push updated distance into heap\n                    pq.push({dist[next], next});\n                }\n            }\n        }\n        return dist;\n    }\n};\n\nint main() {\n    // Number of vertices\n    int V;\n    scanf(\"%d\", &V);\n\n    // Number of edges\n    int E;\n    scanf(\"%d\", &E);\n\n    // Adjacency list {neighbor, weight}\n    vector<vector<pair<int,int>>> adj(V);\n\n    // Example edges\n    for (int i = 0; i < E; i++) {\n        int u, v, w;\n        scanf(\"%d %d %d\", &u, &v, &w);\n        adj[u].push_back({v, w});\n    }\n\n    // Source vertex\n    int src;\n    scanf(\"%d\", &src);\n\n    // Run algorithm\n    Solution obj;\n    vector<int> dist = obj.dijkstra(V, adj, src);\n\n    // Print shortest distances\n    for (int i = 0; i < V; i++) {\n        printf(\"Distance from %d to %d = %d\\n\", src, i, dist[i]);\n    }\n}",
+      "Java": "import java.util.*;\n\nclass Solution {\n    // Function to implement Dijkstra's Algorithm\n    public int[] dijkstra(int V, List<List<int[]>> adj, int src) {\n        // Distance array initialized to large value\n        int[] dist = new int[V];\n        Arrays.fill(dist, (int)1e9);\n\n        // Min-heap storing {distance, node}\n        PriorityQueue<int[]> pq = new PriorityQueue<>((a,b) -> a[0]-b[0]);\n\n        // Distance to source is 0\n        dist[src] = 0;\n\n        // Push source into heap\n        pq.add(new int[]{0, src});\n\n        // Process nodes until heap is empty\n        while (!pq.isEmpty()) {\n            // Extract node with minimum distance\n            int[] cur = pq.poll();\n            int d = cur[0];\n            int node = cur[1];\n\n            // Skip if outdated distance\n            if (d > dist[node]) continue;\n\n            // Traverse all neighbors\n            for (int[] edge : adj.get(node)) {\n                int next = edge[0];\n                int wt = edge[1];\n\n                // Relaxation check\n                if (dist[node] + wt < dist[next]) {\n                    // Update distance\n                    dist[next] = dist[node] + wt;\n\n                    // Push into heap\n                    pq.add(new int[]{dist[next], next});\n                }\n            }\n        }\n        return dist;\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        // Number of vertices\n        int V = sc.nextInt();\n\n        // Number of edges\n        int E = sc.nextInt();\n\n        // Adjacency list {neighbor, weight}\n        List<List<int[]>> adj = new ArrayList<>();\n        for (int i = 0; i < V; i++) adj.add(new ArrayList<>());\n\n        // Example edges\n        for (int i = 0; i < E; i++) {\n            int u = sc.nextInt();\n            int v = sc.nextInt();\n            int w = sc.nextInt();\n            adj.get(u).add(new int[]{v, w});\n        }\n\n        // Source vertex\n        int src = sc.nextInt();\n\n        // Run algorithm\n        Solution obj = new Solution();\n        int[] dist = obj.dijkstra(V, adj, src);\n\n        // Print shortest distances\n        for (int i = 0; i < V; i++) {\n            System.out.println(\"Distance from \" + src + \" to \" + i + \" = \" + dist[i]);\n        }\n    }\n}",
+      "Python3": "import heapq\n\nclass Solution:\n    # Function to implement Dijkstra's Algorithm\n    def dijkstra(self, V, adj, src):\n        # Initialize distances\n        dist = [float('inf')] * V\n        dist[src] = 0\n\n        # Min-heap storing (distance, node)\n        pq = [(0, src)]\n\n        # Process nodes until heap is empty\n        while pq:\n            # Extract node with minimum distance\n            d, node = heapq.heappop(pq)\n\n            # Skip if outdated distance\n            if d > dist[node]:\n                continue\n\n            # Traverse neighbors\n            for next, wt in adj[node]:\n                # Relaxation check\n                if dist[node] + wt < dist[next]:\n                    # Update distance\n                    dist[next] = dist[node] + wt\n\n                    # Push into heap\n                    heapq.heappush(pq, (dist[next], next))\n\n        return dist\n\n\n# Driver code\nV = int(input())\nE = int(input())\nadj = [[] for _ in range(V)]\nfor _ in range(E):\n    u, v, w = map(int, input().split())\n    adj[u].append((v, w))\nsrc = int(input())\nobj = Solution()\ndist = obj.dijkstra(V, adj, src)\nfor i in range(V):\n    print(f\"Distance from {src} to {i} = {dist[i]}\")",
+      "JavaScript": "class Solution {\n    // Function to implement Dijkstra's Algorithm\n    dijkstra(V, adj, src) {\n        // Distance array initialized to Infinity\n        let dist = new Array(V).fill(Infinity);\n\n        // Distance to source is 0\n        dist[src] = 0;\n\n        // Min-heap simulated using array\n        let pq = [[0, src]]; // [distance, node]\n\n        // Process nodes until heap is empty\n        while (pq.length > 0) {\n            // Extract node with minimum distance\n            pq.sort((a, b) => a[0] - b[0]);\n            let [d, node] = pq.shift();\n\n            // Skip if outdated distance\n            if (d > dist[node]) continue;\n\n            // Traverse neighbors\n            for (let [next, wt] of adj[node]) {\n                // Relaxation check\n                if (dist[node] + wt < dist[next]) {\n                    // Update distance\n                    dist[next] = dist[node] + wt;\n\n                    // Push updated distance\n                    pq.push([dist[next], next]);\n                }\n            }\n        }\n        return dist;\n    }\n}\n\n// Driver code\nlet V = parseInt(readline());\nlet E = parseInt(readline());\nlet adj = Array.from({ length: V }, () => []);\nfor (let i = 0; i < E; i++) {\n    let [u, v, w] = readline().split(' ').map(Number);\n    adj[u].push([v, w]);\n}\nlet src = parseInt(readline());\nlet obj = new Solution();\nlet dist = obj.dijkstra(V, adj, src);\nfor (let i = 0; i < V; i++) {\n    print(`Distance from ${src} to ${i} = ${dist[i]}`);\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

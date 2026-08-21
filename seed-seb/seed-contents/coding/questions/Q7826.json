@@ -1,0 +1,145 @@
+{
+  "questionId": "Q7826",
+  "title": "Divide Candies",
+  "slug": "divide-candies",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math | Greedy | Number Theory",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Partition",
+      "Greedy",
+      "Big Integer",
+      "Power Sums"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Constructive Algorithms"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "There are NNN heaps of candies (numbered 111 through NNN); for each valid iii, the iii-th of them contains exactly iKi^KiK candies. You aim to partition these heaps between you and your friend in such a way that each heap is given to exactly one of you without being split among you.\n\nThe distribution should be as fair as possible. Formally, let's denote the total number of candies you get by AAA and the total number of candies your friend gets by BBB; your goal is to minimise ∣A−B∣|A-B|∣A−B∣.\n\nFind the smallest possible value of ∣A−B∣|A-B|∣A−B∣ and assign the heaps to you and your friend in some way that minimises ∣A−B∣|A-B|∣A−B∣. If there are multiple solutions, you may find any one of them.",
+    "constraints": [
+      "1 ≤ T ≤ 2000",
+      "1 ≤ K ≤ 4",
+      "1 ≤ N ≤ 10^6",
+      "∑ N ≤ 5·10^6"
+    ],
+    "inputFormat": "The first line contains an integer K (1 ≤ K ≤ 4) common to all test cases. The second line contains an integer T (1 ≤ T ≤ 2000) – the number of test cases. Each of the next T lines contains a single integer N (1 ≤ N ≤ 10^6). The sum of N over all test cases does not exceed 5·10^6.",
+    "outputFormat": "For each test case output two lines. The first line contains the minimal possible value of |A‑B|. The second line contains a string of length N consisting of characters '1' and '0' – the i‑th character is '1' if the i‑th heap (size i^K) is given to you, otherwise '0'.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "",
+        "output": "2\r\n2\r\n4\r\n5",
+        "explanation": ""
+      },
+      {
+        "id": "sample_2",
+        "input": "",
+        "output": "2\r\n0001\r\n3\r\n01001",
+        "explanation": ""
+      },
+      {
+        "id": "sample_3",
+        "input": "",
+        "output": "4\r\n3\r\n5\r\n6\r\n9",
+        "explanation": ""
+      },
+      {
+        "id": "sample_4",
+        "input": "",
+        "output": "271\r\n00001\r\n317\r\n000001\r\n253\r\n000001110",
+        "explanation": ""
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "All heap sizes are i^K and are strictly increasing. Let S = Σ_{i=1..N} i^K be the total number of candies. The optimal partition can be obtained by a simple greedy scan from the largest heap to the smallest: keep a running sum curA (candies you take). For i = N … 1, if curA + i^K ≤ S/2 we put heap i into your set (output '1') and increase curA, otherwise we give it to the friend (output '0'). After the scan curA is the largest achievable sum not exceeding S/2, therefore the difference |A‑B| = |S‑2·curA| is minimal. The algorithm works because each heap is at most the sum of all smaller heaps plus one for K ≤ 4, a condition that guarantees greedy optimality for this monotone sequence.\n\nImplementation details:\n1. Compute S using closed‑form formulas for Σ i, Σ i^2, Σ i^3, Σ i^4 (all fit in arbitrary‑precision integers).\\n2. Iterate i from N down to 1, compute i^K on the fly (fast exponentiation with integer multiplication, K ≤ 4).\\n3. Build the answer string in a character array of size N (filled from the end while scanning).\\n4. Output the difference (big integer) and the assignment string.\n\nAll languages use their native arbitrary‑precision integer type (Python int, C++ boost::multiprecision::cpp_int, Java BigInteger, etc.). The total time is O(N) per test case, and the memory usage is O(N) for the answer string.",
+    "timeComplexity": "O(N) per test case (total O(∑N) ≤ 5·10^6).",
+    "spaceComplexity": "O(N) per test case for the assignment string; other memory is O(1) besides big‑integer variables.",
+    "code": {
+      "C": "// C solution using GNU MP (gmp) for big integers\n// Compile with: gcc -std=cgnu11 -lgmp -O2 solution.c -o solution\n#include <stdio.h>\n#include <gmp.h>\n\nvoid sum_powers(int K, long long N, mpz_t result) {\n    // Use formulas for K = 1..4\n    mpz_t tmp; mpz_init(tmp);\n    if (K == 1) {\n        // N(N+1)/2\n        mpz_set_ui(result, N);\n        mpz_mul_ui(result, result, N + 1);\n        mpz_fdiv_q_ui(result, result, 2);\n    } else if (K == 2) {\n        // N(N+1)(2N+1)/6\n        mpz_set_ui(result, N);\n        mpz_mul_ui(result, result, N + 1);\n        mpz_mul_ui(result, result, 2 * N + 1);\n        mpz_fdiv_q_ui(result, result, 6);\n    } else if (K == 3) {\n        // (N(N+1)/2)^2\n        mpz_set_ui(result, N);\n        mpz_mul_ui(result, result, N + 1);\n        mpz_fdiv_q_ui(result, result, 2);\n        mpz_mul(result, result, result);\n    } else { // K == 4\n        // N(N+1)(2N+1)(3N^2+3N-1)/30\n        mpz_set_ui(result, N);\n        mpz_mul_ui(result, result, N + 1);\n        mpz_mul_ui(result, result, 2 * N + 1);\n        // compute 3N^2+3N-1\n        mpz_set_ui(tmp, N);\n        mpz_mul(tmp, tmp, tmp); // N^2\n        mpz_mul_ui(tmp, tmp, 3); // 3N^2\n        mpz_add_ui(tmp, tmp, 3 * N); // +3N\n        mpz_sub_ui(tmp, tmp, 1); // -1\n        mpz_mul(result, result, tmp);\n        mpz_fdiv_q_ui(result, result, 30);\n    }\n    mpz_clear(tmp);\n}\n\nint main(){\n    int K; if(scanf(\"%d\", &K)!=1) return 0;\n    int T; scanf(\"%d\", &T);\n    while(T--){\n        long long N; scanf(\"%lld\", &N);\n        mpz_t total, half, curA, powi; \n        mpz_inits(total, half, curA, powi, NULL);\n        sum_powers(K, N, total);\n        mpz_fdiv_q_2exp(half, total, 1); // floor(total/2)\n        mpz_set_ui(curA, 0);\n        char *ans = (char*)malloc(N+1);\n        ans[N] = '\\0';\n        for(long long i=N;i>=1;--i){\n            // compute i^K\n            mpz_set_ui(powi, i);\n            for(int e=1;e<K;++e) mpz_mul_ui(powi, powi, i);\n            mpz_t tmp; mpz_init(tmp);\n            mpz_add(tmp, curA, powi);\n            if(mpz_cmp(tmp, half) <= 0){\n                ans[i-1] = '1';\n                mpz_add(curA, curA, powi);\n            } else {\n                ans[i-1] = '0';\n            }\n            mpz_clear(tmp);\n        }\n        // diff = total - 2*curA\n        mpz_mul_ui(powi, curA, 2);\n        mpz_sub(powi, total, powi);\n        gmp_printf(\"%Zd\\n%s\\n\", powi, ans);\n        free(ans);\n        mpz_clears(total, half, curA, powi, NULL);\n    }\n    return 0;\n}\n",
+      "C++": ""
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

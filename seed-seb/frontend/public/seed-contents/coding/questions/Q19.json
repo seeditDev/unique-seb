@@ -1,0 +1,437 @@
+{
+  "questionId": "Q10",
+  "title": "Full-String Dot-Star Matcher Problem",
+  "slug": "full-string-dot-star-matcher",
+  "version": 5,
+  "createdAt": "2026-07-09",
+  "updatedAt": "2026-07-24",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "string",
+      "dynamic-programming",
+      "recursion",
+      "regex"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "string",
+      "dynamic-programming",
+      "recursion",
+      "pattern-matching"
+    ],
+    "QBCategory": "LCD"
+  },
+  "content": {
+    "problemStatement": "With two strings `s` (the input) and `p` (the pattern), determine whether the pattern `p` matches the entire string `s`. The pattern `p` may contain lowercase letters, the wildcard `.` (which matches exactly one character), and `*` (which matches zero or more occurrences of the immediately preceding element). The match must cover the whole string `s` (not a substring). Every `*` in `p` is guaranteed to have a valid preceding element.",
+    "constraints": [
+      "0 <= s.length <= 23",
+      "0 <= p.length <= 20",
+      "s contains only lowercase English letters (a-z).",
+      "p contains only lowercase English letters (a-z), '.' and '*'.",
+      "Every '*' has a valid preceding element."
+    ],
+    "inputFormat": "Single line: JSON array of arguments: [s, p]. Example: [\"aa\",\"a*\"]",
+    "outputFormat": "Single line: JSON-serialised boolean (true or false). Example: true",
+    "notes": [
+      "The pattern must match the entire string s (full-string match).",
+      "The '.' character matches exactly one arbitrary character.",
+      "The '*' character modifies the immediately preceding element and matches zero or more occurrences of that element.",
+      "Indexing is 0-based when reasoning about characters; implementations should avoid off-by-one errors when accessing p[j+1].",
+      "Empty string and empty pattern cases: an empty pattern matches only an empty string; patterns composed entirely of x* groups (for example \"a*b*c*\") can match an empty string."
+    ],
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "type": "reg",
+        "input": "[\"aa\",\"a\"]",
+        "output": "false",
+        "explanation": "Pattern \"a\" matches exactly one 'a' while the input has two characters; full-string match fails."
+      },
+      {
+        "id": "sample_2",
+        "type": "reg",
+        "input": "[\"aa\",\"a*\"]",
+        "output": "true",
+        "explanation": "The token \"a*\" can match zero or more 'a' characters; it matches both characters in \"aa\"."
+      },
+      {
+        "id": "sample_3",
+        "type": "reg",
+        "input": "[\"ab\",\".*\"]",
+        "output": "true",
+        "explanation": "\".\" matches any single character and \"*\" allows repetition; \".*\" can match the entire string \"ab\"."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_01",
+        "type": "reg",
+        "label": "Single char exact match",
+        "input": "[\"a\",\"a\"]",
+        "expectedOutput": "true",
+        "weight": 3
+      },
+      {
+        "id": "tc_02",
+        "type": "reg",
+        "label": "Two char exact match",
+        "input": "[\"ab\",\"ab\"]",
+        "expectedOutput": "true",
+        "weight": 3
+      },
+      {
+        "id": "tc_03",
+        "type": "reg",
+        "label": "Dot matches single",
+        "input": "[\"a\",\".\"]",
+        "expectedOutput": "true",
+        "weight": 3
+      },
+      {
+        "id": "tc_04",
+        "type": "reg",
+        "label": "Star zero occurrences",
+        "input": "[\"b\",\"a*b\"]",
+        "expectedOutput": "true",
+        "weight": 3
+      },
+      {
+        "id": "tc_05",
+        "type": "reg",
+        "label": "Star multiple occurrences",
+        "input": "[\"aaa\",\"a*\"]",
+        "expectedOutput": "true",
+        "weight": 3
+      },
+      {
+        "id": "tc_06",
+        "type": "reg",
+        "label": "Dot-star full match",
+        "input": "[\"abc\",\".*\"]",
+        "expectedOutput": "true",
+        "weight": 3
+      },
+      {
+        "id": "tc_07",
+        "type": "reg",
+        "label": "Dot-star partial fail",
+        "input": "[\"abc\",\".*d\"]",
+        "expectedOutput": "false",
+        "weight": 3
+      },
+      {
+        "id": "tc_08",
+        "type": "reg",
+        "label": "Complex pattern with stars (true)",
+        "input": "[\"aab\",\"c*a*b\"]",
+        "expectedOutput": "true",
+        "weight": 3
+      },
+      {
+        "id": "tc_09",
+        "type": "reg",
+        "label": "Complex pattern with stars (false)",
+        "input": "[\"mississippi\",\"mis*is*p*.\"]",
+        "expectedOutput": "false",
+        "weight": 3
+      },
+      {
+        "id": "tc_10",
+        "type": "reg",
+        "label": "Overlapping stars and dots",
+        "input": "[\"ab\",\".*c\"]",
+        "expectedOutput": "false",
+        "weight": 3
+      },
+      {
+        "id": "tc_11",
+        "type": "reg",
+        "label": "Pattern with trailing star",
+        "input": "[\"a\",\"ab*\"]",
+        "expectedOutput": "true",
+        "weight": 3
+      },
+      {
+        "id": "tc_12",
+        "type": "reg",
+        "label": "Pattern longer than string",
+        "input": "[\"a\",\"..\"]",
+        "expectedOutput": "false",
+        "weight": 3
+      },
+      {
+        "id": "tc_13",
+        "type": "reg",
+        "label": "Repeated star groups (false)",
+        "input": "[\"abababab\",\"ab*\"]",
+        "expectedOutput": "false",
+        "weight": 3
+      },
+      {
+        "id": "tc_14",
+        "type": "reg",
+        "label": "Multiple star groups (true)",
+        "input": "[\"aaaaaaaaaaaaab\",\"a*a*a*a*a*a*a*a*a*b\"]",
+        "expectedOutput": "true",
+        "weight": 3
+      },
+      {
+        "id": "tc_15",
+        "type": "reg",
+        "label": "Star matches empty sequence",
+        "input": "[\"\",\"a*\"]",
+        "expectedOutput": "true",
+        "weight": 3
+      },
+      {
+        "id": "tc_16",
+        "type": "reg",
+        "label": "Empty pattern non-empty string",
+        "input": "[\"a\",\"\"]",
+        "expectedOutput": "false",
+        "weight": 3
+      },
+      {
+        "id": "tc_17",
+        "type": "reg",
+        "label": "Multiple dots exact length",
+        "input": "[\"abc\",\"...\"]",
+        "expectedOutput": "true",
+        "weight": 2
+      },
+      {
+        "id": "tc_18",
+        "type": "reg",
+        "label": "Star after dot",
+        "input": "[\"abcd\",\".*d\"]",
+        "expectedOutput": "true",
+        "weight": 2
+      },
+      {
+        "id": "tc_19",
+        "type": "reg",
+        "label": "Ambiguous star usage",
+        "input": "[\"aaa\",\"a*a\"]",
+        "expectedOutput": "true",
+        "weight": 2
+      },
+      {
+        "id": "tc_20",
+        "type": "reg",
+        "label": "Long string with many stars (stress)",
+        "input": "[\"aaaaaaaaaaaa\",\"a*a*a*a*a*a*a*a*a*a*\"]",
+        "expectedOutput": "true",
+        "weight": 2
+      },
+      {
+        "id": "tc_21",
+        "type": "reg",
+        "label": "Alternating pattern false",
+        "input": "[\"abababababababababab\",\"a*b*a*b*a*b*a*b*a*b*\"]",
+        "expectedOutput": "false",
+        "weight": 2
+      },
+      {
+        "id": "tc_22",
+        "type": "reg",
+        "label": "Single dot literal",
+        "input": "[\".\",\".\"]",
+        "expectedOutput": "true",
+        "weight": 2
+      },
+      {
+        "id": "tc_23",
+        "type": "reg",
+        "label": "Pattern with optional char",
+        "input": "[\"ab\",\"abc*\"]",
+        "expectedOutput": "true",
+        "weight": 2
+      },
+      {
+        "id": "tc_24",
+        "type": "reg",
+        "label": "Pattern with trailing optional stars",
+        "input": "[\"ab\",\"ab.*c*\"]",
+        "expectedOutput": "true",
+        "weight": 2
+      },
+      {
+        "id": "tc_25",
+        "type": "reg",
+        "label": "Edge: single char vs star pattern",
+        "input": "[\"b\",\"a*b*\"]",
+        "expectedOutput": "true",
+        "weight": 2
+      },
+      {
+        "id": "tc_26",
+        "type": "reg",
+        "label": "Edge: star consumes nothing",
+        "input": "[\"ab\",\"ab*c\"]",
+        "expectedOutput": "false",
+        "weight": 2
+      },
+      {
+        "id": "tc_27",
+        "type": "reg",
+        "label": "Edge: many stars and dots (false)",
+        "input": "[\"aaaaaaaaaaaaab\",\"a*a*a*a*a*a*a*a*a*c\"]",
+        "expectedOutput": "false",
+        "weight": 2
+      },
+      {
+        "id": "tc_28",
+        "type": "reg",
+        "label": "Max length string and dot-star",
+        "input": "[\"abcdefghijklmnopqrst\",\".*\"]",
+        "expectedOutput": "true",
+        "weight": 2
+      },
+      {
+        "id": "tc_29",
+        "type": "reg",
+        "label": "Star-heavy pattern with no terminal match",
+        "input": "[\"aaaaaaaaaaaaaaaaaaaa\",\"a*a*a*a*a*a*a*a*a*a*b\"]",
+        "expectedOutput": "false",
+        "weight": 2
+      },
+      {
+        "id": "tc_30",
+        "type": "reg",
+        "label": "Classic tricky pattern 1",
+        "input": "[\"aaa\",\"ab*a*c*a\"]",
+        "expectedOutput": "true",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 30,
+    "totalWeight": 76
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 76
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ],
+    "notes": [
+      "All hidden test cases are concrete and use the documented JSON argument format.",
+      "The checker compares the returned boolean value (true or false).",
+      "Expected outputs are unambiguous; inputs are constructed so exactly one correct boolean result exists for each test case."
+    ]
+  },
+  "solution": {
+    "approach": "",
+    "timeComplexity": "",
+    "spaceComplexity": "",
+    "code": {
+      "C": "",
+      "C++": "",
+      "Java": "",
+      "Python3": "class Solution(object):\n    def isMatch(self, s, p):\n        m, n = len(s), len(p)\n        dp = [[False] * (n + 1) for _ in range(m + 1)]\n        dp[m][n] = True\n        for j in range(n - 2, -1, -1):\n            if p[j + 1] == '*':\n                dp[m][j] = dp[m][j + 2]\n        for i in range(m - 1, -1, -1):\n            for j in range(n - 1, -1, -1):\n                first_match = (p[j] == s[i] or p[j] == '.')\n                if j + 1 < n and p[j + 1] == '*':\n                    dp[i][j] = dp[i][j + 2] or (first_match and dp[i + 1][j])\n                else:\n                    dp[i][j] = first_match and dp[i + 1][j + 1]\n        return dp[0][0]",
+      "JavaScript": ""
+    },
+    "notes": [],
+    "editorial": {
+      "bruteForce": {
+        "description": "",
+        "complexity": ""
+      },
+      "better": {
+        "description": "",
+        "complexity": ""
+      },
+      "optimal": {
+        "description": "Decide whether pattern `p` matches string `s` using dynamic programming or recursion with memoization. Treat `*` as a modifier for the preceding element (zero or more occurrences) and `.` as a single-character wildcard. Both DP and memoized recursion run in O(|s| * |p|) time.",
+        "complexity": ""
+      }
+    }
+  },
+  "hints": [],
+  "followUps": [],
+  "learningObjectives": [],
+  "similarProblems": [],
+  "acceptanceRate": null,
+  "estimatedSolveTime": "",
+  "recommendedAfter": [],
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdbool.h>\n\n// Minimal JSON token helpers for judge input [\"s\",\"p\"]\ntypedef struct { char* s; int pos; int len; } Tok;\nstatic void skipWS(Tok* t) { while (t->pos < t->len && (t->s[t->pos] == ' ' || t->s[t->pos] == ',' || t->s[t->pos] == '\\t' || t->s[t->pos] == '\\n' || t->s[t->pos] == '\\r')) t->pos++; }\nstatic char* nextToken(Tok* t) {\n    skipWS(t);\n    if (t->pos >= t->len) return NULL;\n    if (t->s[t->pos] == '\"') {\n        t->pos++;\n        int start = t->pos;\n        while (t->pos < t->len && t->s[t->pos] != '\"') t->pos++;\n        int toklen = t->pos - start;\n        char* out = (char*)malloc(toklen + 1);\n        strncpy(out, t->s + start, toklen);\n        out[toklen] = '\\0';\n        if (t->pos < t->len && t->s[t->pos] == '\"') t->pos++;\n        return out;\n    }\n    return NULL;\n}\n\n// DP solution: O(m*n) time, O(n) space\nbool isMatch(const char* s, const char* p) {\n    int m = (int)strlen(s);\n    int n = (int)strlen(p);\n    bool* dp = (bool*)calloc(n + 1, sizeof(bool));\n    dp[n] = true; // dp at s suffix empty and p suffix empty\n    // handle patterns like a*b*c* matching empty suffix\n    for (int j = n - 2; j >= 0; --j) {\n        if (p[j + 1] == '*') dp[j] = dp[j + 2];\n    }\n    for (int i = m - 1; i >= 0; --i) {\n        bool prev = dp[n];\n        dp[n] = false;\n        for (int j = n - 1; j >= 0; --j) {\n            bool cur = false;\n            bool first_match = (p[j] == '.' || p[j] == s[i]);\n            if (j + 1 < n && p[j + 1] == '*') {\n                cur = dp[j + 2] || (first_match && dp[j]);\n            } else {\n                cur = first_match && prev;\n            }\n            prev = dp[j];\n            dp[j] = cur;\n        }\n    }\n    bool ans = dp[0];\n    free(dp);\n    return ans;\n}\n\nint main(void) {\n    char *line = NULL; size_t cap = 0; ssize_t nread = getline(&line, &cap, stdin);\n    if (nread <= 0) { if (line) free(line); return 0; }\n    while (nread > 0 && (line[nread-1] == '\\n' || line[nread-1] == '\\r')) line[--nread] = '\\0';\n    Tok tok = { line, 0, (int)strlen(line) };\n    char* s = nextToken(&tok);\n    char* p = nextToken(&tok);\n    bool res = isMatch(s ? s : \"\", p ? p : \"\");\n    printf(\"%s\\n\", res ? \"true\" : \"false\");\n    if (s) free(s); if (p) free(p); free(line);\n    return 0;\n}\n",
+    "C++": "",
+    "Java": "",
+    "Python3": "",
+    "JavaScript": "",
+    "solution": {
+      "approach": "Use dynamic programming or recursion with memoization. For DP, build a table dp[i][j] meaning s[i:] matches p[j:], fill it bottom-up handling '*' as zero-or-more modifier and '.' as single-character wildcard. For recursion, memoize (i,j) results to avoid exponential branching. Both run in O(|s| * |p|) time.",
+      "timeComplexity": "O(|s| * |p|)",
+      "spaceComplexity": "O(|s| * |p|) for full DP; O(|p|) with rolling 1D DP",
+      "code": {
+        "C": "",
+        "C++": "",
+        "Java": "",
+        "Python3": "class Solution(object):\n    def isMatch(self, s, p):\n        m, n = len(s), len(p)\n        dp = [[False] * (n + 1) for _ in range(m + 1)]\n        dp[m][n] = True\n        for j in range(n - 2, -1, -1):\n            if p[j + 1] == '*':\n                dp[m][j] = dp[m][j + 2]\n        for i in range(m - 1, -1, -1):\n            for j in range(n - 1, -1, -1):\n                first_match = (p[j] == s[i] or p[j] == '.')\n                if j + 1 < n and p[j + 1] == '*':\n                    dp[i][j] = dp[i][j + 2] or (first_match and dp[i + 1][j])\n                else:\n                    dp[i][j] = first_match and dp[i + 1][j + 1]\n        return dp[0][0]",
+        "JavaScript": ""
+      }
+    },
+    "_internal": {
+      "methodName": "isMatch",
+      "params": [
+        {
+          "name": "s",
+          "type": "string"
+        },
+        {
+          "name": "p",
+          "type": "string"
+        }
+      ],
+      "phase": "ready-for-judge"
+    },
+    "verified": true
+  },
+  "_internal": {},
+  "verified": true
+}

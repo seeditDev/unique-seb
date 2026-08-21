@@ -1,0 +1,143 @@
+{
+  "questionId": "Q9417",
+  "title": "Maximum Product Subarray",
+  "slug": "maximum-product-subarray",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Arrays | Dynamic Programming | Math",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Maximum Product Subarray",
+      "DP with max/min tracking",
+      "Handling zeros",
+      "Big integers"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Arrays"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Given an array AAA consisting of NNN integers.\n\nFind a subarray that has the **maximum** product of elements and output the product.\n\nNote:\n\n\nA subarray is formed by deleting some (possibly zero or all) elements from the beginning and some (possibly zero or all) elements from the end of the array.\nThe product of any subarray is guaranteed to fit in a 646464-bit integer.\n\nInput Format\n\nThe first line of input will contains a single integer TTT, denoting the number of test cases.\nEach test case consists of two lines of input:\n\nThe first line of each test case an integer NNN - the size of the array AAA.\nThe next line contains NNN space-separated integers - the array AAA.\n\n\n\n\nOutput Format\nFor each test case, output on a new line, the **maximum** product of a subarray of AAA.\n\n\nThe product of any subarray is guaranteed to fit in a 646464-bit integer.",
+    "constraints": [
+      "1 <= T <= 1000",
+      "1 <= N <= 100000",
+      "Sum of N over all test cases does not exceed 200000",
+      "-10 <= Ai <= 10",
+      "The product of any subarray fits in a signed 64‑bit integer (or in arbitrary precision for languages that support it)."
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, the first line contains an integer N, the size of the array. The second line contains N space‑separated integers A1, A2, …, AN.",
+    "outputFormat": "For each test case, output a single line containing the maximum possible product of any non‑empty contiguous subarray of the given array.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\\n4\\n3 5 -2 -4\\n5\\n2 4 3 5 6\\n3\\n-1 -3 -4",
+        "output": "120\\n720\\n12",
+        "explanation": "Test case 1: subarray [3,5,-2,-4] gives product 120, which is maximal.\\nTest case 2: all numbers are positive, product of whole array is 720.\\nTest case 3: subarray [-3,-4] gives product 12, the largest."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\\n1\\n0",
+        "output": "0",
+        "explanation": "Only subarray is [0]; its product is 0."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\\n5\\n-2 -3 0 -2 -2",
+        "output": "6",
+        "explanation": "The maximum product comes from subarray [-2,-3] whose product is 6. Any subarray containing 0 yields 0, and other negative‑only subarrays give smaller values."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\\n1\\n-5",
+        "expectedOutput": "-5",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\\n5\\n10 10 10 10 10",
+        "expectedOutput": "100000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case with zeros",
+        "input": "1\\n4\\n0 -1 0 -2",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\\n6\\n-1 2 -3 4 -5 6",
+        "expectedOutput": "720",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\\n5\\n0 1 -2 -3 4",
+        "expectedOutput": "24",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Traverse the array while keeping two values for the subarray ending at the current position: the maximum product (maxEnding) and the minimum product (minEnding). A negative number can turn a small (most negative) product into the largest one, so both values are needed. For each element x, the new candidates are x, maxEnding*x, and minEnding*x. Update maxEnding and minEnding with the maximum and minimum of these candidates respectively, and keep a global answer as the maximum of all maxEnding values seen. When x is zero, both maxEnding and minEnding become zero, effectively starting a new subarray after the zero.",
+    "timeComplexity": "O(N) per test case, where N is the length of the array. Overall O(total N) across all test cases.",
+    "spaceComplexity": "O(1) additional space.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\nint main(){\n    int T; if(scanf(\"%d\",&T)!=1) return 0;\n    while(T--){\n        int N; scanf(\"%d\",&N);\n        long long maxAns = -9223372036854775807LL-1;\n        long long maxEnding = 0, minEnding = 0;\n        for(int i=0;i<N;i++){\n            long long x; scanf(\"%lld\",&x);\n            if(i==0){\n                maxEnding = minEnding = x;\n                maxAns = x;\n                continue;\n            }\n            long long a = x;\n            long long b = maxEnding * x;\n            long long c = minEnding * x;\n            long long newMax = a; if(b>newMax) newMax=b; if(c>newMax) newMax=c;\n            long long newMin = a; if(b<newMin) newMin=b; if(c<newMin) newMin=c;\n            maxEnding = newMax;\n            minEnding = newMin;\n            if(maxEnding > maxAns) maxAns = maxEnding;\n        }\n        printf(\"%lld\\n\", maxAns);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N; cin>>N;\n        long long maxAns = LLONG_MIN;\n        long long maxEnding=0, minEnding=0;\n        for(int i=0;i<N;i++){\n            long long x; cin>>x;\n            if(i==0){\n                maxEnding = minEnding = x;\n                maxAns = x;\n                continue;\n            }\n            long long a = x;\n            long long b = maxEnding * x;\n            long long c = minEnding * x;\n            long long newMax = max({a,b,c});\n            long long newMin = min({a,b,c});\n            maxEnding = newMax;\n            minEnding = newMin;\n            maxAns = max(maxAns, maxEnding);\n        }\n        cout<<maxAns<<\"\\n\";\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st;\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder sb = new StringBuilder();\n        while (T-- > 0) {\n            int N = Integer.parseInt(br.readLine().trim());\n            st = new StringTokenizer(br.readLine());\n            long maxAns = Long.MIN_VALUE;\n            long maxEnding = 0, minEnding = 0;\n            for (int i = 0; i < N; i++) {\n                long x = Long.parseLong(st.nextToken());\n                if (i == 0) {\n                    maxEnding = minEnding = x;\n                    maxAns = x;\n                    continue;\n                }\n                long a = x;\n                long b = maxEnding * x;\n                long c = minEnding * x;\n                long newMax = Math.max(a, Math.max(b, c));\n                long newMin = Math.min(a, Math.min(b, c));\n                maxEnding = newMax;\n                minEnding = newMin;\n                if (maxEnding > maxAns) maxAns = maxEnding;\n            }\n            sb.append(maxAns).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef max_product_subarray(arr):\n    max_ending = min_ending = arr[0]\n    ans = arr[0]\n    for x in arr[1:]:\n        a, b, c = x, max_ending * x, min_ending * x\n        max_ending = max(a, b, c)\n        min_ending = min(a, b, c)\n        if max_ending > ans:\n            ans = max_ending\n    return ans\n\ndef main():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out = []\n    for _ in range(T):\n        N = int(next(it))\n        arr = [int(next(it)) for _ in range(N)]\n        out.append(str(max_product_subarray(arr)))\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    main()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet outputs = [];\nfor (let t = 0; t < T; t++) {\n  const N = Number(input[idx++]);\n  let maxEnding = 0n, minEnding = 0n, ans = null;\n  for (let i = 0; i < N; i++) {\n    const x = BigInt(input[idx++]);\n    if (i === 0) {\n      maxEnding = minEnding = x;\n      ans = x;\n      continue;\n    }\n    const a = x;\n    const b = maxEnding * x;\n    const c = minEnding * x;\n    const newMax = a > b ? (a > c ? a : c) : (b > c ? b : c);\n    const newMin = a < b ? (a < c ? a : c) : (b < c ? b : c);\n    maxEnding = newMax;\n    minEnding = newMin;\n    if (maxEnding > ans) ans = maxEnding;\n  }\n  outputs.push(ans.toString());\n}\nconsole.log(outputs.join('\\n'));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

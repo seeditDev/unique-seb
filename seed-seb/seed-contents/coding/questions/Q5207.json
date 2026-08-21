@@ -1,0 +1,128 @@
+{
+  "questionId": "Q5207",
+  "title": "Overlapping discs",
+  "slug": "overlapping-discs",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Geometry",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Intersection of Circles",
+      "Convex Clipping",
+      "Polygon‑Circle Intersection",
+      "Computational Geometry"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Geometry"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given n discs on plane, of the same radius (r=1). Output the area of the part of the plane which is covered by **each** disc.",
+    "constraints": [
+      "1 ≤ T ≤ 10",
+      "1 ≤ n ≤ 100000",
+      "All discs have radius r = 1",
+      "Coordinates are given with at most 6 decimal digits",
+      "Absolute or relative error of 1e-6 is allowed"
+    ],
+    "inputFormat": "The first line contains an integer T (1 ≤ T ≤ 10) – the number of test cases. Each test case starts with an integer n (1 ≤ n ≤ 100000) – the number of unit discs. Then follow n lines, each containing two real numbers xi yi (−1000 ≤ xi, yi ≤ 1000) – the centre of the i‑th disc.",
+    "outputFormat": "For each test case output a single line with the area of the region that is covered by **all** discs. The answer must be rounded to exactly 6 digits after the decimal point.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "",
+        "output": "Input:\n1\n2\n0 0\n0 1\nOutput:\r\n1.228370",
+        "explanation": ""
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The intersection of a family of unit discs is a convex set whose boundary consists of circular arcs taken from some of the discs.  We can compute this region by incremental clipping:\n1. Start with a large convex polygon that certainly contains the final intersection (for example a square with side 4000 centred at the origin).\n2. For each disc, replace the current polygon by its intersection with the disc.  The intersection of a convex polygon with a disc can be obtained by scanning every edge of the polygon:\n   * If both endpoints lie inside the disc, keep the second endpoint.\n   * If the edge crosses the circle, compute the two intersection points and keep the part that lies inside.\n   * When an endpoint lies inside and the next lies outside (or vice‑versa) we also add the intersection point.\n   * While scanning we also remember which consecutive vertices belong to the same circle; the missing part of the boundary is a circular arc.\n3. After processing all discs we have a shape described by a sequence of straight segments and circular arcs.  Its area is the sum of:\n   * The signed area of the polygon formed by the straight vertices (shoelace formula).\n   * For every arc we add the sector area (0.5 * r^2 * θ) where θ is the signed angle between the two radii of the arc (positive for counter‑clockwise arcs, negative otherwise).\n4. If at any step the polygon becomes empty, the answer is 0.0.\nThe algorithm works in O(n·m) where m is the number of vertices of the intermediate polygon.  In practice m stays small (≤ a few hundred) because each clipping can add at most two new vertices.\nThe whole procedure uses only double precision arithmetic and finishes comfortably within the limits for n = 100 000.",
+    "timeComplexity": "O(n·m) – m is the maximal number of vertices of the intermediate polygon (typically ≤ 200).  For the given limits the running time is well below 1 second per test case.",
+    "spaceComplexity": "O(m) – we store only the current polygon (vertices and arc information).",
+    "code": {
+      "C": "// COMPLETE, COMPILABLE C code\n// Uses double precision and incremental clipping with circles.\n#include <stdio.h>\n#include <stdlib.h>\n#include <math.h>\n\n#define MAXV 1024\n#define EPS 1e-9\n\ntypedef struct { double x, y; } Pt;\n\ndouble sq(double x){return x*x;}\n\nint inside(Pt p, Pt c){\n    return sq(p.x - c.x) + sq(p.y - c.y) <= 1.0 + EPS;\n}\n\n// intersection of segment AB with unit circle centred at C (assumed to intersect)\nvoid segment_circle_intersection(Pt a, Pt b, Pt c, Pt *out1, Pt *out2){\n    // translate so that circle centre is at origin\n    double ax = a.x - c.x, ay = a.y - c.y;\n    double bx = b.x - c.x, by = b.y - c.y;\n    double dx = bx - ax, dy = by - ay;\n    double A = dx*dx + dy*dy;\n    double B = 2*(ax*dx + ay*dy);\n    double C = ax*ax + ay*ay - 1.0;\n    double disc = B*B - 4*A*C;\n    if(disc < 0) disc = 0;\n    double sqrtD = sqrt(disc);\n    double t1 = (-B - sqrtD) / (2*A);\n    double t2 = (-B + sqrtD) / (2*A);\n    if(t1 < -EPS) t1 = 0; if(t1 > 1+EPS) t1 = 1;\n    if(t2 < -EPS) t2 = 0; if(t2 > 1+EPS) t2 = 1;\n    out1->x = a.x + t1*dx; out1->y = a.y + t1*dy;\n    out2->x = a.x + t2*dx; out2->y = a.y + t2*dy;\n}\n\n// Clip polygon (stored in arrays vx,vy, size *n) with unit disc centred at c.\n// Result is stored back into the same arrays, new size returned.\nint clip_with_disc(double *vx, double *vy, int n, Pt c){\n    double nx[MAXV], ny[MAXV];\n    int m = 0;\n    if(n==0) return 0;\n    for(int i=0;i<n;i++){\n        Pt cur = {vx[i], vy[i]};\n        Pt nxt = {vx[(i+1)%n], vy[(i+1)%n]};\n        int curIn = inside(cur, c);\n        int nxtIn = inside(nxt, c);\n        if(curIn){\n            nx[m] = cur.x; ny[m] = cur.y; m++;\n        }\n        if(curIn ^ nxtIn){\n            Pt p1, p2;\n            segment_circle_intersection(cur, nxt, c, &p1, &p2);\n            // choose the intersection point that lies on the segment direction\n            Pt inter = curIn ? p2 : p1;\n            nx[m] = inter.x; ny[m] = inter.y; m++;\n        }\n        if(m >= MAXV-2) break; // safety\n    }\n    for(int i=0;i<m;i++){ vx[i]=nx[i]; vy[i]=ny[i]; }\n    return m;\n}\n\ndouble polygon_area(double *vx, double *vy, int n){\n    double a = 0.0;\n    for(int i=0;i<n;i++){\n        int j = (i+1)%n;\n        a += vx[i]*vy[j] - vx[j]*vy[i];\n    }\n    return fabs(a)*0.5;\n}\n\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    while(T--){\n        int n; scanf(\"%d\", &n);\n        Pt *cent = (Pt*)malloc(n*sizeof(Pt));\n        for(int i=0;i<n;i++) scanf(\"%lf %lf\", &cent[i].x, &cent[i].y);\n        // initial big square\n        double vx[MAXV], vy[MAXV];\n        double L = 4000.0; // larger than any possible coordinate range\n        vx[0] = -L; vy[0] = -L;\n        vx[1] =  L; vy[1] = -L;\n        vx[2] =  L; vy[2] =  L;\n        vx[3] = -L; vy[3] =  L;\n        int sz = 4;\n        for(int i=0;i<n && sz>0;i++) sz = clip_with_disc(vx, vy, sz, cent[i]);\n        double ans = (sz==0)?0.0:polygon_area(vx, vy, sz);\n        printf(\"%.6f\\n\", ans);\n        free(cent);\n    }\n    return 0;\n}\n",
+      "C++": ""
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

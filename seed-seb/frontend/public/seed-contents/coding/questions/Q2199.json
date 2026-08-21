@@ -1,0 +1,126 @@
+{
+  "questionId": "Q2199",
+  "title": "The Mine Field",
+  "slug": "the-mine-field",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Recursion & Backtracking",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Recursion & Backtracking",
+      "Bit Manipulation",
+      "Backtracking"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ]
+  },
+  "content": {
+    "problemStatement": "It's 2012. The times of peace are over. The Trojan Kingdom has just declared war on Byteland! As part of a massive defense plan against the Trojans, the Bytelandian Ministry of Defense  (BMoD) wants to lay mines on a field near the borderline of the country.\n\nThe field has the form of a MxN rectangular grid divided into MxN unit-square cells. It is only possible to plant mines on some cells, and the number of mines on a cell cannot exceed one.\n\nThe objective is obviously to lay as many mines as possible. However, the BMoD does not want any two adjacent cells to both have mines, because such a situation would be dangerous: one mine being triggered could lead to a chain of explosions! Two cells are adjacent if they share a common edge.\n\nJohnny, the most renowned computer scientist in Byteland, needs to compute the maximum number of mines that could be planted on the field, and the number of different ways in which these mines could be planted.\n\nHurry up and help Johnny save his beloved country!",
+    "constraints": [
+      "1 <= T <= 15",
+      "1 <= M, N <= 20"
+    ],
+    "inputFormat": "The first line contains T, the number of test cases. Each test case has the following form. The first line contains two numbers M and N representing the size of the field. Each line in the next M lines contains N characters. Each character is either '.' or '*' representing the status of a cell in the field.",
+    "outputFormat": "For each test case, print two numbers on a line. The first number is the maximum number of mines that could be planted on the field. The second number is the number of ways to plant the maximum number of mines on the field, modulo 151109.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n2 3\n...\n.*.\n3 3\n...\n.*.\n...",
+        "output": "3 1\n4 2",
+        "explanation": "For the first test case, the maximum number of mines that can be planted is 3 and there is only one way to do it. For the second test case, the maximum number of mines that can be planted is 4 and there are two ways to do it."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n4 4\n....\n....\n....\n....",
+        "output": "8 1",
+        "explanation": "For this test case, the maximum number of mines that can be planted is 8 and there is only one way to do it."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n1 1\n.",
+        "output": "1 1",
+        "explanation": "For this test case, the maximum number of mines that can be planted is 1 and there is only one way to do it."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1\n*",
+        "expectedOutput": "0 1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n20 20\n",
+        "expectedOutput": "200 1",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "all-same",
+        "input": "1\n5 5\n.....\n.....\n.....\n.....\n.....",
+        "expectedOutput": "13 1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky edge",
+        "input": "1\n3 3\n.*.\n.*.\n.*.",
+        "expectedOutput": "4 2",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress",
+        "input": "10\n10 10\n",
+        "expectedOutput": "50 1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved using backtracking. We start from the first cell and try to plant a mine in it. If it's possible, we move to the next cell. If not, we backtrack and try the next cell. We keep track of the maximum number of mines that can be planted and the number of ways to plant them.",
+    "timeComplexity": "O(2^(M*N)) per test case, O(T*2^(M*N)) total.",
+    "spaceComplexity": "O(M*N) \u2014 state of the grid.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n#define MOD 151109\nint maxMines, ways;\nint M, N;\nchar grid[25][25];\nvoid backtrack(int x, int y, int mines, int mask) {\n    if (y == N) {\n        x++;\n        y = 0;\n    }\n    if (x == M) {\n        if (mines > maxMines) {\n            maxMines = mines;\n            ways = 1;\n        } else if (mines == maxMines) {\n            ways = (ways + 1) % MOD;\n        }\n        return;\n    }\n    if (grid[x][y] == '.') {\n        if ((mask & (1 << (x * N + y))) == 0 && (x == 0 || grid[x-1][y] != 'M') && (y == 0 || grid[x][y-1] != 'M')) {\n            grid[x][y] = 'M';\n            backtrack(x, y + 1, mines + 1, mask | (1 << (x * N + y)));\n            grid[x][y] = '.';\n        }\n        backtrack(x, y + 1, mines, mask);\n    } else {\n        backtrack(x, y + 1, mines, mask);\n    }\n}\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        scanf(\"%d %d\", &M, &N);\n        for (int i = 0; i < M; i++) {\n            scanf(\"%s\", grid[i]);\n        }\n        maxMines = 0;\n        ways = 0;\n        backtrack(0, 0, 0, 0);\n        printf(\"%d %d\\n\", maxMines, ways);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <string>\nusing namespace std;\n#define MOD 151109\nint maxMines, ways;\nint M, N;\nstring grid[25];\nvoid backtrack(int x, int y, int mines, int mask) {\n    if (y == N) {\n        x++;\n        y = 0;\n    }\n    if (x == M) {\n        if (mines > maxMines) {\n            maxMines = mines;\n            ways = 1;\n        } else if (mines == maxMines) {\n            ways = (ways + 1) % MOD;\n        }\n        return;\n    }\n    if (grid[x][y] == '.') {\n        if ((mask & (1 << (x * N + y))) == 0 && (x == 0 || grid[x-1][y] != 'M') && (y == 0 || grid[x][y-1] != 'M')) {\n            grid[x][y] = 'M';\n            backtrack(x, y + 1, mines + 1, mask | (1 << (x * N + y)));\n            grid[x][y] = '.';\n        }\n        backtrack(x, y + 1, mines, mask);\n    } else {\n        backtrack(x, y + 1, mines, mask);\n    }\n}\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        cin >> M >> N;\n        for (int i = 0; i < M; i++) {\n            cin >> grid[i];\n        }\n        maxMines = 0;\n        ways = 0;\n        backtrack(0, 0, 0, 0);\n        cout << maxMines << \" \" << ways << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    static final int MOD = 151109;\n    static int maxMines, ways;\n    static int M, N;\n    static char[][] grid;\n    public static void backtrack(int x, int y, int mines, int mask) {\n        if (y == N) {\n            x++;\n            y = 0;\n        }\n        if (x == M) {\n            if (mines > maxMines) {\n                maxMines = mines;\n                ways = 1;\n            } else if (mines == maxMines) {\n                ways = (ways + 1) % MOD;\n            }\n            return;\n        }\n        if (grid[x][y] == '.') {\n            if ((mask & (1 << (x * N + y))) == 0 && (x == 0 || y == 0 || grid[x-1][y] != 'M' && grid[x][y-1] != 'M')) {\n                grid[x][y] = 'M';\n                backtrack(x, y + 1, mines + 1, mask | (1 << (x * N + y)));\n                grid[x][y] = '.';\n            }\n            backtrack(x, y + 1, mines, mask);\n        } else {\n            backtrack(x, y + 1, mines, mask);\n        }\n    }\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n        while (T-- > 0) {\n            M = sc.nextInt();\n            N = sc.nextInt();\n            grid = new char[M][N];\n            for (int i = 0; i < M; i++) {\n                String s = sc.next();\n                grid[i] = s.toCharArray();\n            }\n            maxMines = 0;\n            ways = 0;\n            backtrack(0, 0, 0, 0);\n            System.out.println(maxMines + \" \" + ways);\n        }\n    }\n}",
+      "Python3": "MOD = 151109\nmax_mines, ways = 0, 0\nM, N = 0, 0\ndef backtrack(x, y, mines, mask, grid):\n    global max_mines, ways\n    if y == N:\n        x += 1\n        y = 0\n    if x == M:\n        if mines > max_mines:\n            max_mines = mines\n            ways = 1\n        elif mines == max_mines:\n            ways = (ways + 1) % MOD\n        return\n    if grid[x][y] == '.':\n        if (mask & (1 << (x * N + y))) == 0 and (x == 0 or y == 0 or grid[x-1][y] != 'M' and grid[x][y-1] != 'M'):\n            grid[x][y] = 'M'\n            backtrack(x, y + 1, mines + 1, mask | (1 << (x * N + y)), grid)\n            grid[x][y] = '.'\n        backtrack(x, y + 1, mines, mask, grid)\n    else:\n        backtrack(x, y + 1, mines, mask, grid)\nT = int(input())\nfor _ in range(T):\n    M, N = map(int, input().split())\n    grid = [list(input()) for _ in range(M)]\n    max_mines, ways = 0, 0\n    backtrack(0, 0, 0, 0, grid)\n    print(max_mines, ways)",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst MOD = 151109;\nlet maxMines, ways;\nlet M, N;\nlet grid;\nfunction backtrack(x, y, mines, mask) {\n    if (y == N) {\n        x++;\n        y = 0;\n    }\n    if (x == M) {\n        if (mines > maxMines) {\n            maxMines = mines;\n            ways = 1;\n        } else if (mines == maxMines) {\n            ways = (ways + 1) % MOD;\n        }\n        return;\n    }\n    if (grid[x][y] == '.') {\n        if ((mask & (1 << (x * N + y))) == 0 && (x == 0 || y == 0 || grid[x-1][y] != 'M' && grid[x][y-1] != 'M')) {\n            grid[x][y] = 'M';\n            backtrack(x, y + 1, mines + 1, mask | (1 << (x * N + y)));\n            grid[x][y] = '.';\n        }\n        backtrack(x, y + 1, mines, mask);\n    } else {\n        backtrack(x, y + 1, mines, mask);\n    }\n}\nlet T = parseInt(lines[idx++]);\nwhile (T-- > 0) {\n    let line = lines[idx++].split(' ');\n    M = parseInt(line[0]);\n    N = parseInt(line[1]);\n    grid = [];\n    for (let i = 0; i < M; i++) {\n        grid.push(lines[idx++].split(''));\n    }\n    maxMines = 0;\n    ways = 0;\n    backtrack(0, 0, 0, 0);\n    console.log(maxMines + ' ' + ways);\n}"
+    }
+  }
+}

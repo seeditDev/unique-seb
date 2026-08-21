@@ -1,0 +1,129 @@
+{
+  "questionId": "Q8701",
+  "title": "Palindromes Not Allowed",
+  "slug": "palindromes-not-allowed",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Greedy",
+      "Frequency Counting",
+      "Constructive Algorithms"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Constructive Algorithms"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "A string SSS is called good if none of the substrings of SSS of length ≥2\\ge 2≥2 are palindromic.\n\nFor e.g. S=S =S= hello\\texttt{hello}hello is not good but S=S =S= world\\texttt{world}world is good.\n\nYou are given a string AAA of length NNN (containing lowercase Latin letters only). Rearrange AAA to form a good string or determine it is not possible to do so.\n\nRecall that a string is called palindromic if it reads the same backwards and forwards. For example, noon\\texttt{noon}noon and level\\texttt{level}level are palindromic strings.\n\n\nInput Format\n\nThe first line of input contains a single integer TTT — the number of test cases. The description of the test cases follows.\nThe first line of each test case contains one integer NNN — the length of the string AAA.\nThe second line of each test case contains the string AAA of length NNN.\n\n\nOutput Format\nFor each test case, if it is possible to rearrange AAA to convert it into a good string, print `YES` in the first line and print the rearranged string in the second line. Otherwise, print `NO`.\n\n\nYou may print each character of `YES` and `NO` in uppercase or lowercase (for e.g. `yes`, `yEs`, `Yes` will be considered identical).\n\n\nIf there are multiple rearrangements of the string which are good, **print any of them**.",
+    "constraints": [
+      "1 ≤ T ≤ 10^5",
+      "1 ≤ N ≤ 10^5",
+      "Sum of N over all test cases ≤ 2·10^5",
+      "A consists only of lowercase English letters."
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Then for each test case:\n- a line with integer N, the length of the string.\n- a line with a string A of length N consisting of lowercase Latin letters.",
+    "outputFormat": "For each test case, output either:\n- \"YES\" on one line followed by a rearranged good string on the next line, or\n- \"NO\" on a single line if no good rearrangement exists.\nThe string is good if none of its substrings of length at least 2 is a palindrome (equivalently, it contains no equal adjacent characters and no pattern x y x).",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4\n5\nworld\n5\nhello\n7\naaabbcc\n6\npppppr",
+        "output": "YES\nworld\nYES\nlehol\nYES\nabcabca\nNO",
+        "explanation": "Explanation:\nTest case 111: world\\texttt{world}world is already a good string.\nTest case 222: hello\\texttt{hello}hello can be rearranged to form lehol\\texttt{lehol}lehol which is good.\nTest case 333: aaabbcc\\texttt{aaabbcc}aaabbcc can be rearranged to form abcabca\\texttt{abcabca}abcabca which is good.\nTest case 444: It can be proven that none of the rearrangements of pppppr\\texttt{pppppr}pppppr is good."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "A palindrome of length ≥2 always contains a palindrome of length 2 (aa) or 3 (aba). Therefore a string is good iff it has no two equal characters at distance 1 or 2. This means that any two equal letters must be placed at least three positions apart. Consequently the maximum frequency of any character must satisfy maxCount ≤ ceil(N/3). If this condition is violated, answer is NO.\n\nIf the condition holds we can construct a good string greedily:\n1. Count frequencies of all letters and sort them in descending order.\n2. Prepare the order of positions where we will place characters: first all indices 0,3,6,… then 1,4,7,… then 2,5,8,… (i.e. positions modulo 3 in the order 0,1,2). Consecutive positions in this list differ by at least 3 in the original string.\n3. Walk through the sorted characters and fill the prepared positions one by one. Because the same character is always placed on consecutive slots of the position list, the distance between two equal letters is at least 3, guaranteeing the string is good.\nThe construction runs in O(N + alphabet·log alphabet) per test case, which is O(N) because the alphabet size is constant (26).",
+    "timeComplexity": "O(N) per test case (total O(ΣN) over all test cases).",
+    "spaceComplexity": "O(N) for the resulting string and auxiliary arrays.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n#include <stdlib.h>\n\ntypedef struct {char ch; int cnt;} Item;\nint cmpItem(const void *a, const void *b){return ((Item*)b)->cnt - ((Item*)a)->cnt;}\n\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    while(T--){\n        int N; scanf(\"%d\", &N);\n        char s[100005]; scanf(\"%s\", s);\n        int freq[26]={0};\n        for(int i=0;i<N;i++) freq[s[i]-'a']++;\n        int maxc=0; for(int i=0;i<26;i++) if(freq[i]>maxc) maxc=freq[i];\n        if(maxc > (N+2)/3){\n            printf(\"NO\\n\");\n            continue;\n        }\n        Item items[26]; int m=0;\n        for(int i=0;i<26;i++) if(freq[i]){items[m].ch='a'+i; items[m].cnt=freq[i]; m++;}\n        qsort(items, m, sizeof(Item), cmpItem);\n        int *pos = (int*)malloc(N*sizeof(int));\n        int idx=0;\n        for(int start=0; start<3; ++start){\n            for(int i=start; i<N; i+=3) pos[idx++] = i;\n        }\n        char ans[100005];\n        idx=0; int p=0;\n        for(int i=0;i<m;i++){\n            for(int k=0;k<items[i].cnt;k++){\n                ans[pos[p++]] = items[i].ch;\n            }\n        }\n        ans[N]='\\0';\n        printf(\"YES\\n%s\\n\", ans);\n        free(pos);\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N; cin>>N; string s; cin>>s;\n        array<int,26> freq{}; for(char c: s) freq[c-'a']++;\n        int maxc=*max_element(freq.begin(), freq.end());\n        if(maxc > (N+2)/3){\n            cout<<\"NO\\n\";\n            continue;\n        }\n        vector<pair<int,char>> vec;\n        for(int i=0;i<26;i++) if(freq[i]) vec.push_back({freq[i], char('a'+i)});\n        sort(vec.rbegin(), vec.rend()); // descending by count\n        vector<int> pos; pos.reserve(N);\n        for(int start=0; start<3; ++start)\n            for(int i=start; i<N; i+=3) pos.push_back(i);\n        string ans(N, ' ');\n        int p=0;\n        for(auto &pr: vec){\n            int cnt=pr.first; char ch=pr.second;\n            for(int k=0;k<cnt;k++) ans[pos[p++]] = ch;\n        }\n        cout<<\"YES\\n\"<<ans<<\"\\n\";\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner(System.in);\n        int T = fs.nextInt();\n        StringBuilder out = new StringBuilder();\n        while (T-- > 0) {\n            int N = fs.nextInt();\n            char[] s = fs.next().toCharArray();\n            int[] freq = new int[26];\n            for (char c : s) freq[c - 'a']++;\n            int max = 0;\n            for (int f : freq) if (f > max) max = f;\n            if (max > (N + 2) / 3) {\n                out.append(\"NO\\n\");\n                continue;\n            }\n            List<int[]> list = new ArrayList<>(); // {cnt, ch}\n            for (int i = 0; i < 26; i++) if (freq[i] > 0) list.add(new int[]{freq[i], i});\n            list.sort((a, b) -> Integer.compare(b[0], a[0]));\n            int[] pos = new int[N];\n            int idx = 0;\n            for (int start = 0; start < 3; start++)\n                for (int i = start; i < N; i += 3) pos[idx++] = i;\n            char[] ans = new char[N];\n            int p = 0;\n            for (int[] arr : list) {\n                int cnt = arr[0];\n                char ch = (char) ('a' + arr[1]);\n                for (int k = 0; k < cnt; k++) ans[pos[p++]] = ch;\n            }\n            out.append(\"YES\\n\");\n            out.append(new String(ans)).append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n\n    // Fast scanner for Java\n    static class FastScanner {\n        private final InputStream in;\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        FastScanner(InputStream in) { this.in = in; }\n        private int readByte() throws IOException {\n            if (ptr >= len) {\n                len = in.read(buffer);\n                ptr = 0;\n                if (len <= 0) return -1;\n            }\n            return buffer[ptr++];\n        }\n        int nextInt() throws IOException {\n            int c, sign = 1, val = 0;\n            do { c = readByte(); } while (c <= ' ');\n            if (c == '-') { sign = -1; c = readByte(); }\n            while (c > ' ') { val = val * 10 + c - '0'; c = readByte(); }\n            return val * sign;\n        }\n        String next() throws IOException {\n            int c;\n            do { c = readByte(); } while (c <= ' ');\n            StringBuilder sb = new StringBuilder();\n            while (c > ' ') { sb.append((char) c); c = readByte(); }\n            return sb.toString();\n        }\n    }\n}\n",
+      "Python3": "#!/usr/bin/env python3\nimport sys\nfrom collections import Counter\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it))\n        s = next(it)\n        freq = Counter(s)\n        maxc = max(freq.values())\n        if maxc > (N + 2) // 3:\n            out_lines.append('NO')\n            continue\n        # sort characters by decreasing frequency\n        items = sorted(freq.items(), key=lambda x: -x[1])\n        # prepare position order 0,3,6,...,1,4,7,...,2,5,8,...\n        pos = []\n        for start in range(3):\n            for i in range(start, N, 3):\n                pos.append(i)\n        ans = [''] * N\n        p = 0\n        for ch, cnt in items:\n            for _ in range(cnt):\n                ans[pos[p]] = ch\n                p += 1\n        out_lines.append('YES')\n        out_lines.append(''.join(ans))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet output = [];\nfor (let t = 0; t < T; ++t) {\n  const N = Number(input[idx++]);\n  const s = input[idx++];\n  const freq = new Array(26).fill(0);\n  for (let ch of s) freq[ch.charCodeAt(0) - 97]++;\n  let maxc = 0;\n  for (let f of freq) if (f > maxc) maxc = f;\n  if (maxc > Math.floor((N + 2) / 3)) {\n    output.push('NO');\n    continue;\n  }\n  // collect characters with counts\n  const items = [];\n  for (let i = 0; i < 26; ++i) if (freq[i] > 0) items.push({ch: String.fromCharCode(97 + i), cnt: freq[i]});\n  items.sort((a, b) => b.cnt - a.cnt);\n  // position order\n  const pos = [];\n  for (let start = 0; start < 3; ++start) {\n    for (let i = start; i < N; i += 3) pos.push(i);\n  }\n  const ansArr = new Array(N);\n  let p = 0;\n  for (const it of items) {\n    for (let k = 0; k < it.cnt; ++k) {\n      ansArr[pos[p++]] = it.ch;\n    }\n  }\n  output.push('YES');\n  output.push(ansArr.join(''));\n}\nconsole.log(output.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

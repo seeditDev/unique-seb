@@ -1,0 +1,135 @@
+{
+  "questionId": "Q8606",
+  "title": "Make Valid",
+  "slug": "make-valid",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings | Greedy | Dynamic Programming",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Parentheses",
+      "Greedy range DP",
+      "Balance interval"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Stacks & Queues"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "A string consisting only of parentheses '(' and ')' is called a bracket sequence. Some bracket sequences are called correct bracket sequences. More formally:\n\n\n\nAn empty string is a correct bracket sequence.\n\n\n\n\nIf a string SSS is a correct bracket sequence, then the string (S)(S)(S) is also a correct bracket sequence.\n\n\n\n\nIf strings SSS and TTT are correct bracket sequences, then the string STSTST is also correct bracket sequence.\n\n\n\nYou are given a string SSS consisting of parentheses ('(' and ')') and lowercase letters 'x'. Each letter 'x' in SSS can either be replaced by a single parenthesis ('(' or ')') or be removed from SSS. You need to find if it is possible to obtain a correct bracket sequence from SSS by transforming it in such a way.\n\n\nInput Format\n\n\nThe first line of the input contains a single integer TTT - the number of test cases. The description of TTT test cases follows.\n\n\n\n\nThe first line of each test case contains a single string SSS.\n\n\n\n\n\nOutput Format\n\nFor each test file, print a single line. In that line, print TTT characters with no spaces between them, where TTT is the number of test cases in this test file. For each valid iii, the iii-th character in the line should be 111 if it is possible to obtain a correct bracket sequence from the string in the iii-th test case by replacing each letter 'x' by a parenthesis or removing it and 000 otherwise.",
+    "constraints": [
+      "1 <= T <= 100",
+      "1 <= |S| <= 200000",
+      "Sum of |S| over all test cases <= 400000",
+      "S contains only '(', ')', 'x'"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Then T lines follow, each containing a non‑empty string S consisting of characters '(', ')', and 'x'.",
+    "outputFormat": "Print a single line containing T characters without spaces. For each test case output '1' if it is possible to obtain a correct bracket sequence by replacing each 'x' with '(' or ')' or deleting it, otherwise output '0'.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4\n(())\n(xx))\nxxxxx\nxx)))",
+        "output": "1110",
+        "explanation": "Case 1: already correct. Case 2: replace first x with '(' and delete second x to get (()). Case 3: delete all x to obtain empty string. Case 4: no assignment yields a correct sequence."
+      },
+      {
+        "id": "sample_2",
+        "input": "4\n)xx()\n(xx()\n())\n(",
+        "output": "0100",
+        "explanation": "Case 1: impossible because it starts with ')'. Case 2: replace first x with ')' and delete second x to get ()(). Case 3 and 4 are impossible."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\nx",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary (all x)",
+        "input": "1\nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case impossible",
+        "input": "1\n)x(",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\nx(x)x)",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n(((x)))x",
+        "expectedOutput": "1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Scan the string from left to right while keeping the minimum and maximum possible balance (number of unmatched '(') after processing each character. For a normal '(' we increase both bounds by 1. For a ')' we decrease both bounds by 1, but the minimum bound cannot go below 0 because a correct sequence never has negative balance; if the maximum bound becomes negative the configuration is impossible. For an 'x' we may treat it as '(', ')', or delete it, therefore the new minimum becomes max(0, min-1) and the new maximum becomes max+1. After the whole string, a balance of 0 is achievable iff the minimum possible balance is 0. The algorithm is O(|S|) time and O(1) extra space.",
+    "timeComplexity": "O(total length of all strings)",
+    "spaceComplexity": "O(1)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\nint main(){\n    int T; if(scanf(\"%d\",&T)!=1) return 0;\n    char buf[200005];\n    while(T--){\n        scanf(\"%s\",buf);\n        int low=0, high=0; int ok=1;\n        for(int i=0; buf[i]; ++i){\n            char c=buf[i];\n            if(c=='('){ low++; high++; }\n            else if(c==')'){\n                if(high==0){ ok=0; break; }\n                high--; low = low>0? low-1:0;\n            }else{ // 'x'\n                low = low>0? low-1:0; // treat as ')'\n                high++; // treat as '('\n            }\n        }\n        if(ok && low==0) putchar('1'); else putchar('0');\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    string s; while(T--){\n        cin>>s;\n        int low=0, high=0; bool ok=true;\n        for(char c: s){\n            if(c=='('){ low++; high++; }\n            else if(c==')'){\n                if(high==0){ ok=false; break; }\n                high--; low = low>0? low-1:0;\n            }else{ // 'x'\n                low = low>0? low-1:0;\n                high++;\n            }\n        }\n        cout << (ok && low==0 ? '1' : '0');\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder out = new StringBuilder();\n        for(int t=0; t<T; ++t){\n            String s = br.readLine().trim();\n            int low = 0, high = 0;\n            boolean ok = true;\n            for(int i=0;i<s.length();++i){\n                char c = s.charAt(i);\n                if(c=='('){ low++; high++; }\n                else if(c==')'){\n                    if(high==0){ ok = false; break; }\n                    high--; low = low>0? low-1:0;\n                }else{ // x\n                    low = low>0? low-1:0;\n                    high++;\n                }\n            }\n            out.append((ok && low==0) ? '1' : '0');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef possible(s: str) -> bool:\n    low = high = 0\n    for ch in s:\n        if ch == '(':\n            low += 1\n            high += 1\n        elif ch == ')':\n            if high == 0:\n                return False\n            high -= 1\n            low = max(0, low - 1)\n        else:  # 'x'\n            low = max(0, low - 1)\n            high += 1\n    return low == 0\n\ndef main():\n    data = sys.stdin.read().splitlines()\n    if not data:\n        return\n    t = int(data[0])\n    ans = []\n    for i in range(1, t + 1):\n        ans.append('1' if possible(data[i].strip()) else '0')\n    sys.stdout.write(''.join(ans))\n\nif __name__ == \"__main__\":\n    main()",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf8').trim().split('\\n');\nlet idx = 0;\nconst T = parseInt(lines[idx++], 10);\nlet result = '';\nfunction possible(s){\n  let low = 0, high = 0;\n  for(let i=0;i<s.length;i++){\n    const ch = s[i];\n    if(ch==='('){ low++; high++; }\n    else if(ch===')'){\n      if(high===0) return false;\n      high--; low = low>0? low-1:0;\n    }else{ // x\n      low = low>0? low-1:0;\n      high++;\n    }\n  }\n  return low===0;\n}\nfor(let t=0;t<T;t++){\n  const s = lines[idx++] || '';\n  result += possible(s) ? '1' : '0';\n}\nprocess.stdout.write(result);"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

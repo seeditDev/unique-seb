@@ -1,0 +1,127 @@
+{
+  "questionId": "Q7908",
+  "title": "Calculus",
+  "slug": "calculus",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Integral",
+      "Series",
+      "Modular Arithmetic",
+      "Summation"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Mathematics"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given one positive integer NNN. Calculate\r\n∫0∞e2πx−1e2πx+1(1x−xN2+x2) dx .\\int_{0}^{\\infty} \\frac{e^{2 \\pi x} - 1}{e^{2 \\pi x} + 1} \\left(\\frac{1}{x} - \\frac{x}{N^2 + x^2}\\right) \\,\\mathrm{d}x \\,.∫0∞​e2πx+1e2πx−1​(x1​−N2+x2x​)dx.\n\nIt is possible to prove that its value can be written as a fraction ab\\frac{a}{b}ba​, where aaa and bbb are positive integers and bbb is coprime with 998,244,353998,244,353998,244,353. You need to find a⋅b−1a \\cdot b^{-1}a⋅b−1 modulo 998,244,353998,244,353998,244,353, where b−1b^{-1}b−1 denotes the multiplicative inverse of bbb modulo 998,244,353998,244,353998,244,353.",
+    "constraints": [
+      "1 ≤ N ≤ 1000000"
+    ],
+    "inputFormat": "The first line contains a single integer N (1 ≤ N ≤ 10^6).",
+    "outputFormat": "Print a single integer – the value of a·b⁻¹ modulo 998244353, where the integral equals the rational number a/b.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1",
+        "output": "2",
+        "explanation": "For N=1 the sum of inverses of odd numbers up to 1 is 1. Multiplying by 2 gives 2."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "small N",
+        "input": "2",
+        "expectedOutput": "665496238",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "medium N",
+        "input": "10",
+        "expectedOutput": "598946612",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "1",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "1",
+        "expectedOutput": "2",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Rewrite the integrand using tanh: (e^{2πx}-1)/(e^{2πx}+1)=tanh(πx). The integral simplifies to I(N)=∫₀^∞ tanh(πx)(1/x - x/(N²+x²))dx. Using the Fourier series of tanh and standard integrals one can show that I(N)=2·∑_{k=1}^{N} 1/(2k-1). Hence the answer is 2 times the sum of modular inverses of all odd numbers up to (2N‑1). Compute the sum modulo MOD=998244353 and multiply by 2. All operations are performed modulo MOD, using Fermat's little theorem to obtain inverses (a^{MOD‑2} mod MOD). The algorithm runs in O(N) time and O(1) extra space.",
+    "timeComplexity": "O(N) per test case",
+    "spaceComplexity": "O(1)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdint.h>\nconst long long MOD = 998244353LL;\nlong long modpow(long long a,long long e){long long r=1%MOD;while(e){if(e&1)r=r*a%MOD;a=a*a%MOD;e>>=1;}return r;}\nint main(){\n    long long N; if(scanf(\"%lld\",&N)!=1) return 0;\n    long long sum=0;\n    for(long long i=1;i<=N;i++){\n        long long odd=2*i-1;\n        sum = (sum + modpow(odd, MOD-2)) % MOD;\n    }\n    long long ans = (2 * sum) % MOD;\n    printf(\"%lld\\n\", ans);\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nconst long long MOD = 998244353LL;\nlong long modpow(long long a,long long e){long long r=1%MOD;while(e){if(e&1) r=r*a%MOD;a=a*a%MOD;e>>=1;}return r;}\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    long long N; if(!(cin>>N)) return 0;\n    long long sum=0;\n    for(long long i=1;i<=N;i++){\n        long long odd = 2*i-1;\n        sum = (sum + modpow(odd, MOD-2)) % MOD;\n    }\n    long long ans = (2 * sum) % MOD;\n    cout<<ans<<\"\\n\";\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    static final long MOD = 998244353L;\n    static long modPow(long a, long e){\n        long r = 1L;\n        a %= MOD;\n        while(e>0){\n            if((e & 1L)==1L) r = (r * a) % MOD;\n            a = (a * a) % MOD;\n            e >>= 1L;\n        }\n        return r;\n    }\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        String line = br.readLine();\n        if(line==null||line.isEmpty()) return;\n        long N = Long.parseLong(line.trim());\n        long sum = 0L;\n        for(long i=1;i<=N;i++){\n            long odd = 2*i-1;\n            sum = (sum + modPow(odd, MOD-2)) % MOD;\n        }\n        long ans = (2L * sum) % MOD;\n        System.out.println(ans);\n    }\n}",
+      "Python3": "import sys\nMOD = 998244353\n\ndef mod_pow(a, e):\n    r = 1\n    a %= MOD\n    while e:\n        if e & 1:\n            r = r * a % MOD\n        a = a * a % MOD\n        e >>= 1\n    return r\n\ndef main():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    N = int(data[0])\n    s = 0\n    for i in range(1, N+1):\n        odd = 2*i - 1\n        s = (s + mod_pow(odd, MOD-2)) % MOD\n    ans = (2 * s) % MOD\n    print(ans)\n\nif __name__ == \"__main__\":\n    main()",
+      "JavaScript": "const fs = require('fs');\nconst MOD = 998244353n;\nfunction modPow(a, e) {\n  a %= MOD;\n  let r = 1n;\n  while (e > 0n) {\n    if (e & 1n) r = (r * a) % MOD;\n    a = (a * a) % MOD;\n    e >>= 1n;\n  }\n  return r;\n}\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nif (input.length === 0) process.exit(0);\nconst N = BigInt(input[0]);\nlet sum = 0n;\nfor (let i = 1n; i <= N; i++) {\n  const odd = 2n * i - 1n;\n  sum = (sum + modPow(odd, MOD - 2n)) % MOD;\n}\nconst ans = (2n * sum) % MOD;\nconsole.log(ans.toString());"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

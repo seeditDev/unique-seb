@@ -1,0 +1,128 @@
+{
+  "questionId": "Q5255",
+  "title": "Communicating Servers",
+  "slug": "communicating-servers",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Maximum Independent Set",
+      "Bit Manipulation"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Graphs"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "The servers working at the Chef's restaurant communicate over a distance using wireless devices to relay requests as quickly as possible. Each server has exactly one device. However, unforseen technical difficulties make it such that some pairs of devices cannot communicate directly. Still, if a server A wants to communicate with another server B but their devices don't communicate directly, then server A may ask relay their request to server B using intermediate devices/servers.\n\n\n\nThere are two additional complications. First, the Chef is worried that relaying requests using intermediate servers may get confusing. Thus, for any two servers who can communicate, either directly or indirectly through other servers, there should be a unique way to pass messages between these servers. Second, each pair of devices that can communicate directly does so over a specified frequency. However, if too many pairs of devices communicate over the same frequency, then the messages may be corrupted.\n\n\n\nBecause of these two problems, the Chef has ordered that some pairs of devices be forbidden to communicate. This may result in some pairs of servers who could communicate before to be unable to communicate, but the Chef thinks this negative effect is outweighed by the guarantee that the above problems don't occur.\n\n\n\nYour goal is to determine the maximum number of pairs of devices that may be allowed to communicate directly without having to go through intermediate devices. To restate the constraints, if S is such a set of pairs of devices then there should be at most one way to relay a message between any two servers using only pairs of devices in S. Furthermore, for each frequency f, the number of pairs of devices in S that communicate over frequency f is less than some prescribed value c(f).",
+    "constraints": [
+      "1 ≤ T ≤ 30",
+      "1 ≤ n ≤ 40",
+      "1 ≤ m ≤ 200",
+      "1 ≤ k ≤ m"
+    ],
+    "inputFormat": "First line contains T, the number of test cases. Each test case contains three integers n, m, and k on a single line. Here, n is the number of servers, m is the number of pairs of devices that are able to communicate directly, and k is the number of available frequencies. The next line consists of k integers, each between 1 and m, where the i'th such integer is the value c(i) specifying how many devices may communicate using frequency i without worrying about messages being corrupted. Following this is m lines where each line describes a pair of devices that may communicate directly. Each line begins with two distinct integers u, v, each between 1 and n, and ends with an integer f, between 1 and k.",
+    "outputFormat": "For each test case, print the size of S where S is a maximum size subset of communicating pairs satisfying the constraints outlined in the last paragraph of the problem description.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4 4 2\n1 1\n1 2 1\n2 3 2\n3 4 1\n4 1 2",
+        "output": "2",
+        "explanation": "The maximum independent set is { (1, 2), (3, 4) }"
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved by iterating over all possible subsets of edges and checking if the current subset is an independent set. This can be done using bit manipulation to generate all possible subsets. For each subset, we need to check if the number of edges in the subset does not exceed the frequency limit for each frequency and if there are no cycles in the subset.",
+    "timeComplexity": "O(T * 2^m * (m + k)) per test case, O(T * 2^m * (m + k)) total.",
+    "spaceComplexity": "O(m + k) — for storing the edges and frequency counts.",
+    "code": {
+      "C": "// COMPLETE, COMPILABLE C code\n#include <stdio.h>\n#include <stdlib.h>\n\n// Define the structure for an edge\ntypedef struct {\n    int u, v, f;\n} Edge;\n\n// Define the structure for a graph\ntypedef struct {\n    int n, m, k;\n    Edge* edges;\n    int* freq;\n} Graph;\n\n// Function to read a graph from input\nGraph readGraph() {\n    int n, m, k;\n    scanf(\"%d %d %d\", &n, &m, &k);\n    Graph graph;\n    graph.n = n;\n    graph.m = m;\n    graph.k = k;\n    graph.edges = (Edge*) malloc(m * sizeof(Edge));\n    graph.freq = (int*) malloc(k * sizeof(int));\n    for (int i = 0; i < k; i++) {\n        scanf(\"%d\", &graph.freq[i]);\n    }\n    for (int i = 0; i < m; i++) {\n        scanf(\"%d %d %d\", &graph.edges[i].u, &graph.edges[i].v, &graph.edges[i].f);\n    }\n    return graph;\n}\n\n// Function to find the maximum independent set\nint findMaxIndependentSet(Graph graph) {\n    int maxSetSize = 0;\n    // Iterate over all possible subsets of edges\n    for (int mask = 0; mask < (1 << graph.m); mask++) {\n        int setSize = 0;\n        int* freqCount = (int*) malloc(graph.k * sizeof(int));\n        for (int i = 0; i < graph.k; i++) {\n            freqCount[i] = 0;\n        }\n        int* nodeCount = (int*) malloc(graph.n * sizeof(int));\n        for (int i = 0; i < graph.n; i++) {\n            nodeCount[i] = 0;\n        }\n        for (int i = 0; i < graph.m; i++) {\n            if ((mask & (1 << i)) != 0) {\n                setSize++;\n                freqCount[graph.edges[i].f - 1]++;\n                nodeCount[graph.edges[i].u - 1]++;\n                nodeCount[graph.edges[i].v - 1]++;\n            }\n        }\n        // Check if the current subset is an independent set\n        int isValid = 1;\n        for (int i = 0; i < graph.k; i++) {\n            if (freqCount[i] > graph.freq[i]) {\n                isValid = 0;\n                break;\n            }\n        }\n        for (int i = 0; i < graph.n; i++) {\n            if (nodeCount[i] > 1) {\n                isValid = 0;\n                break;\n            }\n        }\n        if (isValid) {\n            maxSetSize = (maxSetSize > setSize) ? maxSetSize : setSize;\n        }\n        free(freqCount);\n        free(nodeCount);\n    }\n    free(graph.edges);\n    free(graph.freq);\n    return maxSetSize;\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    for (int t = 0; t < T; t++) {\n        Graph graph = readGraph();\n        int maxIndependentSetSize = findMaxIndependentSet(graph);\n        printf(\"%d\\n\", maxIndependentSetSize);\n    }\n    return 0;\n}",
+      "C++": "// COMPLETE, COMPILABLE C++ code\n#include <iostream>\n#include <vector>\nusing namespace std;\n\n// Define the structure for an edge\nstruct Edge {\n    int u, v, f;\n};\n\n// Define the structure for a graph\nstruct Graph {\n    int n, m, k;\n    vector<Edge> edges;\n    vector<int> freq;\n};\n\n// Function to read a graph from input\nGraph readGraph() {\n    int n, m, k;\n    cin >> n >> m >> k;\n    Graph graph;\n    graph.n = n;\n    graph.m = m;\n    graph.k = k;\n    graph.edges.resize(m);\n    graph.freq.resize(k);\n    for (int i = 0; i < k; i++) {\n        cin >> graph.freq[i];\n    }\n    for (int i = 0; i < m; i++) {\n        cin >> graph.edges[i].u >> graph.edges[i].v >> graph.edges[i].f;\n    }\n    return graph;\n}\n\n// Function to find the maximum independent set\nint findMaxIndependentSet(Graph graph) {\n    int maxSetSize = 0;\n    // Iterate over all possible subsets of edges\n    for (int mask = 0; mask < (1 << graph.m); mask++) {\n        int setSize = 0;\n        vector<int> freqCount(graph.k, 0);\n        vector<int> nodeCount(graph.n, 0);\n        for (int i = 0; i < graph.m; i++) {\n            if ((mask & (1 << i)) != 0) {\n                setSize++;\n                freqCount[graph.edges[i].f - 1]++;\n                nodeCount[graph.edges[i].u - 1]++;\n                nodeCount[graph.edges[i].v - 1]++;\n            }\n        }\n        // Check if the current subset is an independent set\n        int isValid = 1;\n        for (int i = 0; i < graph.k; i++) {\n            if (freqCount[i] > graph.freq[i]) {\n                isValid = 0;\n                break;\n            }\n        }\n        for (int i = 0; i < graph.n; i++) {\n            if (nodeCount[i] > 1) {\n                isValid = 0;\n                break;\n            }\n        }\n        if (isValid) {\n            maxSetSize = (maxSetSize > setSize) ? maxSetSize : setSize;\n        }\n    }\n    return maxSetSize;\n}\n\nint main() {\n    int T;\n    cin >> T;\n    for (int t = 0; t < T; t++) {\n        Graph graph = readGraph();\n        int maxIndependentSetSize = findMaxIndependentSet(graph);\n        cout << maxIndependentSetSize << endl;\n    }\n    return 0;\n}",
+      "Java": "// COMPLETE, COMPILABLE Java code\nimport java.util.Scanner;\npublic class Main {\n    // Define the structure for an edge\n    static class Edge {\n        int u, v, f;\n        public Edge(int u, int v, int f) {\n            this.u = u;\n            this.v = v;\n            this.f = f;\n        }\n    }\n\n    // Define the structure for a graph\n    static class Graph {\n        int n, m, k;\n        Edge[] edges;\n        int[] freq;\n        public Graph(int n, int m, int k) {\n            this.n = n;\n            this.m = m;\n            this.k = k;\n            this.edges = new Edge[m];\n            this.freq = new int[k];\n        }\n    }\n\n    // Function to read a graph from input\n    public static Graph readGraph(Scanner scanner) {\n        int n = scanner.nextInt();\n        int m = scanner.nextInt();\n        int k = scanner.nextInt();\n        Graph graph = new Graph(n, m, k);\n        for (int i = 0; i < k; i++) {\n            graph.freq[i] = scanner.nextInt();\n        }\n        for (int i = 0; i < m; i++) {\n            int u = scanner.nextInt();\n            int v = scanner.nextInt();\n            int f = scanner.nextInt();\n            graph.edges[i] = new Edge(u, v, f);\n        }\n        return graph;\n    }\n\n    // Function to find the maximum independent set\n    public static int findMaxIndependentSet(Graph graph) {\n        int maxSetSize = 0;\n        // Iterate over all possible subsets of edges\n        for (int mask = 0; mask < (1 << graph.m); mask++) {\n            int setSize = 0;\n            int[] freqCount = new int[graph.k];\n            int[] nodeCount = new int[graph.n];\n            for (int i = 0; i < graph.m; i++) {\n                if ((mask & (1 << i)) != 0) {\n                    setSize++;\n                    freqCount[graph.edges[i].f - 1]++;\n                    nodeCount[graph.edges[i].u - 1]++;\n                    nodeCount[graph.edges[i].v - 1]++;\n                }\n            }\n            // Check if the current subset is an independent set\n            int isValid = 1;\n            for (int i = 0; i < graph.k; i++) {\n                if (freqCount[i] > graph.freq[i]) {\n                    isValid = 0;\n                    break;\n                }\n            }\n            for (int i = 0; i < graph.n; i++) {\n                if (nodeCount[i] > 1) {\n                    isValid = 0;\n                    break;\n                }\n            }\n            if (isValid) {\n                maxSetSize = (maxSetSize > setSize) ? maxSetSize : setSize;\n            }\n        }\n        return maxSetSize;\n    }\n\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int T = scanner.nextInt();\n        for (int t = 0; t < T; t++) {\n            Graph graph = readGraph(scanner);\n            int maxIndependentSetSize = findMaxIndependentSet(graph);\n            System.out.println(maxIndependentSetSize);\n        }\n    }\n}",
+      "Python3": "# COMPLETE, RUNNABLE Python3 code\nimport sys\n\n# Define the structure for an edge\nclass Edge:\n    def __init__(self, u, v, f):\n        self.u = u\n        self.v = v\n        self.f = f\n\n# Define the structure for a graph\nclass Graph:\n    def __init__(self, n, m, k):\n        self.n = n\n        self.m = m\n        self.k = k\n        self.edges = [None] * m\n        self.freq = [0] * k\n\n# Function to read a graph from input\ndef readGraph():\n    n, m, k = map(int, input().split())\n    graph = Graph(n, m, k)\n    graph.freq = list(map(int, input().split()))\n    for i in range(m):\n        u, v, f = map(int, input().split())\n        graph.edges[i] = Edge(u, v, f)\n    return graph\n\n# Function to find the maximum independent set\ndef findMaxIndependentSet(graph):\n    maxSetSize = 0\n    # Iterate over all possible subsets of edges\n    for mask in range(1 << graph.m):\n        setSize = 0\n        freqCount = [0] * graph.k\n        nodeCount = [0] * graph.n\n        for i in range(graph.m):\n            if (mask & (1 << i)) != 0:\n                setSize += 1\n                freqCount[graph.edges[i].f - 1] += 1\n                nodeCount[graph.edges[i].u - 1] += 1\n                nodeCount[graph.edges[i].v - 1] += 1\n        # Check if the current subset is an independent set\n        isValid = 1\n        for i in range(graph.k):\n            if freqCount[i] > graph.freq[i]:\n                isValid = 0\n                break\n        for i in range(graph.n):\n            if nodeCount[i] > 1:\n                isValid = 0\n                break\n        if isValid:\n            maxSetSize = max(maxSetSize, setSize)\n    return maxSetSize\n\n# Read the number of test cases\nT = int(input())\nfor t in range(T):\n    # Read a graph and find the maximum independent set\n    graph = readGraph()\n    maxIndependentSetSize = findMaxIndependentSet(graph)\n    print(maxIndependentSetSize)",
+      "JavaScript": "const lines = require('fs').readFileSync(0,'utf-8').trim().split('\\n');\nlet i=0;\n\n// Define the structure for an edge\nfunction Edge(u, v, f) {\n    this.u = u;\n    this.v = v;\n    this.f = f;\n}\n\n// Define the structure for a graph\nfunction Graph(n, m, k) {\n    this.n = n;\n    this.m = m;\n    this.k = k;\n    this.edges = new Array(m);\n    this.freq = new Array(k);\n}\n\n// Function to read a graph from input\nfunction readGraph() {\n    let [n, m, k] = lines[i++].trim().split(' ').map(Number);\n    let graph = new Graph(n, m, k);\n    graph.freq = lines[i++].trim().split(' ').map(Number);\n    for (let j = 0; j < m; j++) {\n        let [u, v, f] = lines[i++].trim().split(' ').map(Number);\n        graph.edges[j] = new Edge(u, v, f);\n    }\n    return graph;\n}\n\n// Function to find the maximum independent set\nfunction findMaxIndependentSet(graph) {\n    let maxSetSize = 0;\n    // Iterate over all possible subsets of edges\n    for (let mask = 0; mask < (1 << graph.m); mask++) {\n        let setSize = 0;\n        let freqCount = new Array(graph.k).fill(0);\n        let nodeCount = new Array(graph.n).fill(0);\n        for (let i = 0; i < graph.m; i++) {\n            if ((mask & (1 << i)) != 0) {\n                setSize++;\n                freqCount[graph.edges[i].f - 1]++;\n                nodeCount[graph.edges[i].u - 1]++;\n                nodeCount[graph.edges[i].v - 1]++;\n            }\n        }\n        // Check if the current subset is an independent set\n        let isValid = 1;\n        for (let i = 0; i < graph.k; i++) {\n            if (freqCount[i] > graph.freq[i]) {\n                isValid = 0;\n                break;\n            }\n        }\n        for (let i = 0; i < graph.n; i++) {\n            if (nodeCount[i] > 1) {\n                isValid = 0;\n                break;\n            }\n        }\n        if (isValid) {\n            maxSetSize = Math.max(maxSetSize, setSize);\n        }\n    }\n    return maxSetSize;\n}\n\n// Read the number of test cases\nlet T = +lines[i++];\nfor (let t = 0; t < T; t++) {\n    // Read a graph and find the maximum independent set\n    let graph = readGraph();\n    let maxIndependentSetSize = findMaxIndependentSet(graph);\n    console.log(maxIndependentSetSize);\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

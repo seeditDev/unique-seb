@@ -1,0 +1,130 @@
+{
+  "questionId": "Q2236",
+  "title": "Reduce string",
+  "slug": "reduce-string",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Greedy Reduction",
+      "Strings",
+      "Dynamic Programming",
+      "Substring Matching"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ]
+  },
+  "content": {
+    "problemStatement": "Give a string s of length l, and a set S of n sample string(s). We do reduce the string s using the set S by this way:\n\n\n\nWherever Si appears as a consecutive substring of the string s, you can delete (or not) it.\nAfter each deletion, you will get a new string s by joining the part to the left and to the right of the deleted substring.\n\n\nRequestBy that way, try to reduce the given string s to get a new string of minimum length. You can do delete for unlimited times.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= |s| <= 1000",
+      "1 <= n <= 100",
+      "1 <= |Si| <= 20",
+      "All strings consist of printable ASCII characters without spaces"
+    ],
+    "inputFormat": "First line contains an integer T, the number of test cases. For each test case: a line with the string s (lowercase letters, length \u2264 1000), a line with integer n (1 \u2264 n \u2264 100), followed by n lines each containing a sample string Si (1 \u2264 |Si| \u2264 20).",
+    "outputFormat": "For each test case output a single line containing one integer \u2013 the minimum possible length of the string after performing any number of deletions of substrings that belong to the given set.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\naaabccd\n3\nabc\nac\naaa",
+        "output": "2",
+        "explanation": "The string 'aaabccd' can be reduced to 'bd' by removing 'aaa', then 'abc', and finally 'ac'."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\nabcdef\n2\nab\ncd",
+        "output": "2",
+        "explanation": "By deleting 'ab' and 'cd' we obtain the string 'ef', whose length is 2, which is minimal."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\naaaaaa\n1\naaa",
+        "output": "0",
+        "explanation": "Delete 'aaa' twice to obtain an empty string."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\na\n1\na",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary (compact)",
+        "input": "1\nabcdefghijklmno\n5\nabc\ndefg\nhij\nklmno\nxyz",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform characters",
+        "input": "1\naaaaaaaaaa\n2\naa\naaa",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky overlapping creation",
+        "input": "1\nababa\n1\naba",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "multiple test cases stress",
+        "input": "2\nabcabc\n1\nabc\nxyzxy\n2\nxy\nz",
+        "expectedOutput": "0\n0",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Let dp[i] be the minimum possible length of the prefix s[0..i-1] after reductions. Initialise dp[0]=0. For each position i (1\u2011based) we can always keep the i\u2011th character, giving dp[i]=dp[i-1]+1. Additionally, for every pattern p of length L, if L \u2264 i and s[i-L..i-1] equals p, we may delete this occurrence, so dp[i]=min(dp[i], dp[i-L]). The transition works because after reducing the prefix up to i-L we already achieved the optimal length for that part, and deleting p does not affect earlier reductions. Scanning the string once and checking all patterns at each position yields the answer dp[|s|]. The algorithm runs in O(|s|\u00b7(n\u00b7max|Si|)) \u2264 2\u00b710^6 operations per test case, easily within limits. Memory usage is O(|s|).",
+    "timeComplexity": "O(|s| * n * Lmax) per test case, where Lmax \u2264 20 (\u22482\u00b710^6 operations for worst case).",
+    "spaceComplexity": "O(|s|) for the dp array.",
+    "code": {
+      "C": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    int T; if(scanf(\"%d\",&T)!=1) return 0;\n    while(T--){\n        char buf[1005]; scanf(\"%s\",buf);\n        string s(buf);\n        int n; scanf(\"%d\",&n);\n        vector<string> pat(n);\n        for(int i=0;i<n;i++){\n            scanf(\"%s\",buf);\n            pat[i]=buf;\n        }\n        int m=s.size();\n        const int INF=1e9;\n        vector<int> dp(m+1,INF);\n        dp[0]=0;\n        for(int i=1;i<=m;i++){\n            dp[i]=dp[i-1]+1; // keep current char\n            for(const string &p:pat){\n                int L=p.size();\n                if(L<=i && s.compare(i-L,L,p)==0){\n                    dp[i]=min(dp[i],dp[i-L]);\n                }\n            }\n        }\n        printf(\"%d\\n\",dp[m]);\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        string s; cin>>s;\n        int n; cin>>n;\n        vector<string> pat(n);\n        for(int i=0;i<n;i++) cin>>pat[i];\n        int m=s.size();\n        const int INF=1e9;\n        vector<int> dp(m+1,INF);\n        dp[0]=0;\n        for(int i=1;i<=m;i++){\n            dp[i]=dp[i-1]+1; // keep s[i-1]\n            for(const string &p:pat){\n                int L=p.size();\n                if(L<=i && s.compare(i-L,L,p)==0){\n                    dp[i]=min(dp[i],dp[i-L]);\n                }\n            }\n        }\n        cout<<dp[m]<<\"\\n\";\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder out = new StringBuilder();\n        int T = Integer.parseInt(br.readLine().trim());\n        while (T-- > 0) {\n            String s = br.readLine().trim();\n            int n = Integer.parseInt(br.readLine().trim());\n            String[] pat = new String[n];\n            for (int i = 0; i < n; i++) pat[i] = br.readLine().trim();\n            int m = s.length();\n            int[] dp = new int[m + 1];\n            Arrays.fill(dp, Integer.MAX_VALUE/2);\n            dp[0] = 0;\n            for (int i = 1; i <= m; i++) {\n                dp[i] = dp[i-1] + 1; // keep character i-1\n                for (String p : pat) {\n                    int L = p.length();\n                    if (L <= i && s.regionMatches(i - L, p, 0, L)) {\n                        dp[i] = Math.min(dp[i], dp[i - L]);\n                    }\n                }\n            }\n            out.append(dp[m]).append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}\n",
+      "Python3": "import sys\n\ndef solve():\n    data = sys.stdin.read().splitlines()\n    it = iter(data)\n    T = int(next(it))\n    out = []\n    for _ in range(T):\n        s = next(it).strip()\n        n = int(next(it))\n        patterns = [next(it).strip() for _ in range(n)]\n        m = len(s)\n        INF = 10**9\n        dp = [INF] * (m + 1)\n        dp[0] = 0\n        for i in range(1, m + 1):\n            dp[i] = dp[i-1] + 1\n            for p in patterns:\n                L = len(p)\n                if L <= i and s[i-L:i] == p:\n                    if dp[i-L] < dp[i]:\n                        dp[i] = dp[i-L]\n        out.append(str(dp[m]))\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst T = parseInt(lines[idx++].trim(), 10);\nlet results = [];\nfor (let t = 0; t < T; t++) {\n  const s = lines[idx++].trim();\n  const n = parseInt(lines[idx++].trim(), 10);\n  const patterns = [];\n  for (let i = 0; i < n; i++) patterns.push(lines[idx++].trim());\n  const m = s.length;\n  const INF = 1e9;\n  const dp = new Array(m + 1).fill(INF);\n  dp[0] = 0;\n  for (let i = 1; i <= m; i++) {\n    dp[i] = dp[i - 1] + 1; // keep character\n    for (const p of patterns) {\n      const L = p.length;\n      if (L <= i && s.slice(i - L, i) === p) {\n        dp[i] = Math.min(dp[i], dp[i - L]);\n      }\n    }\n  }\n  results.push(String(dp[m]));\n}\nconsole.log(results.join('\\n'));\n"
+    }
+  }
+}

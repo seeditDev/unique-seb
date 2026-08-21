@@ -1,0 +1,115 @@
+{
+  "questionId": "Q2209",
+  "title": "Heroes of Magical Might",
+  "slug": "heroes-of-magical-might",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-03",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Markov Chain",
+      "Expected Value",
+      "Dynamic Programming"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ]
+  },
+  "content": {
+    "problemStatement": "You are playing the game Heroes of Magical Might. Your  hero is in a grid map divided into MxN squares.\n\n\n\nThere are three kinds of possible objects in each square:\n\n\nObstacles: these can be trees, mountains, houses, and so on. Your hero cannot walk into these squares. These squares are represented by the characters '#'.\nTreasures: your hero can find some gold or earn experience points when collecting these treasures. These squares are represented by the characters '*'.\nGates: these gates form a complex interconnected network in the map. Your hero can travel almost instantly between the gates, represented by the characters '@'.\nYou control the hero turn by turn. In each turn, you can:\n\n\nChoose one of the four possible directions, and move to the adjacent square in that direction. However, due to fog, your hero will only succeed with probability P. He may go in the remaining 3 directions with equal probability (1-P)/3. If the adjacent square is an obstacle or is outside the maze, the hero remains in the current square.\n\n\nIn addition, if your hero's current square is a gate, your hero could choose to enter the gate. He will appear in one of the remaining gates with equal probabilities, i.e. with probability 1/(Number of Gates - 1).\n\n\n.@.\n@#@\nFor example, in the above map, suppose your hero's starting position is at (1,1) and P = 0.8. If the hero moves down in the first turn, he may succeed and end up in the gate at (2,1) with probability 0.8. With probability 0.2 / 3, he may go right and end up in the gate at (1,2). With probability 2*0.2 / 3, he just remains at (1,1) since the top and left direction would lead him out of the maze.\n\n\nIf the hero chooses to enter the gate at (2,1), he may end up at (1,2) or (2,3) with equal probability 1/2.\n\n\nFind the optimum strategy to control your hero such that the expected number of turns to collect the first treasure is minimized.",
+    "constraints": [
+      "1 <= T <= 15",
+      "1 <= M,N <= 20",
+      "0 <= P <= 1"
+    ],
+    "inputFormat": "The first line contains t, the number of test cases. Then t test cases follow, preceded by empty lines. Each test case has the following form. The first line contains two numbers M and N (1<=M,N<=20), describing the dimensions of the map. Each line in the next M lines contains N characters describing the maze.",
+    "outputFormat": "For each test case, output the minimum expected number of turns until the hero collects the first treasure, rounded to two decimal places.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4\n1 2\nS*\n0.7\n1 2\nS*\n0\n2 4\nS##*\n@##@\n0.8\n2 18\nS....#@......*@.\n.@....#...........\n0.6",
+        "output": "1.43\n3.00\n3.50\n6.41",
+        "explanation": ""
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can model it as a Markov Chain where each state represents a position in the maze. We can then use dynamic programming to calculate the expected number of turns to reach a treasure from each state. The transition probabilities are determined by the given probability P and the structure of the maze.",
+    "timeComplexity": "O(T * M * N * (M * N + G)) \u2014 where T is the number of test cases, M and N are the dimensions of the maze, and G is the number of gates.",
+    "spaceComplexity": "O(M * N + G) \u2014 for storing the maze and the gates.",
+    "code": {
+      "C": "// COMPLETE, COMPILABLE C code\n#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#define MAX_M 20\n#define MAX_N 20\n#define MAX_G 20\n#define MAX_T 15\n\n// Function to calculate the expected number of turns\ndouble calculate_expected_turns(int M, int N, char maze[MAX_M][MAX_N], double P) {\n    // Initialize the expected turns for each state\n    double expected_turns[MAX_M * MAX_N + MAX_G];\n    for (int i = 0; i < MAX_M * MAX_N + MAX_G; i++) {\n        expected_turns[i] = 0.0;\n    }\n\n    // Calculate the expected turns using dynamic programming\n    for (int i = 0; i < MAX_M; i++) {\n        for (int j = 0; j < MAX_N; j++) {\n            if (maze[i][j] == '*') {\n                expected_turns[i * MAX_N + j] = 0.0;\n            } else if (maze[i][j] == '@') {\n                // Calculate the expected turns for the gate\n                double expected_turn = 0.0;\n                for (int k = 0; k < MAX_M; k++) {\n                    for (int l = 0; l < MAX_N; l++) {\n                        if (maze[k][l] == '@' && (k != i || l != j)) {\n                            expected_turn += expected_turns[k * MAX_N + l];\n                        }\n                    }\n                }\n                expected_turn /= (MAX_M * MAX_N - 1);\n                expected_turns[i * MAX_N + j] = expected_turn;\n            } else {\n                // Calculate the expected turns for the current state\n                double expected_turn = 0.0;\n                for (int k = 0; k < 4; k++) {\n                    int new_i = i, new_j = j;\n                    switch (k) {\n                        case 0: new_i--; break;\n                        case 1: new_i++; break;\n                        case 2: new_j--; break;\n                        case 3: new_j++; break;\n                    }\n                    if (new_i >= 0 && new_i < MAX_M && new_j >= 0 && new_j < MAX_N && maze[new_i][new_j] != '#') {\n                        expected_turn += expected_turns[new_i * MAX_N + new_j];\n                    }\n                }\n                expected_turn *= (1 - P) / 3;\n                expected_turn += expected_turns[i * MAX_N + j] * P;\n                expected_turns[i * MAX_N + j] = expected_turn;\n            }\n        }\n    }\n\n    // Find the starting position and return the expected turns\n    for (int i = 0; i < MAX_M; i++) {\n        for (int j = 0; j < MAX_N; j++) {\n            if (maze[i][j] == 'S') {\n                return expected_turns[i * MAX_N + j];\n            }\n        }\n    }\n    return 0.0;\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    for (int t = 0; t < T; t++) {\n        int M, N;\n        scanf(\"%d %d\", &M, &N);\n        char maze[MAX_M][MAX_N];\n        for (int i = 0; i < M; i++) {\n            scanf(\"%s\", maze[i]);\n        }\n        double P;\n        scanf(\"%lf\", &P);\n        double expected_turns = calculate_expected_turns(M, N, maze, P);\n        printf(\"%.2f\\n\", expected_turns);\n    }\n    return 0;\n}",
+      "C++": "// COMPLETE, COMPILABLE C++ code\n#include <iostream>\n#include <vector>\n#include <string>\n#include <cmath>\nusing namespace std;\n\nconst int MAX_M = 20;\nconst int MAX_N = 20;\nconst int MAX_G = 20;\nconst int MAX_T = 15;\n\n// Function to calculate the expected number of turns\ndouble calculate_expected_turns(int M, int N, vector<string> maze, double P) {\n    // Initialize the expected turns for each state\n    vector<double> expected_turns(M * N + MAX_G, 0.0);\n\n    // Calculate the expected turns using dynamic programming\n    for (int i = 0; i < M; i++) {\n        for (int j = 0; j < N; j++) {\n            if (maze[i][j] == '*') {\n                expected_turns[i * N + j] = 0.0;\n            } else if (maze[i][j] == '@') {\n                // Calculate the expected turns for the gate\n                double expected_turn = 0.0;\n                for (int k = 0; k < M; k++) {\n                    for (int l = 0; l < N; l++) {\n                        if (maze[k][l] == '@' && (k != i || l != j)) {\n                            expected_turn += expected_turns[k * N + l];\n                        }\n                    }\n                }\n                expected_turn /= (M * N - 1);\n                expected_turns[i * N + j] = expected_turn;\n            } else {\n                // Calculate the expected turns for the current state\n                double expected_turn = 0.0;\n                for (int k = 0; k < 4; k++) {\n                    int new_i = i, new_j = j;\n                    switch (k) {\n                        case 0: new_i--; break;\n                        case 1: new_i++; break;\n                        case 2: new_j--; break;\n                        case 3: new_j++; break;\n                    }\n                    if (new_i >= 0 && new_i < M && new_j >= 0 && new_j < N && maze[new_i][new_j] != '#') {\n                        expected_turn += expected_turns[new_i * N + new_j];\n                    }\n                }\n                expected_turn *= (1 - P) / 3;\n                expected_turn += expected_turns[i * N + j] * P;\n                expected_turns[i * N + j] = expected_turn;\n            }\n        }\n    }\n\n    // Find the starting position and return the expected turns\n    for (int i = 0; i < M; i++) {\n        for (int j = 0; j < N; j++) {\n            if (maze[i][j] == 'S') {\n                return expected_turns[i * N + j];\n            }\n        }\n    }\n    return 0.0;\n}\n\nint main() {\n    int T;\n    cin >> T;\n    for (int t = 0; t < T; t++) {\n        int M, N;\n        cin >> M >> N;\n        vector<string> maze(M);\n        for (int i = 0; i < M; i++) {\n            cin >> maze[i];\n        }\n        double P;\n        cin >> P;\n        double expected_turns = calculate_expected_turns(M, N, maze, P);\n        cout << fixed << setprecision(2) << expected_turns << endl;\n    }\n    return 0;\n}",
+      "Java": "// COMPLETE, COMPILABLE Java code\nimport java.util.Scanner;\npublic class Main {\n    static final int MAX_M = 20;\n    static final int MAX_N = 20;\n    static final int MAX_G = 20;\n    static final int MAX_T = 15;\n\n    // Function to calculate the expected number of turns\n    public static double calculate_expected_turns(int M, int N, char[][] maze, double P) {\n        // Initialize the expected turns for each state\n        double[] expected_turns = new double[M * N + MAX_G];\n        for (int i = 0; i < M * N + MAX_G; i++) {\n            expected_turns[i] = 0.0;\n        }\n\n        // Calculate the expected turns using dynamic programming\n        for (int i = 0; i < M; i++) {\n            for (int j = 0; j < N; j++) {\n                if (maze[i][j] == '*') {\n                    expected_turns[i * N + j] = 0.0;\n                } else if (maze[i][j] == '@') {\n                    // Calculate the expected turns for the gate\n                    double expected_turn = 0.0;\n                    for (int k = 0; k < M; k++) {\n                        for (int l = 0; l < N; l++) {\n                            if (maze[k][l] == '@' && (k != i || l != j)) {\n                                expected_turn += expected_turns[k * N + l];\n                            }\n                        }\n                    }\n                    expected_turn /= (M * N - 1);\n                    expected_turns[i * N + j] = expected_turn;\n                } else {\n                    // Calculate the expected turns for the current state\n                    double expected_turn = 0.0;\n                    for (int k = 0; k < 4; k++) {\n                        int new_i = i, new_j = j;\n                        switch (k) {\n                            case 0: new_i--; break;\n                            case 1: new_i++; break;\n                            case 2: new_j--; break;\n                            case 3: new_j++; break;\n                        }\n                        if (new_i >= 0 && new_i < M && new_j >= 0 && new_j < N && maze[new_i][new_j] != '#') {\n                            expected_turn += expected_turns[new_i * N + new_j];\n                        }\n                    }\n                    expected_turn *= (1 - P) / 3;\n                    expected_turn += expected_turns[i * N + j] * P;\n                    expected_turns[i * N + j] = expected_turn;\n                }\n            }\n        }\n\n        // Find the starting position and return the expected turns\n        for (int i = 0; i < M; i++) {\n            for (int j = 0; j < N; j++) {\n                if (maze[i][j] == 'S') {\n                    return expected_turns[i * N + j];\n                }\n            }\n        }\n        return 0.0;\n    }\n\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int T = scanner.nextInt();\n        for (int t = 0; t < T; t++) {\n            int M = scanner.nextInt();\n            int N = scanner.nextInt();\n            char[][] maze = new char[M][N];\n            for (int i = 0; i < M; i++) {\n                String row = scanner.next();\n                for (int j = 0; j < N; j++) {\n                    maze[i][j] = row.charAt(j);\n                }\n            }\n            double P = scanner.nextDouble();\n            double expected_turns = calculate_expected_turns(M, N, maze, P);\n            System.out.printf(\"%.2f\\n\", expected_turns);\n        }\n    }\n}",
+      "Python3": "# COMPLETE, RUNNABLE Python3 code\nimport sys\n\nMAX_M = 20\nMAX_N = 20\nMAX_G = 20\nMAX_T = 15\n\n# Function to calculate the expected number of turns\ndef calculate_expected_turns(M, N, maze, P):\n    # Initialize the expected turns for each state\n    expected_turns = [0.0] * (M * N + MAX_G)\n\n    # Calculate the expected turns using dynamic programming\n    for i in range(M):\n        for j in range(N):\n            if maze[i][j] == '*':\n                expected_turns[i * N + j] = 0.0\n            elif maze[i][j] == '@':\n                # Calculate the expected turns for the gate\n                expected_turn = 0.0\n                for k in range(M):\n                    for l in range(N):\n                        if maze[k][l] == '@' and (k != i or l != j):\n                            expected_turn += expected_turns[k * N + l]\n                expected_turn /= (M * N - 1)\n                expected_turns[i * N + j] = expected_turn\n            else:\n                # Calculate the expected turns for the current state\n                expected_turn = 0.0\n                for k in range(4):\n                    new_i = i\n                    new_j = j\n                    if k == 0: new_i -= 1\n                    elif k == 1: new_i += 1\n                    elif k == 2: new_j -= 1\n                    elif k == 3: new_j += 1\n                    if 0 <= new_i < M and 0 <= new_j < N and maze[new_i][new_j] != '#':\n                        expected_turn += expected_turns[new_i * N + new_j]\n                expected_turn *= (1 - P) / 3\n                expected_turn += expected_turns[i * N + j] * P\n                expected_turns[i * N + j] = expected_turn\n\n    # Find the starting position and return the expected turns\n    for i in range(M):\n        for j in range(N):\n            if maze[i][j] == 'S':\n                return expected_turns[i * N + j]\n    return 0.0\n\n# Read input from standard input\nT = int(input())\nfor t in range(T):\n    M, N = map(int, input().split())\n    maze = [list(input()) for _ in range(M)]\n    P = float(input())\n    expected_turns = calculate_expected_turns(M, N, maze, P)\n    print(f\"{expected_turns:.2f}\")",
+      "JavaScript": ""
+    }
+  }
+}

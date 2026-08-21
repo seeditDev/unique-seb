@@ -1,0 +1,140 @@
+{
+  "questionId": "Q5149",
+  "title": "Spaghetti Monsters",
+  "slug": "spaghetti-monsters",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "BFS",
+      "Shortest Path"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Graphs"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "**This problem was part of the SEED-IT April Challenge.  All user submissions for this contest problem are publicly available here.**\n\nSpaghetti Monsters have stolen The Chef’s golden spoon!  The Chef has a map, on which are marked: his location, the location of the golden spoon, and the locations of the spaghetti monsters. The map is in fact rectangular, consisting of square fields. Each field on the map, except for those adjacent to the boundary, is adjacent to 8 other fields -- fields which share a side or corner are assumed to be at a distance of 1 from each other, and it is possible to move between them directly. The Chef is a bit scared of spaghetti monsters and would prefer not to approach them too closely... Help him compute the minimum distance up to which he must approach some spaghetti monster, so as to find the golden spoon.",
+    "constraints": [
+      "1 <= n <= 1000",
+      "1 <= m <= 1000",
+      "The map contains exactly one '@' and one '$'.",
+      "The map contains at least one 'D'."
+    ],
+    "inputFormat": "First line contains two integers n and m, representing the height and width of the map. The next n lines contain m characters each, representing the map. The characters '@', '$', 'D', and '.' represent the location of The Chef, the golden spoon, a spaghetti monster, and an empty position, respectively.",
+    "outputFormat": "The minimum distance at which The Chef must find himself from one of the spaghetti monsters in order to reach the golden spoon.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "7 5\\n....$\\n.....\\n.....\\nD...D\\n.....\\n.....\\n@....",
+        "output": "2",
+        "explanation": "The Chef needs to move 2 steps to reach the golden spoon while avoiding the spaghetti monsters."
+      },
+      {
+        "id": "sample_2",
+        "input": "7 5\\n....$\\n.....\\n.....\\nDDDDD\\n.....\\n.....\\n@....",
+        "output": "0",
+        "explanation": "The Chef needs to move 0 steps to reach the golden spoon because it is already adjacent to a spaghetti monster."
+      },
+      {
+        "id": "sample_3",
+        "input": "5 5\\n.....\\n..@..\\n.....\\n.....\\n$....",
+        "output": "4",
+        "explanation": "The Chef needs to move 4 steps to reach the golden spoon without encountering any spaghetti monsters."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1 1\\n@",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1000 1000\\n",
+        "expectedOutput": "999",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "5 5\\nD....\\nD....\\nD....\\nD....\\nD....",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "5 5\\n.....\\n..@..\\n.....\\n.....\\n$....",
+        "expectedOutput": "4",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "10 10\\n",
+        "expectedOutput": "9",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a Breadth-First Search (BFS) algorithm. We start by finding the location of The Chef and the golden spoon on the map. Then, we perform a BFS traversal from The Chef's location, exploring all neighboring cells and keeping track of the minimum distance to a spaghetti monster. If we reach the golden spoon during the traversal, we return the minimum distance to a spaghetti monster.",
+    "timeComplexity": "O(n*m) per test case, where n and m are the dimensions of the map.",
+    "spaceComplexity": "O(n*m) for the queue and visited array.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#define MAX_N 1000\n#define MAX_M 1000\n\nint min_distance(char map[][MAX_M], int n, int m) {\n    int chef_x, chef_y, spoon_x, spoon_y;\n    int dx[] = {-1, -1, -1, 0, 0, 1, 1, 1};\n    int dy[] = {-1, 0, 1, -1, 1, -1, 0, 1};\n    int queue[n*m][2];\n    int front, rear;\n    int visited[n][m];\n    int min_dist = n * m;\n    int dist[n][m];\n\n    // Find the location of The Chef and the golden spoon\n    for (int i = 0; i < n; i++) {\n        for (int j = 0; j < m; j++) {\n            if (map[i][j] == '@') {\n                chef_x = i;\n                chef_y = j;\n            } else if (map[i][j] == '$') {\n                spoon_x = i;\n                spoon_y = j;\n            }\n        }\n    }\n\n    // Initialize the queue and visited array\n    front = rear = 0;\n    queue[rear][0] = chef_x;\n    queue[rear][1] = chef_y;\n    visited[chef_x][chef_y] = 1;\n    dist[chef_x][chef_y] = 0;\n    rear++;\n\n    while (front < rear) {\n        int x = queue[front][0];\n        int y = queue[front][1];\n        front++;\n\n        // Check if we have reached the golden spoon\n        if (x == spoon_x && y == spoon_y) {\n            return dist[x][y];\n        }\n\n        // Explore neighboring cells\n        for (int i = 0; i < 8; i++) {\n            int nx = x + dx[i];\n            int ny = y + dy[i];\n\n            // Check if the neighboring cell is within the map boundaries and not visited\n            if (nx >= 0 && nx < n && ny >= 0 && ny < m && !visited[nx][ny]) {\n                // Mark the neighboring cell as visited and add it to the queue\n                visited[nx][ny] = 1;\n                dist[nx][ny] = dist[x][y] + 1;\n                queue[rear][0] = nx;\n                queue[rear][1] = ny;\n                rear++;\n            }\n        }\n    }\n\n    return -1;\n}\n\nint main() {\n    int n, m;\n    char map[MAX_N][MAX_M];\n\n    scanf(\"%d %d\", &n, &m);\n\n    for (int i = 0; i < n; i++) {\n        scanf(\"%s\", map[i]);\n    }\n\n    printf(\"%d\\n\", min_distance(map, n, m));\n\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <queue>\n#include <vector>\nusing namespace std;\n#define MAX_N 1000\n#define MAX_M 1000\n\nint min_distance(vector<vector<char>>& map, int n, int m) {\n    int chef_x, chef_y, spoon_x, spoon_y;\n    int dx[] = {-1, -1, -1, 0, 0, 1, 1, 1};\n    int dy[] = {-1, 0, 1, -1, 1, -1, 0, 1};\n    queue<pair<int, int>> q;\n    vector<vector<bool>> visited(n, vector<bool>(m, false));\n    vector<vector<int>> dist(n, vector<int>(m, n * m));\n\n    // Find the location of The Chef and the golden spoon\n    for (int i = 0; i < n; i++) {\n        for (int j = 0; j < m; j++) {\n            if (map[i][j] == '@') {\n                chef_x = i;\n                chef_y = j;\n            } else if (map[i][j] == '$') {\n                spoon_x = i;\n                spoon_y = j;\n            }\n        }\n    }\n\n    // Initialize the queue and visited array\n    q.push({chef_x, chef_y});\n    visited[chef_x][chef_y] = true;\n    dist[chef_x][chef_y] = 0;\n\n    while (!q.empty()) {\n        int x = q.front().first;\n        int y = q.front().second;\n        q.pop();\n\n        // Check if we have reached the golden spoon\n        if (x == spoon_x && y == spoon_y) {\n            return dist[x][y];\n        }\n\n        // Explore neighboring cells\n        for (int i = 0; i < 8; i++) {\n            int nx = x + dx[i];\n            int ny = y + dy[i];\n\n            // Check if the neighboring cell is within the map boundaries and not visited\n            if (nx >= 0 && nx < n && ny >= 0 && ny < m && !visited[nx][ny]) {\n                // Mark the neighboring cell as visited and add it to the queue\n                visited[nx][ny] = true;\n                dist[nx][ny] = dist[x][y] + 1;\n                q.push({nx, ny});\n            }\n        }\n    }\n\n    return -1;\n}\n\nint main() {\n    int n, m;\n    vector<vector<char>> map;\n\n    cin >> n >> m;\n    map.resize(n, vector<char>(m));\n\n    for (int i = 0; i < n; i++) {\n        for (int j = 0; j < m; j++) {\n            cin >> map[i][j];\n        }\n    }\n\n    cout << min_distance(map, n, m) << endl;\n\n    return 0;\n}",
+      "Java": "import java.util.LinkedList;\nimport java.util.Queue;\nimport java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int n = scanner.nextInt();\n        int m = scanner.nextInt();\n        char[][] map = new char[n][m];\n\n        for (int i = 0; i < n; i++) {\n            String line = scanner.next();\n            map[i] = line.toCharArray();\n        }\n\n        System.out.println(minDistance(map, n, m));\n    }\n\n    public static int minDistance(char[][] map, int n, int m) {\n        int chefX = 0, chefY = 0, spoonX = 0, spoonY = 0;\n        int[] dx = {-1, -1, -1, 0, 0, 1, 1, 1};\n        int[] dy = {-1, 0, 1, -1, 1, -1, 0, 1};\n        Queue<int[]> queue = new LinkedList<>();\n        boolean[][] visited = new boolean[n][m];\n        int[][] dist = new int[n][m];\n        for (int i = 0; i < n; i++) {\n            for (int j = 0; j < m; j++) {\n                dist[i][j] = n * m;\n            }\n        }\n\n        // Find the location of The Chef and the golden spoon\n        for (int i = 0; i < n; i++) {\n            for (int j = 0; j < m; j++) {\n                if (map[i][j] == '@') {\n                    chefX = i;\n                    chefY = j;\n                } else if (map[i][j] == '$') {\n                    spoonX = i;\n                    spoonY = j;\n                }\n            }\n        }\n\n        // Initialize the queue and visited array\n        queue.add(new int[] {chefX, chefY});\n        visited[chefX][chefY] = true;\n        dist[chefX][chefY] = 0;\n\n        while (!queue.isEmpty()) {\n            int[] current = queue.poll();\n            int x = current[0];\n            int y = current[1];\n\n            // Check if we have reached the golden spoon\n            if (x == spoonX && y == spoonY) {\n                return dist[x][y];\n            }\n\n            // Explore neighboring cells\n            for (int i = 0; i < 8; i++) {\n                int nx = x + dx[i];\n                int ny = y + dy[i];\n\n                // Check if the neighboring cell is within the map boundaries and not visited\n                if (nx >= 0 && nx < n && ny >= 0 && ny < m && !visited[nx][ny]) {\n                    // Mark the neighboring cell as visited and add it to the queue\n                    visited[nx][ny] = true;\n                    dist[nx][ny] = dist[x][y] + 1;\n                    queue.add(new int[] {nx, ny});\n                }\n            }\n        }\n\n        return -1;\n    }\n}",
+      "Python3": "from collections import deque\n\ndef min_distance(map, n, m):\n    chef_x, chef_y, spoon_x, spoon_y = 0, 0, 0, 0\n    dx = [-1, -1, -1, 0, 0, 1, 1, 1]\n    dy = [-1, 0, 1, -1, 1, -1, 0, 1]\n    queue = deque()\n    visited = [[False for _ in range(m)] for _ in range(n)]\n    dist = [[n * m for _ in range(m)] for _ in range(n)]\n\n    # Find the location of The Chef and the golden spoon\n    for i in range(n):\n        for j in range(m):\n            if map[i][j] == '@':\n                chef_x, chef_y = i, j\n            elif map[i][j] == '$':\n                spoon_x, spoon_y = i, j\n\n    # Initialize the queue and visited array\n    queue.append((chef_x, chef_y))\n    visited[chef_x][chef_y] = True\n    dist[chef_x][chef_y] = 0\n\n    while queue:\n        x, y = queue.popleft()\n\n        # Check if we have reached the golden spoon\n        if x == spoon_x and y == spoon_y:\n            return dist[x][y]\n\n        # Explore neighboring cells\n        for i in range(8):\n            nx, ny = x + dx[i], y + dy[i]\n\n            # Check if the neighboring cell is within the map boundaries and not visited\n            if 0 <= nx < n and 0 <= ny < m and not visited[nx][ny]:\n                # Mark the neighboring cell as visited and add it to the queue\n                visited[nx][ny] = True\n                dist[nx][ny] = dist[x][y] + 1\n                queue.append((nx, ny))\n\n    return -1\n\nn, m = map(int, input().split())\nmap = [list(input()) for _ in range(n)]\nprint(min_distance(map, n, m))",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\n\nfunction minDistance(map, n, m) {\n    let chefX = 0, chefY = 0, spoonX = 0, spoonY = 0;\n    let dx = [-1, -1, -1, 0, 0, 1, 1, 1];\n    let dy = [-1, 0, 1, -1, 1, -1, 0, 1];\n    let queue = [];\n    let visited = Array(n).fill(false).map(() => Array(m).fill(false));\n    let dist = Array(n).fill(false).map(() => Array(m).fill(n * m));\n\n    // Find the location of The Chef and the golden spoon\n    for (let i = 0; i < n; i++) {\n        for (let j = 0; j < m; j++) {\n            if (map[i][j] === '@') {\n                chefX = i;\n                chefY = j;\n            } else if (map[i][j] === '$') {\n                spoonX = i;\n                spoonY = j;\n            }\n        }\n    }\n\n    // Initialize the queue and visited array\n    queue.push([chefX, chefY]);\n    visited[chefX][chefY] = true;\n    dist[chefX][chefY] = 0;\n\n    while (queue.length > 0) {\n        let [x, y] = queue.shift();\n\n        // Check if we have reached the golden spoon\n        if (x === spoonX && y === spoonY) {\n            return dist[x][y];\n        }\n\n        // Explore neighboring cells\n        for (let i = 0; i < 8; i++) {\n            let nx = x + dx[i];\n            let ny = y + dy[i];\n\n            // Check if the neighboring cell is within the map boundaries and not visited\n            if (nx >= 0 && nx < n && ny >= 0 && ny < m && !visited[nx][ny]) {\n                // Mark the neighboring cell as visited and add it to the queue\n                visited[nx][ny] = true;\n                dist[nx][ny] = dist[x][y] + 1;\n                queue.push([nx, ny]);\n            }\n        }\n    }\n\n    return -1;\n}\n\nlet n = parseInt(input[idx++]);\nlet m = parseInt(input[idx++]);\nlet map = [];\nfor (let i = 0; i < n; i++) {\n    map.push(input[idx++].split(''));\n}\nconsole.log(minDistance(map, n, m));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

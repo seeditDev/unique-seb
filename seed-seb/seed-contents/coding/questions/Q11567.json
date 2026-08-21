@@ -1,0 +1,120 @@
+{
+  "questionId": "Q11567",
+  "title": "Dynamic Diameter",
+  "slug": "B",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "$undefined",
+    "isPremium": true,
+    "tags": [
+      "Graph",
+      "Diameter",
+      "Dynamic"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Write a program for the coding challenge \"Dynamic Diameter\". Refer to SEED-IT description: https://codeforces.com/gym/102694/problem/B",
+    "constraints": [
+      "1 <= T <= 100",
+      "1 <= N <= 10^5",
+      "1 <= M <= 10^5",
+      "1 <= u, v <= N"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Then for each test case: The first line contains two integers N and M, the number of nodes and edges in the graph. Then M lines, each containing two integers u and v, representing an edge between nodes u and v.",
+    "outputFormat": "For each test case, output the diameter of the graph after each edge addition.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "1\n2 1\n1 2",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "1\n10 9\n1 2\n2 3\n3 4\n4 5\n5 6\n6 7\n7 8\n8 9\n9 10",
+        "expectedOutput": "9",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": "1\n5 4\n1 2\n2 3\n3 4\n4 5",
+        "expectedOutput": "4",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case / empty-like / negative if allowed",
+        "input": "1\n1 0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": "1\n7 6\n1 2\n2 3\n3 4\n4 5\n5 6\n6 7",
+        "expectedOutput": "6",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Use a graph data structure and calculate the diameter after each edge addition using BFS or DFS.",
+    "timeComplexity": "O(T * M * (N + M))",
+    "spaceComplexity": "O(N + M)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#define MAX 100005\ntypedef struct { int u, v; } Edge;\nint diameter(int **graph, int N) {\n    int *dist = (int *)calloc(N, sizeof(int));\n    for (int i = 0; i < N; i++) {\n        dist[i] = -1;\n    }\n    dist[0] = 0;\n    for (int i = 0; i < N; i++) {\n        for (int j = 0; j < N; j++) {\n            if (graph[i][j] == 1 && dist[j] == -1) {\n                dist[j] = dist[i] + 1;\n            }\n        }\n    }\n    int max = 0;\n    for (int i = 0; i < N; i++) {\n        if (dist[i] > max) {\n            max = dist[i];\n        }\n    }\n    free(dist);\n    return max;\n}\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int N, M;\n        scanf(\"%d %d\", &N, &M);\n        int **graph = (int **)calloc(N, sizeof(int *));\n        for (int i = 0; i < N; i++) {\n            graph[i] = (int *)calloc(N, sizeof(int));\n        }\n        for (int i = 0; i < M; i++) {\n            int u, v;\n            scanf(\"%d %d\", &u, &v);\n            graph[u - 1][v - 1] = 1;\n            graph[v - 1][u - 1] = 1;\n            printf(\"%d\\n\", diameter(graph, N));\n        }\n        for (int i = 0; i < N; i++) {\n            free(graph[i]);\n        }\n        free(graph);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\nusing namespace std;\nconst int MAX = 100005;\ntypedef pair<int, int> Edge;\nint diameter(vector<vector<int>> &graph, int N) {\n    vector<int> dist(N, -1);\n    dist[0] = 0;\n    for (int i = 0; i < N; i++) {\n        for (int j = 0; j < N; j++) {\n            if (graph[i][j] == 1 && dist[j] == -1) {\n                dist[j] = dist[i] + 1;\n            }\n        }\n    }\n    int max = 0;\n    for (int i = 0; i < N; i++) {\n        if (dist[i] > max) {\n            max = dist[i];\n        }\n    }\n    return max;\n}\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        int N, M;\n        cin >> N >> M;\n        vector<vector<int>> graph(N, vector<int>(N, 0));\n        for (int i = 0; i < M; i++) {\n            int u, v;\n            cin >> u >> v;\n            graph[u - 1][v - 1] = 1;\n            graph[v - 1][u - 1] = 1;\n            cout << diameter(graph, N) << endl;\n        }\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    static final int MAX = 100005;\n    public static int diameter(int[][] graph, int N) {\n        int[] dist = new int[N];\n        for (int i = 0; i < N; i++) {\n            dist[i] = -1;\n        }\n        dist[0] = 0;\n        for (int i = 0; i < N; i++) {\n            for (int j = 0; j < N; j++) {\n                if (graph[i][j] == 1 && dist[j] == -1) {\n                    dist[j] = dist[i] + 1;\n                }\n            }\n        }\n        int max = 0;\n        for (int i = 0; i < N; i++) {\n            if (dist[i] > max) {\n                max = dist[i];\n            }\n        }\n        return max;\n    }\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int T = scanner.nextInt();\n        while (T-- > 0) {\n            int N = scanner.nextInt();\n            int M = scanner.nextInt();\n            int[][] graph = new int[N][N];\n            for (int i = 0; i < M; i++) {\n                int u = scanner.nextInt();\n                int v = scanner.nextInt();\n                graph[u - 1][v - 1] = 1;\n                graph[v - 1][u - 1] = 1;\n                System.out.println(diameter(graph, N));\n            }\n        }\n    }\n}",
+      "Python3": "def diameter(graph, N):\n    dist = [-1] * N\n    dist[0] = 0\n    for i in range(N):\n        for j in range(N):\n            if graph[i][j] == 1 and dist[j] == -1:\n                dist[j] = dist[i] + 1\n    return max(dist)\n\nt = int(input())\nfor _ in range(t):\n    N, M = map(int, input().split())\n    graph = [[0] * N for _ in range(N)]\n    for _ in range(M):\n        u, v = map(int, input().split())\n        graph[u - 1][v - 1] = 1\n        graph[v - 1][u - 1] = 1\n        print(diameter(graph, N))",
+      "JavaScript": "function diameter(graph, N) {\n    let dist = new Array(N).fill(-1);\n    dist[0] = 0;\n    for (let i = 0; i < N; i++) {\n        for (let j = 0; j < N; j++) {\n            if (graph[i][j] === 1 && dist[j] === -1) {\n                dist[j] = dist[i] + 1;\n            }\n        }\n    }\n    return Math.max(...dist);\n}\nconst readline = require('readline').createInterface({\n    input: process.stdin,\n    output: process.stdout\n});\nlet i = 0;\nlet t;\nreadline.on('line', line => {\n    if (i === 0) {\n        t = parseInt(line);\n        i++;\n    } else if (i % 2 === 1) {\n        let [N, M] = line.split(' ').map(num => parseInt(num));\n        let graph = new Array(N).fill(0).map(() => new Array(N).fill(0));\n        i++;\n        let j = 0;\n        readline.on('line', line => {\n            if (j < M) {\n                let [u, v] = line.split(' ').map(num => parseInt(num));\n                graph[u - 1][v - 1] = 1;\n                graph[v - 1][u - 1] = 1;\n                console.log(diameter(graph, N));\n                j++;\n            }\n            if (j === M) {\n                i++;\n                readline.removeListener('line', arguments.callee);\n            }\n        });\n    }\n});"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

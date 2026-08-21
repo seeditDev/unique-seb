@@ -1,0 +1,82 @@
+{
+  "questionId": "UITVXZ04",
+  "title": "CRUD Operations with Mongoose",
+  "slug": "uitvxz04",
+  "version": 1,
+  "createdAt": "2026-07-13",
+  "updatedAt": "2026-07-13",
+  "source": {
+    "platform": "SEED-IT",
+    "courseSlug": "nodejs",
+    "contestCode": "FHRVRX",
+    "module": "Database Integration",
+    "submodule": "Mongoose Fundamentals",
+    "contentType": "mcq",
+    "originalUrl": "https://www.codechef.com/learn/course/nodejs/FHRVRX/problems/UITVXZ04"
+  },
+  "metadata": {
+    "category": "Concept",
+    "difficulty": "Beginner",
+    "isPremium": false,
+    "tags": [
+      "javascript"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Database Integration",
+      "Mongoose Fundamentals"
+    ],
+    "QBCategory": "SEED-IT"
+  },
+  "content": {
+    "problemStatement": "Now that you know how to define schemas and create Mongoose models (from our previous lesson 'Defining schemas and models'), let's explore how to perform the most common database operations: **CRUD**. CRUD stands for **C**reate, **R**ead, **U**pdate, and **D**elete. These are the fundamental actions you'll perform on your data in MongoDB using Mongoose.\n\nRemember how we set up Express.js and handled requests in topics like 'Express Setup & Basics' and 'Handling Requests & Data'? CRUD operations are often triggered by these requests. For example, a `POST` request might create data, a `GET` request might read data, a `PUT` request might update it, and a `DELETE` request might remove it. Mongoose makes these database interactions very straightforward.\n\nAlso, recall our lesson on 'Asynchronous JavaScript Basics'. All Mongoose operations that interact with the database are asynchronous, meaning they return Promises. We'll typically use `async/await` to work with them cleanly, making our code look synchronous while still being non-blocking.\n\nLet's assume we have a `Task` model defined like this (similar to what we learned in 'Defining schemas and models'). You would typically define this in a separate file, for example, `models/Task.js`.\n\n```javascript\n// models/Task.js (Example)\nconst mongoose = require('mongoose');\n\n// Define the schema for a Task\nconst taskSchema = new mongoose.Schema({\n  description: String,\n  isCompleted: Boolean\n});\n\n// Create the Task model\nconst Task = mongoose.model('Task', taskSchema);\n\n// Don't forget, you need to connect to your MongoDB database,\n// usually in your main server file (e.g., app.js or server.js),\n// as covered in 'MongoDB Setup'.\n// Example: mongoose.connect('mongodb://localhost/mydatabase');\n\nmodule.exports = Task; // Export the model to use it in other files\n```\n\nNow, let's see how to perform CRUD operations using this `Task` model. Imagine these operations are happening inside your Express route handlers.\n\n**1. Create (C) - Adding New Data**\n\nTo add a new task to our database, we can create an instance of our `Task` model and then call the `save()` method on it, or use the static `create()` method directly on the `Task` model.\n\n*   **Using `new Model()` and `save()`:**\n\n    ```javascript\n    // Example: Potentially inside an async Express route handler like app.post('/tasks', async (req, res) => { ... });\n    async function createTask(taskData) {\n      try {\n        const newTask = new Task({\n          description: taskData.description, // e.g., \"Learn Mongoose CRUD\"\n          isCompleted: taskData.isCompleted  // e.g., false\n        });\n        const savedTask = await newTask.save(); // This saves the document to MongoDB\n        console.log('Task created:', savedTask);\n        return savedTask; // savedTask contains the new document including its _id\n      } catch (error) {\n        console.error('Error creating task:', error);\n        // We'll cover detailed error handling in 'Handling database errors'.\n      }\n    }\n\n    // How you might call it (e.g., with data from req.body):\n    // createTask({ description: \"Buy groceries\", isCompleted: false });\n    ```\n\n*   **Using `Model.create()`:** This is a convenient shorthand for creating and saving a new document.\n\n    ```javascript\n    // Example: Also could be in an async Express route handler\n    async function createTaskShorthand(taskData) {\n      try {\n        const createdTask = await Task.create({\n          description: taskData.description, // e.g., \"Walk the dog\"\n          isCompleted: taskData.isCompleted  // e.g., false\n        });\n        console.log('Task created (shorthand):', createdTask);\n        return createdTask;\n      } catch (error) {\n        console.error('Error creating task:', error);\n      }\n    }\n\n    // How you might call it:\n    // createTaskShorthand({ description: \"Read a book\", isCompleted: false });\n    ```\n    This new document will be stored in the 'tasks' collection in your MongoDB database (Mongoose automatically pluralizes 'Task' to 'tasks').\n\n**2. Read (R) - Retrieving Data**\n\nOnce data is in the database, you'll want to retrieve it. Mongoose provides several methods for this. Here are a couple of basic ones:\n\n*   **`Model.find(query)`**: Finds all documents matching the `query` object. If the `query` is an empty object (`{}`), it returns all documents in the collection.\n\n    ```javascript\n    // Example: Inside an async Express route handler like app.get('/tasks', async (req, res) => { ... });\n    async function getAllTasks() {\n      try {\n        const tasks = await Task.find({}); // Empty object {} means find all documents\n        console.log('All tasks:', tasks); // tasks will be an array of documents\n        return tasks;\n      } catch (error) {\n        console.error('Error fetching tasks:', error);\n      }\n    }\n    // getAllTasks();\n\n    // To find specific tasks, e.g., all incomplete tasks:\n    async function getIncompleteTasks() {\n      try {\n        const incompleteTasks = await Task.find({ isCompleted: false });\n        console.log('Incomplete tasks:', incompleteTasks);\n        return incompleteTasks;\n      } catch (error) {\n        console.error('Error fetching incomplete tasks:', error);\n      }\n    }\n    // getIncompleteTasks();\n    ```\n\n*   **`Model.findById(id)`**: Finds a single document by its unique `_id`. MongoDB automatically creates an `_id` (a unique identifier) for every document.\n\n    ```javascript\n    // Example: Inside an async Express route handler like app.get('/tasks/:id', async (req, res) => { ... });\n    // const taskId = req.params.id;\n    async function getTaskById(taskId) {\n      try {\n        const task = await Task.findById(taskId); // taskId should be a string representation of a MongoDB ObjectId\n        if (task) {\n          console.log('Task found:', task); // task will be a single document or null if not found\n        } else {\n          console.log('Task not found.');\n        }\n        return task;\n      } catch (error) {\n        console.error('Error fetching task by ID:', error);\n        // This can also error if taskId is not a valid ObjectId format\n      }\n    }\n    // getTaskById('someMongoDBObjectIdString'); // Replace with an actual ID from your database\n    ```",
+    "constraints": [
+      "Time Limit: 1s",
+      "Memory Limit: 256MB"
+    ],
+    "inputFormat": "Standard input",
+    "outputFormat": "Standard output",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "input": "",
+        "expectedOutput": "expected",
+        "weight": 100
+      }
+    ],
+    "totalTestCases": 1,
+    "totalWeight": 100
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      100
+    ],
+    "maxScore": 100
+  },
+  "judging": {
+    "timeLimitMs": 1000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // Write your C code here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your C++ code here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) {\n        // Write your Java code here\n    }\n}",
+    "Python3": "# Write your Python code here\n",
+    "JavaScript": "// Write your JavaScript code here\n",
+    "Go": "package main\n\nimport \"fmt\"\n\nfunc main() {\n    // Write your Go code here\n}",
+    "Rust": "fn main() {\n    // Write your Rust code here\n}",
+    "C#": "using System;\n\nclass Program {\n    static void Main() {\n        // Write your C# code here\n    }\n}",
+    "SQL": "-- Write your SQL query here\n"
+  }
+}

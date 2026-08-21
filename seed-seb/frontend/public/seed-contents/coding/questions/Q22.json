@@ -1,0 +1,417 @@
+{
+  "questionId": "Q22",
+  "title": "Generate Parentheses Problem",
+  "slug": "generate-parentheses",
+  "version": 2,
+  "createdAt": "2026-07-09",
+  "updatedAt": "2026-07-24",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "string",
+      "dynamic-programming",
+      "backtracking"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "string",
+      "dynamic-programming",
+      "backtracking"
+    ],
+    "QBCategory": "LCD"
+  },
+  "content": {
+    "problemStatement": "You receive `n` pairs of parentheses. Generate all combinations of well-formed (balanced) parentheses using exactly `n` pairs. Output the list of distinct valid strings. The order of strings in the returned list does not matter.\n\nA string of parentheses is well-formed if every opening parenthesis has a matching closing parenthesis and pairs are properly nested. As an example, for `n = 3` the valid combinations are `\"((()))\",\"(()())\",\"(())()\",\"()(())\",\"()()()\"`.\n\nAim for an algorithm that runs in time proportional to the number of valid combinations (Catalan number) and uses O(n) auxiliary space for recursion/stack (excluding the output list).",
+    "constraints": [
+      "0 <= n <= 8",
+      "Expected time complexity: O(Catalan(n) * n) where Catalan(n) is the number of valid combinations",
+      "Expected auxiliary space: O(n) (recursion / construction buffer) excluding output"
+    ],
+    "inputFormat": "Single line: JSON array of all arguments, e.g. [n]. Example: [3]",
+    "outputFormat": "Single line: JSON-serialised list of strings (order does not matter). Example: [\"((()))\",\"(()())\",\"(())()\",\"()(())\",\"()()()\"]",
+    "notes": [
+      "Return all distinct well-formed parentheses strings that use exactly n pairs.",
+      "Order of strings in the output does not matter; the judge compares the returned set of strings (not sequence order).",
+      "Preferred approach: backtracking (build string while tracking remaining opens and closes), or dynamic programming that composes smaller results.",
+      "Do not attempt to generate invalid strings and filter them — build only valid prefixes to keep complexity optimal."
+    ],
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "type": "reg",
+        "input": "[3]",
+        "output": "[\"((()))\",\"(()())\",\"(())()\",\"()(())\",\"()()()\"]",
+        "explanation": "All 5 valid combinations for n = 3."
+      },
+      {
+        "id": "sample_2",
+        "type": "reg",
+        "input": "[1]",
+        "output": "[\"()\"]",
+        "explanation": "Only one valid combination for n = 1."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_01",
+        "type": "reg",
+        "label": "Zero pairs (empty string)",
+        "input": "[0]",
+        "expectedOutput": "[\"\"]",
+        "weight": 4
+      },
+      {
+        "id": "tc_02",
+        "type": "reg",
+        "label": "Single pair",
+        "input": "[1]",
+        "expectedOutput": "[\"()\"]",
+        "weight": 4
+      },
+      {
+        "id": "tc_03",
+        "type": "reg",
+        "label": "Two pairs",
+        "input": "[2]",
+        "expectedOutput": "[\"(())\",\"()()\"]",
+        "weight": 4
+      },
+      {
+        "id": "tc_04",
+        "type": "reg",
+        "label": "Three pairs",
+        "input": "[3]",
+        "expectedOutput": "[\"((()))\",\"(()())\",\"(())()\",\"()(())\",\"()()()\"]",
+        "weight": 4
+      },
+      {
+        "id": "tc_05",
+        "type": "reg",
+        "label": "Four pairs",
+        "input": "[4]",
+        "expectedOutput": "[\"(((())))\",\"((()()))\",\"((())())\",\"((()))()\",\"(()(()))\",\"(()()())\",\"(()())()\",\"(())(())\",\"(())()()\",\"()((()))\",\"()(()())\",\"()(())()\",\"()()(())\",\"()()()()\"]",
+        "weight": 4
+      },
+      {
+        "id": "tc_06",
+        "type": "reg",
+        "label": "Five pairs (complete set)",
+        "input": "[5]",
+        "expectedOutput": "[\"((((()))))\",\"(((()())))\",\"(((())()))\",\"(((()))())\",\"(((())))()\",\"((()(())))\",\"((()()()))\",\"((()())())\",\"((()()))()\",\"((())(()))\",\"((())()())\",\"((())())()\",\"((()))(())\",\"((()))()()\",\"(()((())))\",\"(()(()()))\",\"(()(())())\",\"(()(()))()\",\"(()()(()))\",\"(()()()())\",\"(()()())()\",\"(()())(())\",\"(()())()()\",\"(())((()))\",\"(())(()())\",\"(())(())()\",\"(())()(())\",\"(())()()()\",\"()(((())))\",\"()((()()))\",\"()((())())\",\"()((()))()\",\"()(()(()))\",\"()(()()())\",\"()(()())()\",\"()(())(())\",\"()(())()()\",\"()()((()))\",\"()()(()())\",\"()()(())()\",\"()()()(())\",\"()()()()()\"]",
+        "weight": 4
+      },
+      {
+        "id": "tc_07",
+        "type": "reg",
+        "label": "Edge: n = 0 repeated regression",
+        "input": "[0]",
+        "expectedOutput": "[\"\"]",
+        "weight": 3
+      },
+      {
+        "id": "tc_08",
+        "type": "reg",
+        "label": "Edge: n = 1 repeated regression",
+        "input": "[1]",
+        "expectedOutput": "[\"()\"]",
+        "weight": 3
+      },
+      {
+        "id": "tc_09",
+        "type": "reg",
+        "label": "n = 2 alternate ordering check",
+        "input": "[2]",
+        "expectedOutput": "[\"()()\",\"(())\"]",
+        "weight": 3
+      },
+      {
+        "id": "tc_10",
+        "type": "reg",
+        "label": "n = 3 alternate ordering check",
+        "input": "[3]",
+        "expectedOutput": "[\"()()()\",\"()(())\",\"(())()\",\"(()())\",\"((()))\"]",
+        "weight": 3
+      },
+      {
+        "id": "tc_11",
+        "type": "reg",
+        "label": "n = 4 alternate ordering check",
+        "input": "[4]",
+        "expectedOutput": "[\"()()()()\",\"()()(())\",\"()(()())\",\"()(())()\",\"(())()()\",\"(()()())\",\"((()))()\",\"((()()))\",\"((())())\",\"(((())))\",\"(())(())\",\"(()(()))\",\"(())(())\",\"()((()))\"]",
+        "weight": 3
+      },
+      {
+        "id": "tc_12",
+        "type": "reg",
+        "label": "n = 5 alternate ordering check",
+        "input": "[5]",
+        "expectedOutput": "[\"((((()))))\",\"(((()())))\",\"(((())()))\",\"(((()))())\",\"(((())))()\",\"((()(())))\",\"((()()()))\",\"((()())())\",\"((()()))()\",\"((())(()))\",\"((())()())\",\"((())())()\",\"((()))(())\",\"((()))()()\",\"(()((())))\",\"(()(()()))\",\"(()(())())\",\"(()(()))()\",\"(()()(()))\",\"(()()()())\",\"(()()())()\",\"(()())(())\",\"(()())()()\",\"(())((()))\",\"(())(()())\",\"(())(())()\",\"(())()(())\",\"(())()()()\",\"()(((())))\",\"()((()()))\",\"()((())())\",\"()((()))()\",\"()(()(()))\",\"()(()()())\",\"()(()())()\",\"()(())(())\",\"()(())()()\",\"()()((()))\",\"()()(()())\",\"()()(())()\",\"()()()(())\",\"()()()()()\"]",
+        "weight": 3
+      },
+      {
+        "id": "tc_13",
+        "type": "reg",
+        "label": "Sanity: small n variety 1",
+        "input": "[2]",
+        "expectedOutput": "[\"(())\",\"()()\"]",
+        "weight": 3
+      },
+      {
+        "id": "tc_14",
+        "type": "reg",
+        "label": "Sanity: small n variety 2",
+        "input": "[3]",
+        "expectedOutput": "[\"((()))\",\"(()())\",\"(())()\",\"()(())\",\"()()()\"]",
+        "weight": 3
+      },
+      {
+        "id": "tc_15",
+        "type": "reg",
+        "label": "Sanity: small n variety 3",
+        "input": "[4]",
+        "expectedOutput": "[\"(((())))\",\"((()()))\",\"((())())\",\"((()))()\",\"(()(()))\",\"(()()())\",\"(()())()\",\"(())(())\",\"(())()()\",\"()((()))\",\"()(()())\",\"()(())()\",\"()()(())\",\"()()()()\"]",
+        "weight": 3
+      },
+      {
+        "id": "tc_16",
+        "type": "reg",
+        "label": "n = 5 full set regression",
+        "input": "[5]",
+        "expectedOutput": "[\"((((()))))\",\"(((()())))\",\"(((())()))\",\"(((()))())\",\"(((())))()\",\"((()(())))\",\"((()()()))\",\"((()())())\",\"((()()))()\",\"((())(()))\",\"((())()())\",\"((())())()\",\"((()))(())\",\"((()))()()\",\"(()((())))\",\"(()(()()))\",\"(()(())())\",\"(()(()))()\",\"(()()(()))\",\"(()()()())\",\"(()()())()\",\"(()())(())\",\"(()())()()\",\"(())((()))\",\"(())(()())\",\"(())(())()\",\"(())()(())\",\"(())()()()\",\"()(((())))\",\"()((()()))\",\"()((())())\",\"()((()))()\",\"()(()(()))\",\"()(()()())\",\"()(()())()\",\"()(())(())\",\"()(())()()\",\"()()((()))\",\"()()(()())\",\"()()(())()\",\"()()()(())\",\"()()()()()\"]",
+        "weight": 3
+      },
+      {
+        "id": "tc_17",
+        "type": "reg",
+        "label": "Regression: ensure no invalid strings produced",
+        "input": "[3]",
+        "expectedOutput": "[\"((()))\",\"(()())\",\"(())()\",\"()(())\",\"()()()\"]",
+        "weight": 3
+      },
+      {
+        "id": "tc_18",
+        "type": "reg",
+        "label": "Regression: duplicates not allowed (n=4)",
+        "input": "[4]",
+        "expectedOutput": "[\"(((())))\",\"((()()))\",\"((())())\",\"((()))()\",\"(()(()))\",\"(()()())\",\"(()())()\",\"(())(())\",\"(())()()\",\"()((()))\",\"()(()())\",\"()(())()\",\"()()(())\",\"()()()()\"]",
+        "weight": 3
+      },
+      {
+        "id": "tc_19",
+        "type": "reg",
+        "label": "Sanity: n=0 again",
+        "input": "[0]",
+        "expectedOutput": "[\"\"]",
+        "weight": 3
+      },
+      {
+        "id": "tc_20",
+        "type": "reg",
+        "label": "Sanity: n=1 again",
+        "input": "[1]",
+        "expectedOutput": "[\"()\"]",
+        "weight": 3
+      },
+      {
+        "id": "tc_21",
+        "type": "reg",
+        "label": "n=3 stress small (order-insensitive)",
+        "input": "[3]",
+        "expectedOutput": "[\"((()))\",\"(()())\",\"(())()\",\"()(())\",\"()()()\"]",
+        "weight": 3
+      },
+      {
+        "id": "tc_22",
+        "type": "reg",
+        "label": "n=4 stress small (order-insensitive)",
+        "input": "[4]",
+        "expectedOutput": "[\"(((())))\",\"((()()))\",\"((())())\",\"((()))()\",\"(()(()))\",\"(()()())\",\"(()())()\",\"(())(())\",\"(())()()\",\"()((()))\",\"()(()())\",\"()(())()\",\"()()(())\",\"()()()()\"]",
+        "weight": 3
+      },
+      {
+        "id": "tc_23",
+        "type": "reg",
+        "label": "n = 5 stress small (order-insensitive)",
+        "input": "[5]",
+        "expectedOutput": "[\"((((()))))\",\"(((()())))\",\"(((())()))\",\"(((()))())\",\"(((())))()\",\"((()(())))\",\"((()()()))\",\"((()())())\",\"((()()))()\",\"((())(()))\",\"((())()())\",\"((())())()\",\"((()))(())\",\"((()))()()\",\"(()((())))\",\"(()(()()))\",\"(()(())())\",\"(()(()))()\",\"(()()(()))\",\"(()()()())\",\"(()()())()\",\"(()())(())\",\"(()())()()\",\"(())((()))\",\"(())(()())\",\"(())(())()\",\"(())()(())\",\"(())()()()\",\"()(((())))\",\"()((()()))\",\"()((())())\",\"()((()))()\",\"()(()(()))\",\"()(()()())\",\"()(()())()\",\"()(())(())\",\"()(())()()\",\"()()((()))\",\"()()(()())\",\"()()(())()\",\"()()()(())\",\"()()()()()\"]",
+        "weight": 3
+      },
+      {
+        "id": "tc_24",
+        "type": "reg",
+        "label": "Sanity: ensure balanced lengths (n=4)",
+        "input": "[4]",
+        "expectedOutput": "[\"(((())))\",\"((()()))\",\"((())())\",\"((()))()\",\"(()(()))\",\"(()()())\",\"(()())()\",\"(())(())\",\"(())()()\",\"()((()))\",\"()(()())\",\"()(())()\",\"()()(())\",\"()()()()\"]",
+        "weight": 3
+      },
+      {
+        "id": "tc_25",
+        "type": "reg",
+        "label": "Sanity: ensure correct count for n=3 (5 strings)",
+        "input": "[3]",
+        "expectedOutput": "[\"((()))\",\"(()())\",\"(())()\",\"()(())\",\"()()()\"]",
+        "weight": 3
+      },
+      {
+        "id": "tc_26",
+        "type": "reg",
+        "label": "Sanity: ensure correct count for n=2 (2 strings)",
+        "input": "[2]",
+        "expectedOutput": "[\"(())\",\"()()\"]",
+        "weight": 3
+      },
+      {
+        "id": "tc_27",
+        "type": "reg",
+        "label": "Sanity: ensure correct count for n=5 (42 strings) - representative full set",
+        "input": "[5]",
+        "expectedOutput": "[\"((((()))))\",\"(((()())))\",\"(((())()))\",\"(((()))())\",\"(((())))()\",\"((()(())))\",\"((()()()))\",\"((()())())\",\"((()()))()\",\"((())(()))\",\"((())()())\",\"((())())()\",\"((()))(())\",\"((()))()()\",\"(()((())))\",\"(()(()()))\",\"(()(())())\",\"(()(()))()\",\"(()()(()))\",\"(()()()())\",\"(()()())()\",\"(()())(())\",\"(()())()()\",\"(())((()))\",\"(())(()())\",\"(())(())()\",\"(())()(())\",\"(())()()()\",\"()(((())))\",\"()((()()))\",\"()((())())\",\"()((()))()\",\"()(()(()))\",\"()(()()())\",\"()(()())()\",\"()(())(())\",\"()(())()()\",\"()()((()))\",\"()()(()())\",\"()()(())()\",\"()()()(())\",\"()()()()()\"]",
+        "weight": 3
+      },
+      {
+        "id": "tc_28",
+        "type": "reg",
+        "label": "Regression: ensure no extra characters (n=3)",
+        "input": "[3]",
+        "expectedOutput": "[\"((()))\",\"(()())\",\"(())()\",\"()(())\",\"()()()\"]",
+        "weight": 3
+      },
+      {
+        "id": "tc_29",
+        "type": "reg",
+        "label": "Regression: canonical small case (n=2)",
+        "input": "[2]",
+        "expectedOutput": "[\"(())\",\"()()\"]",
+        "weight": 3
+      },
+      {
+        "id": "tc_30",
+        "type": "reg",
+        "label": "Regression: canonical medium case (n=4)",
+        "input": "[4]",
+        "expectedOutput": "[\"(((())))\",\"((()()))\",\"((())())\",\"((()))()\",\"(()(()))\",\"(()()())\",\"(()())()\",\"(())(())\",\"(())()()\",\"()((()))\",\"()(()())\",\"()(())()\",\"()()(())\",\"()()()()\"]",
+        "weight": 3
+      }
+    ],
+    "totalTestCases": 30,
+    "totalWeight": 96
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3
+    ],
+    "maxScore": 96
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ],
+    "notes": []
+  },
+  "solution": {
+    "approach": "Backtracking (optimal for this problem): build strings incrementally, keeping counts of how many '(' and ')' have been used. At each step, you may add '(' if open_count < n, and you may add ')' if close_count < open_count. When the constructed string reaches length 2*n, add it to the result. This generates only valid strings and runs in O(Catalan(n) * n) time (each string of length 2n is constructed once) and uses O(n) recursion depth.",
+    "timeComplexity": "O(Catalan(n) * n) where Catalan(n) is the number of valid combinations",
+    "spaceComplexity": "O(n) auxiliary (recursion / construction buffer) plus output size",
+    "code": {
+      "C": "",
+      "C++": "",
+      "Java": "",
+      "Python3": "class Solution:\n    def generateParenthesis(self, n: int):\n        res = []\n        def backtrack(s, open_count, close_count):\n            if len(s) == 2 * n:\n                res.append(s)\n                return\n            if open_count < n:\n                backtrack(s + '(', open_count + 1, close_count)\n            if close_count < open_count:\n                backtrack(s + ')', open_count, close_count + 1)\n        backtrack('', 0, 0)\n        return res",
+      "JavaScript": ""
+    },
+    "notes": [],
+    "editorial": {
+      "bruteForce": {
+        "description": "",
+        "complexity": ""
+      },
+      "better": {
+        "description": "",
+        "complexity": ""
+      },
+      "optimal": {
+        "description": "",
+        "complexity": ""
+      }
+    }
+  },
+  "hints": [],
+  "followUps": [],
+  "learningObjectives": [],
+  "similarProblems": [],
+  "acceptanceRate": null,
+  "estimatedSolveTime": "",
+  "recommendedAfter": [],
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n// Contestants may implement any correct approach. Driver not provided for C in this boilerplate.\nint main() { return 0; }",
+    "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nclass Solution {\npublic:\n    vector<string> generateParenthesis(int n) {\n        vector<string> res;\n        string cur;\n        backtrack(res, cur, 0, 0, n);\n        return res;\n    }\n    void backtrack(vector<string>& res, string& cur, int open, int close, int max) {\n        if ((int)cur.size() == max * 2) { res.push_back(cur); return; }\n        if (open < max) { cur.push_back('('); backtrack(res, cur, open + 1, close, max); cur.pop_back(); }\n        if (close < open) { cur.push_back(')'); backtrack(res, cur, open, close + 1, max); cur.pop_back(); }\n    }\n};\n\nint main() { return 0; }",
+    "Java": "import java.io.*;\nimport java.util.*;\n\nclass Solution {\n    public List<String> generateParenthesis(int n) {\n        List<String> res = new ArrayList<>();\n        backtrack(res, new StringBuilder(), 0, 0, n);\n        return res;\n    }\n    private void backtrack(List<String> res, StringBuilder cur, int open, int close, int max) {\n        if (cur.length() == max * 2) {\n            res.add(cur.toString());\n            return;\n        }\n        if (open < max) {\n            cur.append('(');\n            backtrack(res, cur, open + 1, close, max);\n            cur.deleteCharAt(cur.length() - 1);\n        }\n        if (close < open) {\n            cur.append(')');\n            backtrack(res, cur, open, close + 1, max);\n            cur.deleteCharAt(cur.length() - 1);\n        }\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        String line = br.readLine();\n        int n = Integer.parseInt(line.trim().replaceAll(\"[^0-9]\", \"\"));\n        List<String> out = new Solution().generateParenthesis(n);\n        System.out.println(new com.google.gson.Gson().toJson(out));\n    }\n}",
+    "Python3": "import sys, json\nfrom typing import List\n\nclass Solution:\n    def generateParenthesis(self, n: int) -> List[str]:\n        res = []\n        def backtrack(s, open_count, close_count):\n            if len(s) == 2 * n:\n                res.append(s)\n                return\n            if open_count < n:\n                backtrack(s + '(', open_count + 1, close_count)\n            if close_count < open_count:\n                backtrack(s + ')', open_count, close_count + 1)\n        backtrack('', 0, 0)\n        return res\n\nif __name__ == '__main__':\n    args = json.loads(sys.stdin.readline())\n    n = args[0]\n    print(json.dumps(Solution().generateParenthesis(n)))",
+    "JavaScript": "'use strict';\n\nfunction generateParenthesis(n) {\n    const res = [];\n    function backtrack(s, open, close) {\n        if (s.length === 2 * n) { res.push(s); return; }\n        if (open < n) backtrack(s + '(', open + 1, close);\n        if (close < open) backtrack(s + ')', open, close + 1);\n    }\n    backtrack('', 0, 0);\n    return res;\n}\n\nif (require.main === module) {\n    const fs = require('fs');\n    const args = JSON.parse(fs.readFileSync(0, 'utf8'));\n    console.log(JSON.stringify(generateParenthesis(args[0])));\n}\n",
+    "solution": {
+      "approach": "Backtracking (optimal for this problem): build strings incrementally, keeping counts of how many '(' and ')' have been used. At each step, you may add '(' if open_count < n, and you may add ')' if close_count < open_count. When the constructed string reaches length 2*n, add it to the result. This generates only valid strings and runs in O(Catalan(n) * n) time (each string of length 2n is constructed once) and uses O(n) recursion depth.",
+      "timeComplexity": "O(Catalan(n) * n) where Catalan(n) is the number of valid combinations",
+      "spaceComplexity": "O(n) auxiliary (recursion / construction buffer) plus output size",
+      "code": {
+        "C": "",
+        "C++": "",
+        "Java": "",
+        "Python3": "class Solution:\n    def generateParenthesis(self, n: int):\n        res = []\n        def backtrack(s, open_count, close_count):\n            if len(s) == 2 * n:\n                res.append(s)\n                return\n            if open_count < n:\n                backtrack(s + '(', open_count + 1, close_count)\n            if close_count < open_count:\n                backtrack(s + ')', open_count, close_count + 1)\n        backtrack('', 0, 0)\n        return res",
+        "JavaScript": ""
+      }
+    },
+    "_internal": {
+      "methodName": "generateParenthesis",
+      "params": [
+        {
+          "name": "n",
+          "type": "integer"
+        }
+      ],
+      "phase": "ready-for-judge"
+    },
+    "verified": true
+  },
+  "_internal": {},
+  "verified": true
+}

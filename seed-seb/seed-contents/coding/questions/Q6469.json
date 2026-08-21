@@ -1,0 +1,129 @@
+{
+  "questionId": "Q6469",
+  "title": "Sherlock and Smallest Window",
+  "slug": "sherlock-and-smallest-window",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Arrays | Sliding Window",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Sliding Window",
+      "Two Pointer"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Watson has infinite supply of **K** different type of objects denoted by numbers **1** to **K**. He makes an array **A** of **N** objects, **A1, A2, ..., AN** using these objects.\n\nNow, he'll update this array **Q** times. In **i**th update, he'll replace an existing object in array with a new object of different type from **1** to **K** i.e. **Axi = yi**.\n\n\n\nAfter each update, he wants Sherlock to report the smallest size of a contiguous subarray which contains all types of objects i.e. smallest value of **R - L + 1** such that number of distinct values in **AL, AL + 1, ..., Ar** is **K**. If no such subarray exists, Sherlock should output **-1**.",
+    "constraints": [
+      "1 <= N <= 10^5",
+      "1 <= K <= 20",
+      "1 <= Q <= 10^5",
+      "1 <= xi <= N",
+      "1 <= Ai, yi <= K"
+    ],
+    "inputFormat": "The first line contains three integers N, K, and Q, where N is the number of elements in the array, K is the number of different types of objects, and Q is the number of updates. The second line contains N space-separated integers denoting the initial array A. The next Q lines contain two integers xi and yi, denoting the update parameters of the ith update.",
+    "outputFormat": "After each update, output an integer in one line denoting the smallest contiguous subarray size consisting of all types of objects. If no such subarray exists, output -1.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "5 3 3\n1 1 1 1 1\n2 3\n5 2\n3 2",
+        "output": "-1\n4\n3",
+        "explanation": "After the first update, the array is [1, 3, 1, 1, 1]. No valid subarray exists at this stage. After the next update, the array is [1, 3, 1, 1, 2]. Here, you can observe that the contiguous subarray [A2, A3, ..., A5] consists of all types of objects. After the next update, the array is [1, 3, 2, 1, 2]. Now, the contiguous subarray [A1, A2, A3] is the smallest valid subarray."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1 1 1\n1\n1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "100000 20 100000\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20\n100000 1",
+        "expectedOutput": "20",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "5 3 3\n1 1 1 1 1\n2 3\n5 2\n3 2",
+        "expectedOutput": "-1\n4\n3",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "10 5 5\n1 2 3 4 5 1 2 3 4 5\n2 3\n5 2\n3 2\n1 4\n4 1",
+        "expectedOutput": "5\n5\n5\n5\n5",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "15 10 10\n1 2 3 4 5 6 7 8 9 10 1 2 3 4 5\n2 3\n5 2\n3 2\n1 4\n4 1\n10 6\n6 7\n7 8\n8 9",
+        "expectedOutput": "10\n10\n10\n10\n10\n10\n10\n10\n10\n10",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a sliding window approach. We maintain a window of elements that contains all types of objects. We start with the first element and keep expanding the window to the right until we have all types of objects. Then, we try to minimize the window by moving the left pointer to the right while keeping all types of objects in the window. We update the minimum window size after each update.",
+    "timeComplexity": "O(Q * N) — The time complexity is O(Q * N) because in the worst case, we need to traverse the entire array for each update.",
+    "spaceComplexity": "O(N) — The space complexity is O(N) because we need to store the frequency of each type of object in the window.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nint minWindow(int* arr, int n, int k) {\n    int* freq = (int*)calloc(k + 1, sizeof(int));\n    int distinct = 0;\n    int minLen = n + 1;\n    int left = 0;\n    for (int right = 0; right < n; right++) {\n        if (freq[arr[right]] == 0) distinct++;\n        freq[arr[right]]++;\n        while (distinct == k) {\n            minLen = (minLen < right - left + 1) ? minLen : right - left + 1;\n            freq[arr[left]]--;\n            if (freq[arr[left]] == 0) distinct--;\n            left++;\n        }\n    }\n    free(freq);\n    return minLen == n + 1 ? -1 : minLen;\n}\n\nint main() {\n    int n, k, q;\n    scanf(\"%d %d %d\", &n, &k, &q);\n    int* arr = (int*)malloc(n * sizeof(int));\n    for (int i = 0; i < n; i++) scanf(\"%d\", &arr[i]);\n    for (int i = 0; i < q; i++) {\n        int xi, yi;\n        scanf(\"%d %d\", &xi, &yi);\n        arr[xi - 1] = yi;\n        printf(\"%d\\n\", minWindow(arr, n, k));\n    }\n    free(arr);\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\nusing namespace std;\n\nint minWindow(vector<int>& arr, int k) {\n    vector<int> freq(k + 1, 0);\n    int distinct = 0;\n    int minLen = arr.size() + 1;\n    int left = 0;\n    for (int right = 0; right < arr.size(); right++) {\n        if (freq[arr[right]] == 0) distinct++;\n        freq[arr[right]]++;\n        while (distinct == k) {\n            minLen = min(minLen, right - left + 1);\n            freq[arr[left]]--;\n            if (freq[arr[left]] == 0) distinct--;\n            left++;\n        }\n    }\n    return minLen == arr.size() + 1 ? -1 : minLen;\n}\n\nint main() {\n    int n, k, q;\n    cin >> n >> k >> q;\n    vector<int> arr(n);\n    for (int i = 0; i < n; i++) cin >> arr[i];\n    for (int i = 0; i < q; i++) {\n        int xi, yi;\n        cin >> xi >> yi;\n        arr[xi - 1] = yi;\n        cout << minWindow(arr, k) << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    public static int minWindow(int[] arr, int k) {\n        int[] freq = new int[k + 1];\n        int distinct = 0;\n        int minLen = arr.length + 1;\n        int left = 0;\n        for (int right = 0; right < arr.length; right++) {\n            if (freq[arr[right]] == 0) distinct++;\n            freq[arr[right]]++;\n            while (distinct == k) {\n                minLen = Math.min(minLen, right - left + 1);\n                freq[arr[left]]--;\n                if (freq[arr[left]] == 0) distinct--;\n                left++;\n            }\n        }\n        return minLen == arr.length + 1 ? -1 : minLen;\n    }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int n = sc.nextInt();\n        int k = sc.nextInt();\n        int q = sc.nextInt();\n        int[] arr = new int[n];\n        for (int i = 0; i < n; i++) arr[i] = sc.nextInt();\n        for (int i = 0; i < q; i++) {\n            int xi = sc.nextInt();\n            int yi = sc.nextInt();\n            arr[xi - 1] = yi;\n            System.out.println(minWindow(arr, k));\n        }\n    }\n}",
+      "Python3": "def minWindow(arr, k):\n    freq = [0] * (k + 1)\n    distinct = 0\n    minLen = len(arr) + 1\n    left = 0\n    for right in range(len(arr)):\n        if freq[arr[right]] == 0: distinct += 1\n        freq[arr[right]] += 1\n        while distinct == k:\n            minLen = min(minLen, right - left + 1)\n            freq[arr[left]] -= 1\n            if freq[arr[left]] == 0: distinct -= 1\n            left += 1\n    return -1 if minLen == len(arr) + 1 else minLen\n\nn, k, q = map(int, input().split())\narr = list(map(int, input().split()))\nfor _ in range(q):\n    xi, yi = map(int, input().split())\n    arr[xi - 1] = yi\n    print(minWindow(arr, k))",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\n\nfunction minWindow(arr, k) {\n    let freq = new Array(k + 1).fill(0);\n    let distinct = 0;\n    let minLen = arr.length + 1;\n    let left = 0;\n    for (let right = 0; right < arr.length; right++) {\n        if (freq[arr[right]] == 0) distinct++;\n        freq[arr[right]]++;\n        while (distinct == k) {\n            minLen = Math.min(minLen, right - left + 1);\n            freq[arr[left]]--;\n            if (freq[arr[left]] == 0) distinct--;\n            left++;\n        }\n    }\n    return minLen == arr.length + 1 ? -1 : minLen;\n}\n\nlet n, k, q;\n[n, k, q] = lines[idx++].trim().split(' ').map(Number);\nlet arr = lines[idx++].trim().split(' ').map(Number);\nfor (let i = 0; i < q; i++) {\n    let [xi, yi] = lines[idx++].trim().split(' ').map(Number);\n    arr[xi - 1] = yi;\n    console.log(minWindow(arr, k));\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

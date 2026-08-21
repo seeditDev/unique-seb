@@ -1,0 +1,131 @@
+{
+  "questionId": "Q8059",
+  "title": "Boolean Game",
+  "slug": "boolean-game",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming | Bitmask | Top‑K",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "DP over prefix",
+      "Top K merging",
+      "Interval bonuses",
+      "O(N^2·K)"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Consider NNN binary variables x1,x2,…,xNx_1, x_2, \\ldots, x_Nx1​,x2​,…,xN​. For each valid iii, the iii-th of these variables can be xi=0x_i = 0xi​=0 or xi=1x_i = 1xi​=1; therefore, there are 2N2^N2N possible assignments of values to the variables. For each valid iii, setting xi=1x_i = 1xi​=1 gives you score gig_igi​.\n\nIn addition, there are MMM special intervals (numbered 111 through MMM). For each valid iii, the iii-th interval is [ui,vi][u_i, v_i][ui​,vi​] and if xui=xui+1=…=xvi=1x_{u_i} = x_{u_i+1} = \\ldots = x_{v_i} = 1xui​​=xui​+1​=…=xvi​​=1, then your score increases by did_idi​.\n\nNote that both gig_igi​ and did_idi​ can be negative (setting more variables to 111 can decrease your score), and your score can also be negative. Formally, the score of an assignment of values to the binary variables is\r\n∑i=1Ngi⋅xi+∑i=1Mdi⋅∏j=uivixj .\\sum_{i=1}^N g_i \\cdot x_i + \\sum_{i=1}^M d_i \\cdot \\prod_{j=u_i}^{v_i} x_j \\,.∑i=1N​gi​⋅xi​+∑i=1M​di​⋅∏j=ui​vi​​xj​.\n\nFind the KKK highest scores among all assignments on these variables. Formally, if we computed the scores of all 2N2^N2N assignments and sorted them in non-increasing order, you should find the first KKK of these values.",
+    "constraints": [
+      "1 ≤ T ≤ 10",
+      "1 ≤ N ≤ 60",
+      "0 ≤ M ≤ min(N·(N‑1)/2, 1000)",
+      "1 ≤ K ≤ min(2^N, 200)",
+      "|gi| ≤ 10^9",
+      "1 ≤ ui < vi ≤ N",
+      "For any two intervals i ≠ j, (ui, vi) ≠ (uj, vj)",
+      "|di| ≤ 10^9",
+      "Sum of N over all test cases ≤ 60"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case:\n- The first line contains three integers N, M and K.\n- The second line contains N integers g1 … gN.\n- Each of the next M lines contains three integers ui, vi and di describing a special interval [ui, vi] with bonus di.\nAll indices are 1‑based.",
+    "outputFormat": "For each test case output a single line with K integers – the K highest scores among all 2^N assignments, sorted in non‑increasing order and separated by a single space.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n4 2 3\n-4 -2 5 2\n1 3 0\n1 4 -3",
+        "output": "7 5 5",
+        "explanation": "Explanation:\nExample case 1: The best assignment is x=(0,0,1,1)x = (0,0,1,1)x=(0,0,1,1), with score 777. The second and third best assignments are (0,0,1,0)(0,0,1,0)(0,0,1,0) and (0,1,1,1)(0,1,1,1)(0,1,1,1), each with score 555."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "We process the variables from left to right. While scanning, we keep the position of the most recent variable that was set to 0 – call it lastZero. If lastZero = p, then every interval whose start > p and whose end ≤ current position is already completely filled with 1s and its bonus has already been added.\n\nFor each position i (1‑based) we store for every possible value of lastZero (0 … i) the best K scores that can be obtained for the prefix [1..i] with that lastZero. The transition from position i‑1 to i is simple:\n- Set xi = 0 → newLastZero = i, score unchanged.\n- Set xi = 1 → newLastZero = oldLastZero, score increases by gi plus the sum of di of all intervals ending at i whose start > oldLastZero.\n\nAll intervals are grouped by their right endpoint, so the additional sum for a fixed i and a given lastZero can be pre‑computed in O(N·N) time (N ≤ 60). Each DP state keeps at most K scores, sorted in decreasing order; after adding new candidates we truncate the list to K. The total complexity per test case is O(N^2·K + N·M) (≤ 60·60·200 ≈ 7·10^5 operations) and the memory consumption is O(N·K).\n\nAfter processing all N positions we merge the K‑lists of all possible lastZero values and output the first K numbers.",
+    "timeComplexity": "O(N^2·K + N·M) per test case, where N ≤ 60, M ≤ 1000, K ≤ 200.",
+    "spaceComplexity": "O(N·K) for the DP tables (≤ 60·200 ≈ 12 000 long longs).",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\n#define MAXN 60\n#define MAXK 200\n#define MAXM 1000\n\ntypedef long long ll;\n\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

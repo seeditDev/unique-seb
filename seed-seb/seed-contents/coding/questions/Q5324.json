@@ -1,0 +1,138 @@
+{
+  "questionId": "Q5324",
+  "title": "Restock",
+  "slug": "restock",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Dijkstra's Algorithm",
+      "Shortest Path",
+      "Grid Graph"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "The chef has to replenish supplies in the kitchen. He divided the kitchen floor into a rectangular grid of cell with N rows and M columns. All coordinates in this problem are 0-indexed and in the form (row, column). The supplies will be delivered to the cell (R,C) and have to be moved to the storage, which is located in the cell (0,0). The chef will organize his employees so that they can pass individual items between them from the point of delivery to the storage. However, he has one additional request. The chef wants to see progress with every pass, which means that the Euclidean distance between the item and the storage has to decrease with every pass.\n\nAn employee assigned to the cell (Y1,X1) can pass an item to another empoyee in cell (Y2,X2) if |Y1-Y2| &lt;= D and |X1-X2| &lt;= D. Note that one person has to be assigned to cell (R,C) in any valid assignment. The chef assigned a wage to each cell to compensate for different working conditions. For example, standing next to an oven is not a very popular spot among the employees. The chef will  take the position at the storage himself, therefore the wage for the cell (0,0) will be 0 in all cases. Of course, the chef wants to pay as little as possible. The cost of some assignment of employees to different cells is equal to the sum of wages associated with their cells. The chef can always find some new workforce, so the number of workers is not a restriction. Help him find the cost of the cheapest assignment.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N, M <= 500",
+      "1 <= D <= 500",
+      "0 <= R < N",
+      "0 <= C < M",
+      "0 <= wage[i][j] <= 10000",
+      "Sum of N*M over all test cases <= 250000"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case: The first line contains two integers N and M – the number of rows and columns of the grid. The second line contains three integers D, R and C – the maximum Chebyshev distance allowed for a pass, and the coordinates of the delivery cell (0-indexed). Then follow N lines, each containing M integers. The j-th integer on the i-th line is the wage of cell (i-1, j-1). The wage of cell (0,0) is always 0.",
+    "outputFormat": "For each test case output a single line containing the minimum possible total wage of the employees needed to move the item from (R,C) to (0,0) while the Euclidean distance to (0,0) strictly decreases after every pass. If it is impossible, output -1.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n1 5\n2 0 4\n0 1 5 1 4\n5 6\n2 4 3\n0 7 8 5 9 1\n1 6 8 4 6 2\n5 4 2 5 0 3\n5 2 0 6 8 8\n3 5 3 3 8 4",
+        "output": "6\n4",
+        "explanation": ""
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n5 5\n2 2 2\n0 0 0 0 0\n0 0 0 0 0\n0 0 0 0 0\n0 0 0 0 0\n0 0 0 0 0",
+        "output": "0",
+        "explanation": ""
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use Dijkstra's algorithm to find the shortest path from the delivery cell (R,C) to the storage cell (0,0) in the grid graph. The grid graph is constructed by considering each cell as a node and two nodes are connected if the Chebyshev distance between them is less than or equal to D. The weight of each edge is the wage of the cell that the edge points to. We need to modify the Dijkstra's algorithm to ensure that the Euclidean distance to (0,0) strictly decreases after every pass.",
+    "timeComplexity": "O(T * N * M * log(N*M)) per test case, O(T * N * M * log(N*M)) total.",
+    "spaceComplexity": "O(N * M) — for the grid graph and the priority queue.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <limits.h>\n#include <string.h>\n#define INF 0x3f3f3f3f3f3f3f3fLL\n#define MAXN 505\n#define MAXM 505\n#define MAXD 505\n\nint N, M, D, R, C;\nint wage[MAXN][MAXM];\nint dist[MAXN][MAXM];\nint dx[] = {-1, 0, 1, 0};\nint dy[] = {0, -1, 0, 1};\n\nvoid dijkstra() {\n    for (int i = 0; i < N; i++) {\n        for (int j = 0; j < M; j++) {\n            dist[i][j] = INF;\n        }\n    }\n    dist[R][C] = 0;\n    int pq[MAXN * MAXM];\n    int pq_size = 0;\n    pq[pq_size++] = R * M + C;\n    while (pq_size > 0) {\n        int u = pq[0];\n        for (int i = 1; i < pq_size; i++) {\n            if (dist[u / M][u % M] > dist[pq[i] / M][pq[i] % M]) {\n                u = pq[i];\n            }\n        }\n        pq[0] = pq[pq_size - 1];\n        pq_size--;\n        for (int k = 0; k < 4; k++) {\n            int x = u / M + dx[k];\n            int y = u % M + dy[k];\n            if (x >= 0 && x < N && y >= 0 && y < M && abs(x - R) + abs(y - C) <= D && (x*x + y*y < R*R + C*C)) {\n                int v = x * M + y;\n                if (dist[x][y] > dist[u / M][u % M] + wage[x][y]) {\n                    dist[x][y] = dist[u / M][u % M] + wage[x][y];\n                    pq[pq_size++] = v;\n                }\n            }\n        }\n    }\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        scanf(\"%d %d %d %d %d\", &N, &M, &D, &R, &C);\n        for (int i = 0; i < N; i++) {\n            for (int j = 0; j < M; j++) {\n                scanf(\"%d\", &wage[i][j]);\n            }\n        }\n        dijkstra();\n        if (dist[0][0] == INF) {\n            printf(\"-1\\n\");\n        } else {\n            printf(\"%d\\n\", dist[0][0]);\n        }\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <queue>\n#include <vector>\n#include <limits>\nusing namespace std;\n#define INF 0x3f3f3f3f3f3f3f3fLL\n#define MAXN 505\n#define MAXM 505\n#define MAXD 505\n\nint N, M, D, R, C;\nint wage[MAXN][MAXM];\nint dist[MAXN][MAXM];\nint dx[] = {-1, 0, 1, 0};\nint dy[] = {0, -1, 0, 1};\n\nstruct Node {\n    int x, y;\n    int d;\n    bool operator<(const Node &other) const {\n        return d > other.d;\n    }\n};\n\nvoid dijkstra() {\n    for (int i = 0; i < N; i++) {\n        for (int j = 0; j < M; j++) {\n            dist[i][j] = INF;\n        }\n    }\n    dist[R][C] = 0;\n    priority_queue<Node> pq;\n    pq.push({R, C, 0});\n    while (!pq.empty()) {\n        Node u = pq.top();\n        pq.pop();\n        for (int k = 0; k < 4; k++) {\n            int x = u.x + dx[k];\n            int y = u.y + dy[k];\n            if (x >= 0 && x < N && y >= 0 && y < M && abs(x - R) + abs(y - C) <= D && (x*x + y*y < R*R + C*C)) {\n                int v = x * M + y;\n                if (dist[x][y] > dist[u.x][u.y] + wage[x][y]) {\n                    dist[x][y] = dist[u.x][u.y] + wage[x][y];\n                    pq.push({x, y, dist[x][y]});\n                }\n            }\n        }\n    }\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(NULL);\n    int T;\n    cin >> T;\n    while (T--) {\n        cin >> N >> M >> D >> R >> C;\n        for (int i = 0; i < N; i++) {\n            for (int j = 0; j < M; j++) {\n                cin >> wage[i][j];\n            }\n        }\n        dijkstra();\n        if (dist[0][0] == INF) {\n            cout << -1 << endl;\n        } else {\n            cout << dist[0][0] << endl;\n        }\n    }\n    return 0;\n}",
+      "Java": "import java.io.BufferedReader;\\nimport java.io.IOException;\\nimport java.io.InputStreamReader;\\nimport java.util.PriorityQueue;\\nimport java.util.StringTokenizer;\\n\\npublic class Main {\\n    static final int INF = 0x3f3f3f3f;\\n    static final int MAXN = 505;\\n    static final int MAXM = 505;\\n    static final int MAXD = 505;\\n\\n    static int N, M, D, R, C;\\n    static int[][] wage = new int[MAXN][MAXM];\\n    static int[][] dist = new int[MAXN][MAXM];\\n    static int[] dx = {-1, 0, 1, 0};\\n    static int[] dy = {0, -1, 0, 1};\\n\\n    static class Node implements Comparable<Node> {\\n        int x, y;\\n        int d;\\n\\n        Node(int x, int y, int d) {\\n            this.x = x;\\n            this.y = y;\\n            this.d = d;\\n        }\\n\\n        @Override\\n        public int compareTo(Node other) {\\n            return Integer.compare(d, other.d);\\n        }\\n    }\\n\\n    static void dijkstra() {\\n        for (int i = 0; i < N; i++) {\\n            for (int j = 0; j < M; j++) {\\n                dist[i][j] = INF;\\n            }\\n        }\\n        dist[R][C] = 0;\\n        PriorityQueue<Node> pq = new PriorityQueue<>();\\n        pq.add(new Node(R, C, 0));\\n        while (!pq.isEmpty()) {\\n            Node u = pq.poll();\\n            for (int k = 0; k < 4; k++) {\\n                int x = u.x + dx[k];\\n                int y = u.y + dy[k];\\n                if (x >= 0 && x < N && y >= 0 && y < M && Math.abs(x - R) + Math.abs(y - C) <= D && (x*x + y*y < R*R + C*C)) {\\n                    int v = x * M + y;\\n                    if (dist[x][y] > dist[u.x][u.y] + wage[x][y]) {\\n                        dist[x][y] = dist[u.x][u.y] + wage[x][y];\\n                        pq.add(new Node(x, y, dist[x][y]));\\n                    }\\n                }\\n            }\\n        }\\n    }\\n\\n    public static void main(String[] args) throws IOException {\\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\\n        StringTokenizer st;\\n        int T = Integer.parseInt(br.readLine());\\n        while (T-- > 0) {\\n            st = new StringTokenizer(br.readLine());\\n            N = Integer.parseInt(st.nextToken());\\n            M = Integer.parseInt(st.nextToken());\\n            D = Integer.parseInt(st.nextToken());\\n            R = Integer.parseInt(st.nextToken());\\n            C = Integer.parseInt(st.nextToken());\\n            for (int i = 0; i < N; i++) {\\n                st = new StringTokenizer(br.readLine());\\n                for (int j = 0; j < M; j++) {\\n                    wage[i][j] = Integer.parseInt(st.nextToken());\\n                }\\n            }\\n            dijkstra();\\n            if (dist[0][0] == INF) {\\n                System.out.println(-1);\\n            } else {\\n                System.out.println(dist[0][0]);\\n            }\\n        }\\n    }\\n}",
+      "Python3": "import sys\nimport heapq\n\nINF = 0x3f3f3f3f3f3f3f3f\nMAXN = 505\nMAXM = 505\nMAXD = 505\n\nN, M, D, R, C = 0, 0, 0, 0, 0\nwage = [[0 for _ in range(MAXM)] for _ in range(MAXN)]\ndist = [[INF for _ in range(MAXM)] for _ in range(MAXN)]\ndx = [-1, 0, 1, 0]\ndy = [0, -1, 0, 1]\n\nclass Node:\n    def __init__(self, x, y, d):\n        self.x = x\n        self.y = y\n        self.d = d\n\n    def __lt__(self, other):\n        return self.d < other.d\n\ndef dijkstra():\n    global N, M, D, R, C\n    for i in range(N):\n        for j in range(M):\n            dist[i][j] = INF\n    dist[R][C] = 0\n    pq = []\n    heapq.heappush(pq, Node(R, C, 0))\n    while pq:\n        u = heapq.heappop(pq)\n        for k in range(4):\n            x = u.x + dx[k]\n            y = u.y + dy[k]\n            if 0 <= x < N and 0 <= y < M and abs(x - R) + abs(y - C) <= D and (x*x + y*y < R*R + C*C):\n                v = x * M + y\n                if dist[x][y] > dist[u.x][u.y] + wage[x][y]:\n                    dist[x][y] = dist[u.x][u.y] + wage[x][y]\n                    heapq.heappush(pq, Node(x, y, dist[x][y]))\n\nT = int(sys.stdin.readline())\nwhile T > 0:\n    N, M, D, R, C = map(int, sys.stdin.readline().split())\n    for i in range(N):\n        wage[i] = list(map(int, sys.stdin.readline().split()))\n    dijkstra()\n    if dist[0][0] == INF:\n        print(-1)\n    else:\n        print(dist[0][0])\n    T -= 1",
+      "JavaScript": "const readline = require('fs').readFileSync(0, 'utf-8').trim().split('\\n');\nlet i = 0;\nconst INF = 0x3f3f3f3f3f3f3f3f;\nconst MAXN = 505;\nconst MAXM = 505;\nconst MAXD = 505;\n\nlet N, M, D, R, C;\nlet wage = new Array(MAXN).fill(0).map(() => new Array(MAXM).fill(0));\nlet dist = new Array(MAXN).fill(0).map(() => new Array(MAXM).fill(INF));\nlet dx = [-1, 0, 1, 0];\nlet dy = [0, -1, 0, 1];\n\nfunction dijkstra() {\n    for (let i = 0; i < N; i++) {\n        for (let j = 0; j < M; j++) {\n            dist[i][j] = INF;\n        }\n    }\n    dist[R][C] = 0;\n    let pq = [];\n    pq.push({ x: R, y: C, d: 0 });\n    pq.sort((a, b) => a.d - b.d);\n    while (pq.length > 0) {\n        let u = pq.shift();\n        for (let k = 0; k < 4; k++) {\n            let x = u.x + dx[k];\n            let y = u.y + dy[k];\n            if (x >= 0 && x < N && y >= 0 && y < M && Math.abs(x - R) + Math.abs(y - C) <= D && (x*x + y*y < R*R + C*C)) {\n                let v = x * M + y;\n                if (dist[x][y] > dist[u.x][u.y] + wage[x][y]) {\n                    dist[x][y] = dist[u.x][u.y] + wage[x][y];\n                    pq.push({ x, y, d: dist[x][y] });\n                    pq.sort((a, b) => a.d - b.d);\n                }\n            }\n        }\n    }\n}\n\nlet T = parseInt(readline[i++]);\nwhile (T-- > 0) {\n    let line = readline[i++].split(' ').map(Number);\n    N = line[0];\n    M = line[1];\n    D = line[2];\n    R = line[3];\n    C = line[4];\n    for (let i = 0; i < N; i++) {\n        wage[i] = readline[i + 5].split(' ').map(Number);\n    }\n    i += N;\n    dijkstra();\n    if (dist[0][0] == INF) {\n        console.log(-1);\n    } else {\n        console.log(dist[0][0]);\n    }\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

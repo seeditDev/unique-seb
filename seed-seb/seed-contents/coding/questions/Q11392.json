@@ -1,0 +1,119 @@
+{
+  "questionId": "Q11392",
+  "title": "Encode and Decode Strings",
+  "slug": "encodeanddecodestrings",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "String Manipulation",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "encoding",
+      "decoding",
+      "string manipulation"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Write a program for the coding challenge \"Encode and Decode Strings\". Refer to SEED-IT description: N/A",
+    "constraints": [
+      "1 <= T <= 100",
+      "1 <= N <= 10^5",
+      "1 <= length of each string <= 1000"
+    ],
+    "inputFormat": "A list of strings",
+    "outputFormat": "Encoded and decoded strings",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "[\"\"]",
+        "expectedOutput": "[\"\"]",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "[\"a\", \"b\", \"c\", \"d\", \"e\", \"f\", \"g\", \"h\", \"i\", \"j\"]",
+        "expectedOutput": "[\"a\", \"b\", \"c\", \"d\", \"e\", \"f\", \"g\", \"h\", \"i\", \"j\"]",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": "[\"aaa\", \"bbb\", \"ccc\"]",
+        "expectedOutput": "[\"aaa\", \"bbb\", \"ccc\"]",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case / empty-like / negative if allowed",
+        "input": "[\"\", \" \", \"   \"]",
+        "expectedOutput": "[\"\", \" \", \"   \"]",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": "[\"hello\", \"world\", \"\", \"abc\", \"def\"]",
+        "expectedOutput": "[\"hello\", \"world\", \"\", \"abc\", \"def\"]",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Use a delimiter to separate the length of each string and the string itself",
+    "timeComplexity": "O(N * M) where N is the number of strings and M is the maximum length of a string",
+    "spaceComplexity": "O(N * M) where N is the number of strings and M is the maximum length of a string",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nchar* encode(char** strs, int strsSize) {\n    int len = 0;\n    for (int i = 0; i < strsSize; i++) {\n        len += strlen(strs[i]) + 4;\n    }\n    char* res = (char*)malloc(len * sizeof(char));\n    char* p = res;\n    for (int i = 0; i < strsSize; i++) {\n        sprintf(p, \"%d#\", strlen(strs[i]));\n        p += strlen(p);\n        strcpy(p, strs[i]);\n        p += strlen(strs[i]);\n    }\n    return res;\n}\n\nchar** decode(char* s, int* returnSize) {\n    int len = strlen(s);\n    char** res = (char**)malloc(len * sizeof(char*));\n    *returnSize = 0;\n    char* p = s;\n    while (p < s + len) {\n        int l = atoi(p);\n        p += strlen(p) + 1;\n        res[(*returnSize)++] = (char*)malloc((l + 1) * sizeof(char));\n        strncpy(res[(*returnSize) - 1], p, l);\n        res[(*returnSize) - 1][l] = '\\0';\n        p += l;\n    }\n    return res;\n}",
+      "C++": "#include <iostream>\n#include <vector>\n#include <string>\n\nstd::string encode(std::vector<std::string>& strs) {\n    std::string res;\n    for (const auto& s : strs) {\n        res += std::to_string(s.size()) + \"#\" + s;\n    }\n    return res;\n}\n\nstd::vector<std::string> decode(std::string s) {\n    std::vector<std::string> res;\n    int i = 0;\n    while (i < s.size()) {\n        int j = s.find('#', i);\n        int len = std::stoi(s.substr(i, j - i));\n        i = j + 1;\n        res.push_back(s.substr(i, len));\n        i += len;\n    }\n    return res;\n}",
+      "Java": "public class Solution {\n    public String encode(String[] strs) {\n        StringBuilder sb = new StringBuilder();\n        for (String s : strs) {\n            sb.append(s.length()).append(\"#\").append(s);\n        }\n        return sb.toString();\n    }\n\n    public String[] decode(String s) {\n        String[] res = new String[s.length()];\n        int i = 0;\n        int idx = 0;\n        while (i < s.length()) {\n            int j = s.indexOf('#', i);\n            int len = Integer.parseInt(s.substring(i, j));\n            i = j + 1;\n            res[idx++] = s.substring(i, i + len);\n            i += len;\n        }\n        return res;\n    }\n}",
+      "Python3": "class Solution:\n    def encode(self, strs):\n        res = ''\n        for s in strs:\n            res += str(len(s)) + '#' + s\n        return res\n\n    def decode(self, s):\n        res, i = [], 0\n        while i < len(s):\n            j = s.find('#', i)\n            length = int(s[i:j])\n            i = j + 1\n            res.append(s[i:i + length])\n            i += length\n        return res",
+      "JavaScript": "var encode = function(strs) {\n    return strs.map(s => s.length + '#' + s).join('');\n};\n\nvar decode = function(s) {\n    const res = [];\n    let i = 0;\n    while (i < s.length) {\n        const j = s.indexOf('#', i);\n        const len = parseInt(s.slice(i, j));\n        i = j + 1;\n        res.push(s.slice(i, i + len));\n        i += len;\n    }\n    return res;\n};"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

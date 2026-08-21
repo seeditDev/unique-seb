@@ -1,0 +1,91 @@
+{
+  "questionId": "Q8578",
+  "title": "Divisible and not divisible",
+  "slug": "divisible-and-not-divisible",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Greedy",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "greedy algorithms",
+      "competitive programming"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Greedy Algorithms"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "In order to beat the evil monster, you need to answer TTT of its queries. In each query, the monster gives you 3 positive integers XXX, YYY and ZZZ. For each of the monsters query you need to find the smallest positive integer KKK such that:\n\n\nKKK is strictly greater than XXX\nKKK is divisible by YYY\nKKK is not divisible by ZZZ\nOr determine that there is no such KKK\n\n\nInput Format\n\nThe first line contains TTT - number of queries. Then the queries follow.\nThe first and only line of each query contains three space-separated positive integers XXX, YYY and ZZZ\n\n\nOutput Format\nFor each query output the smallest positive integer KKK, described as in the statement.\n\n\nIf no such KKK exists, output -1.",
+    "constraints": [
+      "1≤T≤5001 \\leq T \\leq 5001≤T≤500",
+      "1≤X,Y,Z≤10181 \\leq X, Y, Z \\leq 10^{18}1≤X,Y,Z≤1018",
+      "Subtasks",
+      "20 points : 1≤X,Y,Z≤10001 \\leq X, Y, Z \\leq 10001≤X,Y,Z≤1000",
+      "60 points : 1≤X,Y,Z≤1091 \\leq X, Y, Z \\leq 10^91≤X,Y,Z≤109",
+      "20 points : original constraints"
+    ],
+    "inputFormat": "",
+    "outputFormat": "",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n5 2 3\n4 2 3\n10 7 1",
+        "output": "8\n8\n-1",
+        "explanation": "Explanation:\nIn the first query:\n\n666 is divisible by 222, but it is also divisible by 333 - so it's not an answer\n777 is not divisible by 222 - so it’s not an answer\n888 is divisible by 222 and it is not divisible by 333 - so it is the answer\n\nIn the second query:\nThe trick here is to see that 444 is divisible by 222 and not divisible by 333. However, 444 is not strictly greater than X=4X = 4X=4 - so it’s not an answer. The answer is the same as in the first query - 888.\nIn the third query:\nEvery positive integer number is divisible by 111, so the answer surely doesn’t exist - therefore we output −1-1−1."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "input": "3\n5 2 3\n4 2 3\n10 7 1",
+        "expectedOutput": "8\n8\n-1",
+        "weight": 100
+      }
+    ],
+    "totalTestCases": 1,
+    "totalWeight": 100
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      100
+    ],
+    "maxScore": 100
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "**Idea:**\n\nPerform the necessary pre-checks and then compute:\n\n\nIf Z=1{Z = 1}Z=1 then every number is divisible by Z{Z}Z so output −1{-1}−1.\nIf Ymod  Z=0{Y \\mod Z = 0}YmodZ=0 then every multiple of Y{Y}Y will be divisible by Z{Z}Z so output −1{-1}−1.\nSet\nm=⌊XY⌋+1.m = \\left\\lfloor \\frac{X}{Y} \\right\\rfloor + 1.m=⌊YX​⌋+1.\n\nCompute g=gcd⁡(Y,Z){g = \\gcd(Y, Z)}g=gcd(Y,Z) and d=Zg{d = \\frac{Z}{g}}d=gZ​.\nIf mmod  d=0{m \\mod d = 0}mmodd=0 then increment m{m}m by 111.\nFinally, output K=Ytimesm{K = Y times m}K=Ytimesm.\nThis method relies on straightforward number theory and performs only constant-time computations per query.\n\n**Code Implementation in C++:**\n\n`#include &lt;iostream&gt;\n#include &lt;numeric&gt;\n#include &lt;algorithm&gt;\n#include &lt;string&gt;\nusing namespace std;\n \n// Function to convert __int128 to string for output.\nstring int128ToString(__int128 num) {\n    if(num == 0) return \"0\";\n    bool neg = false;\n    if(num &lt; 0) { neg = true; num = -num; }\n    string s;\n    while(num &gt; 0) {\n        int digit = (int)(num % 10);\n        s.push_back('0' + digit);\n        num /= 10;\n    }\n    if(neg) s.push_back('-');\n    reverse(s.begin(), s.end());\n    return s;\n}\n \nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n \n    int t;\n    cin &gt;&gt; t;\n    while(t--){\n        unsigned long long X, Y, Z;\n        cin &gt;&gt; X &gt;&gt; Y &gt;&gt; Z;\n \n        if(Z == 1ULL){\n            cout &lt;&lt; -1 &lt;&lt; \"\\n\";\n            continue;\n        }\n \n        if(Y % Z == 0ULL){\n            cout &lt;&lt; -1 &lt;&lt; \"\\n\";\n            continue;\n        }\n \n        // Compute m0: smallest integer m such that Y*m &gt; X.\n        unsigned long long m = (X / Y) + 1;\n \n        // Let g = gcd(Y, Z) and compute d = Z / g.\n        unsigned long long g = std::gcd(Y, Z);\n        unsigned long long d = Z / g;\n \n        // If m is divisible by d, adjust by incrementing m.\n        if(m % d == 0ULL)\n            m++;\n \n        __int128 K = (__int128) Y * m;\n        cout &lt;&lt; int128ToString(K) &lt;&lt; \"\\n\";\n    }\n    return 0;\n}\n`**Code Implementation in Python:**\n\n`import math\nimport sys\n\ndef main():\n    input_data = sys.stdin.read().strip().split()\n    t = int(input_data[0])\n    index = 1\n    res = []\n    for _ in range(t):\n        X = int(input_data[index]); Y = int(input_data[index+1]); Z = int(input_data[index+2])\n        index += 3\n        if Z == 1:\n            res.append(str(-1))\n            continue\n        if Y % Z == 0:\n            res.append(str(-1))\n            continue\n        m = X // Y + 1\n        g = math.gcd(Y, Z)\n        d = Z // g\n        if m % d == 0:\n            m += 1\n        K = Y * m\n        res.append(str(K))\n    sys.stdout.write(\"\\n\".join(res))\n\nif __name__ == '__main__':\n    main()\n`**Idea:**\n\nAfter the initial checks (i.e. handling cases Z=1{Z = 1}Z=1 and when Y{Y}Y is divisible by Z{Z}Z), start with\n\nm0=⌊XY⌋+1,m_0 = \\left\\lfloor \\frac{X}{Y} \\right\\rfloor + 1,m0​=⌊YX​⌋+1,and compute K=Ytimesm0{K = Y times m_0}K=Ytimesm0​. Then, while K{K}K is divisible by Z{Z}Z, increment m{m}m by 111 and recalcualte K{K}K. This simulation continues until you find an acceptable number.\n\nThis approach is intuitive and easy to implement. Due to the number theory property explained earlier, the number of iterations will be very small.\n\n**Code Implementation in C++:**\n\n`#include &lt;iostream&gt;\n#include &lt;numeric&gt;\n#include &lt;algorithm&gt;\n#include &lt;string&gt;\nusing namespace std;\n \n// Function to convert __int128 to string for output.\nstring int128ToString(__int128 num) {\n    if(num == 0) return \"0\";\n    bool neg = false;\n    if(num &lt; 0) { neg = true; num = -num; }\n    string s;\n    while(num &gt; 0) {\n        int digit = (int)(num % 10);\n        s.push_back('0' + digit);\n        num /= 10;\n    }\n    if(neg) s.push_back('-');\n    reverse(s.begin(), s.end());\n    return s;\n}\n \nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n \n    int t;\n    cin &gt;&gt; t;\n    while(t--){\n        unsigned long long X, Y, Z;\n        cin &gt;&gt; X &gt;&gt; Y &gt;&gt; Z;\n \n        if(Z == 1ULL){\n            cout &lt;&lt; -1 &lt;&lt; \"\\n\";\n            continue;\n        }\n        if(Y % Z == 0ULL){\n            cout &lt;&lt; -1 &lt;&lt; \"\\n\";\n            continue;\n        }\n \n        // Start with m0: smallest m such that Y*m &gt; X.\n        unsigned long long m = (X / Y) + 1;\n        __int128 K = (__int128) Y * m;\n \n        // Iterate until K is not divisible by Z.\n        while(K % Z == 0) {\n            m++;\n            K = (__int128) Y * m;\n        }\n \n        cout &lt;&lt; int128ToString(K) &lt;&lt; \"\\n\";\n    }\n    return 0;\n}\n`**Code Implementation in Python:**\n\n`import sys\n\ndef main():\n    data = sys.stdin.read().strip().split()\n    t = int(data[0])\n    idx = 1\n    results = []\n    for _ in range(t):\n        X = int(data[idx]); Y = int(data[idx+1]); Z = int(data[idx+2])\n        idx += 3\n        if Z == 1 or Y % Z == 0:\n            results.append(\"-1\")\n            continue\n        \n        m = X // Y + 1\n        K = Y * m\n        while K % Z == 0:\n            m += 1\n            K = Y * m\n        results.append(str(K))\n    sys.stdout.write(\"\\n\".join(results))\n\nif __name__ == '__main__':\n    main()\n`**Idea:**\n\nThis approach combines the techniques of Approach 1 into a more condensed version. After performing the necessary checks, we use a one-line adjustment for m{m}m:\n\nm=(⌊XY⌋+1)+{1,if&nbsp;mmod  d=0,0,otherwise.m = \\left(\\left\\lfloor \\frac{X}{Y} \\right\\rfloor + 1\\right) + \n\\begin{cases} \n1, &amp; \\text{if } m \\mod d = 0, \\\\\n0, &amp; \\text{otherwise.} \n\\end{cases}m=(⌊YX​⌋+1)+{1,0,​if&nbsp;mmodd=0,otherwise.​Then we directly compute K=Y×m{K = Y \\times m}K=Y×m.\n\n**Code Implementation in C++:**\n\n`#include &lt;iostream&gt;\n#include &lt;numeric&gt;\n#include &lt;algorithm&gt;\n#include &lt;string&gt;\nusing namespace std;\n \n// Function to convert __int128 to string for output.\nstring int128ToString(__int128 num) {\n    if(num == 0) return \"0\";\n    bool neg = false;\n    if(num &lt; 0) { neg = true; num = -num; }\n    string s;\n    while(num &gt; 0) {\n        int digit = (int)(num % 10);\n        s.push_back('0' + digit);\n        num /= 10;\n    }\n    if(neg) s.push_back('-');\n    reverse(s.begin(), s.end());\n    return s;\n}\n \nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n \n    int t;\n    cin &gt;&gt; t;\n    while(t--){\n        unsigned long long X, Y, Z;\n        cin &gt;&gt; X &gt;&gt; Y &gt;&gt; Z;\n \n        if(Z == 1ULL || Y % Z == 0ULL){\n            cout &lt;&lt; -1 &lt;&lt; \"\\n\";\n            continue;\n        }\n \n        unsigned long long m = (X / Y) + 1;\n        unsigned long long g = std::gcd(Y, Z);\n        unsigned long long d = Z / g;\n \n        // Adjust m in one line if it is divisible by d.\n        m += (m % d == 0 ? 1 : 0);\n \n        __int128 K = (__int128) Y * m;\n        cout &lt;&lt; int128ToString(K) &lt;&lt; \"\\n\";\n    }\n    return 0;\n}\n`**Code Implementation in Python:**\n\n`import math, sys\n\ndef main():\n    data = sys.stdin.read().strip().split()\n    t = int(data[0])\n    idx = 1\n    output = []\n    for _ in range(t):\n        X = int(data[idx]); Y = int(data[idx+1]); Z = int(data[idx+2])\n        idx += 3\n        if Z == 1 or Y % Z == 0:\n            output.append(\"-1\")\n            continue\n        m = X // Y + 1\n        d = Z // math.gcd(Y, Z)\n        m += (1 if m % d == 0 else 0)\n        output.append(str(Y * m))\n    sys.stdout.write(\"\\n\".join(output))\n    \nif __name__ == '__main__':\n    main()\n`\n\n**Approach 1 (Direct Mathematical Optimization):**\n\nUses number theory to adjust the multiplier based on d=Zgcd⁡(Y,Z)d = \\frac{Z}{\\gcd(Y,Z)}d=gcd(Y,Z)Z​. This avoids unnecessary iterations.\n\n\n\n\n**Approach 2 (Iterative Checking):**\n\nIteratively checks each multiple of Y{Y}Y starting from the first valid candidate until one meets the conditions.\n\n\n\n\n**Approach 3 (Condensed Direct Computation):**\n\nA compact version of Approach 1 combining the logic into fewer lines.\n\n\n\nEach of these approaches efficiently handles the constraints, even when X{X}X, Y{Y}Y, and Z{Z}Z are as large as 101810^{18}1018.",
+    "timeComplexity": "O(N)",
+    "spaceComplexity": "O(1)",
+    "code": {}
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

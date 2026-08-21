@@ -1,0 +1,130 @@
+{
+  "questionId": "Q8570",
+  "title": "Prefix Zeros",
+  "slug": "prefix-zeros",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Greedy | Strings",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Prefix",
+      "Greedy",
+      "Modulo",
+      "Simulation"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Binary Search"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given a string SSS of length NNN, which consists of digits from 000 to 999. You can apply the following operation to the string:\n\n\nChoose an integer LLL with 1≤L≤N1\\le L \\le N1≤L≤N and apply Si=(Si+1)mod  10S_i = (S_i + 1) \\mod 10Si​=(Si​+1)mod10 for each 1≤i≤L1 \\le i \\le L1≤i≤L.\nFor example, if S=39590S=39590S=39590, then choosing L=3L=3L=3 and applying the operation yields the string S=406‾90S=\\underline{406}90S=406​90.\n\nThe prefix of string SSS of length l  (1≤l≤∣S∣)l\\;(1 \\leq l \\leq \\mid S \\mid )l(1≤l≤∣S∣) is string S1S2…SlS_1 S_2 \\dots S_lS1​S2​…Sl​. A prefix of length lll is called good if S1=0,S2=0,…,Sl=0S_1=0, S_2=0, \\dots, S_l=0S1​=0,S2​=0,…,Sl​=0. Find the length of the **longest good prefix** that can be obtained in string SSS by applying the given operation maximum KKK times.\n\n\nInput Format\n\nThe first line of input contains an integer TTT, denoting the number of test cases. The TTT test cases then follow:\nThe first line of each test case contains two space-separated integers N,KN, KN,K.\nThe second line of each test case contains the string SSS.\n\n\nOutput Format\nFor each test case, output in a single line the length of the longest good prefix that can be obtained in string SSS by applying the given operation maximum KKK times.",
+    "constraints": [
+      "1 ≤ T ≤ 10^5",
+      "1 ≤ N ≤ 10^5",
+      "0 ≤ K ≤ 10^9",
+      "Sum of N over all test cases ≤ 3·10^5"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case consists of two lines. The first line contains two integers N and K (1 ≤ N ≤ 10^5, 0 ≤ K ≤ 10^9). The second line contains a string S of length N consisting of digits '0'‑'9'.",
+    "outputFormat": "For each test case output a single integer – the maximum length of a prefix that can be turned into all zeros using at most K operations.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "6\n3 5\n380\n3 9\n380\n4 2\n0123\n5 13\n78712\n6 10\n051827\n8 25\n37159725",
+        "output": "0\n3\n1\n3\n2\n5",
+        "explanation": "The greedy simulation described in the approach yields the shown answers for each test case."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 0\n0",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "cannot zero single digit",
+        "input": "1\n1 0\n5",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "large K, all zeros after one increment",
+        "input": "1\n5 10\n99999",
+        "expectedOutput": "5",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "insufficient K at first position",
+        "input": "1\n4 3\n1234",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stop after second position",
+        "input": "1\n3 5\n090",
+        "expectedOutput": "2",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Process the string from left to right. Keep a variable cur that stores how many times the current position has already been incremented by previous operations (mod 10). For position i (0‑based) the digit after those increments is (S[i] - '0' + cur) % 10. To make it zero we need need = (10 - that) % 10 additional increments. Each additional increment is performed by choosing L = i+1, which adds 1 to all first i+1 positions, i.e. it increases cur by need (mod 10) for the following positions and costs need operations. If the total operations used so far plus need exceeds K we cannot make this position zero and we stop. Otherwise we add need to the used operations and update cur = (cur + need) % 10. The number of processed positions is the answer. The algorithm is O(N) per test case and uses O(1) extra memory.",
+    "timeComplexity": "O(N) per test case, overall O(sum of N) ≤ 3·10^5.",
+    "spaceComplexity": "O(1) besides the input string.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n\nint main() {\n    int T; if (scanf(\"%d\", &T)!=1) return 0;\n    while (T--) {\n        int N; long long K; scanf(\"%d %lld\", &N, &K);\n        char S[100005]; scanf(\"%s\", S);\n        long long used = 0;\n        int cur = 0; // cumulative increments modulo 10\n        int ans = 0;\n        for (int i = 0; i < N; ++i) {\n            int digit = S[i] - '0';\n            int curDigit = (digit + cur) % 10;\n            int need = (10 - curDigit) % 10;\n            if (used + need > K) break;\n            used += need;\n            cur = (cur + need) % 10;\n            ++ans;\n        }\n        printf(\"%d\\n\", ans);\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N; long long K; cin>>N>>K;\n        string S; cin>>S;\n        long long used=0; int cur=0; int ans=0;\n        for(int i=0;i<N;++i){\n            int digit=S[i]-'0';\n            int curDigit=(digit+cur)%10;\n            int need=(10-curDigit)%10;\n            if(used+need>K) break;\n            used+=need;\n            cur=(cur+need)%10;\n            ++ans;\n        }\n        cout<<ans<<\"\\n\";\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner(System.in);\n        int T = fs.nextInt();\n        StringBuilder sb = new StringBuilder();\n        while (T-- > 0) {\n            int N = fs.nextInt();\n            long K = fs.nextLong();\n            char[] s = fs.next().toCharArray();\n            long used = 0;\n            int cur = 0;\n            int ans = 0;\n            for (int i = 0; i < N; i++) {\n                int digit = s[i] - '0';\n                int curDigit = (digit + cur) % 10;\n                int need = (10 - curDigit) % 10;\n                if (used + need > K) break;\n                used += need;\n                cur = (cur + need) % 10;\n                ans++;\n            }\n            sb.append(ans).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n\n    // Fast scanner for competitive programming\n    static class FastScanner {\n        private final InputStream in;\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        FastScanner(InputStream in) { this.in = in; }\n        private int readByte() throws IOException {\n            if (ptr >= len) {\n                len = in.read(buffer);\n                ptr = 0;\n                if (len <= 0) return -1;\n            }\n            return buffer[ptr++];\n        }\n        String next() throws IOException {\n            StringBuilder sb = new StringBuilder();\n            int c;\n            while ((c = readByte()) != -1 && c <= ' ') {}\n            while (c != -1 && c > ' ') {\n                sb.append((char) c);\n                c = readByte();\n            }\n            return sb.toString();\n        }\n        int nextInt() throws IOException { return Integer.parseInt(next()); }\n        long nextLong() throws IOException { return Long.parseLong(next()); }\n    }\n}\n",
+      "Python3": "import sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it)); K = int(next(it))\n        S = next(it).strip()\n        used = 0\n        cur = 0\n        ans = 0\n        for ch in S:\n            digit = ord(ch) - 48\n            cur_digit = (digit + cur) % 10\n            need = (10 - cur_digit) % 10\n            if used + need > K:\n                break\n            used += need\n            cur = (cur + need) % 10\n            ans += 1\n        out_lines.append(str(ans))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet outputs = [];\nfor (let t = 0; t < T; ++t) {\n  const N = Number(input[idx++]);\n  const K = Number(input[idx++]);\n  const S = input[idx++];\n  let used = 0;\n  let cur = 0;\n  let ans = 0;\n  for (let i = 0; i < N; ++i) {\n    const digit = S.charCodeAt(i) - 48;\n    const curDigit = (digit + cur) % 10;\n    const need = (10 - curDigit) % 10;\n    if (used + need > K) break;\n    used += need;\n    cur = (cur + need) % 10;\n    ++ans;\n  }\n  outputs.push(String(ans));\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

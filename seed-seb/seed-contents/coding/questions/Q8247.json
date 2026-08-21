@@ -1,0 +1,130 @@
+{
+  "questionId": "Q8247",
+  "title": "Cinema Ticketing Queue",
+  "slug": "cinema-ticketing-queue",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Data Structures",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Disjoint Set Union",
+      "Union Find",
+      "Greedy Simulation",
+      "Arrays"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Data Structures"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "There are NNN people, numbered from 111 to NNN. They go to a cinema hall. Each of them buys a ticket, which has a number written on it. The number on the ticket of the ithi^{th}ith person is AiA_iAi​.\n\nThere are infinite seats in the cinema hall. The seats are numbered sequentially starting from 111. All the NNN people stand in a queue to get their respective seats. Person 111 stands at the front of the queue, Person 222 stands in the second position of the queue, so on up to Person NNN who stands at the rear of the queue. They were given seats in this manner:\n\nLet the number on the ticket of the person currently standing in front of the queue be XXX. If the XthX^{th}Xth seat is empty, the person gets out of the queue and takes the XthX^{th}Xth seat. Otherwise the person goes to the rear of the queue, and the number on his ticket is incremented by one - that is, it becomes X+1X+1X+1.\n\nPrint the seat number occupied by each of the NNN people.\n\n\nInput Format\n\nThe first line of input contains a single integer TTT denoting the number of test cases. The description of TTT test cases follows.\nThe first line of each test case contains a single integer NNN.\nThe second line of each testcase line contains NNN space-separated integers A1,A2,…,ANA_1, A_2, \\dots , A_NA1​,A2​,…,AN​.\n\n\nOutput Format\nFor each test case, print a single line containing NNN space-separated integers, where the ithi^{th}ith integer denotes the seat number finally occupied by the Person iii.",
+    "constraints": [
+      "1 ≤ T ≤ 10^4",
+      "1 ≤ N ≤ 10^5",
+      "1 ≤ Ai ≤ N",
+      "Sum of N over all test cases ≤ 5·10^5"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, the first line contains an integer N, the number of people. The second line contains N space‑separated integers A1 … AN, the initial ticket numbers of the people (person i is initially at position i in the queue).",
+    "outputFormat": "For each test case output a single line with N space‑separated integers. The i‑th integer is the seat number finally occupied by person i.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4\n5\n1 2 3 2 4\n4\n4 1 3 2\n3\n1 1 1\n5\n2 5 1 5 2",
+        "output": "1 2 3 5 4\n4 1 3 2\n1 2 3\n2 5 1 6 3",
+        "explanation": "The DSU always returns the smallest free seat ≥ the current ticket. Applying it to each test case yields the shown seat assignments."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary (N=5, all tickets = N)",
+        "input": "1\n5\n5 5 5 5 5",
+        "expectedOutput": "5 6 7 8 9",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "decreasing tickets",
+        "input": "1\n4\n4 3 2 1",
+        "expectedOutput": "4 3 2 1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n6\n1 2 1 2 3 1",
+        "expectedOutput": "1 2 3 4 5 6",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2 (all tickets = 2)",
+        "input": "1\n5\n2 2 2 2 2",
+        "expectedOutput": "2 3 4 5 6",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "When a person with current ticket X reaches the front of the queue, he occupies seat X if it is free, otherwise his ticket is increased to X+1 and he goes to the back. This process is equivalent to giving each person the smallest seat number ≥ his initial ticket that is still free at the moment he is processed. We can obtain that seat in O(α(N)) time using a DSU that stores for every seat the next free seat. Initially parent[x]=x. When seat x is taken we union it with x+1, i.e. set parent[x]=find(x+1). For each person i we compute seat = find(Ai), store it as the answer for i, and then mark the seat as taken by union(seat, seat+1). The DSU works for seat numbers up to 2·N because at most N extra seats beyond N can be needed (e.g., all Ai = N). The algorithm runs in O(N α(N)) per test case and O(N) additional memory.",
+    "timeComplexity": "O(N α(N)) per test case, where α is the inverse Ackermann function (practically constant).",
+    "spaceComplexity": "O(N) for the DSU arrays and the answer array.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nint *parent;\nint find_set(int x){\n    if(parent[x]==x) return x;\n    return parent[x]=find_set(parent[x]);\n}\nvoid union_set(int x,int y){\n    parent[x]=y; // y is already a representative (find_set called before)\n}\nint main(){\n    int T; if(scanf(\"%d\",&T)!=1) return 0;\n    while(T--){\n        int N; scanf(\"%d\",&N);\n        int maxSize = 2*N + 5;\n        parent = (int*)malloc(maxSize*sizeof(int));\n        for(int i=0;i<maxSize;i++) parent[i]=i;\n        int *ans = (int*)malloc(N*sizeof(int));\n        for(int i=0;i<N;i++){\n            int a; scanf(\"%d\",&a);\n            int seat = find_set(a);\n            ans[i]=seat;\n            union_set(seat, find_set(seat+1));\n        }\n        for(int i=0;i<N;i++){\n            if(i) printf(\" \");\n            printf(\"%d\", ans[i]);\n        }\n        printf(\"\\n\");\n        free(parent);\n        free(ans);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nstruct DSU{\n    vector<int> p;\n    DSU(int n){p.resize(n); iota(p.begin(), p.end(), 0);}    \n    int find(int x){return p[x]==x?x:p[x]=find(p[x]);}\n    void occupy(int x){p[x]=find(x+1);} // mark seat x as taken\n};\n\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N; cin>>N;\n        DSU dsu(2*N+5);\n        vector<int> ans(N);\n        for(int i=0;i<N;i++){\n            int a; cin>>a;\n            int seat = dsu.find(a);\n            ans[i]=seat;\n            dsu.occupy(seat);\n        }\n        for(int i=0;i<N;i++){\n            if(i) cout<<' ';\n            cout<<ans[i];\n        }\n        cout<<'\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    static class DSU {\n        int[] parent;\n        DSU(int n){\n            parent = new int[n];\n            for(int i=0;i<n;i++) parent[i]=i;\n        }\n        int find(int x){\n            if(parent[x]==x) return x;\n            return parent[x]=find(parent[x]);\n        }\n        void occupy(int x){\n            parent[x]=find(x+1);\n        }\n    }\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder out = new StringBuilder();\n        int T = Integer.parseInt(br.readLine().trim());\n        while(T-- > 0){\n            int N = Integer.parseInt(br.readLine().trim());\n            StringTokenizer st = new StringTokenizer(br.readLine());\n            DSU dsu = new DSU(2*N + 5);\n            int[] ans = new int[N];\n            for(int i=0;i<N;i++){\n                int a = Integer.parseInt(st.nextToken());\n                int seat = dsu.find(a);\n                ans[i]=seat;\n                dsu.occupy(seat);\n            }\n            for(int i=0;i<N;i++){\n                if(i>0) out.append(' ');\n                out.append(ans[i]);\n            }\n            out.append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it))\n        max_size = 2 * N + 5\n        parent = list(range(max_size))\n        def find(x):\n            while parent[x] != x:\n                parent[x] = parent[parent[x]]\n                x = parent[x]\n            return x\n        ans = []\n        for _ in range(N):\n            a = int(next(it))\n            seat = find(a)\n            ans.append(str(seat))\n            parent[seat] = find(seat + 1)  # occupy\n        out_lines.append(' '.join(ans))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet output = [];\nfor (let t = 0; t < T; t++) {\n  const N = Number(input[idx++]);\n  const maxSize = 2 * N + 5;\n  const parent = new Int32Array(maxSize);\n  for (let i = 0; i < maxSize; i++) parent[i] = i;\n  const find = (x) => {\n    let root = x;\n    while (parent[root] !== root) root = parent[root];\n    // path compression\n    while (parent[x] !== x) {\n      const nxt = parent[x];\n      parent[x] = root;\n      x = nxt;\n    }\n    return root;\n  };\n  const ans = [];\n  for (let i = 0; i < N; i++) {\n    const a = Number(input[idx++]);\n    const seat = find(a);\n    ans.push(seat);\n    parent[seat] = find(seat + 1); // occupy seat\n  }\n  output.push(ans.join(' '));\n}\nconsole.log(output.join('\\n'));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

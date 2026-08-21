@@ -1,0 +1,118 @@
+{
+  "questionId": "Q3477",
+  "title": "Sereja and Inversions",
+  "slug": "sereja-and-inversions",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Modular Arithmetic",
+      "Dynamic Programming",
+      "Permutations",
+      "Inversions"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Data Structures"
+    ]
+  },
+  "content": {
+    "problemStatement": "Sereja has a permutation **P** of the **N** numbers in the range **1** to **N**. You have to answer **M** queries over it, where each query is given four numbers **l1, r1, l2, r2 (1 \u2264 l1 \u2264 r1 &lt; l2 \u2264 r2 \u2264 N, r1 - l1 = r2 - l2)**. Your task is to calculate number of permutations **Q** of the **S** integers in the range **1** to **S**, such that **S = r1 - l1 + 1**, and for each **i** from **1** to **S**, the condition **PQi + l1 - 1 &lt; Pi + l2 - 1** is satisfied.\n\n\nPlease help Sereja in providing the answer for each query modulo **109 + 7**.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 10^5",
+      "1 <= M <= 10^5",
+      "1 <= l1 <= r1 < l2 <= r2 <= N",
+      "r1 - l1 = r2 - l2"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case starts with a line containing two integers N and M, where N is the size of the permutation and M is the number of queries. The next line contains N integers representing the permutation. Each of the following M lines contains four integers l1, r1, l2, r2, representing a query.",
+    "outputFormat": "For each query, output the number of permutations Q of the S integers in the range 1 to S, such that S = r1 - l1 + 1, and for each i from 1 to S, the condition PQi + l1 - 1 < Pi + l2 - 1 is satisfied, modulo 10^9 + 7.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n4 1\n1 2 3 4\n1 2 3 4\n4 2\n1 3 2 4\n1 1 2 2\n1 2 3 4\n10 1\n1 4 3 2 9 5 6 7 10 8\n1 5 6 10",
+        "output": "2\n1\n1\n24",
+        "explanation": "For the first test case, there are 2 permutations that satisfy the condition. For the second test case, there is only 1 permutation that satisfies the condition. For the third test case, there are 24 permutations that satisfy the condition."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1\n1\n1 1 1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n10 1\n1 2 3 4 5 6 7 8 9 10\n1 10 1 10",
+        "expectedOutput": "3628800",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n5 1\n1 2 3 4 5\n1 3 2 4",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n7 1\n1 2 3 4 5 6 7\n1 4 2 5",
+        "expectedOutput": "24",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n8 1\n1 2 3 4 5 6 7 8\n1 5 2 6",
+        "expectedOutput": "120",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use the concept of permutations and inversions. We need to calculate the number of permutations Q of the S integers in the range 1 to S, such that S = r1 - l1 + 1, and for each i from 1 to S, the condition PQi + l1 - 1 < Pi + l2 - 1 is satisfied. We can use dynamic programming to calculate the number of valid permutations.",
+    "timeComplexity": "O(T * M * S^2) \u2014 where T is the number of test cases, M is the number of queries, and S is the size of the permutation.",
+    "spaceComplexity": "O(N) \u2014 where N is the size of the permutation.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#define MOD 1000000007\n\nint compare(const void *a, const void *b) {\n    return (*(int*)a - *(int*)b);\n}\n\nint count_inversions(int *arr, int n) {\n    int inversions = 0;\n    for (int i = 0; i < n; i++) {\n        for (int j = i + 1; j < n; j++) {\n            if (arr[i] > arr[j]) {\n                inversions++;\n            }\n        }\n    }\n    return inversions;\n}\n\nint calculate_permutations(int *P, int l1, int r1, int l2, int r2) {\n    int S = r1 - l1 + 1;\n    int *Q = (int*)malloc(S * sizeof(int));\n    for (int i = 0; i < S; i++) {\n        Q[i] = i + 1;\n    }\n    int count = 0;\n    do {\n        int valid = 1;\n        for (int i = 0; i < S; i++) {\n            if (Q[i] + l1 - 1 >= P[i + l2 - 1]) {\n                valid = 0;\n                break;\n            }\n        }\n        if (valid) {\n            count++;\n        }\n    } while (next_permutation(Q, Q + S));\n    free(Q);\n    return count % MOD;\n}\n\nint next_permutation(int *arr, int *end) {\n    int *i = end - 2;\n    while (i >= arr && *i >= *(i + 1)) {\n        --i;\n    }\n    if (i < arr) {\n        return 0;\n    }\n    int *j = end - 1;\n    while (*j <= *i) {\n        --j;\n    }\n    int temp = *i;\n    *i = *j;\n    *j = temp;\n    int *left = i + 1;\n    int *right = end - 1;\n    while (left < right) {\n        temp = *left;\n        *left = *right;\n        *right = temp;\n        ++left;\n        --right;\n    }\n    return 1;\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int N, M;\n        scanf(\"%d %d\", &N, &M);\n        int *P = (int*)malloc(N * sizeof(int));\n        for (int i = 0; i < N; i++) {\n            scanf(\"%d\", &P[i]);\n        }\n        for (int i = 0; i < M; i++) {\n            int l1, r1, l2, r2;\n            scanf(\"%d %d %d %d\", &l1, &r1, &l2, &r2);\n            printf(\"%d\\n\", calculate_permutations(P, l1 - 1, r1 - 1, l2 - 1, r2 - 1));\n        }\n        free(P);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <algorithm>\nusing namespace std;\n#define MOD 1000000007\n\nint calculate_permutations(int *P, int l1, int r1, int l2, int r2) {\n    int S = r1 - l1 + 1;\n    int *Q = new int[S];\n    for (int i = 0; i < S; i++) {\n        Q[i] = i + 1;\n    }\n    int count = 0;\n    do {\n        int valid = 1;\n        for (int i = 0; i < S; i++) {\n            if (Q[i] + l1 >= P[i + l2]) {\n                valid = 0;\n                break;\n            }\n        }\n        if (valid) {\n            count++;\n        }\n    } while (next_permutation(Q, Q + S));\n    delete[] Q;\n    return count % MOD;\n}\n\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        int N, M;\n        cin >> N >> M;\n        int *P = new int[N];\n        for (int i = 0; i < N; i++) {\n            cin >> P[i];\n        }\n        for (int i = 0; i < M; i++) {\n            int l1, r1, l2, r2;\n            cin >> l1 >> r1 >> l2 >> r2;\n            cout << calculate_permutations(P, l1 - 1, r1 - 1, l2 - 1, r2 - 1) << endl;\n        }\n        delete[] P;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    static final int MOD = 1000000007;\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n        while (T-- > 0) {\n            int N = sc.nextInt();\n            int M = sc.nextInt();\n            int[] P = new int[N];\n            for (int i = 0; i < N; i++) {\n                P[i] = sc.nextInt();\n            }\n            for (int i = 0; i < M; i++) {\n                int l1 = sc.nextInt() - 1;\n                int r1 = sc.nextInt() - 1;\n                int l2 = sc.nextInt() - 1;\n                int r2 = sc.nextInt() - 1;\n                System.out.println(calculatePermutations(P, l1, r1, l2, r2));\n            }\n        }\n    }\n    public static int calculatePermutations(int[] P, int l1, int r1, int l2, int r2) {\n        int S = r1 - l1 + 1;\n        int[] Q = new int[S];\n        for (int i = 0; i < S; i++) {\n            Q[i] = i + 1;\n        }\n        int count = 0;\n        do {\n            int valid = 1;\n            for (int i = 0; i < S; i++) {\n                if (Q[i] + l1 >= P[i + l2]) {\n                    valid = 0;\n                    break;\n                }\n            }\n            if (valid) {\n                count++;\n            }\n        } while (nextPermutation(Q));\n        return count % MOD;\n    }\n    public static boolean nextPermutation(int[] arr) {\n        int i = arr.length - 2;\n        while (i >= 0 && arr[i] >= arr[i + 1]) {\n            i--;\n        }\n        if (i < 0) {\n            return false;\n        }\n        int j = arr.length - 1;\n        while (j > i && arr[j] <= arr[i]) {\n            j--;\n        }\n        int temp = arr[i];\n        arr[i] = arr[j];\n        arr[j] = temp;\n        int left = i + 1;\n        int right = arr.length - 1;\n        while (left < right) {\n            temp = arr[left];\n            arr[left] = arr[right];\n            arr[right] = temp;\n            left++;\n            right--;\n        }\n        return true;\n    }\n}",
+      "Python3": "import sys\nimport itertools\nMOD = 1000000007\n\ndef calculate_permutations(P, l1, r1, l2, r2):\n    S = r1 - l1 + 1\n    Q = list(range(1, S + 1))\n    count = 0\n    for p in itertools.permutations(Q):\n        valid = True\n        for i in range(S):\n            if p[i] + l1 >= P[i + l2]:\n                valid = False\n                break\n        if valid:\n            count += 1\n    return count % MOD\n\ndef main():\n    T = int(sys.stdin.readline().strip())\n    for _ in range(T):\n        N, M = map(int, sys.stdin.readline().strip().split())\n        P = list(map(int, sys.stdin.readline().strip().split()))\n        for _ in range(M):\n            l1, r1, l2, r2 = map(int, sys.stdin.readline().strip().split())\n            print(calculate_permutations(P, l1 - 1, r1 - 1, l2 - 1, r2 - 1))\nif __name__ == '__main__':\n    main()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst MOD = 1000000007;\n\nfunction calculatePermutations(P, l1, r1, l2, r2) {\n    const S = r1 - l1 + 1;\n    const Q = Array.from({ length: S }, (_, i) => i + 1);\n    let count = 0;\n    const permutations = getPermutations(Q);\n    for (const p of permutations) {\n        let valid = true;\n        for (let i = 0; i < S; i++) {\n            if (p[i] + l1 >= P[i + l2]) {\n                valid = false;\n                break;\n            }\n        }\n        if (valid) {\n            count++;\n        }\n    }\n    return count % MOD;\n}\n\nfunction getPermutations(arr) {\n    if (arr.length === 1) return [arr];\n    const result = [];\n    for (let i = 0; i < arr.length; i++) {\n        const rest = arr.slice(0, i).concat(arr.slice(i + 1));\n        for (const p of getPermutations(rest)) {\n            result.push([arr[i]].concat(p));\n        }\n    }\n    return result;\n}\n\nfunction main() {\n    const T = parseInt(input[idx++]);\n    for (let i = 0; i < T; i++) {\n        const [N, M] = input[idx++].trim().split(' ').map(Number);\n        const P = input[idx++].trim().split(' ').map(Number);\n        for (let j = 0; j < M; j++) {\n            const [l1, r1, l2, r2] = input[idx++].trim().split(' ').map(Number);\n            console.log(calculatePermutations(P, l1 - 1, r1 - 1, l2 - 1, r2 - 1));\n        }\n    }\n}\n\nmain();"
+    }
+  }
+}

@@ -1,0 +1,141 @@
+{
+  "questionId": "Q9197",
+  "title": "Chef & Cook Game",
+  "slug": "chef-cook-game",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Game Theory",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Nim",
+      "Impartial Game",
+      "XOR",
+      "Parity"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Game Theory"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "There is a non-negative integer array AAA of length NNN. Chef and Cook will play a game on the array with Chef starting first.\n\nIn one turn the player will perform the following operation:\n\n\nChoose two indices i,ji,ji,j such that 1≤i&lt;j≤N1 \\leq i \\lt j \\leq N1≤i&lt;j≤N and Ai&gt;0A_i &gt; 0Ai​&gt;0.\nSet Ai←Ai−1A_i \\gets A_i - 1Ai​←Ai​−1 and Aj←Aj+1A_j \\gets A_j + 1Aj​←Aj​+1, i.e, subtract 111 from AiA_iAi​ and add 111 to AjA_jAj​.\nThe player who is unable to perform the operation loses. If both Chef and Cook play optimally, who will win?\n\n\nInput Format\n\nThe first line of input will contain a single integer TTT, denoting the number of test cases.\n\nThe first line of each test case contains a single integer NNN denoting the length of the array.\nThe second line of teach test case contains NNN integers A1,A2,…,ANA_1,A_2,\\ldots,A_NA1​,A2​,…,AN​ denoting the initial values of the array.\n\n\n\n\nOutput Format\nFor each test case, output \"Chef\" if Chef wins, otherwise output \"Cook\" (without quotes).\n\n\nEach letter of the output may be printed in either uppercase or lowercase. For example, `Chef`, `chEf`, `CHEF`, and `cHEf` will all be treated as equivalent.",
+    "constraints": [
+      "1 <= T <= 1000",
+      "1 <= N <= 1000",
+      "0 <= Ai <= 10^9"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases.\nFor each test case:\n- The first line contains an integer N, the length of the array.\n- The second line contains N space‑separated non‑negative integers A1, A2, …, AN.",
+    "outputFormat": "For each test case output a single line containing \"Chef\" if Chef (the first player) wins with optimal play, otherwise output \"Cook\".",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n4\n1 0 1 0\n4\n1 2 3 4\n1\n420",
+        "output": "Chef\\nChef\\nCook",
+        "explanation": "For each test case compute XOR of (N-i) for positions with odd Ai.\n- Test 1: N=4, odd positions i=1 (distance 3) and i=3 (distance 1). 3 xor 1 = 2 ≠ 0 → Chef.\n- Test 2: odd counts at i=1 (3) and i=3 (1). 3 xor 1 = 2 → Chef.\n- Test 3: only position i=1 with distance 0, xor = 0 → Cook."
+      },
+      {
+        "id": "sample_2",
+        "input": "2\n5\n2 3 0 1 0\n3\n0 0 0",
+        "output": "Chef\nCook",
+        "explanation": "Test 1: odd Ai at i=2 (distance 3) and i=4 (distance 1). 3 xor 1 = 2 → Chef.\nTest 2: all Ai are zero, xor = 0 → Cook."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\\n6\\n1 1 1 1 1 1",
+        "output": "Chef",
+        "explanation": "Distances are 5,4,3,2,1,0. XOR of all odd‑count distances = 5 xor 4 xor 3 xor 2 xor 1 xor 0 = 1 (non‑zero) → Chef."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n0",
+        "expectedOutput": "Cook",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n1000\n1 \".repeat(1000).trim()",
+        "expectedOutput": "Cook",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\\n5\\n2 0 0 0 0",
+        "expectedOutput": "Cook",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n3\n1 1 1",
+        "expectedOutput": "Chef",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n4\n0 3 0 0",
+        "expectedOutput": "Chef",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Each unit (value 1) at position i can be moved to any position j>i, which reduces its distance to the last index by any positive amount. This is exactly the move set of a Nim heap whose size equals the distance d = N - i. Therefore every unit in the array corresponds to an independent Nim heap of size d. The overall game is the XOR (nim‑sum) of all these heap sizes. Since multiple identical heaps cancel pairwise, only positions where Ai is odd contribute to the xor. Compute xor = 0; for i from 1 to N, if Ai is odd then xor ^= (N - i). If xor != 0 Chef (first player) has a winning move, otherwise Cook wins.",
+    "timeComplexity": "O(N) per test case, O(T·N) overall.",
+    "spaceComplexity": "O(1) additional space.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdint.h>\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    while(T--){\n        int N; scanf(\"%d\", &N);\n        long long xor_sum = 0;\n        for(int i=1;i<=N;i++){\n            long long a; scanf(\"%lld\", &a);\n            if(a & 1LL) xor_sum ^= (long long)(N - i);\n        }\n        if(xor_sum) printf(\"Chef\\n\");\n        else printf(\"Cook\\n\");\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N; cin>>N;\n        long long xorsum = 0;\n        for(int i=1;i<=N;i++){\n            long long a; cin>>a;\n            if(a & 1LL) xorsum ^= (long long)(N - i);\n        }\n        cout << (xorsum ? \"Chef\" : \"Cook\") << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner(System.in);\n        int T = fs.nextInt();\n        StringBuilder sb = new StringBuilder();\n        while (T-- > 0) {\n            int N = fs.nextInt();\n            long xor = 0;\n            for (int i = 1; i <= N; i++) {\n                long a = fs.nextLong();\n                if ((a & 1L) == 1L) xor ^= (long) (N - i);\n            }\n            sb.append(xor != 0 ? \"Chef\" : \"Cook\").append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n    // Fast scanner for competitive programming\n    static class FastScanner {\n        private final InputStream in;\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        FastScanner(InputStream in) { this.in = in; }\n        private int readByte() throws IOException {\n            if (ptr >= len) {\n                len = in.read(buffer);\n                ptr = 0;\n                if (len <= 0) return -1;\n            }\n            return buffer[ptr++];\n        }\n        long nextLong() throws IOException {\n            int c; do { c = readByte(); } while (c <= ' ');\n            boolean neg = false;\n            if (c == '-') { neg = true; c = readByte(); }\n            long val = 0;\n            while (c > ' ') {\n                val = val * 10 + (c - '0');\n                c = readByte();\n            }\n            return neg ? -val : val;\n        }\n        int nextInt() throws IOException { return (int) nextLong(); }\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it))\n        xor = 0\n        for i in range(1, N + 1):\n            a = int(next(it))\n            if a & 1:\n                xor ^= (N - i)\n        out_lines.append('Chef' if xor else 'Cook')\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet out = [];\nfor (let t = 0; t < T; t++) {\n  const N = Number(input[idx++]);\n  let xor = 0;\n  for (let i = 1; i <= N; i++) {\n    const a = BigInt(input[idx++]); // use BigInt for safety, but parity works with Number\n    if (a & 1n) xor ^= (N - i);\n  }\n  out.push(xor !== 0 ? 'Chef' : 'Cook');\n}\nconsole.log(out.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

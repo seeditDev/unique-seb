@@ -1,0 +1,120 @@
+{
+  "questionId": "Q11688",
+  "title": "Circular RMQ",
+  "slug": "C",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Algorithms",
+    "difficulty": "$undefined",
+    "isPremium": true,
+    "tags": [
+      "Range Minimum Query",
+      "Circular Array",
+      "Segment Tree"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Write a program for the coding challenge \"Circular RMQ\". Refer to SEED-IT description: https://codeforces.com/contest/52/problem/C",
+    "constraints": [
+      "1 <= n <= 10^5",
+      "1 <= q <= 10^5",
+      "1 <= start, end <= n",
+      "-10^9 <= array elements <= 10^9"
+    ],
+    "inputFormat": "The first line contains an integer n, the number of elements in the array. The second line contains n space-separated integers. The third line contains an integer q, the number of queries. Each of the next q lines contains two space-separated integers, the start and end indices of the query range.",
+    "outputFormat": "For each query, output the minimum value in the specified range.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "1\n1\n1\n1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "10\n1 2 3 4 5 6 7 8 9 10\n1\n1 10",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform",
+        "input": "5\n5 5 5 5 5\n1\n1 5",
+        "expectedOutput": "5",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "5\n1 2 3 4 5\n1\n3 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "mixed case",
+        "input": "7\n1 3 2 4 5 6 7\n3\n1 3\n4 6\n2 5",
+        "expectedOutput": "1\n2\n2",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Use a segment tree to store the minimum values of subarrays and handle circular queries by considering two cases: when the query range is within the array and when it wraps around the end of the array.",
+    "timeComplexity": "O(n log n) for building the segment tree and O(log n) for each query",
+    "spaceComplexity": "O(n) for the segment tree",
+    "code": {
+      "C": "#include <stdio.h>\n#include <limits.h>\n#define MAXN 100005\nint min(int a, int b) { return a < b ? a : b; }\nint tree[4 * MAXN];\nvoid build(int* arr, int node, int start, int end) {\n    if (start == end) {\n        tree[node] = arr[start];\n    } else {\n        int mid = (start + end) / 2;\n        build(arr, 2 * node, start, mid);\n        build(arr, 2 * node + 1, mid + 1, end);\n        tree[node] = min(tree[2 * node], tree[2 * node + 1]);\n    }\n}\nint query(int node, int start, int end, int l, int r) {\n    if (r < start || end < l) return INT_MAX;\n    if (l <= start && end <= r) return tree[node];\n    int mid = (start + end) / 2;\n    return min(query(2 * node, start, mid, l, r), query(2 * node + 1, mid + 1, end, l, r));\n}\nint main() {\n    int n;\n    scanf(\"%d\", &n);\n    int arr[n];\n    for (int i = 0; i < n; i++) scanf(\"%d\", &arr[i]);\n    build(arr, 1, 0, n - 1);\n    int q;\n    scanf(\"%d\", &q);\n    while (q--) {\n        int l, r;\n        scanf(\"%d %d\", &l, &r);\n        l--; r--;\n        if (l <= r) printf(\"%d\\n\", query(1, 0, n - 1, l, r));\n        else printf(\"%d\\n\", min(query(1, 0, n - 1, l, n - 1), query(1, 0, n - 1, 0, r)));\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <climits>\nusing namespace std;\nconst int MAXN = 100005;\nint tree[4 * MAXN];\nvoid build(int* arr, int node, int start, int end) {\n    if (start == end) {\n        tree[node] = arr[start];\n    } else {\n        int mid = (start + end) / 2;\n        build(arr, 2 * node, start, mid);\n        build(arr, 2 * node + 1, mid + 1, end);\n        tree[node] = min(tree[2 * node], tree[2 * node + 1]);\n    }\n}\nint query(int node, int start, int end, int l, int r) {\n    if (r < start || end < l) return INT_MAX;\n    if (l <= start && end <= r) return tree[node];\n    int mid = (start + end) / 2;\n    return min(query(2 * node, start, mid, l, r), query(2 * node + 1, mid + 1, end, l, r));\n}\nint main() {\n    int n;\n    cin >> n;\n    int arr[n];\n    for (int i = 0; i < n; i++) cin >> arr[i];\n    build(arr, 1, 0, n - 1);\n    int q;\n    cin >> q;\n    while (q--) {\n        int l, r;\n        cin >> l >> r;\n        l--; r--;\n        if (l <= r) cout << query(1, 0, n - 1, l, r) << endl;\n        else cout << min(query(1, 0, n - 1, l, n - 1), query(1, 0, n - 1, 0, r)) << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    static final int MAXN = 100005;\n    static int[] tree = new int[4 * MAXN];\n    public static void build(int[] arr, int node, int start, int end) {\n        if (start == end) {\n            tree[node] = arr[start];\n        } else {\n            int mid = (start + end) / 2;\n            build(arr, 2 * node, start, mid);\n            build(arr, 2 * node + 1, mid + 1, end);\n            tree[node] = Math.min(tree[2 * node], tree[2 * node + 1]);\n        }\n    }\n    public static int query(int node, int start, int end, int l, int r) {\n        if (r < start || end < l) return Integer.MAX_VALUE;\n        if (l <= start && end <= r) return tree[node];\n        int mid = (start + end) / 2;\n        return Math.min(query(2 * node, start, mid, l, r), query(2 * node + 1, mid + 1, end, l, r));\n    }\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int n = scanner.nextInt();\n        int[] arr = new int[n];\n        for (int i = 0; i < n; i++) arr[i] = scanner.nextInt();\n        build(arr, 1, 0, n - 1);\n        int q = scanner.nextInt();\n        while (q-- > 0) {\n            int l = scanner.nextInt(), r = scanner.nextInt();\n            l--; r--;\n            if (l <= r) System.out.println(query(1, 0, n - 1, l, r));\n            else System.out.println(Math.min(query(1, 0, n - 1, l, n - 1), query(1, 0, n - 1, 0, r)));\n        }\n    }\n}",
+      "Python3": "import sys\nMAXN = 100005\ntree = [float('inf')] * (4 * MAXN)\n\ndef build(arr, node, start, end):\n    if start == end:\n        tree[node] = arr[start]\n    else:\n        mid = (start + end) // 2\n        build(arr, 2 * node, start, mid)\n        build(arr, 2 * node + 1, mid + 1, end)\n        tree[node] = min(tree[2 * node], tree[2 * node + 1])\n\ndef query(node, start, end, l, r):\n    if r < start or end < l: return float('inf')\n    if l <= start and end <= r: return tree[node]\n    mid = (start + end) // 2\n    return min(query(2 * node, start, mid, l, r), query(2 * node + 1, mid + 1, end, l, r))\n\ndef main():\n    n = int(sys.stdin.readline())\n    arr = list(map(int, sys.stdin.readline().split()))\n    build(arr, 1, 0, n - 1)\n    q = int(sys.stdin.readline())\n    for _ in range(q):\n        l, r = map(int, sys.stdin.readline().split())\n        l -= 1; r -= 1\n        if l <= r: print(query(1, 0, n - 1, l, r))\n        else: print(min(query(1, 0, n - 1, l, n - 1), query(1, 0, n - 1, 0, r)))\nif __name__ == '__main__':\n    main()",
+      "JavaScript": "const readline = require('readline');\nconst rl = readline.createInterface({\n    input: process.stdin,\n    output: process.stdout\n});\nconst lines = [];\nrl.on('line', (input) => {\n    lines.push(input);\n});\nrl.on('close', () => {\n    let l = 0;\n    const nextLine = () => lines[l++];\n    const nextInt = () => parseInt(nextLine());\n    const nextInts = () => nextLine().split(' ').map((x) => parseInt(x));\n    const MAXN = 100005;\n    const tree = new Array(4 * MAXN).fill(Infinity);\n    function build(arr, node, start, end) {\n        if (start === end) {\n            tree[node] = arr[start];\n        } else {\n            const mid = Math.floor((start + end) / 2);\n            build(arr, 2 * node, start, mid);\n            build(arr, 2 * node + 1, mid + 1, end);\n            tree[node] = Math.min(tree[2 * node], tree[2 * node + 1]);\n        }\n    }\n    function query(node, start, end, l, r) {\n        if (r < start || end < l) return Infinity;\n        if (l <= start && end <= r) return tree[node];\n        const mid = Math.floor((start + end) / 2);\n        return Math.min(query(2 * node, start, mid, l, r), query(2 * node + 1, mid + 1, end, l, r));\n    }\n    const n = nextInt();\n    const arr = nextInts();\n    build(arr, 1, 0, n - 1);\n    const q = nextInt();\n    for (let i = 0; i < q; i++) {\n        const [l, r] = nextInts();\n        let left = l - 1;\n        let right = r - 1;\n        if (left <= right) console.log(query(1, 0, n - 1, left, right));\n        else console.log(Math.min(query(1, 0, n - 1, left, n - 1), query(1, 0, n - 1, 0, right)));\n    }\n});"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

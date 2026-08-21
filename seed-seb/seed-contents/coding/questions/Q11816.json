@@ -1,0 +1,224 @@
+{
+  "questionId": "Q11816",
+  "title": "Network Delay Time",
+  "slug": "network-delay-time",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Dijkstra's Algorithm",
+      "Shortest Path"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given a directed weighted graph representing a communication network with n nodes, numbered from 1 to n.\n\nThe graph is provided as an edge list times, where each record is of the form (ui, vi, wi) where,\n\nui is the source node of the directed edge\n\nvi is the target node of the directed edge\n\nwi is the time it takes for a signal to travel from ui to vi (non-negative and integer)\n\n\n\nA single signal is injected at node k at time 0.\n\nThe signal propagates 1-way along the directed edges and whenever it reaches a node, that node immediately retransmits the signal to all of its outgoing neighbors, each traversal taking exactly the edge’s weight wi units of time.\n\n\n\nReturn the minimum time required for every node in the network to receive the signal.\n\nIf some node is unreachable, return -1.",
+    "constraints": [
+      "1 <= n <= 100",
+      "1 <= k <= n",
+      "1 <= times.length <= n * (n - 1)",
+      "1 <= ui, vi <= n",
+      "0 <= wi <= 100"
+    ],
+    "inputFormat": "times: a 2D array of integers representing the directed weighted graph, n: an integer representing the number of nodes, k: an integer representing the node where the signal is injected",
+    "outputFormat": "an integer representing the minimum time required for every node in the network to receive the signal, or -1 if some node is unreachable",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": {
+          "times": [
+            [
+              1,
+              2,
+              1
+            ]
+          ],
+          "n": 2,
+          "k": 1
+        },
+        "expectedOutput": 1,
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": {
+          "times": [
+            [
+              1,
+              2,
+              1
+            ],
+            [
+              1,
+              3,
+              1
+            ],
+            [
+              1,
+              4,
+              1
+            ],
+            [
+              1,
+              5,
+              1
+            ],
+            [
+              1,
+              6,
+              1
+            ],
+            [
+              1,
+              7,
+              1
+            ],
+            [
+              1,
+              8,
+              1
+            ],
+            [
+              1,
+              9,
+              1
+            ],
+            [
+              1,
+              10,
+              1
+            ]
+          ],
+          "n": 10,
+          "k": 1
+        },
+        "expectedOutput": 1,
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": {
+          "times": [
+            [
+              1,
+              2,
+              1
+            ],
+            [
+              2,
+              3,
+              1
+            ],
+            [
+              3,
+              4,
+              1
+            ]
+          ],
+          "n": 4,
+          "k": 1
+        },
+        "expectedOutput": 3,
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case / empty-like / negative if allowed",
+        "input": {
+          "times": [],
+          "n": 1,
+          "k": 1
+        },
+        "expectedOutput": 0,
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": {
+          "times": [
+            [
+              2,
+              1,
+              1
+            ],
+            [
+              2,
+              3,
+              1
+            ],
+            [
+              3,
+              4,
+              1
+            ]
+          ],
+          "n": 4,
+          "k": 2
+        },
+        "expectedOutput": 2,
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Use Dijkstra's algorithm to find the shortest path from the source node to all other nodes in the graph",
+    "timeComplexity": "O(n + m log n)",
+    "spaceComplexity": "O(n + m)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <limits.h>\n\n// Structure to represent a graph edge\ntypedef struct Edge {\n    int src, dest, weight;\n} Edge;\n\n// Structure to represent a graph\ntypedef struct Graph {\n    int numVertices, numEdges;\n    Edge* edges;\n} Graph;\n\n// Function to create a graph\nGraph* createGraph(int numVertices, int numEdges) {\n    Graph* graph = (Graph*) malloc(sizeof(Graph));\n    graph->numVertices = numVertices;\n    graph->numEdges = numEdges;\n    graph->edges = (Edge*) malloc(numEdges * sizeof(Edge));\n    return graph;\n}\n\n// Function to find the minimum time required for every node to receive the signal\nint networkDelayTime(int** times, int timesSize, int* timesColSize, int n, int k) {\n    // Create a graph\n    Graph* graph = createGraph(n, timesSize);\n    for (int i = 0; i < timesSize; i++) {\n        graph->edges[i].src = times[i][0];\n        graph->edges[i].dest = times[i][1];\n        graph->edges[i].weight = times[i][2];\n    }\n\n    // Initialize the distance array\n    int* dist = (int*) malloc((n + 1) * sizeof(int));\n    for (int i = 0; i <= n; i++) {\n        dist[i] = INT_MAX;\n    }\n    dist[k] = 0;\n\n    // Use Dijkstra's algorithm to find the shortest path from the source node to all other nodes\n    for (int i = 0; i < n - 1; i++) {\n        for (int j = 0; j < graph->numEdges; j++) {\n            int u = graph->edges[j].src;\n            int v = graph->edges[j].dest;\n            int w = graph->edges[j].weight;\n            if (dist[u] != INT_MAX && dist[u] + w < dist[v]) {\n                dist[v] = dist[u] + w;\n            }\n        }\n    }\n\n    // Find the maximum time required for every node to receive the signal\n    int maxTime = 0;\n    for (int i = 1; i <= n; i++) {\n        if (dist[i] == INT_MAX) {\n            return -1;\n        }\n        maxTime = (maxTime > dist[i]) ? maxTime : dist[i];\n    }\n\n    return maxTime;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nclass Solution {\npublic:\n    // Function to find minimum time for every node to receive signal\n    int networkDelayTime(vector<vector<int>>& times, int n, int k) {\n        // Create adjacency list\n        vector<vector<pair<int, int>>> adj(n + 1);\n        for (auto& time : times) {\n            int u = time[0], v = time[1], w = time[2];\n            adj[u].push_back({v, w});\n        }\n\n        // Initialize min-heap\n        priority_queue<pair<int, int>, vector<pair<int, int>>, greater<>> pq;\n        pq.push({0, k});\n\n        // Initialize distance array\n        vector<int> dist(n + 1, INT_MAX);\n        dist[k] = 0;\n\n        // Process nodes\n        while (!pq.empty()) {\n            // Get the node with the smallest time\n            int time = pq.top().first;\n            int node = pq.top().second;\n            pq.pop();\n\n            // Traverse all neighbors of the current node\n            for (auto& [nbr, wt] : adj[node]) {\n                // If shorter path is found to neighbor\n                if (dist[nbr] > time + wt) {\n                    // Update distance\n                    dist[nbr] = time + wt;\n                    // Push updated time to the priority queue\n                    pq.push({dist[nbr], nbr});\n                }\n            }\n        }\n\n        // Get maximum time\n        int ans = *max_element(dist.begin() + 1, dist.end());\n        return ans == INT_MAX ? -1 : ans;\n    }\n};\n",
+      "Java": "import java.util.*;\n\nclass Solution {\n    // Function to find minimum time for every node to receive signal\n    public int networkDelayTime(int[][] times, int n, int k) {\n        // Create adjacency list\n        List<List<int[]>> adj = new ArrayList<>();\n        for (int i = 0; i <= n; i++) adj.add(new ArrayList<>());\n        for (int[] time : times) {\n            int u = time[0], v = time[1], w = time[2];\n            adj.get(u).add(new int[]{v, w});\n        }\n\n        // Initialize min-heap\n        PriorityQueue<int[]> pq = new PriorityQueue<>(Comparator.comparingInt(a -> a[0]));\n        pq.offer(new int[]{0, k});\n\n        // Initialize distance array\n        int[] dist = new int[n + 1];\n        Arrays.fill(dist, Integer.MAX_VALUE);\n        dist[k] = 0;\n\n        // Process nodes\n        while (!pq.isEmpty()) {\n            // Get node with smallest time\n            int[] curr = pq.poll();\n            int time = curr[0], node = curr[1];\n\n            // Traverse all neighbors of the node\n            for (int[] nbr : adj.get(node)) {\n                int v = nbr[0], wt = nbr[1];\n\n                // If shorter path to neighbor is found\n                if (dist[v] > time + wt) {\n                    // Update distance\n                    dist[v] = time + wt;\n                    // Add updated distance to priority queue\n                    pq.offer(new int[]{dist[v], v});\n                }\n            }\n        }\n\n        // Get maximum time\n        int ans = 0;\n        for (int i = 1; i <= n; i++) {\n            if (dist[i] == Integer.MAX_VALUE) return -1;\n            ans = Math.max(ans, dist[i]);\n        }\n        return ans;\n    }\n}\n",
+      "Python3": "import heapq\n\nclass Solution:\n    # Function to find minimum time for every node to receive signal\n    def networkDelayTime(self, times, n, k):\n        # Create adjacency list\n        adj = [[] for _ in range(n + 1)]\n        for u, v, w in times:\n            adj[u].append((v, w))\n\n        # Initialize min-heap\n        pq = [(0, k)]\n\n        # Initialize distance array\n        dist = [float('inf')] * (n + 1)\n        dist[k] = 0\n\n        # Process nodes\n        while pq:\n            # Pop node with smallest time\n            time, node = heapq.heappop(pq)\n\n            # Traverse neighbors of current node\n            for nbr, wt in adj[node]:\n                # If shorter path is found\n                if dist[nbr] > time + wt:\n                    # Update distance\n                    dist[nbr] = time + wt\n                    # Push updated distance to heap\n                    heapq.heappush(pq, (dist[nbr], nbr))\n\n        # Get maximum time\n        ans = max(dist[1:])\n        return -1 if ans == float('inf') else ans\n",
+      "JavaScript": "class Solution {\n    // Function to find minimum time for every node to receive signal\n    networkDelayTime(times, n, k) {\n        // Create adjacency list\n        const adj = Array.from({ length: n + 1 }, () => []);\n        for (let [u, v, w] of times) {\n            adj[u].push([v, w]);\n        }\n\n        // Initialize min-heap\n        const pq = [[0, k]];\n\n        // Initialize distance array\n        const dist = Array(n + 1).fill(Infinity);\n        dist[k] = 0;\n\n        // Process nodes\n        while (pq.length > 0) {\n            // Sort and get node with smallest time\n            pq.sort((a, b) => a[0] - b[0]);\n            const [time, node] = pq.shift();\n\n            // Traverse neighbors of current node\n            for (let [nbr, wt] of adj[node]) {\n                // If shorter path to neighbor is found\n                if (dist[nbr] > time + wt) {\n                    // Update distance\n                    dist[nbr] = time + wt;\n                    // Add updated time to the queue\n                    pq.push([dist[nbr], nbr]);\n                }\n            }\n        }\n\n        // Get maximum time\n        let ans = Math.max(...dist.slice(1));\n        return ans === Infinity ? -1 : ans;\n    }\n}\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

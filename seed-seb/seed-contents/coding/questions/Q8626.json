@@ -1,0 +1,141 @@
+{
+  "questionId": "Q8626",
+  "title": "Good Numbers",
+  "slug": "good-numbers",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math | Searching | Number Theory",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Binary Search",
+      "Inclusion‑Exclusion",
+      "LCM",
+      "GCD"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Binary Search"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Given four positive integers NNN, aaa, bbb and ccc. A number is called **good** if it is positive and is divisible by either aaa or bbb or ccc. If all the **good** numbers are listed in ascending order, find the NthN^{th}Nth **good** number.\n\n\nInput Format\n\nFirst line will contain TTT, number of testcases. Then the testcases follow.\nEach testcase contains of a single line of input, four integers N,a,b,cN, a, b, cN,a,b,c.\n\n\nOutput Format\nFor each testcase, output in a single line the NthN^{th}Nth **good** number.",
+    "constraints": [
+      "1 ≤ T ≤ 1000",
+      "1 ≤ N ≤ 10^9",
+      "1 ≤ a, b, c ≤ 10^3"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains four space‑separated positive integers N a b c.",
+    "outputFormat": "For each test case output a single line containing the N‑th good number (the N‑th positive integer divisible by at least one of a, b or c).",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n7 2 3 5",
+        "output": "9",
+        "explanation": "The good numbers are those divisible by 2, 3 or 5: 2,3,4,5,6,8,9,... The 7th element is 9."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n1 4 6 8",
+        "output": "4",
+        "explanation": "The smallest positive integer divisible by 4, 6 or 8 is 4."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n10 2 4 6",
+        "output": "20",
+        "explanation": "Since every good number is a multiple of 2, the 10th good number equals 10·2 = 20."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1 1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "1\n1 1 1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "1\n1 1 1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "1\n1 1 1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "1\n1 1 1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For a given X we can count how many good numbers are ≤ X using inclusion‑exclusion:\ncount(X) = ⌊X/a⌋ + ⌊X/b⌋ + ⌊X/c⌋ – ⌊X/lcm(a,b)⌋ – ⌊X/lcm(a,c)⌋ – ⌊X/lcm(b,c)⌋ + ⌊X/lcm(a,b,c)⌋.\nThe function count(X) is monotonic, therefore we binary‑search the smallest X such that count(X) ≥ N. The search range can be [1, N·min(a,b,c)] because in the worst case every min‑multiple contributes one good number. All arithmetic uses 64‑bit integers.\nFor each test case we compute the three pairwise lcm’s and the triple lcm, then run the binary search (≈60 iterations for 64‑bit range).",
+    "timeComplexity": "O(T · log(N·min(a,b,c))) – each iteration does O(1) arithmetic, binary search needs ≤ 60 steps.",
+    "spaceComplexity": "O(1) additional space.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdint.h>\n\nstatic int64_t gcd_int64(int64_t a, int64_t b) {\n    while (b) { int64_t t = a % b; a = b; b = t; }\n    return a;\n}\nstatic int64_t lcm_int64(int64_t a, int64_t b) {\n    return a / gcd_int64(a, b) * b;\n}\n\nint main() {\n    int T; if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        int64_t N, a, b, c; scanf(\"%lld %lld %lld %lld\", &N, &a, &b, &c);\n        int64_t l_ab = lcm_int64(a, b);\n        int64_t l_ac = lcm_int64(a, c);\n        int64_t l_bc = lcm_int64(b, c);\n        int64_t l_abc = lcm_int64(l_ab, c);\n        int64_t low = 1, high = N * (a < b ? (a < c ? a : c) : (b < c ? b : c));\n        while (low < high) {\n            int64_t mid = low + (high - low) / 2;\n            int64_t cnt = mid / a + mid / b + mid / c\n                         - mid / l_ab - mid / l_ac - mid / l_bc\n                         + mid / l_abc;\n            if (cnt >= N) high = mid; else low = mid + 1;\n        }\n        printf(\"%lld\\n\", low);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nlong long lcm_ll(long long x, long long y){ return x / std::gcd(x,y) * y; }\n\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        long long N,a,b,c; cin>>N>>a>>b>>c;\n        long long l_ab = lcm_ll(a,b);\n        long long l_ac = lcm_ll(a,c);\n        long long l_bc = lcm_ll(b,c);\n        long long l_abc = lcm_ll(l_ab,c);\n        long long low=1, high=N*min({a,b,c});\n        while(low<high){\n            long long mid = low + (high-low)/2;\n            long long cnt = mid/a + mid/b + mid/c\n                           - mid/l_ab - mid/l_ac - mid/l_bc\n                           + mid/l_abc;\n            if(cnt>=N) high=mid; else low=mid+1;\n        }\n        cout<<low<<\"\\n\";\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    private static long gcd(long a, long b) {\n        while (b != 0) {\n            long t = a % b;\n            a = b;\n            b = t;\n        }\n        return a;\n    }\n    private static long lcm(long a, long b) {\n        return a / gcd(a, b) * b;\n    }\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st = new StringTokenizer(br.readLine());\n        int T = Integer.parseInt(st.nextToken());\n        StringBuilder sb = new StringBuilder();\n        while (T-- > 0) {\n            st = new StringTokenizer(br.readLine());\n            long N = Long.parseLong(st.nextToken());\n            long a = Long.parseLong(st.nextToken());\n            long b = Long.parseLong(st.nextToken());\n            long c = Long.parseLong(st.nextToken());\n            long l_ab = lcm(a, b);\n            long l_ac = lcm(a, c);\n            long l_bc = lcm(b, c);\n            long l_abc = lcm(l_ab, c);\n            long low = 1, high = N * Math.min(a, Math.min(b, c));\n            while (low < high) {\n                long mid = low + (high - low) / 2;\n                long cnt = mid / a + mid / b + mid / c\n                         - mid / l_ab - mid / l_ac - mid / l_bc\n                         + mid / l_abc;\n                if (cnt >= N) high = mid; else low = mid + 1;\n            }\n            sb.append(low).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys, math\n\ndef lcm(x, y):\n    return x // math.gcd(x, y) * y\n\ndef nth_good(N, a, b, c):\n    l_ab = lcm(a, b)\n    l_ac = lcm(a, c)\n    l_bc = lcm(b, c)\n    l_abc = lcm(l_ab, c)\n    low, high = 1, N * min(a, b, c)\n    while low < high:\n        mid = (low + high) // 2\n        cnt = mid // a + mid // b + mid // c - mid // l_ab - mid // l_ac - mid // l_bc + mid // l_abc\n        if cnt >= N:\n            high = mid\n        else:\n            low = mid + 1\n    return low\n\ndef main():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out = []\n    for _ in range(T):\n        N = int(next(it)); a = int(next(it)); b = int(next(it)); c = int(next(it))\n        out.append(str(nth_good(N, a, b, c)))\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    main()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet results = [];\nfunction gcd(a, b) { while (b) { [a, b] = [b, a % b]; } return a; }\nfunction lcm(a, b) { return a / gcd(a, b) * b; }\nfor (let t = 0; t < T; ++t) {\n  const N = BigInt(input[idx++]);\n  const a = BigInt(input[idx++]);\n  const b = BigInt(input[idx++]);\n  const c = BigInt(input[idx++]);\n  const l_ab = lcm(a, b);\n  const l_ac = lcm(a, c);\n  const l_bc = lcm(b, c);\n  const l_abc = lcm(l_ab, c);\n  const minABC = a < b ? (a < c ? a : c) : (b < c ? b : c);\n  let low = 1n, high = N * minABC;\n  while (low < high) {\n    const mid = (low + high) >> 1n;\n    const cnt = mid / a + mid / b + mid / c - mid / l_ab - mid / l_ac - mid / l_bc + mid / l_abc;\n    if (cnt >= N) high = mid; else low = mid + 1n;\n  }\n  results.push(low.toString());\n}\nconsole.log(results.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

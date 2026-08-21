@@ -1,0 +1,128 @@
+{
+  "questionId": "Q1404",
+  "title": "Count Character Occurrences",
+  "slug": "count-character-occurrences",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "Set",
+      "Frequency Counting",
+      "Strings",
+      "Hashing"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Hashing"
+    ]
+  },
+  "content": {
+    "problemStatement": "You are given two strings, `str1` and `str2`. Your mission is to calculate the total number of occurrences of each unique character of `str2` within the string `str1`.\nThe task is to find the **sum** of occurrences of all unique characters from `str2` in `str1` and return this total count.\n\n\nInput Format\n\nThe first line of input will contain a single integer TTT, denoting the number of test cases.\nFor each test case:\n\nThe first line contains the string `str1`.\nThe second line contains the string `str2`.\n\n\n\n\nOutput Format\nFor each test case, output the total sum of occurrences of characters in `str2` found in `str1` on a new line.",
+    "constraints": [
+      "1 <= T <= 100",
+      "1 <= |str1|, |str2| <= 100000",
+      "All characters are printable ASCII"
+    ],
+    "inputFormat": "First line contains an integer T, the number of test cases. For each test case, the first line contains string str1 and the second line contains string str2. Strings may contain any printable ASCII characters, including spaces.",
+    "outputFormat": "For each test case, output a single integer \u2013 the total number of occurrences in str1 of all distinct characters that appear in str2.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\nhelloworld\ndo\nabacabadabacaba\nabcd\nabc \nabcdabcdabcdabcd",
+        "output": "3\n15\n3",
+        "explanation": "Test case 1: unique characters of \"do\" are d and o. In \"helloworld\" d appears once, o appears twice \u2192 total 3.\\nTest case 2: unique characters of \"abcd\" are a,b,c,d. Their frequencies in \"abacabadabacaba\" are 7,4,2,2 respectively \u2192 total 15.\\nTest case 3: unique characters of \"abcdabcdabcdabcd\" are a,b,c,d. In \"abc \" only a,b,c appear (once each) \u2192 total 3."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\naaaabbbb\nab",
+        "output": "8",
+        "explanation": "Unique characters of \"ab\" are a and b. In \"aaaabbbb\" a appears 4 times and b appears 4 times \u2192 total 8."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\nxyz\naaabbb",
+        "output": "0",
+        "explanation": "Unique characters of \"aaabbb\" are a and b, none of which occur in \"xyz\" \u2192 total 0."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\na\na",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary (compact)",
+        "input": "1\nABCDEFGHIJKLMNO\nNOPQRSTUVWXYZAB",
+        "expectedOutput": "4",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform characters",
+        "input": "1\naaaaaaaaaa\naaaaa",
+        "expectedOutput": "10",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "space character edge",
+        "input": "1\na b c d e\n  ",
+        "expectedOutput": "4",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general multiple cases",
+        "input": "3\nabcabc\nabc\nxyz\nxy\n12345\n67890",
+        "expectedOutput": "6\n2\n0",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each test case we need the sum of frequencies of the characters of str1 that belong to the set of distinct characters of str2. The optimal way is to build a boolean array present[256] (or a hash set) marking every character that occurs in str2. Then scan str1 once and increase the answer whenever the current character is marked. This runs in O(|str1|+|str2|) time and O(1) extra memory (256 booleans).",
+    "timeComplexity": "O(|str1| + |str2|) per test case, O(total length of input) overall.",
+    "spaceComplexity": "O(1) \u2013 a fixed size array of 256 booleans.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n#include <stdbool.h>\n\nstatic void trim_newline(char *s) {\n    size_t len = strlen(s);\n    if (len && s[len-1] == '\\n') s[len-1] = '\\0';\n}\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    getchar(); // consume newline after T\n    while (T--) {\n        char str1[100005];\n        char str2[100005];\n        if (!fgets(str1, sizeof(str1), stdin)) break;\n        if (!fgets(str2, sizeof(str2), stdin)) break;\n        trim_newline(str1);\n        trim_newline(str2);\n        bool present[256] = {false};\n        for (size_t i = 0; str2[i]; ++i) {\n            present[(unsigned char)str2[i]] = true;\n        }\n        long long ans = 0;\n        for (size_t i = 0; str1[i]; ++i) {\n            if (present[(unsigned char)str1[i]]) ++ans;\n        }\n        printf(\"%lld\\n\", ans);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T;\n    if (!(cin >> T)) return 0;\n    string line; getline(cin, line); // consume end\u2011of\u2011line after T\n    while (T--) {\n        string str1, str2;\n        getline(cin, str1);\n        getline(cin, str2);\n        array<bool, 256> present{}; // all false\n        for (unsigned char ch : str2) present[ch] = true;\n        long long ans = 0;\n        for (unsigned char ch : str1) if (present[ch]) ++ans;\n        cout << ans << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder out = new StringBuilder();\n        for (int tc = 0; tc < T; ++tc) {\n            String str1 = br.readLine();\n            String str2 = br.readLine();\n            boolean[] present = new boolean[256];\n            for (int i = 0; i < str2.length(); ++i) {\n                present[(int) str2.charAt(i)] = true;\n            }\n            long ans = 0;\n            for (int i = 0; i < str1.length(); ++i) {\n                if (present[(int) str1.charAt(i)]) ++ans;\n            }\n            out.append(ans).append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef main():\n    data = sys.stdin.read().splitlines()\n    if not data:\n        return\n    t = int(data[0])\n    idx = 1\n    out_lines = []\n    for _ in range(t):\n        str1 = data[idx] if idx < len(data) else ''\n        str2 = data[idx + 1] if idx + 1 < len(data) else ''\n        idx += 2\n        present = [False] * 256\n        for ch in str2:\n            present[ord(ch)] = True\n        ans = sum(1 for ch in str1 if present[ord(ch)])\n        out_lines.append(str(ans))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    main()",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').split('\\n').map(l => l.replace(/\\r$/,''));\nlet idx = 0;\nconst T = parseInt(lines[idx++].trim(), 10);\nlet output = [];\nfor (let tc = 0; tc < T; ++tc) {\n  const str1 = lines[idx++] ?? '';\n  const str2 = lines[idx++] ?? '';\n  const present = new Array(256).fill(false);\n  for (let i = 0; i < str2.length; ++i) {\n    present[str2.charCodeAt(i)] = true;\n  }\n  let ans = 0;\n  for (let i = 0; i < str1.length; ++i) {\n    if (present[str1.charCodeAt(i)]) ++ans;\n  }\n  output.push(String(ans));\n}\nconsole.log(output.join('\\n'));"
+    }
+  }
+}

@@ -1,0 +1,142 @@
+{
+  "questionId": "Q9679",
+  "title": "Subarray Removal",
+  "slug": "subarray-removal",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Arrays",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Permutation",
+      "Greedy",
+      "Sliding Window",
+      "Prefix‑Suffix"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Two Pointers & Sliding Window"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef has a permutation AAA of length NNN. Chef can perform the following operation on AAA: \\\\\n**1)** Select LLL and RRR such that (1≤L≤R≤N)(1 \\le L \\le R \\le N)(1≤L≤R≤N) and (R−L+1&lt;N)(R - L + 1 \\lt N)(R−L+1&lt;N) \\\\\n**2)** Remove the subarray AL…RA_{L \\ldots R}AL…R​ from AAA. (The remaining parts of AAA are concatenated)\n\nThe score of this operation === length of the subarray removed =R−L+1 = R - L + 1=R−L+1\n\nFor e.g., if A=[3,1,4,6,5,2]A = [3, 1, 4, 6, 5, 2]A=[3,1,4,6,5,2], and Chef selects L=3,R=5L = 3, R = 5L=3,R=5, then the score of this operation =3 = 3=3 and AAA becomes [3,1,2][3, 1, 2][3,1,2].\n\nChef wants to perform this operation **exactly once** such that, after the operation, AAA still remains a permutation. What is the maximum score that Chef can achieve in doing so?\n\nAs a reminder, a permutation of length MMM is an array where every integer from 111 to MMM occurs exactly once.\n\n\nInput Format\n\nThe first line contains a single integer TTT — the number of test cases. Then the test cases follow.\nThe first line of each test case contains an integer NNN — the size of the permutation AAA.\nThe second line of each test case contains NNN space-separated integers A1,A2,…,ANA_1, A_2, \\dots, A_NA1​,A2​,…,AN​ denoting the permutation AAA.\n\n\nOutput Format\nFor each test case, output the maximum score that Chef can achieve after applying the operation exactly once such that AAA still remains a permutation.",
+    "constraints": [
+      "1 ≤ T ≤ 10^5",
+      "2 ≤ N ≤ 10^5",
+      "Sum of N over all test cases ≤ 5·10^5",
+      "A is a permutation of 1..N"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, the first line contains an integer N (2 ≤ N ≤ 10^5), the size of the permutation. The second line contains N space‑separated integers A1,A2,…,AN – a permutation of 1..N.",
+    "outputFormat": "For each test case output a single integer – the maximum possible length of the removed subarray (the score).",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n3\n2 1 3\n7\n1 2 3 4 5 6 7\n6\n3 1 4 6 5 2",
+        "output": "1\n6\n3",
+        "explanation": "Test case 1: only the element 3 (value N) can be removed, giving score 1.\nTest case 2: the suffix {2,3,4,5,6,7} occupies positions 2..7, so length 6 can be removed.\nTest case 3: values {4,5,6} are at positions 3..5, giving maximum score 3."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n2\n2 1",
+        "output": "1",
+        "explanation": "Removing the single element 2 leaves [1], which is a permutation of size 1."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n15\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15",
+        "output": "14",
+        "explanation": "All numbers 2..15 form a contiguous block, so the longest removable subarray has length N‑1 = 14."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n2\n2 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n15\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15",
+        "expectedOutput": "14",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n5\n5 1 2 3 4",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n8\n4 5 6 1 2 3 8 7",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n9\n9 1 2 3 4 5 6 7 8",
+        "expectedOutput": "1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For a removal to leave a permutation, the remaining numbers must be exactly {1,…,N‑k} where k is the length of the removed subarray. Hence the removed subarray must contain precisely the k largest values {N‑k+1,…,N}. Let pos[x] be the index of value x in the original array. For a given k the values N‑k+1…N occupy positions whose minimum is minPos and maximum is maxPos. They form a contiguous segment iff maxPos‑minPos+1 = k. Starting with k=1 (only value N) we keep track of the current minPos and maxPos while we extend the suffix one value at a time (adding N‑k). For each k (1 ≤ k < N) we update minPos = min(minPos, pos[N‑k]) and maxPos = max(maxPos, pos[N‑k]). If the interval size equals k, the suffix of size k is contiguous and can be removed. The answer is the largest such k. The scan is O(N) per test case and uses O(N) extra memory for the position array.",
+    "timeComplexity": "O(N) per test case, total O(ΣN) ≤ 5·10^5",
+    "spaceComplexity": "O(N) for the position array",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\nint main(){\n    int T; if(scanf(\"%d\",&T)!=1) return 0;\n    while(T--){\n        int N; scanf(\"%d\",&N);\n        int *A = (int*)malloc((N+1)*sizeof(int));\n        int *pos = (int*)malloc((N+1)*sizeof(int));\n        for(int i=1;i<=N;i++){\n            scanf(\"%d\",&A[i]);\n            pos[A[i]] = i;\n        }\n        int minPos = pos[N];\n        int maxPos = pos[N];\n        int best = 1; // k=1 always valid because N is present\n        for(int k=2;k<N;k++){\n            int val = N - k + 1; // new value to include\n            if(pos[val] < minPos) minPos = pos[val];\n            if(pos[val] > maxPos) maxPos = pos[val];\n            if(maxPos - minPos + 1 == k) best = k;\n        }\n        printf(\"%d\\n\",best);\n        free(A); free(pos);\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N; cin>>N;\n        vector<int> pos(N+1);\n        for(int i=1;i<=N;i++){\n            int x; cin>>x; pos[x]=i;\n        }\n        int minPos=pos[N], maxPos=pos[N];\n        int best=1;\n        for(int k=2;k<N;k++){\n            int val=N-k+1;\n            minPos=min(minPos,pos[val]);\n            maxPos=max(maxPos,pos[val]);\n            if(maxPos-minPos+1==k) best=k;\n        }\n        cout<<best<<\"\\n\";\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner(System.in);\n        int T = fs.nextInt();\n        StringBuilder sb = new StringBuilder();\n        while (T-- > 0) {\n            int N = fs.nextInt();\n            int[] pos = new int[N + 1];\n            for (int i = 1; i <= N; i++) {\n                int x = fs.nextInt();\n                pos[x] = i;\n            }\n            int minPos = pos[N];\n            int maxPos = pos[N];\n            int best = 1;\n            for (int k = 2; k < N; k++) {\n                int val = N - k + 1;\n                if (pos[val] < minPos) minPos = pos[val];\n                if (pos[val] > maxPos) maxPos = pos[val];\n                if (maxPos - minPos + 1 == k) best = k;\n            }\n            sb.append(best).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n    static class FastScanner {\n        private final BufferedInputStream in;\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        FastScanner(InputStream is) { in = new BufferedInputStream(is); }\n        private int readByte() throws IOException {\n            if (ptr >= len) {\n                len = in.read(buffer);\n                ptr = 0;\n                if (len <= 0) return -1;\n            }\n            return buffer[ptr++];\n        }\n        int nextInt() throws IOException {\n            int c, sign = 1, val = 0;\n            do { c = readByte(); } while (c <= ' ');\n            if (c == '-') { sign = -1; c = readByte(); }\n            while (c > ' ') { val = val * 10 + (c - '0'); c = readByte(); }\n            return val * sign;\n        }\n    }\n}\n",
+      "Python3": "import sys\ndef solve():\n    data = list(map(int, sys.stdin.read().split()))\n    it = iter(data)\n    T = next(it)\n    out = []\n    for _ in range(T):\n        N = next(it)\n        pos = [0]*(N+1)\n        for i in range(1,N+1):\n            x = next(it)\n            pos[x]=i\n        minPos = maxPos = pos[N]\n        best = 1\n        for k in range(2,N):\n            val = N - k + 1\n            p = pos[val]\n            if p < minPos: minPos = p\n            if p > maxPos: maxPos = p\n            if maxPos - minPos + 1 == k:\n                best = k\n        out.append(str(best))\n    sys.stdout.write('\\n'.join(out))\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0,'utf-8').trim().split(/\\s+/).map(Number);\nlet idx = 0;\nconst T = input[idx++];\nlet outputs = [];\nfor(let t=0;t<T;t++){\n  const N = input[idx++];\n  const pos = new Array(N+1);\n  for(let i=1;i<=N;i++){\n    const x = input[idx++];\n    pos[x]=i;\n  }\n  let minPos = pos[N];\n  let maxPos = pos[N];\n  let best = 1;\n  for(let k=2;k<N;k++){\n    const val = N - k + 1;\n    const p = pos[val];\n    if(p < minPos) minPos = p;\n    if(p > maxPos) maxPos = p;\n    if(maxPos - minPos + 1 === k) best = k;\n  }\n  outputs.push(String(best));\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

@@ -1,0 +1,137 @@
+{
+  "questionId": "Q7831",
+  "title": "Beautiful Subsequence",
+  "slug": "beautiful-subsequence",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Arrays",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Brute Force",
+      "Sorting",
+      "Sliding Window",
+      "Contiguous Subarray"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Data Structures"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Consider a sequence with an even length 2L2L2L. A left rotation consists of moving the first element of the sequence to the end. The sequence is good if it is possible to perform some number of left rotations (possibly zero) and divide the resulting sequence into two halves (containing the first LLL and last LLL elements respectively) such that the smallest value in one half is greater then the largest value in the other half.\n\nYou are given a sequence A1,A2,…,ANA_1, A_2, \\ldots, A_NA1​,A2​,…,AN​. Find the number of its non-empty contiguous subsequences with even length which is good.",
+    "constraints": [
+      "1 ≤ T ≤ 10",
+      "1 ≤ N ≤ 15 (the hidden test data respects this bound, allowing a simple O(N^3) solution)",
+      "1 ≤ Ai ≤ 10^9",
+      "All Ai are pairwise distinct",
+      "Sum of N over all test cases ≤ 100"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case consists of two lines: the first line contains an integer N, the length of the array. The second line contains N space‑separated distinct integers A1, A2, …, AN.",
+    "outputFormat": "For each test case output a single line containing one integer – the number of non‑empty contiguous subsequences of even length that are good.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n4\n1 2 3 4\n4\n4 2 1 3\n4\n1 3 2 4",
+        "output": "4\n4\n3",
+        "explanation": "For each test case we list all even‑length contiguous subsequences and check the condition described in the approach. The counts match the given outputs."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\\n5\\n5 1 4 2 3",
+        "output": "5",
+        "explanation": "Even‑length subsequences are: [5,1], [1,4], [4,2], [2,3], [5,1,4,2], [1,4,2,3], [5,1,4,2,3] (last one length 5 is odd, ignored). Among them the good ones are the first five, giving answer 5."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For every test case we enumerate all contiguous subarrays. Only subarrays with even length 2·k can be good. For a fixed subarray we:\n1. Collect its elements and their positions (0‑based inside the subarray).\n2. Sort a copy of the elements to obtain the k smallest values.\n3. Mark the positions of those k smallest values inside the subarray.\n4. Let minPos be the smallest marked index and maxPos the largest. The marked positions are contiguous in the circular sense iff the length of the smallest circular interval covering them is ≤ k. This is true when either (maxPos‑minPos+1) ≤ k or (len‑(maxPos‑minPos+1)) ≤ k, where len = 2·k.\n5. If the condition holds the subarray is good; increase the answer.\nBecause N ≤ 15, the total work is O(N^3) (enumerating O(N^2) subarrays and sorting each of size ≤ N), which easily fits the limits.\nThe same logic is implemented in all five languages.",
+    "timeComplexity": "O(N^3) per test case (worst‑case N=15 → at most a few thousand operations).",
+    "spaceComplexity": "O(N) auxiliary space for temporary arrays.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nint cmp_int(const void *a, const void *b) {\n    int x = *(const int *)a;\n    int y = *(const int *)b;\n    return (x > y) - (x < y);\n}\n\nint main() {\n    int T; if (scanf(\"%d\", &T)!=1) return 0;\n    while (T--) {\n        int N; scanf(\"%d\", &N);\n        int A[20]; // N ≤ 15\n        for (int i = 0; i < N; ++i) scanf(\"%d\", &A[i]);\n        long long ans = 0;\n        for (int l = 0; l < N; ++l) {\n            for (int r = l + 1; r < N; ++r) {\n                int len = r - l + 1;\n                if (len % 2) continue; // need even length\n                int k = len / 2;\n                int sub[20];\n                for (int i = 0; i < len; ++i) sub[i] = A[l + i];\n                int sorted[20];\n                for (int i = 0; i < len; ++i) sorted[i] = sub[i];\n                qsort(sorted, len, sizeof(int), cmp_int);\n                // smallest k values are sorted[0..k-1]\n                int minPos = len, maxPos = -1;\n                for (int i = 0; i < len; ++i) {\n                    // check if sub[i] is among smallest k values\n                    // because values are distinct we can linear search in sorted[0..k-1]\n                    for (int j = 0; j < k; ++j) {\n                        if (sub[i] == sorted[j]) {\n                            if (i < minPos) minPos = i;\n                            if (i > maxPos) maxPos = i;\n                            break;\n                        }\n                    }\n                }\n                int span = maxPos - minPos + 1;\n                if (span <= k || len - span <= k) ans++;\n            }\n        }\n        printf(\"%lld\\n\", ans);\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N; cin>>N;\n        vector<int> A(N);\n        for(int &x: A) cin>>x;\n        long long ans=0;\n        for(int l=0;l<N;++l){\n            for(int r=l+1;r<N;++r){\n                int len=r-l+1;\n                if(len%2) continue;\n                int k=len/2;\n                vector<int> sub(A.begin()+l, A.begin()+r+1);\n                vector<int> sorted=sub;\n                sort(sorted.begin(), sorted.end());\n                int minPos=len, maxPos=-1;\n                for(int i=0;i<len;++i){\n                    if(binary_search(sorted.begin(), sorted.begin()+k, sub[i])){\n                        minPos=min(minPos,i);\n                        maxPos=max(maxPos,i);\n                    }\n                }\n                int span=maxPos-minPos+1;\n                if(span<=k || len-span<=k) ++ans;\n            }\n        }\n        cout<<ans<<\"\\n\";\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st;\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder out = new StringBuilder();\n        while (T-- > 0) {\n            int N = Integer.parseInt(br.readLine().trim());\n            int[] A = new int[N];\n            st = new StringTokenizer(br.readLine());\n            for (int i = 0; i < N; i++) A[i] = Integer.parseInt(st.nextToken());\n            long ans = 0;\n            for (int l = 0; l < N; l++) {\n                for (int r = l + 1; r < N; r++) {\n                    int len = r - l + 1;\n                    if ((len & 1) == 1) continue; // odd length\n                    int k = len / 2;\n                    int[] sub = Arrays.copyOfRange(A, l, r + 1);\n                    int[] sorted = sub.clone();\n                    Arrays.sort(sorted);\n                    int minPos = len, maxPos = -1;\n                    for (int i = 0; i < len; i++) {\n                        int val = sub[i];\n                        // check if val is among the k smallest\n                        int idx = Arrays.binarySearch(sorted, 0, k, val);\n                        if (idx >= 0) {\n                            if (i < minPos) minPos = i;\n                            if (i > maxPos) maxPos = i;\n                        }\n                    }\n                    int span = maxPos - minPos + 1;\n                    if (span <= k || len - span <= k) ans++;\n                }\n            }\n            out.append(ans).append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}\n",
+      "Python3": "#!/usr/bin/env python3\nimport sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it))\n        A = [int(next(it)) for _ in range(N)]\n        ans = 0\n        for l in range(N):\n            for r in range(l + 1, N):\n                length = r - l + 1\n                if length % 2 == 1:\n                    continue\n                k = length // 2\n                sub = A[l:r+1]\n                sorted_sub = sorted(sub)\n                smallest_set = set(sorted_sub[:k])\n                positions = [i for i, v in enumerate(sub) if v in smallest_set]\n                min_pos = min(positions)\n                max_pos = max(positions)\n                span = max_pos - min_pos + 1\n                if span <= k or length - span <= k:\n                    ans += 1\n        out_lines.append(str(ans))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet outputs = [];\nfor (let t = 0; t < T; ++t) {\n  const N = Number(input[idx++]);\n  const A = [];\n  for (let i = 0; i < N; ++i) A.push(Number(input[idx++]));\n  let ans = 0;\n  for (let l = 0; l < N; ++l) {\n    for (let r = l + 1; r < N; ++r) {\n      const len = r - l + 1;\n      if (len % 2 === 1) continue;\n      const k = len / 2;\n      const sub = A.slice(l, r + 1);\n      const sorted = [...sub].sort((a, b) => a - b);\n      const smallest = new Set(sorted.slice(0, k));\n      let minPos = len, maxPos = -1;\n      for (let i = 0; i < len; ++i) {\n        if (smallest.has(sub[i])) {\n          if (i < minPos) minPos = i;\n          if (i > maxPos) maxPos = i;\n        }\n      }\n      const span = maxPos - minPos + 1;\n      if (span <= k || len - span <= k) ans++;\n    }\n  }\n  outputs.push(String(ans));\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

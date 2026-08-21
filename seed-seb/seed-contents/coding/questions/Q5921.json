@@ -1,0 +1,141 @@
+{
+  "questionId": "Q5921",
+  "title": "Friends",
+  "slug": "friends",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Adjacency Matrix",
+      "Bitset",
+      "Common Neighbor",
+      "Counting Pairs"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Bit Manipulation"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "&nbsp;\n\nAfter IOI Ilya decided to make a business.  He found a social network called \"TheScorpyBook.com\". It currently has **N** registered users. As in any social network two users can be friends. Ilya wants the world to be as connected as possible, so he wants to suggest friendship to some pairs of users. He will suggest user **u** to have a friendship with user **v** if they are not friends yet and there is a user **w** who is friends of both of them. Note that **u**, **v** and **w** are different users. Ilya is too busy with IPO these days, so he asks you to count how many friendship suggestions he has to send over his social network.\n\n&nbsp;",
+    "constraints": [
+      "1 ≤ T ≤ 100",
+      "1 ≤ N ≤ 2000",
+      "The adjacency matrix is symmetric and has '0' on the diagonal."
+    ],
+    "inputFormat": "First line contains an integer T, the number of test cases. For each test case: first line contains an integer N (1 ≤ N ≤ 2000) – the number of users. Then follow N lines, each line is a string of N characters consisting of '0' or '1'. The j‑th character of the i‑th line is '1' if user i and user j are already friends, otherwise '0'. The matrix is symmetric and diagonal entries are '0'.",
+    "outputFormat": "For each test case output a single line containing the number of friendship suggestions Ilya has to send.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n4\n0111\n1000\n1000\n1000",
+        "output": "3",
+        "explanation": "User 1 is already friends with everyone, so no suggestions from him. Users 2,3,4 each have two non‑friend pairs that share user 1 as a common friend, giving 3 unordered suggestions."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n3\n011\n101\n110",
+        "output": "0",
+        "explanation": "All three users are already friends with each other; there is no pair without a direct friendship, hence there is no suggestion."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n5\n01000\n10100\n01010\n00101\n00010",
+        "output": "3",
+        "explanation": "The network forms a chain 1‑2‑3‑4‑5. The non‑friend pairs (1,3), (2,4) and (3,5) each have a common neighbour, resulting in three suggestions."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary (compact)",
+        "input": "1\n5\n01111\n10111\n11011\n11101\n11110",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform zero matrix",
+        "input": "1\n4\n0000\n0000\n0000\n0000",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "1\n1\n0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "1\n1\n0",
+        "expectedOutput": "0",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "A suggestion is counted for an unordered pair (u,v) that are not friends yet and share at least one common friend w (w ≠ u, v). For each user we store the set of his friends as a bitset of length N. For every unordered pair (u,v) with matrix[u][v]=='0' we intersect the two bitsets; if the intersection is non‑empty the pair contributes one suggestion. Using C++ std::bitset (or an array of 64‑bit blocks in C) the intersection test is O(N/wordSize). Overall complexity per test case is O(N²·(N/wordSize)) = O(N³/64), which fits the limits for N=2000.",
+    "timeComplexity": "O(N³/64) per test case (≈1.25·10⁸ elementary operations for N=2000).",
+    "spaceComplexity": "O(N²/64) for storing the bitsets (≈0.5 MB for N=2000).",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n\nint main(){\n    int T; if(scanf(\"%d\",&T)!=1) return 0;\n    while(T--){\n        int N; scanf(\"%d\",&N);\n        int words=(N+63)/64;\n        uint64_t **bits=(uint64_t**)malloc(N*sizeof(uint64_t*));\n        for(int i=0;i<N;i++) bits[i]=(uint64_t*)calloc(words,sizeof(uint64_t));\n        char line[2005];\n        for(int i=0;i<N;i++){\n            scanf(\"%s\",line);\n            for(int j=0;j<N;j++) if(line[j]=='1') bits[i][j>>6]|=1ULL<<(j&63);\n        }\n        long long ans=0;\n        for(int i=0;i<N;i++){\n            for(int j=i+1;j<N;j++){\n                if((bits[i][j>>6]>> (j&63))&1ULL) continue; // already friends\n                int common=0;\n                for(int w=0;w<words;w++) if(bits[i][w]&bits[j][w]){common=1;break;}\n                if(common) ans++;\n            }\n        }\n        printf(\"%lld\\n\",ans);\n        for(int i=0;i<N;i++) free(bits[i]);\n        free(bits);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    const int MAXN=2000;\n    static bitset<MAXN> adj[MAXN];\n    while(T--){\n        int N; cin>>N;\n        string s;\n        for(int i=0;i<N;i++){\n            cin>>s;\n            adj[i].reset();\n            for(int j=0;j<N;j++) if(s[j]=='1') adj[i].set(j);\n        }\n        long long ans=0;\n        for(int i=0;i<N;i++){\n            for(int j=i+1;j<N;j++){\n                if(adj[i][j]) continue;\n                if((adj[i]&adj[j]).any()) ans++;\n            }\n        }\n        cout<<ans<<\"\\n\";\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br=new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st;\n        int T=Integer.parseInt(br.readLine().trim());\n        StringBuilder out=new StringBuilder();\n        for(int tc=0;tc<T;tc++){\n            int N=Integer.parseInt(br.readLine().trim());\n            long[][] bits=new long[N][(N+63)>>6];\n            for(int i=0;i<N;i++){\n                String line=br.readLine().trim();\n                for(int j=0;j<N;j++) if(line.charAt(j)=='1') bits[i][j>>6]|=1L<<(j&63);\n            }\n            long ans=0;\n            for(int i=0;i<N;i++){\n                for(int j=i+1;j<N;j++){\n                    if((bits[i][j>>6] & (1L<<(j&63)))!=0) continue;\n                    boolean common=false;\n                    for(int w=0;w<bits[i].length;w++) if((bits[i][w]&bits[j][w])!=0){common=true;break;}\n                    if(common) ans++;\n                }\n            }\n            out.append(ans).append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef solve():\n    data=sys.stdin.read().split()\n    if not data: return\n    it=iter(data)\n    T=int(next(it))\n    out=[]\n    for _ in range(T):\n        N=int(next(it))\n        rows=[next(it) for _ in range(N)]\n        words=(N+63)//64\n        bits=[[0]*words for _ in range(N)]\n        for i,line in enumerate(rows):\n            for j,ch in enumerate(line):\n                if ch=='1':\n                    bits[i][j>>6]|=1<<(j&63)\n        ans=0\n        for i in range(N):\n            for j in range(i+1,N):\n                if (bits[i][j>>6]>> (j&63)) & 1:\n                    continue\n                common=False\n                for w in range(words):\n                    if bits[i][w] & bits[j][w]:\n                        common=True\n                        break\n                if common:\n                    ans+=1\n        out.append(str(ans))\n    sys.stdout.write('\\n'.join(out))\n\nif __name__=='__main__':\n    solve()",
+      "JavaScript": "const fs=require('fs');\nconst input=fs.readFileSync(0,'utf-8').trim().split(/\\s+/);\nlet idx=0;\nif(input.length===0) process.exit(0);\nconst T=Number(input[idx++]);\nlet outputs=[];\nfor(let tc=0;tc<T;tc++){\n  const N=Number(input[idx++]);\n  const rows=[];\n  for(let i=0;i<N;i++) rows.push(input[idx++]);\n  const words=(N+63)>>6;\n  const bits=Array.from({length:N},()=>new Uint32Array(words*2));\n  for(let i=0;i<N;i++){\n    const line=rows[i];\n    for(let j=0;j<N;j++) if(line[j]==='1'){\n      const w=j>>6;\n      const off=j&63;\n      if(off<32) bits[i][w*2]|=1<<off; else bits[i][w*2+1]|=1<<(off-32);\n    }\n  }\n  const getBit=(arr,pos)=>{const w=pos>>6; const off=pos&63; return off<32? (arr[w*2]>>>off)&1 : (arr[w*2+1]>>> (off-32))&1;};\n  let ans=0;\n  for(let i=0;i<N;i++){\n    for(let j=i+1;j<N;j++){\n      if(getBit(bits[i],j)) continue;\n      let common=false;\n      for(let w=0;w<words;w++){\n        if((bits[i][w*2]&bits[j][w*2])!==0 || (bits[i][w*2+1]&bits[j][w*2+1])!==0){common=true;break;}\n      }\n      if(common) ans++;\n    }\n  }\n  outputs.push(String(ans));\n}\nconsole.log(outputs.join('\\n'));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

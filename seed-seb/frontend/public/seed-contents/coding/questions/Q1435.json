@@ -1,0 +1,129 @@
+{
+  "questionId": "Q1435",
+  "title": "Customer Email Domain Analysis",
+  "slug": "customer-email-domain-analysis",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Implementation",
+    "difficulty": "Easy",
+    "isPremium": false,
+    "tags": [
+      "String parsing",
+      "Domain filtering",
+      "Implementation"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Two Pointers & Sliding Window"
+    ]
+  },
+  "content": {
+    "problemStatement": "You are a marketing analyst at MaxLinear tasked with identifying customers who use specific email providers for a targeted email campaign.\n\nTask**Your goal is to:**\n\n\nExtract a list of customers who use popular generic email services\nInclude only customers with emails from gmail.com, yahoo.com, or hotmail.com domains\nReturn each customer's ID, first name, and last name\nExclude customers using company or other email domains\nTable StructureThe `customers` table contains:\n\n\n`customer_id:` Unique identifier for each customer\n`first_name:` Customer's first name\n`last_name:` Customer's last name\n`email:` Customer's email address\nCustomers Datacustomer_idfirst_namelast_nameemail6125JohnDoejohndoe@gmail.com7814EmilyClarkemily.clark@yahoo.com5329AmandaTayloramanda.taylor@maxlinear.com6491JacobMillerjacob_miller@hotmail.com4578SophiaJohnsonsophia.johnson@gmail.com",
+    "constraints": [
+      "1\u202f\u2264\u202fT\u202f\u2264\u202f1000",
+      "1\u202f\u2264\u202fcustomer_id\u202f\u2264\u202f10000",
+      "1\u202f\u2264\u202flength(first_name),\u202flength(last_name)\u202f\u2264\u202f50",
+      "1\u202f\u2264\u202flength(email)\u202f\u2264\u202f100",
+      "Email contains exactly one '@' character"
+    ],
+    "inputFormat": "First line contains an integer T, the number of customers (1\u202f\u2264\u202fT\u202f\u2264\u202f1000). Each of the next T lines contains four space\u2011separated fields: customer_id (integer), first_name (string), last_name (string) and email (string). Email contains exactly one '@' character and has no spaces.",
+    "outputFormat": "For every customer whose email domain is exactly one of \"gmail.com\", \"yahoo.com\" or \"hotmail.com\" (case\u2011sensitive), output a line with three space\u2011separated values: customer_id first_name last_name. Preserve the original order of appearance. If no customer matches, output nothing.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\\n6125 John Doe johndoe@gmail.com\\n7814 Emily Clark emily.clark@yahoo.com\\n5329 Amanda Taylor amanda.taylor@maxlinear.com",
+        "output": "6125 John Doe\\n7814 Emily Clark",
+        "explanation": "The first two customers have email domains gmail.com and yahoo.com, which are in the allowed list. The third customer's domain is maxlinear.com, so it is excluded."
+      },
+      {
+        "id": "sample_2",
+        "input": "2\\n6491 Jacob Miller jacob_miller@hotmail.com\\n4578 Sophia Johnson sophia.johnson@gmail.com",
+        "output": "6491 Jacob Miller\\n4578 Sophia Johnson",
+        "explanation": "Both customers use allowed domains (hotmail.com and gmail.com), therefore both lines appear in the output."
+      },
+      {
+        "id": "sample_3",
+        "input": "5\\n1001 Alice Brown alice.brown@outlook.com\\n1002 Bob White bob.white@yahoo.com\\n1003 Carol Green carol@HOTMAIL.COM\\n1004 Dave Black dave.black@gmail.com\\n1005 Eve Gray eve.gray@company.org",
+        "output": "1002 Bob White\\n1004 Dave Black",
+        "explanation": "Domain comparison is case\u2011sensitive. Only bob.white@yahoo.com and dave.black@gmail.com match exactly the lower\u2011case allowed domains. carol@HOTMAIL.COM is uppercase and therefore excluded."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\\n1 A B a@gmail.com",
+        "expectedOutput": "1 A B",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "15\\n9999 Zeta Alpha zeta@maxlinear.com\\n10000 Omega Beta omega@yahoo.com\\n1234 Gamma Delta gamma.delta@gmail.com\\n5678 Theta Epsilon theta_epsilon@hotmail.com\\n4321 Iota Zeta iota@company.org\\n8765 Kappa Lambda kappa.lambda@GMAIL.COM\\n1111 Mu Nu mu.nu@yahoo.com\\n2222 Xi Omicron xi@outlook.com\\n3333 Pi Rho pi.rho@hotmail.com\\n4444 Sigma Tau sigma.tau@gmail.com\\n5555 Upsilon Phi upsilon@custom.com\\n6666 Chi Psi chi.psi@yahoo.com\\n7777 Omega Omega2 omega2@Hotmail.com\\n8888 Alpha Beta alpha.beta@gmail.com\\n9990 Gamma Gamma2 gamma2@maxlinear.com",
+        "expectedOutput": "10000 Omega Beta\\n1234 Gamma Delta\\n5678 Theta Epsilon\\n1111 Mu Nu\\n3333 Pi Rho\\n4444 Sigma Tau\\n6666 Chi Psi\\n8888 Alpha Beta",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "5\\n101 John Doe john.doe@gmail.com\\n102 Jane Smith jane.smith@gmail.com\\n103 Bob Brown bob.brown@gmail.com\\n104 Alice White alice.white@gmail.com\\n105 Tom Black tom.black@gmail.com",
+        "expectedOutput": "101 John Doe\\n102 Jane Smith\\n103 Bob Brown\\n104 Alice White\\n105 Tom Black",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "4\\n2001 A B a@mail.gmail.com\\n2002 C D c@yahoo.com\\n2003 E F e@hot.mail.com\\n2004 G H g@GMAIL.COM",
+        "expectedOutput": "2002 C D",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "8\\n3001 Anna Lee anna.lee@yahoo.com\\n3002 Brian Kim brian.kim@maxlinear.com\\n3003 Carla Gomez carla.gomez@hotmail.com\\n3004 David Park david.park@gmail.com\\n3005 Eva Liu eva.liu@outlook.com\\n3006 Frank Wu frank.wu@yahoo.com\\n3007 Grace Ho grace.ho@Hotmail.com\\n3008 Henry Yu henry.yu@gmail.com",
+        "expectedOutput": "3001 Anna Lee\\n3003 Carla Gomez\\n3004 David Park\\n3006 Frank Wu\\n3008 Henry Yu",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Read the integer T. Loop T times reading the four fields. Locate the '@' character in the email string; the substring after it is the domain. Compare the domain with the three allowed strings (\"gmail.com\", \"yahoo.com\", \"hotmail.com\") using exact (case\u2011sensitive) equality. If it matches, immediately output the customer's id, first name and last name preserving input order. The algorithm runs in O(T) time and uses O(1) extra space besides the input storage.",
+    "timeComplexity": "O(T) total, where T is the number of customers.",
+    "spaceComplexity": "O(1) extra space (output buffer aside).",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\nint main(){\n    int T;\n    if(scanf(\"%d\",&T)!=1) return 0;\n    while(T--){\n        int id;\n        char first[51], last[51], email[101];\n        if(scanf(\"%d %50s %50s %100s\",&id,first,last,email)!=4) break;\n        char *at=strchr(email,'@');\n        if(at){\n            const char *domain=at+1;\n            if(strcmp(domain,\"gmail.com\")==0 || strcmp(domain,\"yahoo.com\")==0 || strcmp(domain,\"hotmail.com\")==0){\n                printf(\"%d %s %s\\n\",id,first,last);\n            }\n        }\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int id; string first,last,email;\n        cin>>id>>first>>last>>email;\n        size_t pos=email.find('@');\n        if(pos!=string::npos){\n            string domain=email.substr(pos+1);\n            if(domain==\"gmail.com\"||domain==\"yahoo.com\"||domain==\"hotmail.com\")\n                cout<<id<<' '<<first<<' '<<last<<'\\n';\n        }\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main{\n    public static void main(String[] args) throws Exception{\n        BufferedReader br=new BufferedReader(new InputStreamReader(System.in));\n        String line=br.readLine();\n        if(line==null||line.isEmpty()) return;\n        int T=Integer.parseInt(line.trim());\n        StringBuilder sb=new StringBuilder();\n        for(int i=0;i<T;i++){\n            line=br.readLine();\n            if(line==null) break;\n            StringTokenizer st=new StringTokenizer(line);\n            if(st.countTokens()<4) continue;\n            String id=st.nextToken();\n            String first=st.nextToken();\n            String last=st.nextToken();\n            String email=st.nextToken();\n            int at=email.indexOf('@');\n            if(at!=-1){\n                String domain=email.substring(at+1);\n                if(domain.equals(\"gmail.com\")||domain.equals(\"yahoo.com\")||domain.equals(\"hotmail.com\"))\n                    sb.append(id).append(' ').append(first).append(' ').append(last).append('\\n');\n            }\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "import sys\ndef main():\n    data=sys.stdin.read().strip().splitlines()\n    if not data:\n        return\n    T=int(data[0])\n    out=[]\n    for i in range(1,T+1):\n        parts=data[i].split()\n        if len(parts)<4:\n            continue\n        cid,first,last,email=parts[0],parts[1],parts[2],parts[3]\n        at=email.find('@')\n        if at!=-1:\n            domain=email[at+1:]\n            if domain in (\"gmail.com\",\"yahoo.com\",\"hotmail.com\"):\n                out.append(f\"{cid} {first} {last}\")\n    sys.stdout.write(\"\\n\".join(out))\nif __name__==\"__main__\":\n    main()",
+      "JavaScript": "const fs=require('fs');\nconst input=fs.readFileSync(0,'utf-8').trim().split('\\n');\nif(input.length===0) process.exit(0);\nlet idx=0;\nconst T=parseInt(input[idx++].trim(),10);\nlet res=[];\nfor(let i=0;i<T;i++){\n    const parts=input[idx++].trim().split(/\\s+/);\n    if(parts.length<4) continue;\n    const [cid,first,last,email]=parts;\n    const atPos=email.indexOf('@');\n    if(atPos!==-1){\n        const domain=email.substring(atPos+1);\n        if(domain==='gmail.com' || domain==='yahoo.com' || domain==='hotmail.com')\n            res.push(`${cid} ${first} ${last}`);\n    }\n}\nconsole.log(res.join('\\n'));"
+    }
+  }
+}

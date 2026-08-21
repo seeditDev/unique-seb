@@ -1,0 +1,129 @@
+{
+  "questionId": "Q1363",
+  "title": "Count max Subarray",
+  "slug": "count-max-subarray",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Arrays",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "Arrays",
+      "Subarray Counting",
+      "Prefix Sum",
+      "Two Pointers"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ]
+  },
+  "content": {
+    "problemStatement": "Given an array arr[]arr[]arr[] of NNN integers and an integer KKK. The task is to find the number of subarray with a maximum value equal to KKK.\n\n\nInput Format\n\nThe first line contains two integers NNN , KKK - the size of `arr` and the maximum value that should be in the\nsubarray.\nThe second line contains nnn integers arr[1],arr[2],\u2026,arr[n]arr[1],arr[2],\u2026,arr[n]arr[1],arr[2],\u2026,arr[n] \u2014 the elements of arrarrarr.\n\n\nOutput Format\nPrint the number of subarrays having KKK as the maximum value.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 1000",
+      "1 <= K <= 10000",
+      "0 <= arr[i] <= 10000"
+    ],
+    "inputFormat": "First line contains an integer T, the number of test cases. Each test case consists of two lines. The first line contains two integers N and K \u2013 the size of the array and the required maximum value. The second line contains N space\u2011separated integers denoting the array elements.",
+    "outputFormat": "For each test case, output a single line containing the number of subarrays whose maximum element is exactly K.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n4 3\n2 1 3 4",
+        "output": "3",
+        "explanation": "The subarrays whose maximum equals 3 are [2,1,3], [1,3] and [3]."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n3 1\n1 2 1",
+        "output": "2",
+        "explanation": "Only the two single\u2011element subarrays containing 1 have maximum 1."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n5 5\n1 2 3 4 5",
+        "output": "1",
+        "explanation": "The only subarray with maximum 5 is the last element [5]."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1\n0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n15 10000\n10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000",
+        "expectedOutput": "120",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n5 1\n0 0 0 0 0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n6 5\n6 5 4 3 2 1",
+        "expectedOutput": "5",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "3\n4 3\n2 1 3 4\n3 2\n2 2 2\n5 3\n1 4 3 2 3",
+        "expectedOutput": "3\n6\n5",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For a fixed K, a subarray has maximum exactly K iff all its elements are <= K and it contains at least one element equal to K. Let f(limit) be the number of subarrays where every element is <= limit. Then the answer is f(K) - f(K-1). To compute f(limit) we scan the array and split it into maximal blocks of elements <= limit. A block of length L contributes L*(L+1)/2 subarrays. The scan is O(N). Hence each test case is solved in O(N) time and O(1) extra space.",
+    "timeComplexity": "O(N) per test case, O(N\u00b7T) overall",
+    "spaceComplexity": "O(1) auxiliary space",
+    "code": {
+      "C": "#include <stdio.h>\n\nlong long totalSubarrays(int arr[], int n, int limit) {\n    long long ans = 0;\n    int i = 0;\n    while (i < n) {\n        if (arr[i] > limit) { i++; continue; }\n        long long cnt = 0;\n        while (i < n && arr[i] <= limit) { cnt++; i++; }\n        ans += cnt * (cnt + 1) / 2;\n    }\n    return ans;\n}\n\nint main() {\n    int T; if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        int N, K; scanf(\"%d %d\", &N, &K);\n        int arr[1005];\n        for (int i = 0; i < N; ++i) scanf(\"%d\", &arr[i]);\n        long long leK = totalSubarrays(arr, N, K);\n        long long leKm1 = totalSubarrays(arr, N, K - 1);\n        printf(\"%lld\\n\", leK - leKm1);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nlong long totalSubarrays(const vector<int>& a, int limit) {\n    long long ans = 0;\n    int n = a.size();\n    int i = 0;\n    while (i < n) {\n        if (a[i] > limit) { ++i; continue; }\n        long long cnt = 0;\n        while (i < n && a[i] <= limit) { ++cnt; ++i; }\n        ans += cnt * (cnt + 1) / 2;\n    }\n    return ans;\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin >> T)) return 0;\n    while (T--) {\n        int N, K; cin >> N >> K;\n        vector<int> a(N);\n        for (int &x : a) cin >> x;\n        long long leK = totalSubarrays(a, K);\n        long long leKm1 = totalSubarrays(a, K - 1);\n        cout << leK - leKm1 << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    private static long totalSubarrays(int[] arr, int limit) {\n        long ans = 0;\n        int n = arr.length;\n        int i = 0;\n        while (i < n) {\n            if (arr[i] > limit) { i++; continue; }\n            long cnt = 0;\n            while (i < n && arr[i] <= limit) { cnt++; i++; }\n            ans += cnt * (cnt + 1) / 2;\n        }\n        return ans;\n    }\n\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st = new StringTokenizer(br.readLine());\n        int T = Integer.parseInt(st.nextToken());\n        StringBuilder sb = new StringBuilder();\n        while (T-- > 0) {\n            st = new StringTokenizer(br.readLine());\n            int N = Integer.parseInt(st.nextToken());\n            int K = Integer.parseInt(st.nextToken());\n            int[] arr = new int[N];\n            st = new StringTokenizer(br.readLine());\n            for (int i = 0; i < N; i++) arr[i] = Integer.parseInt(st.nextToken());\n            long leK = totalSubarrays(arr, K);\n            long leKm1 = totalSubarrays(arr, K - 1);\n            sb.append(leK - leKm1).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef total_subarrays(arr, limit):\n    ans = 0\n    i = 0\n    n = len(arr)\n    while i < n:\n        if arr[i] > limit:\n            i += 1\n            continue\n        cnt = 0\n        while i < n and arr[i] <= limit:\n            cnt += 1\n            i += 1\n        ans += cnt * (cnt + 1) // 2\n    return ans\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out = []\n    for _ in range(T):\n        N = int(next(it)); K = int(next(it))\n        arr = [int(next(it)) for _ in range(N)]\n        leK = total_subarrays(arr, K)\n        leKm1 = total_subarrays(arr, K - 1)\n        out.append(str(leK - leKm1))\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/).map(Number);\nlet idx = 0;\nconst T = input[idx++];\nlet outputs = [];\nfunction totalSub(arr, limit) {\n  let ans = 0;\n  let i = 0;\n  const n = arr.length;\n  while (i < n) {\n    if (arr[i] > limit) { i++; continue; }\n    let cnt = 0;\n    while (i < n && arr[i] <= limit) { cnt++; i++; }\n    ans += cnt * (cnt + 1) / 2;\n  }\n  return ans;\n}\nfor (let t = 0; t < T; t++) {\n  const N = input[idx++];\n  const K = input[idx++];\n  const arr = input.slice(idx, idx + N);\n  idx += N;\n  const leK = totalSub(arr, K);\n  const leKm1 = totalSub(arr, K - 1);\n  outputs.push(String(leK - leKm1));\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  }
+}

@@ -1,0 +1,134 @@
+{
+  "questionId": "Q7168",
+  "title": "Colorblind Feast",
+  "slug": "colorblind-feast",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Segment Tree",
+      "Range Queries",
+      "Colorblindness"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Data Structures"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef is serving dishes at a feast full of colorblind people. He is adding dishes one by one to a long table to form a sequence of dishes; for each dish he adds, we know its color and deliciousness. A person with colorblindness ccc can only see dishes with colors in the range [c−K,c+K][c-K, c+K][c−K,c+K].\n\nYou should process QQQ queries. There are three types of queries:\n\n\n1  c  d1\\;c\\;d1cd: Chef adds a dish with color ccc and deliciousness ddd to the front of the sequence.\n2  c  d2\\;c\\;d2cd: Chef adds a dish with color ccc and deliciousness ddd to the back of the sequence.\n3  c3\\;c3c: Consider a person with colorblindness ccc. This person must choose an arbitrary contiguous subsequence of dishes on the table (possibly empty) and then eat all the dishes which this person can see. Chef wants to know the maximum possible total (summed up) deliciousness of the eaten dishes.\nNote that all the people attending this feast are polite, so no dishes are actually eaten until Chef receives the answers to all of his queries.",
+    "constraints": [
+      "1 ≤ Q ≤ 2 * 10^5",
+      "1 ≤ c, K ≤ 10^9",
+      "|d| ≤ 10^3"
+    ],
+    "inputFormat": "The first line contains two space-separated integers Q and K. The following Q lines describe queries. Each query starts with two space-separated integers b and C, where b denotes the type of query. If b = 1 or b = 2, they are followed by a space and an integer d. The value of c for this query is computed as c = C ⊕ ans, where ans is the answer to the previous query of type 3 or 0 if there have not been any queries of type 3 so far.",
+    "outputFormat": "For each query of type 3, print a single line containing one integer — the maximum total deliciousness.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "7 1\n1 1 1\n3 2\n3 2\n1 3 1\n1 1 2\n3 3\n3 0",
+        "output": "1\n0\n1\n3",
+        "explanation": "The decoded queries are: 1 1 1, 3 2, 3 3, 1 3 1, 1 1 2, 3 3, 3 1"
+      },
+      {
+        "id": "sample_2",
+        "input": "4 2\n1 1 -3\n2 5 5\n1 4 4\n3 3",
+        "output": "6",
+        "explanation": "The maximum deliciousness is 6, which is the sum of the deliciousness of the dishes with colors 4 and 5."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1 1\n1 1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1 1000000000\n1 1000000000 1000",
+        "expectedOutput": "1000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "2 1\\n1 1 1\\n3 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "1 1\n1 1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "1 1\n1 1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a segment tree to store the maximum deliciousness for each color range. We will maintain two segment trees: one for the maximum deliciousness and one for the minimum deliciousness. When a new dish is added, we update the segment trees accordingly. When a query of type 3 is made, we use the segment trees to find the maximum deliciousness for the given color range.",
+    "timeComplexity": "O(Q * log(Q)) — each query takes O(log(Q)) time to update the segment trees and find the maximum deliciousness",
+    "spaceComplexity": "O(Q) — we need to store the segment trees, which have a size of O(Q)",
+    "code": {
+      "C": "// COMPLETE, COMPILABLE C code\n#include <stdio.h>\n#include <stdlib.h>\n#define MAX_Q 200005\n#define MAX_COLOR 1000000005\n\n// Segment tree node structure\ntypedef struct {\n    int maxDeliciousness;\n    int minDeliciousness;\n} SegmentTreeNode;\n\n// Function to update the segment tree\nvoid updateSegmentTree(SegmentTreeNode* tree, int node, int start, int end, int index, int value) {\n    if (start == end) {\n        tree[node].maxDeliciousness = value;\n        tree[node].minDeliciousness = value;\n    } else {\n        int mid = (start + end) / 2;\n        if (index <= mid) {\n            updateSegmentTree(tree, 2 * node, start, mid, index, value);\n        } else {\n            updateSegmentTree(tree, 2 * node + 1, mid + 1, end, index, value);\n        }\n        tree[node].maxDeliciousness = tree[2 * node].maxDeliciousness + tree[2 * node + 1].maxDeliciousness;\n        tree[node].minDeliciousness = tree[2 * node].minDeliciousness + tree[2 * node + 1].minDeliciousness;\n    }\n}\n\n// Function to query the segment tree\nint querySegmentTree(SegmentTreeNode* tree, int node, int start, int end, int left, int right) {\n    if (left > end || right < start) {\n        return 0;\n    }\n    if (left <= start && right >= end) {\n        return tree[node].maxDeliciousness;\n    }\n    int mid = (start + end) / 2;\n    int leftQuery = querySegmentTree(tree, 2 * node, start, mid, left, right);\n    int rightQuery = querySegmentTree(tree, 2 * node + 1, mid + 1, end, left, right);\n    return leftQuery + rightQuery;\n}\n\nint main() {\n    int Q, K;\n    scanf(\"%d %d\", &Q, &K);\n    SegmentTreeNode* tree = (SegmentTreeNode*)malloc(4 * MAX_Q * sizeof(SegmentTreeNode));\n    int ans = 0;\n    for (int i = 0; i < Q; i++) {\n        int b, C, d;\n        scanf(\"%d %d\", &b, &C);\n        if (b == 1 || b == 2) {\n            scanf(\"%d\", &d);\n            int c = C ^ ans;\n            updateSegmentTree(tree, 1, 0, MAX_COLOR, c, d);\n        } else {\n            int c = C ^ ans;\n            int maxDeliciousness = querySegmentTree(tree, 1, 0, MAX_COLOR, c - K, c + K);\n            printf(\"%d\\n\", maxDeliciousness);\n            ans = maxDeliciousness;\n        }\n    }\n    return 0;\n}",
+      "C++": "// COMPLETE, COMPILABLE C++ code\n#include <iostream>\n#include <vector>\nusing namespace std;\n\n// Segment tree node structure\nstruct SegmentTreeNode {\n    int maxDeliciousness;\n    int minDeliciousness;\n};\n\n// Function to update the segment tree\nvoid updateSegmentTree(vector<SegmentTreeNode>& tree, int node, int start, int end, int index, int value) {\n    if (start == end) {\n        tree[node].maxDeliciousness = value;\n        tree[node].minDeliciousness = value;\n    } else {\n        int mid = (start + end) / 2;\n        if (index <= mid) {\n            updateSegmentTree(tree, 2 * node, start, mid, index, value);\n        } else {\n            updateSegmentTree(tree, 2 * node + 1, mid + 1, end, index, value);\n        }\n        tree[node].maxDeliciousness = tree[2 * node].maxDeliciousness + tree[2 * node + 1].maxDeliciousness;\n        tree[node].minDeliciousness = tree[2 * node].minDeliciousness + tree[2 * node + 1].minDeliciousness;\n    }\n}\n\n// Function to query the segment tree\nint querySegmentTree(vector<SegmentTreeNode>& tree, int node, int start, int end, int left, int right) {\n    if (left > end || right < start) {\n        return 0;\n    }\n    if (left <= start && right >= end) {\n        return tree[node].maxDeliciousness;\n    }\n    int mid = (start + end) / 2;\n    int leftQuery = querySegmentTree(tree, 2 * node, start, mid, left, right);\n    int rightQuery = querySegmentTree(tree, 2 * node + 1, mid + 1, end, left, right);\n    return leftQuery + rightQuery;\n}\n\nint main() {\n    int Q, K;\n    cin >> Q >> K;\n    vector<SegmentTreeNode> tree(4 * Q);\n    int ans = 0;\n    for (int i = 0; i < Q; i++) {\n        int b, C, d;\n        cin >> b >> C;\n        if (b == 1 || b == 2) {\n            cin >> d;\n            int c = C ^ ans;\n            updateSegmentTree(tree, 1, 0, 1000000005, c, d);\n        } else {\n            int c = C ^ ans;\n            int maxDeliciousness = querySegmentTree(tree, 1, 0, 1000000005, c - K, c + K);\n            cout << maxDeliciousness << endl;\n            ans = maxDeliciousness;\n        }\n    }\n    return 0;\n}",
+      "Java": "// COMPLETE, COMPILABLE Java code\nimport java.util.Scanner;\npublic class Main {\n    static class SegmentTreeNode {\n        int maxDeliciousness;\n        int minDeliciousness;\n    }\n\n    // Function to update the segment tree\n    public static void updateSegmentTree(SegmentTreeNode[] tree, int node, int start, int end, int index, int value) {\n        if (start == end) {\n            tree[node].maxDeliciousness = value;\n            tree[node].minDeliciousness = value;\n        } else {\n            int mid = (start + end) / 2;\n            if (index <= mid) {\n                updateSegmentTree(tree, 2 * node, start, mid, index, value);\n            } else {\n                updateSegmentTree(tree, 2 * node + 1, mid + 1, end, index, value);\n            }\n            tree[node].maxDeliciousness = tree[2 * node].maxDeliciousness + tree[2 * node + 1].maxDeliciousness;\n            tree[node].minDeliciousness = tree[2 * node].minDeliciousness + tree[2 * node + 1].minDeliciousness;\n        }\n    }\n\n    // Function to query the segment tree\n    public static int querySegmentTree(SegmentTreeNode[] tree, int node, int start, int end, int left, int right) {\n        if (left > end || right < start) {\n            return 0;\n        }\n        if (left <= start && right >= end) {\n            return tree[node].maxDeliciousness;\n        }\n        int mid = (start + end) / 2;\n        int leftQuery = querySegmentTree(tree, 2 * node, start, mid, left, right);\n        int rightQuery = querySegmentTree(tree, 2 * node + 1, mid + 1, end, left, right);\n        return leftQuery + rightQuery;\n    }\n\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int Q = scanner.nextInt();\n        int K = scanner.nextInt();\n        SegmentTreeNode[] tree = new SegmentTreeNode[4 * Q];\n        for (int i = 0; i < tree.length; i++) {\n            tree[i] = new SegmentTreeNode();\n        }\n        int ans = 0;\n        for (int i = 0; i < Q; i++) {\n            int b = scanner.nextInt();\n            int C = scanner.nextInt();\n            if (b == 1 || b == 2) {\n                int d = scanner.nextInt();\n                int c = C ^ ans;\n                updateSegmentTree(tree, 1, 0, 1000000005, c, d);\n            } else {\n                int c = C ^ ans;\n                int maxDeliciousness = querySegmentTree(tree, 1, 0, 1000000005, c - K, c + K);\n                System.out.println(maxDeliciousness);\n                ans = maxDeliciousness;\n            }\n        }\n    }\n}",
+      "Python3": "# COMPLETE, RUNNABLE Python3 code\nimport sys\n\nclass SegmentTreeNode:\n    def __init__(self):\n        self.maxDeliciousness = 0\n        self.minDeliciousness = 0\n\n# Function to update the segment tree\ndef updateSegmentTree(tree, node, start, end, index, value):\n    if start == end:\n        tree[node].maxDeliciousness = value\n        tree[node].minDeliciousness = value\n    else:\n        mid = (start + end) // 2\n        if index <= mid:\n            updateSegmentTree(tree, 2 * node, start, mid, index, value)\n        else:\n            updateSegmentTree(tree, 2 * node + 1, mid + 1, end, index, value)\n        tree[node].maxDeliciousness = tree[2 * node].maxDeliciousness + tree[2 * node + 1].maxDeliciousness\n        tree[node].minDeliciousness = tree[2 * node].minDeliciousness + tree[2 * node + 1].minDeliciousness\n\n# Function to query the segment tree\ndef querySegmentTree(tree, node, start, end, left, right):\n    if left > end or right < start:\n        return 0\n    if left <= start and right >= end:\n        return tree[node].maxDeliciousness\n    mid = (start + end) // 2\n    leftQuery = querySegmentTree(tree, 2 * node, start, mid, left, right)\n    rightQuery = querySegmentTree(tree, 2 * node + 1, mid + 1, end, left, right)\n    return leftQuery + rightQuery\n\nQ, K = map(int, sys.stdin.readline().split())\ntree = [SegmentTreeNode() for _ in range(4 * Q)]\nans = 0\nfor i in range(Q):\n    b, C = map(int, sys.stdin.readline().split())\n    if b == 1 or b == 2:\n        d = int(sys.stdin.readline().split()[0])\n        c = C ^ ans\n        updateSegmentTree(tree, 1, 0, 1000000005, c, d)\n    else:\n        c = C ^ ans\n        maxDeliciousness = querySegmentTree(tree, 1, 0, 1000000005, c - K, c + K)\n        print(maxDeliciousness)\n        ans = maxDeliciousness",
+      "JavaScript": "// COMPLETE, RUNNABLE JavaScript code\nconst fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\n\n// Segment tree node structure\nclass SegmentTreeNode {\n    constructor() {\n        this.maxDeliciousness = 0;\n        this.minDeliciousness = 0;\n    }\n}\n\n// Function to update the segment tree\nfunction updateSegmentTree(tree, node, start, end, index, value) {\n    if (start == end) {\n        tree[node].maxDeliciousness = value;\n        tree[node].minDeliciousness = value;\n    } else {\n        let mid = Math.floor((start + end) / 2);\n        if (index <= mid) {\n            updateSegmentTree(tree, 2 * node, start, mid, index, value);\n        } else {\n            updateSegmentTree(tree, 2 * node + 1, mid + 1, end, index, value);\n        }\n        tree[node].maxDeliciousness = tree[2 * node].maxDeliciousness + tree[2 * node + 1].maxDeliciousness;\n        tree[node].minDeliciousness = tree[2 * node].minDeliciousness + tree[2 * node + 1].minDeliciousness;\n    }\n}\n\n// Function to query the segment tree\nfunction querySegmentTree(tree, node, start, end, left, right) {\n    if (left > end || right < start) {\n        return 0;\n    }\n    if (left <= start && right >= end) {\n        return tree[node].maxDeliciousness;\n    }\n    let mid = Math.floor((start + end) / 2);\n    let leftQuery = querySegmentTree(tree, 2 * node, start, mid, left, right);\n    let rightQuery = querySegmentTree(tree, 2 * node + 1, mid + 1, end, left, right);\n    return leftQuery + rightQuery;\n}\n\nlet Q, K;\nlet ans = 0;\nlet tree = new Array(4 * 200005).fill(0).map(() => new SegmentTreeNode());\n[Q, K] = input[idx++].split(' ').map(Number);\nfor (let i = 0; i < Q; i++) {\n    let [b, C] = input[idx++].split(' ').map(Number);\n    if (b == 1 || b == 2) {\n        let d = Number(input[idx++].split(' ')[0]);\n        let c = C ^ ans;\n        updateSegmentTree(tree, 1, 0, 1000000005, c, d);\n    } else {\n        let c = C ^ ans;\n        let maxDeliciousness = querySegmentTree(tree, 1, 0, 1000000005, c - K, c + K);\n        console.log(maxDeliciousness);\n        ans = maxDeliciousness;\n    }\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

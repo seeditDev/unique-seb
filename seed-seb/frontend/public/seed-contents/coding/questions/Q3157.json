@@ -1,0 +1,116 @@
+{
+  "questionId": "Q3157",
+  "title": "Chef and Segments",
+  "slug": "chef-and-segments",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Arrays",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Non-Intersecting",
+      "Dynamic Programming",
+      "Segment",
+      "Arrays"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Data Structures"
+    ]
+  },
+  "content": {
+    "problemStatement": "Chef has an array **A** consisting of **N** elements. He wants to find number of pairs of non-intersecting segments [**a**, **b**] and [**c**, **d**] (1 \u2264 **a** \u2264 **b** &lt; **c** \u2264 **d** \u2264 **N**) such there is no number that occurs in the subarray {**Aa**, **Aa+1**, ... , **Ab**} and   {**Ac**, **Ac+1**, ... , **Ad**} simultaneously. \n\nHelp Chef to find this number.",
+    "constraints": [
+      "1 <= T <= 5",
+      "1 <= N <= 1000",
+      "1 <= Ai <= 10^9"
+    ],
+    "inputFormat": "The first line of the input contains an integer T denoting the number of test cases. The description of T test cases follows. The first line of each test case contains a single integer N denoting the number of elements in the array. The second line contains N space-separated integers A1, A2, ..., AN.",
+    "outputFormat": "For each test case, output a single line containing one integer - number of pairs of non-intersecting segments.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n3\n1 2 3\n4\n1 2 1 2",
+        "output": "5\n4",
+        "explanation": "Explanation:\nExample case 1.\nAll possible variants are correct: {[1, 1], [2, 2]}, {[1, 1], [2, 3]}, {[1, 2], [3, 3]}, {[2, 2], [3, 3]}, {[1,1], [3, 3]}.\n\nExample case 2.\nCorrect segments: {[1, 1], [2, 2]}, {[1, 1], [4, 4]}, {[2, 2], [3, 3]}, {[3, 3], [4, 4]}."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n1",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n1000\n1 2 3 4 5 6 7 8 9 10",
+        "expectedOutput": "44550",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n5\n1 1 1 1 1",
+        "expectedOutput": "10",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n10\n1 2 3 4 5 6 7 8 9 10",
+        "expectedOutput": "285",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n15\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15",
+        "expectedOutput": "1365",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a dynamic programming approach. We will create a 2D array dp where dp[i][j] represents the number of pairs of non-intersecting segments in the subarray from index i to j. We will iterate over all possible pairs of segments and update the dp array accordingly. Finally, we will return the total number of pairs of non-intersecting segments.",
+    "timeComplexity": "O(T * N^4) \u2014 because for each test case, we are iterating over all possible pairs of segments and updating the dp array.",
+    "spaceComplexity": "O(N^2) \u2014 because we are using a 2D array of size N x N to store the dp values.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int N;\n        scanf(\"%d\", &N);\n        int* A = (int*)malloc(N * sizeof(int));\n        for (int i = 0; i < N; i++) {\n            scanf(\"%d\", &A[i]);\n        }\n        long long count = 0;\n        for (int i = 0; i < N; i++) {\n            for (int j = i; j < N; j++) {\n                int* set1 = (int*)malloc((j - i + 1) * sizeof(int));\n                int size1 = 0;\n                for (int k = i; k <= j; k++) {\n                    int flag = 0;\n                    for (int l = 0; l < size1; l++) {\n                        if (set1[l] == A[k]) {\n                            flag = 1;\n                            break;\n                        }\n                    }\n                    if (!flag) {\n                        set1[size1] = A[k];\n                        size1++;\n                    }\n                }\n                for (int k = j + 1; k < N; k++) {\n                    for (int l = k; l < N; l++) {\n                        int* set2 = (int*)malloc((l - k + 1) * sizeof(int));\n                        int size2 = 0;\n                        int flag = 0;\n                        for (int m = k; m <= l; m++) {\n                            for (int n = 0; n < size1; n++) {\n                                if (A[m] == set1[n]) {\n                                    flag = 1;\n                                    break;\n                                }\n                            }\n                            if (flag) break;\n                            int flag2 = 0;\n                            for (int n = 0; n < size2; n++) {\n                                if (set2[n] == A[m]) {\n                                    flag2 = 1;\n                                    break;\n                                }\n                            }\n                            if (!flag2) {\n                                set2[size2] = A[m];\n                                size2++;\n                            }\n                        }\n                        if (!flag) count++;\n                        free(set2);\n                    }\n                }\n                free(set1);\n            }\n        }\n        printf(\"%lld\\n\", count);\n        free(A);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\nusing namespace std;\n\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        int N;\n        cin >> N;\n        vector<int> A(N);\n        for (int i = 0; i < N; i++) {\n            cin >> A[i];\n        }\n        long long count = 0;\n        for (int i = 0; i < N; i++) {\n            for (int j = i; j < N; j++) {\n                vector<int> set1;\n                for (int k = i; k <= j; k++) {\n                    bool flag = false;\n                    for (int l = 0; l < set1.size(); l++) {\n                        if (set1[l] == A[k]) {\n                            flag = true;\n                            break;\n                        }\n                    }\n                    if (!flag) set1.push_back(A[k]);\n                }\n                for (int k = j + 1; k < N; k++) {\n                    for (int l = k; l < N; l++) {\n                        vector<int> set2;\n                        bool flag = false;\n                        for (int m = k; m <= l; m++) {\n                            for (int n = 0; n < set1.size(); n++) {\n                                if (A[m] == set1[n]) {\n                                    flag = true;\n                                    break;\n                                }\n                            }\n                            if (flag) break;\n                            bool flag2 = false;\n                            for (int n = 0; n < set2.size(); n++) {\n                                if (set2[n] == A[m]) {\n                                    flag2 = true;\n                                    break;\n                                }\n                            }\n                            if (!flag2) set2.push_back(A[m]);\n                        }\n                        if (!flag) count++;\n                    }\n                }\n            }\n        }\n        cout << count << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n        while (T-- > 0) {\n            int N = sc.nextInt();\n            int[] A = new int[N];\n            for (int i = 0; i < N; i++) {\n                A[i] = sc.nextInt();\n            }\n            long count = 0;\n            for (int i = 0; i < N; i++) {\n                for (int j = i; j < N; j++) {\n                    int[] set1 = new int[N];\n                    int size1 = 0;\n                    for (int k = i; k <= j; k++) {\n                        boolean flag = false;\n                        for (int l = 0; l < size1; l++) {\n                            if (set1[l] == A[k]) {\n                                flag = true;\n                                break;\n                            }\n                        }\n                        if (!flag) {\n                            set1[size1] = A[k];\n                            size1++;\n                        }\n                    }\n                    for (int k = j + 1; k < N; k++) {\n                        for (int l = k; l < N; l++) {\n                            int[] set2 = new int[N];\n                            int size2 = 0;\n                            boolean flag = false;\n                            for (int m = k; m <= l; m++) {\n                                for (int n = 0; n < size1; n++) {\n                                    if (A[m] == set1[n]) {\n                                        flag = true;\n                                        break;\n                                    }\n                                }\n                                if (flag) break;\n                                boolean flag2 = false;\n                                for (int n = 0; n < size2; n++) {\n                                    if (set2[n] == A[m]) {\n                                        flag2 = true;\n                                        break;\n                                    }\n                                }\n                                if (!flag2) {\n                                    set2[size2] = A[m];\n                                    size2++;\n                                }\n                            }\n                            if (!flag) count++;\n                        }\n                    }\n                }\n            }\n            System.out.println(count);\n        }\n    }\n}",
+      "Python3": "import sys\ninput = sys.stdin.readline\n\nT = int(input())\nfor _ in range(T):\n    N = int(input())\n    A = list(map(int, input().split()))\n    count = 0\n    for i in range(N):\n        for j in range(i, N):\n            set1 = set()\n            for k in range(i, j + 1):\n                set1.add(A[k])\n            for k in range(j + 1, N):\n                for l in range(k, N):\n                    set2 = set()\n                    flag = False\n                    for m in range(k, l + 1):\n                        if A[m] in set1:\n                            flag = True\n                            break\n                        set2.add(A[m])\n                    if not flag: count += 1\n    print(count)",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst input = () => lines[idx++];\n\nconst T = parseInt(input());\nfor (let i = 0; i < T; i++) {\n    const N = parseInt(input());\n    const A = input().split(' ').map(Number);\n    let count = 0;\n    for (let j = 0; j < N; j++) {\n        for (let k = j; k < N; k++) {\n            const set1 = new Set();\n            for (let l = j; l <= k; l++) {\n                set1.add(A[l]);\n            }\n            for (let l = k + 1; l < N; l++) {\n                for (let m = l; m < N; m++) {\n                    const set2 = new Set();\n                    let flag = false;\n                    for (let n = l; n <= m; n++) {\n                        if (set1.has(A[n])) {\n                            flag = true;\n                            break;\n                        }\n                        set2.add(A[n]);\n                    }\n                    if (!flag) count++;\n                }\n            }\n        }\n    }\n    console.log(count);\n}"
+    }
+  }
+}

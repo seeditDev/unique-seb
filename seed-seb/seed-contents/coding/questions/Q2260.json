@@ -1,0 +1,116 @@
+{
+  "questionId": "Q2260",
+  "title": "Renting Spare Oven Time",
+  "slug": "renting-spare-oven-time",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Min-Cost Max-Flow",
+      "Weighted Interval Scheduling",
+      "Capacity Constraints",
+      "Dynamic Programming",
+      "Network Flow"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Flow & Matching"
+    ]
+  },
+  "content": {
+    "problemStatement": "The Chef has thought of another way to generate revenue for his restaurant. He has a large oven to bake his goods, but he has noticed that not all of the racks are used all of the time. If a rack is not used, then the Chef has decided to rent it out for others to use. The Chef runs a very precise schedule; he knows in advance exactly how many racks will be free to rent out at any given time of the day.\n\n\n\nThis turns out to be quite a profitable scheme for the Chef. Apparently many people were interested in the idea of renting space in an industrial oven. The Chef may need to turn down some of the requests because of lack of oven space.\n\n\n\nEach request comes in the form of a start time s, an end time e, and a value v. This means that someone has requested to use a single rack in the oven from time s until time e-1 (i.e. the item is removed just before time e so another request may use that rack starting at time e). If this request is satisfied, the Chef receives v dollars in payment.\n\n\n\nHelp the Chef determine the maximum possible profit he can receive from the collection of requests. That is, find the largest total profit of a subset S of requests such that at any point in time the number of requests in S that require a rack during that time does not exceed the number of free racks at that time.",
+    "constraints": [
+      "1 \u2264 T \u2264 50",
+      "1 \u2264 n \u2264 100",
+      "1 \u2264 m \u2264 50",
+      "0 \u2264 s < e \u2264 m",
+      "1 \u2264 v \u2264 1000",
+      "1 \u2264 ci \u2264 25"
+    ],
+    "inputFormat": "The first line contains an integer T (1 \u2264 T \u2264 50), the number of test cases. Each test case starts with a blank line (which can be ignored). Then a line with two integers n and m (1 \u2264 n \u2264 100, 1 \u2264 m \u2264 50) \u2013 the number of requests and the length of the schedule. The next n lines each contain three integers s, e, v (0 \u2264 s < e \u2264 m, 1 \u2264 v \u2264 1000) describing a request that occupies the oven from time s to e\u20111 and pays v dollars. The last line of a test case contains m integers c0 \u2026 c_{m\u20111} (1 \u2264 ci \u2264 25) \u2013 the number of free racks at each time unit i.",
+    "outputFormat": "For each test case output a single line with one integer \u2013 the maximum total profit that can be obtained by selecting a subset of requests that never exceeds the available racks at any time.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "",
+        "output": "Input:\n1\n\n4 4\n0 1 2\n1 2 2\n2 4 2\n0 3 5\n2 1 1 1\n\nOutput:\n7",
+        "explanation": ""
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Model the problem as a min\u2011cost max\u2011flow network. Create a source node S and a sink node T. For each request i add a node R_i and an edge S \u2192 R_i with capacity 1 and cost = -v_i (negative because we want to maximise profit). For each time unit t (0 \u2026 m\u20111) add a node T_t and an edge T_t \u2192 sink with capacity c_t and cost 0. For every request i that occupies the interval [s_i, e_i) add edges R_i \u2192 T_t (for all t in that interval) with capacity 1 and cost 0. Sending one unit of flow through a request node means the request is accepted; the flow then occupies one unit of capacity on each time slot it uses. The total cost of the flow is the negative of the total profit, so the answer is -minCost. The graph size is at most 1 + n + m + 1 \u2264 152 nodes and at most n\u00b7m + n + m \u2264 5\u202f000 edges, easily handled with a standard successive shortest augmenting path algorithm using SPFA (or Dijkstra with potentials). The algorithm runs in O(F\u00b7E) where F \u2264 n (max flow) and E \u2264 5\u202f000, well within limits.\n\nSteps per test case:\n1. Build the graph as described.\n2. Run min\u2011cost max\u2011flow from S to sink.\n3. The answer = -totalCost.\n\nEdge cases such as a request that spans the whole schedule or capacities that are exactly saturated are naturally handled by the flow model.",
+    "timeComplexity": "O(F\u00b7E) \u2264 O(n\u00b7(n\u00b7m)) \u2264 O(100\u00b75\u202f000) \u2248 5\u00b710\u2075 per test case, easily fast for the given limits.",
+    "spaceComplexity": "O(V + E) \u2264 O(152 + 5\u202f000) \u2248 O(5\u202f000) memory.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <limits.h>\n\n#define MAXN 105\n#define MAXM 55\n#define MAXV 200"
+    }
+  }
+}

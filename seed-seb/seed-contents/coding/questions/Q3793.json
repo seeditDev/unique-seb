@@ -1,0 +1,117 @@
+{
+  "questionId": "Q3793",
+  "title": "Red and blue points",
+  "slug": "red-and-blue-points",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Convex Hull",
+      "Line Separation",
+      "Math"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Geometry"
+    ]
+  },
+  "content": {
+    "problemStatement": "You are given **N** red points and **M** blue points on a 2D plane.\n\nYou are required to delete the minimum number of points(the deleted points can be of both colors) so that it's possible to draw a line such that all remaining red points are on one side of the line while all remaining blue points are on the other side of the line.",
+    "constraints": [
+      "1 <= T <= 100",
+      "1 <= N, M <= 1000",
+      "1 <= sum of N in all test cases <= 1000",
+      "1 <= sum of M in all test cases <= 1000",
+      "-10^9 <= Xri, Yri, Xbi, Ybi <= 10^9",
+      "No two points among both red and blue points have same coordinates",
+      "No three points among both red and blue points are collinear"
+    ],
+    "inputFormat": "The first line of the input contains an integer T denoting the number of test cases. The first line of each test case contains two space-separated integers N and M. Each of the next N lines contains two integers Xri, Yri describing the coordinates of the i-th red point. Each of the next M lines contains two integers Xbi, Ybi describing the coordinates of the i-th blue point.",
+    "outputFormat": "For each test case, output a single line containing one integer denoting the minimum number of points to be deleted.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n4 4\n0 0\n10 10\n0 10\n10 0\n12 11\n2 1\n12 1\n2 11",
+        "output": "2",
+        "explanation": ""
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use the concept of convex hull and line separation. We first calculate the convex hull of the red points and the convex hull of the blue points. Then, we check if the convex hulls are separable by a line. If they are, we return 0. Otherwise, we try to delete points one by one and check if the remaining points are separable. We keep track of the minimum number of points that need to be deleted to make the points separable.",
+    "timeComplexity": "O(T * (N + M) * log(N + M)) \u2014 The time complexity is dominated by the convex hull calculation and the line separation check.",
+    "spaceComplexity": "O(N + M) \u2014 The space complexity is dominated by the storage of the convex hulls.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <math.h>\n#define MAX_POINTS 2000\n#define MAX_HULL_SIZE 2000\n// Structure to represent a point\ntypedef struct {\n    int x, y;\n} Point;\n// Function to calculate the orientation of three points\nint orientation(Point p, Point q, Point r) {\n    int val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);\n    if (val == 0) return 0; // Collinear\n    return (val > 0) ? 1 : 2; // Clockwise or counterclockwise\n}\n// Function to calculate the convex hull\nvoid convexHull(Point points[], int n, Point hull[], int *hullSize) {\n    if (n < 3) {\n        *hullSize = n;\n        for (int i = 0; i < n; i++) hull[i] = points[i];\n        return;\n    }\n    int l = 0;\n    for (int i = 1; i < n; i++)\n        if (points[i].x < points[l].x)\n            l = i;\n    int p = l, q;\n    do {\n        hull[*hullSize] = points[p];\n        (*hullSize)++;\n        q = (p + 1) % n;\n        for (int i = 0; i < n; i++)\n            if (orientation(points[p], points[i], points[q]) == 2)\n                q = i;\n        p = q;\n    } while (p != l);\n}\n// Function to check if two convex hulls are separable\nint areHullsSeparable(Point redHull[], int redHullSize, Point blueHull[], int blueHullSize) {\n    for (int i = 0; i < redHullSize; i++) {\n        Point p1 = redHull[i], p2 = redHull[(i + 1) % redHullSize];\n        for (int j = 0; j < blueHullSize; j++) {\n            Point p3 = blueHull[j], p4 = blueHull[(j + 1) % blueHullSize];\n            if (orientation(p1, p2, p3) * orientation(p1, p2, p4) < 0)\n                return 0;\n        }\n    }\n    return 1;\n}\n// Function to solve the problem\nvoid solve() {\n    int n, m;\n    scanf(\"%d %d\", &n, &m);\n    Point redPoints[n], bluePoints[m];\n    for (int i = 0; i < n; i++) scanf(\"%d %d\", &redPoints[i].x, &redPoints[i].y);\n    for (int i = 0; i < m; i++) scanf(\"%d %d\", &bluePoints[i].x, &bluePoints[i].y);\n    Point redHull[MAX_HULL_SIZE], blueHull[MAX_HULL_SIZE];\n    int redHullSize, blueHullSize;\n    convexHull(redPoints, n, redHull, &redHullSize);\n    convexHull(bluePoints, m, blueHull, &blueHullSize);\n    if (areHullsSeparable(redHull, redHullSize, blueHull, blueHullSize)) {\n        printf(\"0\\n\");\n        return;\n    }\n    int minDeletions = n + m;\n    for (int i = 0; i < n; i++) {\n        for (int j = 0; j < m; j++) {\n            Point newRedPoints[n - 1], newBluePoints[m - 1];\n            int k = 0, l = 0;\n            for (int p = 0; p < n; p++) if (p != i) newRedPoints[k++] = redPoints[p];\n            for (int p = 0; p < m; p++) if (p != j) newBluePoints[l++] = bluePoints[p];\n            Point newRedHull[MAX_HULL_SIZE], newBlueHull[MAX_HULL_SIZE];\n            int newRedHullSize, newBlueHullSize;\n            convexHull(newRedPoints, n - 1, newRedHull, &newRedHullSize);\n            convexHull(newBluePoints, m - 1, newBlueHull, &newBlueHullSize);\n            if (areHullsSeparable(newRedHull, newRedHullSize, newBlueHull, newBlueHullSize))\n                minDeletions = 2;\n        }\n    }\n    printf(\"%d\\n\", minDeletions);\n}\nint main() {\n    int t;\n    scanf(\"%d\", &t);\n    while (t--) solve();\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\n#include <algorithm>\nusing namespace std;\n// Structure to represent a point\nstruct Point {\n    int x, y;\n};\n// Function to calculate the orientation of three points\nint orientation(Point p, Point q, Point r) {\n    int val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);\n    if (val == 0) return 0; // Collinear\n    return (val > 0) ? 1 : 2; // Clockwise or counterclockwise\n}\n// Function to calculate the convex hull\nvoid convexHull(vector<Point> points, vector<Point> &hull) {\n    if (points.size() < 3) {\n        hull = points;\n        return;\n    }\n    int l = 0;\n    for (int i = 1; i < points.size(); i++)\n        if (points[i].x < points[l].x)\n            l = i;\n    int p = l, q;\n    do {\n        hull.push_back(points[p]);\n        q = (p + 1) % points.size();\n        for (int i = 0; i < points.size(); i++)\n            if (orientation(points[p], points[i], points[q]) == 2)\n                q = i;\n        p = q;\n    } while (p != l);\n}\n// Function to check if two convex hulls are separable\nint areHullsSeparable(vector<Point> redHull, vector<Point> blueHull) {\n    for (int i = 0; i < redHull.size(); i++) {\n        Point p1 = redHull[i], p2 = redHull[(i + 1) % redHull.size()];\n        for (int j = 0; j < blueHull.size(); j++) {\n            Point p3 = blueHull[j], p4 = blueHull[(j + 1) % blueHull.size()];\n            if (orientation(p1, p2, p3) * orientation(p1, p2, p4) < 0)\n                return 0;\n        }\n    }\n    return 1;\n}\n// Function to solve the problem\nvoid solve() {\n    int n, m;\n    cin >> n >> m;\n    vector<Point> redPoints(n), bluePoints(m);\n    for (int i = 0; i < n; i++) cin >> redPoints[i].x >> redPoints[i].y;\n    for (int i = 0; i < m; i++) cin >> bluePoints[i].x >> bluePoints[i].y;\n    vector<Point> redHull, blueHull;\n    convexHull(redPoints, redHull);\n    convexHull(bluePoints, blueHull);\n    if (areHullsSeparable(redHull, blueHull)) {\n        cout << 0 << endl;\n        return;\n    }\n    int minDeletions = n + m;\n    for (int i = 0; i < n; i++) {\n        for (int j = 0; j < m; j++) {\n            vector<Point> newRedPoints, newBluePoints;\n            for (int p = 0; p < n; p++) if (p != i) newRedPoints.push_back(redPoints[p]);\n            for (int p = 0; p < m; p++) if (p != j) newBluePoints.push_back(bluePoints[p]);\n            vector<Point> newRedHull, newBlueHull;\n            convexHull(newRedPoints, newRedHull);\n            convexHull(newBluePoints, newBlueHull);\n            if (areHullsSeparable(newRedHull, newBlueHull))\n                minDeletions = 2;\n        }\n    }\n    cout << minDeletions << endl;\n}\nint main() {\n    int t;\n    cin >> t;\n    while (t--) solve();\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\nimport java.util.ArrayList;\n"
+    }
+  }
+}

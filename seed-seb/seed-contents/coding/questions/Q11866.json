@@ -1,0 +1,117 @@
+{
+  "questionId": "Q11866",
+  "title": "Palindrome partitioning",
+  "slug": "palindromepartitioning",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "String",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Backtracking",
+      "Palindrome"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Write a program for the coding challenge \"Palindrome partitioning\". Refer to SEED-IT description: N/A",
+    "constraints": [
+      "1 <= s.length <= 16",
+      "s consists of lowercase English letters"
+    ],
+    "inputFormat": "A string s",
+    "outputFormat": "All possible palindrome partitionings of s",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "a",
+        "expectedOutput": "[[\"a\"]]",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "aaaaaaaaaa",
+        "expectedOutput": "[[\"aaaaaaaaaa\"], [\"a\", \"aaaaaaaa\"], [\"a\", \"a\", \"aaaaaaa\"], [\"a\", \"a\", \"a\", \"aaaaa\"], [\"a\", \"a\", \"a\", \"a\", \"aaaa\"], [\"a\", \"a\", \"a\", \"a\", \"a\", \"aaa\"], [\"a\", \"a\", \"a\", \"a\", \"a\", \"a\", \"aa\"], [\"a\", \"a\", \"a\", \"a\", \"a\", \"a\", \"a\", \"a\"]]",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": "aa",
+        "expectedOutput": "[[\"aa\"], [\"a\", \"a\"]]",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "ab",
+        "expectedOutput": "[[\"a\", \"b\"]]",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": "aab",
+        "expectedOutput": "[[\"a\", \"a\", \"b\"], [\"aa\", \"b\"]]",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Use backtracking to generate all possible partitions and check if each partition is a palindrome",
+    "timeComplexity": "O(2^n * n)",
+    "spaceComplexity": "O(n)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nvoid backtrack(char *s, int start, int **result, int *returnSize, char ***resultTemp, int *returnSizeTemp) {\n    if (start == strlen(s)) {\n        *returnSize += 1;\n        *result = realloc(*result, sizeof(int *) * *returnSize);\n        (*result)[*returnSize - 1] = malloc(sizeof(int) * *returnSizeTemp);\n        for (int i = 0; i < *returnSizeTemp; i++) {\n            (*result)[*returnSize - 1][i] = strlen((*resultTemp)[i]);\n        }\n        return;\n    }\n    for (int i = start; i < strlen(s); i++) {\n        char *temp = malloc(sizeof(char) * (i - start + 2));\n        strncpy(temp, s + start, i - start + 1);\n        temp[i - start + 1] = '\\0';\n        if (isPalindrome(temp)) {\n            *returnSizeTemp += 1;\n            *resultTemp = realloc(*resultTemp, sizeof(char *) * *returnSizeTemp);\n            (*resultTemp)[*returnSizeTemp - 1] = temp;\n            backtrack(s, i + 1, result, returnSize, resultTemp, returnSizeTemp);\n            *returnSizeTemp -= 1;\n            free((*resultTemp)[*returnSizeTemp]);\n            *resultTemp = realloc(*resultTemp, sizeof(char *) * *returnSizeTemp);\n        } else {\n            free(temp);\n        }\n    }\n}\n\nint **partition(char *s, int *returnSize) {\n    *returnSize = 0;\n    int returnSizeTemp = 0;\n    int **result = NULL;\n    char ***resultTemp = malloc(sizeof(char **));\n    *resultTemp = NULL;\n    backtrack(s, 0, &result, returnSize, resultTemp, &returnSizeTemp);\n    free(*resultTemp);\n    free(resultTemp);\n    return result;\n}\n\nint isPalindrome(char *s) {\n    int start = 0;\n    int end = strlen(s) - 1;\n    while (start < end) {\n        if (s[start] != s[end]) {\n            return 0;\n        }\n        start++;\n        end--;\n    }\n    return 1;\n}",
+      "C++": "#include <iostream>\n#include <vector>\n#include <string>\nusing namespace std;\n\nvoid backtrack(string s, int start, vector<vector<string>> &result, vector<string> &path) {\n    if (start == s.size()) {\n        result.push_back(path);\n        return;\n    }\n    for (int i = start; i < s.size(); i++) {\n        string temp = s.substr(start, i - start + 1);\n        if (isPalindrome(temp)) {\n            path.push_back(temp);\n            backtrack(s, i + 1, result, path);\n            path.pop_back();\n        }\n    }\n}\n\nvector<vector<string>> partition(string s) {\n    vector<vector<string>> result;\n    vector<string> path;\n    backtrack(s, 0, result, path);\n    return result;\n}\n\nbool isPalindrome(string s) {\n    int start = 0;\n    int end = s.size() - 1;\n    while (start < end) {\n        if (s[start] != s[end]) {\n            return false;\n        }\n        start++;\n        end--;\n    }\n    return true;\n}",
+      "Java": "import java.util.ArrayList;\nimport java.util.List;\npublic class Solution {\n    public List<List<String>> partition(String s) {\n        List<List<String>> result = new ArrayList<>();\n        backtrack(result, new ArrayList<>(), s, 0);\n        return result;\n    }\n    private void backtrack(List<List<String>> result, List<String> tempList, String s, int start) {\n        if (start == s.length()) {\n            result.add(new ArrayList<>(tempList));\n        } else {\n            for (int i = start; i < s.length(); i++) {\n                if (isPalindrome(s, start, i)) {\n                    tempList.add(s.substring(start, i + 1));\n                    backtrack(result, tempList, s, i + 1);\n                    tempList.remove(tempList.size() - 1);\n                }\n            }\n        }\n    }\n    private boolean isPalindrome(String s, int left, int right) {\n        while (left < right) {\n            if (s.charAt(left++) != s.charAt(right--)) {\n                return false;\n            }\n        }\n        return true;\n    }\n}",
+      "Python3": "class Solution:\n    def partition(self, s: str) -> List[List[str]]:\n        def is_palindrome(s: str) -> bool:\n            return s == s[::-1]\n        def backtrack(start: int, path: List[str]) -> None:\n            if start == len(s):\n                result.append(path)\n                return\n            for end in range(start, len(s)):\n                if is_palindrome(s[start:end+1]):\n                    backtrack(end + 1, path + [s[start:end+1]])\n        result: List[List[str]] = []\n        backtrack(0, [])\n        return result",
+      "JavaScript": "var partition = function(s) {\n    const result = [];\n    function isPalindrome(str) {\n        let start = 0;\n        let end = str.length - 1;\n        while (start < end) {\n            if (str[start] !== str[end]) return false;\n            start++;\n            end--;\n        }\n        return true;\n    }\n    function backtrack(start, path) {\n        if (start === s.length) {\n            result.push([...path]);\n            return;\n        }\n        for (let i = start; i < s.length; i++) {\n            const substr = s.substring(start, i + 1);\n            if (isPalindrome(substr)) {\n                path.push(substr);\n                backtrack(i + 1, path);\n                path.pop();\n            }\n        }\n    }\n    backtrack(0, []);\n    return result;\n};"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

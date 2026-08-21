@@ -1,0 +1,119 @@
+{
+  "questionId": "Q11572",
+  "title": "Cycle Free Flow",
+  "slug": "D",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "$undefined",
+    "isPremium": true,
+    "tags": [
+      "Maximum Flow",
+      "Ford-Fulkerson Algorithm",
+      "Edmonds-Karp Algorithm"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Write a program for the coding challenge \"Cycle Free Flow\". Refer to SEED-IT description: https://codeforces.com/gym/102694/problem/D",
+    "constraints": [
+      "1 <= n <= 100",
+      "1 <= m <= 1000",
+      "1 <= u, v <= n"
+    ],
+    "inputFormat": "The first line contains an integer n, the number of nodes in the graph. The next line contains an integer m, the number of edges in the graph. Then m lines follow, each containing two integers u and v, representing an edge between nodes u and v.",
+    "outputFormat": "The output should be the maximum flow in the given flow network.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "2\n1\n1 2",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "10\n9\n1 2\n1 3\n1 4\n1 5\n1 6\n1 7\n1 8\n1 9\n1 10",
+        "expectedOutput": "9",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": "5\n4\n1 2\n2 3\n3 4\n4 5",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case/empty-like",
+        "input": "1\n0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": "6\n8\n1 2\n1 3\n2 3\n2 4\n3 4\n3 5\n4 5\n4 6",
+        "expectedOutput": "2",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Use the Edmonds-Karp algorithm to find the maximum flow in the given flow network.",
+    "timeComplexity": "O(VE^2)",
+    "spaceComplexity": "O(V + E)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#define MAX 100\nint n, m, u, v, graph[MAX][MAX], parent[MAX];\nint bfs(int s, int t) {\n    int visited[MAX] = {0};\n    int queue[MAX], front = 0, rear = 0;\n    queue[rear++] = s;\n    visited[s] = 1;\n    while (front < rear) {\n        int u = queue[front++];\n        for (int v = 0; v < n; v++) {\n            if (!visited[v] && graph[u][v] > 0) {\n                queue[rear++] = v;\n                visited[v] = 1;\n                parent[v] = u;\n                if (v == t) return 1;\n            }\n        }\n    }\n    return 0;\n}\nint fordFulkerson(int s, int t) {\n    int max_flow = 0;\n    while (bfs(s, t)) {\n        int path_flow = 100000;\n        int u = t;\n        while (u != s) {\n            int v = parent[u];\n            path_flow = (path_flow < graph[v][u]) ? path_flow : graph[v][u];\n            u = v;\n        }\n        max_flow += path_flow;\n        u = t;\n        while (u != s) {\n            int v = parent[u];\n            graph[v][u] -= path_flow;\n            graph[u][v] += path_flow;\n            u = v;\n        }\n    }\n    return max_flow;\n}\nint main() {\n    scanf(\"%d %d\", &n, &m);\n    for (int i = 0; i < m; i++) {\n        scanf(\"%d %d\", &u, &v);\n        graph[u-1][v-1] = 1;\n    }\n    printf(\"%d\\n\", fordFulkerson(0, n-1));\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <queue>\n#include <vector>\nusing namespace std;\n#define MAX 100\nint n, m, u, v, graph[MAX][MAX], parent[MAX];\nbool bfs(int s, int t) {\n    bool visited[MAX] = {false};\n    queue<int> q;\n    q.push(s);\n    visited[s] = true;\n    while (!q.empty()) {\n        int u = q.front(); q.pop();\n        for (int v = 0; v < n; v++) {\n            if (!visited[v] && graph[u][v] > 0) {\n                q.push(v);\n                visited[v] = true;\n                parent[v] = u;\n                if (v == t) return true;\n            }\n        }\n    }\n    return false;\n}\nint fordFulkerson(int s, int t) {\n    int max_flow = 0;\n    while (bfs(s, t)) {\n        int path_flow = 100000;\n        int u = t;\n        while (u != s) {\n            int v = parent[u];\n            path_flow = min(path_flow, graph[v][u]);\n            u = v;\n        }\n        max_flow += path_flow;\n        u = t;\n        while (u != s) {\n            int v = parent[u];\n            graph[v][u] -= path_flow;\n            graph[u][v] += path_flow;\n            u = v;\n        }\n    }\n    return max_flow;\n}\nint main() {\n    cin >> n >> m;\n    for (int i = 0; i < m; i++) {\n        cin >> u >> v;\n        graph[u-1][v-1] = 1;\n    }\n    cout << fordFulkerson(0, n-1) << endl;\n    return 0;\n}",
+      "Java": "import java.util.Queue;\nimport java.util.LinkedList;\npublic class Main {\n    static final int MAX = 100;\n    static int n, m, u, v;\n    static int[][] graph = new int[MAX][MAX];\n    static int[] parent = new int[MAX];\n    public static boolean bfs(int s, int t) {\n        boolean[] visited = new boolean[MAX];\n        Queue<Integer> q = new LinkedList<>();\n        q.add(s);\n        visited[s] = true;\n        while (!q.isEmpty()) {\n            int u = q.poll();\n            for (int v = 0; v < n; v++) {\n                if (!visited[v] && graph[u][v] > 0) {\n                    q.add(v);\n                    visited[v] = true;\n                    parent[v] = u;\n                    if (v == t) return true;\n                }\n            }\n        }\n        return false;\n    }\n    public static int fordFulkerson(int s, int t) {\n        int max_flow = 0;\n        while (bfs(s, t)) {\n            int path_flow = 100000;\n            int u = t;\n            while (u != s) {\n                int v = parent[u];\n                path_flow = Math.min(path_flow, graph[v][u]);\n                u = v;\n            }\n            max_flow += path_flow;\n            u = t;\n            while (u != s) {\n                int v = parent[u];\n                graph[v][u] -= path_flow;\n                graph[u][v] += path_flow;\n                u = v;\n            }\n        }\n        return max_flow;\n    }\n    public static void main(String[] args) {\n        java.util.Scanner sc = new java.util.Scanner(System.in);\n        n = sc.nextInt();\n        m = sc.nextInt();\n        for (int i = 0; i < m; i++) {\n            u = sc.nextInt();\n            v = sc.nextInt();\n            graph[u-1][v-1] = 1;\n        }\n        System.out.println(fordFulkerson(0, n-1));\n    }\n}",
+      "Python3": "from collections import deque\nMAX = 100\nn, m, u, v = 0, 0, 0, 0\ngraph = [[0]*MAX for _ in range(MAX)]\nparent = [0]*MAX\ndef bfs(s, t):\n    visited = [False]*MAX\n    q = deque()\n    q.append(s)\n    visited[s] = True\n    while q:\n        u = q.popleft()\n        for v in range(n):\n            if not visited[v] and graph[u][v] > 0:\n                q.append(v)\n                visited[v] = True\n                parent[v] = u\n                if v == t:\n                    return True\n    return False\ndef fordFulkerson(s, t):\n    max_flow = 0\n    while bfs(s, t):\n        path_flow = 100000\n        u = t\n        while u != s:\n            v = parent[u]\n            path_flow = min(path_flow, graph[v][u])\n            u = v\n        max_flow += path_flow\n        u = t\n        while u != s:\n            v = parent[u]\n            graph[v][u] -= path_flow\n            graph[u][v] += path_flow\n            u = v\n    return max_flow\nn, m = map(int, input().split())\nfor _ in range(m):\n    u, v = map(int, input().split())\n    graph[u-1][v-1] = 1\nprint(fordFulkerson(0, n-1))",
+      "JavaScript": "const readline = require('readline');\nconst rl = readline.createInterface({\n    input: process.stdin,\n    output: process.stdout\n});\nlet input = [];\nrl.on('line', function(line) {\n    input.push(line);\n}).on('close', function() {\n    let idx = 0;\n    let n, m, u, v;\n    [n, m] = input[idx++].split(' ').map(x => parseInt(x));\n    let graph = Array(n).fill(0).map(() => Array(n).fill(0));\n    let parent = Array(n).fill(0);\n    for (let i = 0; i < m; i++) {\n        [u, v] = input[idx++].split(' ').map(x => parseInt(x));\n        graph[u-1][v-1] = 1;\n    }\n    function bfs(s, t) {\n        let visited = Array(n).fill(false);\n        let q = [];\n        q.push(s);\n        visited[s] = true;\n        while (q.length > 0) {\n            let u = q.shift();\n            for (let v = 0; v < n; v++) {\n                if (!visited[v] && graph[u][v] > 0) {\n                    q.push(v);\n                    visited[v] = true;\n                    parent[v] = u;\n                    if (v == t) return true;\n                }\n            }\n        }\n        return false;\n    }\n    function fordFulkerson(s, t) {\n        let max_flow = 0;\n        while (bfs(s, t)) {\n            let path_flow = 100000;\n            let u = t;\n            while (u != s) {\n                let v = parent[u];\n                path_flow = Math.min(path_flow, graph[v][u]);\n                u = v;\n            }\n            max_flow += path_flow;\n            u = t;\n            while (u != s) {\n                let v = parent[u];\n                graph[v][u] -= path_flow;\n                graph[u][v] += path_flow;\n                u = v;\n            }\n        }\n        return max_flow;\n    }\n    console.log(fordFulkerson(0, n-1));\n});"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

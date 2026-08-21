@@ -1,0 +1,127 @@
+{
+  "questionId": "Q1379",
+  "title": "Search Word",
+  "slug": "search-word",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Grid Search",
+      "Strings",
+      "Depth-First Search"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Recursion & Backtracking"
+    ]
+  },
+  "content": {
+    "problemStatement": "Given a RRR xCCC grid of lowercase characters and a string sss, check if sss is present in the grid. The string can be constructed from letters of sequentially adjacent cells, where **adjacent** cells are those horizontally or vertically neighbouring. The same letter cell may not be used more than once.\n\n\nInput Format\n\nThe first line contains two integers RRR andandand CCC.\nThe next RRR lines contain CCC space-separated lowercase characters representing the grid.\nThe last line contains the string sss.\n\n\nOutput Format\nOutput true if the string s exists in the grid, otherwise output false.",
+    "constraints": [
+      "1 \u2264 R \u2264 6",
+      "1 \u2264 C \u2264 6",
+      "The size of the string s will not exceed R*C"
+    ],
+    "inputFormat": "First line contains two integers R and C, representing the number of rows and columns in the grid. The next R lines contain C space-separated lowercase characters representing the grid. The last line contains the string s.",
+    "outputFormat": "Output true if the string s exists in the grid, otherwise output false.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3 4\na b c e\ns f c s\na d e e\nabcced",
+        "output": "true",
+        "explanation": "The string \"abcced\" can be found by moving right from (0,0) to (0,1) to (0,2) and then down to (1,2) and again down to (2,2) and then left to (2,1) and then left to (2,0) and then up to (1,0) and then up to (0,0) and then right to (0,1) and then right to (0,2) and then down to (1,2) and then down to (2,2) and then right to (2,3)."
+      },
+      {
+        "id": "sample_2",
+        "input": "3 4\na b c e\ns f c s\na d e e\nsee",
+        "output": "true",
+        "explanation": "The string \"see\" can be found by moving down from (0,2) to (1,2) and then down to (2,2) and then right to (2,3)."
+      },
+      {
+        "id": "sample_3",
+        "input": "3 4\na b c e\ns f c s\na d e e\nabcb",
+        "output": "false",
+        "explanation": "The string \"abcb\" cannot be found in the grid."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1 1\na\na",
+        "expectedOutput": "true",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "6 6\na b c d e f\ng h i j k l\nm n o p q r\ns t u v w x\ny z a b c d\ne f g h i j\nabcdefghijklmnopqrstuvwxyz",
+        "expectedOutput": "true",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "3 3\na a a\na a a\na a a\naaa",
+        "expectedOutput": "true",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "3 3\na b c\nd e f\ng h i\nabc",
+        "expectedOutput": "true",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "5 5\na b c d e\nf g h i j\nk l m n o\np q r s t\nu v w x y\nabcdefghij",
+        "expectedOutput": "true",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved using a depth-first search (DFS) algorithm. We start by checking each cell in the grid to see if it matches the first character of the string. If it does, we then check all adjacent cells to see if they match the next character in the string, and so on. We use a visited array to keep track of the cells that have already been visited to avoid revisiting them.",
+    "timeComplexity": "O(R*C*4^L) per test case, where L is the length of the string s. This is because in the worst case, we have to explore all four directions from each cell, and we have to do this for each character in the string.",
+    "spaceComplexity": "O(R*C) \u2014 this is the space required to store the visited array and the grid.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdbool.h>\n#define MAX_R 6\n#define MAX_C 6\n\nbool exist(char grid[MAX_R][MAX_C], int r, int c, char *s, int len, int index, bool visited[MAX_R][MAX_C]) {\n    if (index == len) return true;\n    if (r < 0 || r >= MAX_R || c < 0 || c >= MAX_C || visited[r][c] || grid[r][c] != s[index]) return false;\n    visited[r][c] = true;\n    bool found = exist(grid, r-1, c, s, len, index+1, visited) ||\n                   exist(grid, r+1, c, s, len, index+1, visited) ||\n                   exist(grid, r, c-1, s, len, index+1, visited) ||\n                   exist(grid, r, c+1, s, len, index+1, visited);\n    visited[r][c] = false;\n    return found;\n}\n\nint main() {\n    int r, c;\n    scanf(\"%d %d\", &r, &c);\n    char grid[MAX_R][MAX_C];\n    for (int i = 0; i < r; i++) {\n        for (int j = 0; j < c; j++) {\n            scanf(\" %c\", &grid[i][j]);\n        }\n    }\n    char s[100];\n    scanf(\"%s\", s);\n    int len = strlen(s);\n    bool found = false;\n    bool visited[MAX_R][MAX_C] = {{false}};\n    for (int i = 0; i < r; i++) {\n        for (int j = 0; j < c; j++) {\n            if (exist(grid, i, j, s, len, 0, visited)) {\n                found = true;\n                break;\n            }\n        }\n        if (found) break;\n    }\n    printf(\"%s\\n\", found ? \"true\" : \"false\");\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\nusing namespace std;\n\nbool exist(vector<vector<char>>& grid, int r, int c, string& s, int index, vector<vector<bool>>& visited) {\n    if (index == s.size()) return true;\n    if (r < 0 || r >= grid.size() || c < 0 || c >= grid[0].size() || visited[r][c] || grid[r][c] != s[index]) return false;\n    visited[r][c] = true;\n    bool found = exist(grid, r-1, c, s, index+1, visited) ||\n                   exist(grid, r+1, c, s, index+1, visited) ||\n                   exist(grid, r, c-1, s, index+1, visited) ||\n                   exist(grid, r, c+1, s, index+1, visited);\n    visited[r][c] = false;\n    return found;\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(NULL);\n    int r, c;\n    cin >> r >> c;\n    vector<vector<char>> grid(r, vector<char>(c));\n    for (int i = 0; i < r; i++) {\n        for (int j = 0; j < c; j++) {\n            cin >> grid[i][j];\n        }\n    }\n    string s;\n    cin >> s;\n    bool found = false;\n    vector<vector<bool>> visited(r, vector<bool>(c, false));\n    for (int i = 0; i < r; i++) {\n        for (int j = 0; j < c; j++) {\n            if (exist(grid, i, j, s, 0, visited)) {\n                found = true;\n                break;\n            }\n        }\n        if (found) break;\n    }\n    cout << (found ? \"true\" : \"false\") << endl;\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    public static boolean exist(char[][] grid, int r, int c, String s, int index, boolean[][] visited) {\n        if (index == s.length()) return true;\n        if (r < 0 || r >= grid.length || c < 0 || c >= grid[0].length || visited[r][c] || grid[r][c] != s.charAt(index)) return false;\n        visited[r][c] = true;\n        boolean found = exist(grid, r-1, c, s, index+1, visited) ||\n                           exist(grid, r+1, c, s, index+1, visited) ||\n                           exist(grid, r, c-1, s, index+1, visited) ||\n                           exist(grid, r, c+1, s, index+1, visited);\n        visited[r][c] = false;\n        return found;\n    }\n\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int r = scanner.nextInt();\n        int c = scanner.nextInt();\n        char[][] grid = new char[r][c];\n        for (int i = 0; i < r; i++) {\n            for (int j = 0; j < c; j++) {\n                grid[i][j] = scanner.next().charAt(0);\n            }\n        }\n        String s = scanner.next();\n        boolean found = false;\n        boolean[][] visited = new boolean[r][c];\n        for (int i = 0; i < r; i++) {\n            for (int j = 0; j < c; j++) {\n                if (exist(grid, i, j, s, 0, visited)) {\n                    found = true;\n                    break;\n                }\n            }\n            if (found) break;\n        }\n        System.out.println(found ? \"true\" : \"false\");\n    }\n}",
+      "Python3": "def exist(grid, r, c, s, index, visited):\n    if index == len(s):\n        return True\n    if r < 0 or r >= len(grid) or c < 0 or c >= len(grid[0]) or visited[r][c] or grid[r][c] != s[index]:\n        return False\n    visited[r][c] = True\n    found = exist(grid, r-1, c, s, index+1, visited) or exist(grid, r+1, c, s, index+1, visited) or exist(grid, r, c-1, s, index+1, visited) or exist(grid, r, c+1, s, index+1, visited)\n    visited[r][c] = False\n    return found\n\nimport sys\nr, c = map(int, sys.stdin.readline().split())\ngrid = [list(sys.stdin.readline().strip()) for _ in range(r)]\ns = sys.stdin.readline().strip()\nfound = False\nvisited = [[False]*c for _ in range(r)]\nfor i in range(r):\n    for j in range(c):\n        if exist(grid, i, j, s, 0, visited):\n            found = True\n            break\n    if found:\n        break\nprint(found)",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0,'utf-8').trim().split('\\n');\nlet idx=0;\nfunction exist(grid, r, c, s, index, visited) {\n    if (index === s.length) return true;\n    if (r < 0 || r >= grid.length || c < 0 || c >= grid[0].length || visited[r][c] || grid[r][c] !== s[index]) return false;\n    visited[r][c] = true;\n    let found = exist(grid, r-1, c, s, index+1, visited) || exist(grid, r+1, c, s, index+1, visited) || exist(grid, r, c-1, s, index+1, visited) || exist(grid, r, c+1, s, index+1, visited);\n    visited[r][c] = false;\n    return found;\n}\n\nlet r, c;\n[r, c] = lines[idx++].trim().split(' ').map(Number);\nlet grid = [];\nfor (let i = 0; i < r; i++) {\n    grid.push(lines[idx++].trim().split(''));\n}\nlet s = lines[idx++].trim();\nlet found = false;\nlet visited = Array(r).fill().map(() => Array(c).fill(false));\nfor (let i = 0; i < r; i++) {\n    for (let j = 0; j < c; j++) {\n        if (exist(grid, i, j, s, 0, visited)) {\n            found = true;\n            break;\n        }\n    }\n    if (found) break;\n}\nconsole.log(found ? 'true' : 'false');"
+    }
+  }
+}

@@ -1,0 +1,116 @@
+{
+  "questionId": "Q3969",
+  "title": "Difficult Choice",
+  "slug": "difficult-choice",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graphs",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Graphs",
+      "BFS",
+      "Bit Manipulation"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Graphs"
+    ]
+  },
+  "content": {
+    "problemStatement": "Chef and his mother are going travelling. Chef's world consists of NNN cities (numbered 111 through NNN) connected by N\u22121N-1N\u22121 bidirectional roads such that each city can be reached from any other city using roads. For each city, we know its age \u2014 the number of years elapsed since the foundation of the city; let's denote the age of city iii by aia_iai\u200b.\n\nFirst of all, Chef and his mother have to decide what city they should visit first. Suppose that Chef chooses a city ccc_ccc\u200b and his mother chooses a (not necessarily different) city cmc_mcm\u200b. The difference of their choices is the number of different bits in the binary representations of acca_{c_c}acc\u200b\u200b and acma_{c_m}acm\u200b\u200b.\n\nChef will not argue with his mother if the parity of this difference is not equal to the parity of the length of the shortest path between cities ccc_ccc\u200b and cmc_mcm\u200b (the number of roads on the shortest path between them). Find the number of ways to choose the cities ccc_ccc\u200b and cmc_mcm\u200b such that Chef avoids quarreling with his mother.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 10^5",
+      "1 <= A, B <= N",
+      "0 <= ai <= 10^9 for each valid i"
+    ],
+    "inputFormat": "The first line of the input contains a single integer T denoting the number of test cases. The description of T test cases follows. The first line of each test case contains a single integer N. Each of the following N-1 lines contains two space-separated integers A and B denoting a road between cities A and B. The last line contains N space-separated integers a1, a2, \u2026, aN.",
+    "outputFormat": "For each test case, print a single line containing one integer \u2014 the number of valid pairs c, cm.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n3\n1 2\n1 3\n1 2 3",
+        "output": "2",
+        "explanation": "Explanation: The two possible choices are c=2, cm=3 (their binary representations differ by one bit, the shortest path has length 2) and c=1, cm=2 (there are two different bits in their binary representations and the shortest path has length 1)."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n\n0",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n100000\n",
+        "expectedOutput": "10000000000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n2\n1 2\n1 2",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n5\n1 2\n1 3\n2 4\n3 5\n1 2 3 4 5",
+        "expectedOutput": "10",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n10\n1 2\n1 3\n2 4\n3 5\n4 6\n5 7\n6 8\n7 9\n8 10\n1 2 3 4 5 6 7 8 9 10",
+        "expectedOutput": "45",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a BFS to find the shortest path between each pair of cities. Then, for each pair of cities, we can calculate the difference in the binary representations of their ages and check if the parity of this difference is not equal to the parity of the length of the shortest path between them. If it's not equal, we increment the count of valid pairs.",
+    "timeComplexity": "O(T * N^2 * log(max(ai))) \u2014 explain: per query is O(N^2 * log(max(ai))), total is O(T * N^2 * log(max(ai)))",
+    "spaceComplexity": "O(N) \u2014 explain: we need to store the adjacency list of the graph and the ages of the cities",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <math.h>\n#define MAXN 100005\n#define INF 0x3f3f3f3f\n\nint T, N, A, B, a[MAXN];\nint dist[MAXN][MAXN];\nint popcount(int x) {\n    int count = 0;\n    while (x) {\n        count += x & 1;\n        x >>= 1;\n    }\n    return count;\n}\n\nvoid bfs(int start) {\n    int queue[MAXN], front, rear;\n    int visited[MAXN] = {0};\n    for (int i = 1; i <= N; i++) dist[start][i] = INF;\n    dist[start][start] = 0;\n    queue[rear = 0] = start;\n    front = 0;\n    while (front <= rear) {\n        int u = queue[front++];\n        for (int v = 1; v <= N; v++) {\n            if (v != u && dist[u][v] == INF - 1) {\n                dist[start][v] = dist[start][u] + 1;\n                queue[++rear] = v;\n            }\n        }\n    }\n}\n\nint main() {\n    scanf(\"%d\", &T);\n    while (T--) {\n        scanf(\"%d\", &N);\n        for (int i = 1; i <= N; i++) {\n            for (int j = 1; j <= N; j++) {\n                if (i != j) dist[i][j] = INF;\n            }\n        }\n        for (int i = 1; i < N; i++) {\n            scanf(\"%d %d\", &A, &B);\n            dist[A][B] = dist[B][A] = 1;\n        }\n        for (int i = 1; i <= N; i++) scanf(\"%d\", &a[i]);\n        for (int i = 1; i <= N; i++) bfs(i);\n        long long ans = 0;\n        for (int i = 1; i <= N; i++) {\n            for (int j = 1; j <= N; j++) {\n                if (popcount(a[i] ^ a[j]) % 2 != dist[i][j] % 2) ans++;\n            }\n        }\n        printf(\"%lld\\n\", ans);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\n#include <queue>\n#include <cmath>\nusing namespace std;\n#define MAXN 100005\n#define INF 0x3f3f3f3f\n\nint T, N, A, B, a[MAXN];\nint dist[MAXN][MAXN];\nint popcount(int x) {\n    int count = 0;\n    while (x) {\n        count += x & 1;\n        x >>= 1;\n    }\n    return count;\n}\n\nvoid bfs(int start) {\n    vector<int> queue;\n    vector<bool> visited(N + 1, false);\n    for (int i = 1; i <= N; i++) dist[start][i] = INF;\n    dist[start][start] = 0;\n    queue.push_back(start);\n    while (!queue.empty()) {\n        int u = queue[0];\n        queue.erase(queue.begin());\n        for (int v = 1; v <= N; v++) {\n            if (v != u && dist[u][v] == INF - 1) {\n                dist[start][v] = dist[start][u] + 1;\n                queue.push_back(v);\n            }\n        }\n    }\n}\n\nint main() {\n    cin >> T;\n    while (T--) {\n        cin >> N;\n        for (int i = 1; i <= N; i++) {\n            for (int j = 1; j <= N; j++) {\n                if (i != j) dist[i][j] = INF;\n            }\n        }\n        for (int i = 1; i < N; i++) {\n            cin >> A >> B;\n            dist[A][B] = dist[B][A] = 1;\n        }\n        for (int i = 1; i <= N; i++) cin >> a[i];\n        for (int i = 1; i <= N; i++) bfs(i);\n        long long ans = 0;\n        for (int i = 1; i <= N; i++) {\n            for (int j = 1; j <= N; j++) {\n                if (popcount(a[i] ^ a[j]) % 2 != dist[i][j] % 2) ans++;\n            }\n        }\n        cout << ans << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\nimport java.util.Queue;\nimport java.util.LinkedList;\npublic class Main {\n    static final int MAXN = 100005;\n    static final int INF = 0x3f3f3f3f;\n    static int T, N, A, B, a[] = new int[MAXN];\n    static int dist[][] = new int[MAXN][MAXN];\n    static int popcount(int x) {\n        int count = 0;\n        while (x > 0) {\n            count += x & 1;\n            x >>= 1;\n        }\n        return count;\n    }\n    static void bfs(int start) {\n        Queue<Integer> queue = new LinkedList<>();\n        boolean visited[] = new boolean[N + 1];\n        for (int i = 1; i <= N; i++) dist[start][i] = INF;\n        dist[start][start] = 0;\n        queue.add(start);\n        while (!queue.isEmpty()) {\n            int u = queue.poll();\n            for (int v = 1; v <= N; v++) {\n                if (v != u && dist[u][v] == INF - 1) {\n                    dist[start][v] = dist[start][u] + 1;\n                    queue.add(v);\n                }\n            }\n        }\n    }\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        T = sc.nextInt();\n        while (T-- > 0) {\n            N = sc.nextInt();\n            for (int i = 1; i <= N; i++) {\n                for (int j = 1; j <= N; j++) {\n                    if (i != j) dist[i][j] = INF;\n                }\n            }\n            for (int i = 1; i < N; i++) {\n                A = sc.nextInt();\n                B = sc.nextInt();\n                dist[A][B] = dist[B][A] = 1;\n            }\n            for (int i = 1; i <= N; i++) a[i] = sc.nextInt();\n            for (int i = 1; i <= N; i++) bfs(i);\n            long ans = 0;\n            for (int i = 1; i <= N; i++) {\n                for (int j = 1; j <= N; j++) {\n                    if (popcount(a[i] ^ a[j]) % 2 != dist[i][j] % 2) ans++;\n                }\n            }\n            System.out.println(ans);\n        }\n    }\n}",
+      "Python3": "import sys\nfrom collections import deque\ninput = sys.stdin.readline\nT = int(input())\nfor _ in range(T):\n    N = int(input())\n    dist = [[float('inf')] * (N + 1) for _ in range(N + 1)]\n    a = [0] + list(map(int, input().split()))\n    for _ in range(N - 1):\n        A, B = map(int, input().split())\n        dist[A][B] = dist[B][A] = 1\n    for i in range(1, N + 1):\n        dist[i][i] = 0\n        queue = deque([i])\n        while queue:\n            u = queue.popleft()\n            for v in range(1, N + 1):\n                if dist[u][v] == float('inf'):\n                    dist[i][v] = dist[i][u] + 1\n                    queue.append(v)\n    ans = 0\n    for i in range(1, N + 1):\n        for j in range(1, N + 1):\n            if bin(a[i] ^ a[j]).count('1') % 2 != dist[i][j] % 2:\n                ans += 1\n    print(ans)",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst readline = () => input[idx++];\nconst T = parseInt(readline());\nfor (let i = 0; i < T; i++) {\n    const N = parseInt(readline());\n    const dist = Array(N + 1).fill(0).map(() => Array(N + 1).fill(Infinity));\n    const a = [0].concat(readline().split(' ').map(Number));\n    for (let j = 0; j < N - 1; j++) {\n        const [A, B] = readline().split(' ').map(Number);\n        dist[A][B] = dist[B][A] = 1;\n    }\n    for (let j = 1; j <= N; j++) {\n        dist[j][j] = 0;\n        const queue = [j];\n        while (queue.length > 0) {\n            const u = queue.shift();\n            for (let k = 1; k <= N; k++) {\n                if (dist[u][k] === Infinity) {\n                    dist[j][k] = dist[j][u] + 1;\n                    queue.push(k);\n                }\n            }\n        }\n    }\n    let ans = 0;\n    for (let j = 1; j <= N; j++) {\n        for (let k = 1; k <= N; k++) {\n            if ((a[j] ^ a[k]).toString(2).split('1').length - 1 % 2 !== dist[j][k] % 2) {\n                ans++;\n            }\n        }\n    }\n    console.log(ans);\n}"
+    }
+  }
+}

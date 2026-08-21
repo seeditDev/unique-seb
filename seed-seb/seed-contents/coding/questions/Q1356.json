@@ -1,0 +1,127 @@
+{
+  "questionId": "Q1356",
+  "title": "Median in Matrix",
+  "slug": "median-in-matrix",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Math",
+      "Binary Search"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Binary Search"
+    ]
+  },
+  "content": {
+    "problemStatement": "Given a `N x M` row-wise sorted matrix, find the median of the matrix. (Note: `N*M` is always odd)\n\nFor eg., in the following matrix:\n\n\n\nIf we place all elements in the sorter order: 2 3 4 4 4 5 6 6 7\n\nThen the median of the matrix is: `4`\n\n**Follow up:** Can you solve it in better time than **O(NMlog(NM))** and without taking extra space ?\n\n\nInput Format\n\nThe first line of input will contain two space separated integers NNN and MMM, denoting the no. of rows and columns in the input matrix.\nNext NNN lines contains MMM space separated integers, the elements of the matrix.\n\n\nOutput Format\n\nOutput on a single line, the median of the matrix.",
+    "constraints": [
+      "1 \u2264 N, M \u2264 100",
+      "The elements of the matrix are non-negative and won't exceed 1000.",
+      "The elements in each row are sorted in non-decreasing order.",
+      "N*M is always odd"
+    ],
+    "inputFormat": "The first line contains two space-separated integers N and M, denoting the number of rows and columns in the input matrix. Next N lines contain M space-separated integers, the elements of the matrix.",
+    "outputFormat": "Output the median of the matrix on a single line.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3 3\n3 4 5\n2 4 6\n4 6 7",
+        "output": "4",
+        "explanation": "The median of the matrix is 4."
+      },
+      {
+        "id": "sample_2",
+        "input": "1 5\n1 2 3 4 5",
+        "output": "3",
+        "explanation": "The median of the matrix is 3."
+      },
+      {
+        "id": "sample_3",
+        "input": "5 1\n1\n2\n3\n4\n5",
+        "output": "3",
+        "explanation": "The median of the matrix is 3."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1 1\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1 1\n1000",
+        "expectedOutput": "1000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "3 3\n1 1 1\n1 1 1\n1 1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "3 3\n1 2 3\n4 5 6\n7 8 9",
+        "expectedOutput": "5",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "5 5\n1 2 3 4 5\n6 7 8 9 10\n11 12 13 14 15\n16 17 18 19 20\n21 22 23 24 25",
+        "expectedOutput": "13",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To find the median of the matrix, we can use binary search. The idea is to find the middle element of the sorted matrix. We can do this by finding the minimum and maximum values in the matrix and then performing a binary search between these two values. In each iteration of the binary search, we count the number of elements in the matrix that are less than or equal to the current mid value. If this count is less than or equal to (N*M)/2, we update the low value to mid + 1. Otherwise, we update the high value to mid - 1. We repeat this process until low > high, at which point low will be the median of the matrix.",
+    "timeComplexity": "O(N*M*log(max_value)) per test case, where max_value is the maximum value in the matrix.",
+    "spaceComplexity": "O(1) \u2014 the space used does not grow with the size of the input, making it constant.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <limits.h>\n\nint countElementsSmallerThanMid(int row[], int rowSize, int midValue) {\n    int lowIndex = 0, highIndex = rowSize - 1;\n    while (lowIndex <= highIndex) {\n        int middleIndex = (lowIndex + highIndex) / 2;\n        if (row[middleIndex] <= midValue) {\n            lowIndex = middleIndex + 1;\n        } else {\n            highIndex = middleIndex - 1;\n        }\n    }\n    return lowIndex;\n}\n\nint findMedianValue(int** matrix, int rowCount, int columnCount) {\n    int lowValue = INT_MAX;\n    int highValue = INT_MIN;\n\n    for (int i = 0; i < rowCount; i++) {\n        for (int j = 0; j < columnCount; j++) {\n            lowValue = (matrix[i][j] < lowValue) ? matrix[i][j] : lowValue;\n            highValue = (matrix[i][j] > highValue) ? matrix[i][j] : highValue;\n        }\n    }\n\n    while (lowValue <= highValue) {\n        int midValue = (lowValue + highValue) / 2;\n        int count = 0;\n        for (int i = 0; i < rowCount; i++) {\n            count += countElementsSmallerThanMid(matrix[i], columnCount, midValue);\n        }\n        if (count <= (rowCount * columnCount) / 2) {\n            lowValue = midValue + 1;\n        } else {\n            highValue = midValue - 1;\n        }\n    }\n    return lowValue;\n}\n\nint main() {\n    int n, m;\n    scanf(\"%d %d\", &n, &m);\n\n    int** mat = (int**)malloc(n * sizeof(int*));\n    for (int i = 0; i < n; i++) {\n        mat[i] = (int*)malloc(m * sizeof(int));\n        for (int j = 0; j < m; j++) {\n            scanf(\"%d\", &mat[i][j]);\n        }\n    }\n\n    printf(\"%d\", findMedianValue(mat, n, m));\n\n    for (int i = 0; i < n; i++) {\n        free(mat[i]);\n    }\n    free(mat);\n\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nint countElementsSmallerThanMid(vector<int> &row, int midValue) {\n  int lowIndex = 0, highIndex = row.size() - 1;\n  while (lowIndex <= highIndex) {\n    int middleIndex = (lowIndex + highIndex) >> 1;\n    if (row[middleIndex] <= midValue) {\n      lowIndex = middleIndex + 1;\n    }\n    else {\n      highIndex = middleIndex - 1;\n    }\n  }\n  return lowIndex;\n}\n\nint findMedianValue(vector<vector<int>> &matrix) {\n  int lowValue = 1e9;\n  int highValue = 0;\n  int rowCount = matrix.size();\n  int columnCount = matrix[0].size();\n  \n  for(int i = 0; i < rowCount; i++){\n    for(int j = 0; j < columnCount; j++){\n        lowValue = min(lowValue, matrix[i][j]);\n        highValue = max(highValue, matrix[i][j]);\n    }\n  }\n\n  while (lowValue <= highValue) {\n    int midValue = (lowValue + highValue) >> 1;\n    int count = 0;\n    for (int i = 0; i < rowCount; i++) {\n      count += countElementsSmallerThanMid(matrix[i], midValue);\n    }\n    if (count <= (rowCount * columnCount) / 2)\n      lowValue = midValue + 1;\n    else\n      highValue = midValue - 1;\n  }\n  return lowValue;\n}\nint main() {\n  int n, m;\n  cin >> n >> m;\n  \n  vector<vector<int> > mat(n, vector<int> (m));\n \n  for(int i = 0; i < n; i++){\n    for(int j = 0; j < m; j++){\n      cin >> mat[i][j];\n    }\n  } \n  \n  cout << findMedianValue(mat);\n\n  return 0;\n}",
+      "Java": "import java.util.Scanner;\n\npublic class Main {\n    \n    public static int countElementsSmallerThanMid(int[] row, int midValue) {\n        int lowIndex = 0, highIndex = row.length - 1;\n        while (lowIndex <= highIndex) {\n            int middleIndex = (lowIndex + highIndex) / 2;\n            if (row[middleIndex] <= midValue) {\n                lowIndex = middleIndex + 1;\n            } else {\n                highIndex = middleIndex - 1;\n            }\n        }\n        return lowIndex;\n    }\n\n    public static int findMedianValue(int[][] matrix) {\n        int rowCount = matrix.length;\n        int columnCount = matrix[0].length;\n        \n        int lowValue = Integer.MAX_VALUE;\n        int highValue = Integer.MIN_VALUE;\n\n        for (int i = 0; i < rowCount; i++) {\n            for (int j = 0; j < columnCount; j++) {\n                lowValue = Math.min(lowValue, matrix[i][j]);\n                highValue = Math.max(highValue, matrix[i][j]);\n            }\n        }\n\n        while (lowValue <= highValue) {\n            int midValue = (lowValue + highValue) / 2;\n            int count = 0;\n            for (int i = 0; i < rowCount; i++) {\n                count += countElementsSmallerThanMid(matrix[i], midValue);\n            }\n            if (count <= (rowCount * columnCount) / 2) {\n                lowValue = midValue + 1;\n            } else {\n                highValue = midValue - 1;\n            }\n        }\n        return lowValue;\n    }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        \n        int n = sc.nextInt();\n        int m = sc.nextInt();\n\n        int[][] mat = new int[n][m];\n        \n        for (int i = 0; i < n; i++) {\n            for (int j = 0; j < m; j++) {\n                mat[i][j] = sc.nextInt();\n            }\n        }\n\n        System.out.println(findMedianValue(mat));\n\n        sc.close();\n    }\n}",
+      "Python3": "def countElementsSmallerThanMid(row, midValue):\n    lowIndex, highIndex = 0, len(row) - 1\n    while lowIndex <= highIndex:\n        middleIndex = (lowIndex + highIndex) // 2\n        if row[middleIndex] <= midValue:\n            lowIndex = middleIndex + 1\n        else:\n            highIndex = middleIndex - 1\n    return lowIndex\n\ndef findMedianValue(matrix):\n    rowCount, columnCount = len(matrix), len(matrix[0])\n    lowValue, highValue = float('inf'), float('-inf')\n    \n    for row in matrix:\n        lowValue = min(lowValue, min(row))\n        highValue = max(highValue, max(row))\n    \n    while lowValue <= highValue:\n        midValue = (lowValue + highValue) // 2\n        count = sum(countElementsSmallerThanMid(row, midValue) for row in matrix)\n        if count <= (rowCount * columnCount) // 2:\n            lowValue = midValue + 1\n        else:\n            highValue = midValue - 1\n    return lowValue\n\nn, m = map(int, input().split())\nmat = [list(map(int, input().split())) for _ in range(n)]\nprint(findMedianValue(mat))",
+      "JavaScript": "function countElementsSmallerThanMid(row, midValue) {\n    let lowIndex = 0, highIndex = row.length - 1;\n    while (lowIndex <= highIndex) {\n        const middleIndex = Math.floor((lowIndex + highIndex) / 2);\n        if (row[middleIndex] <= midValue) {\n            lowIndex = middleIndex + 1;\n        } else {\n            highIndex = middleIndex - 1;\n        }\n    }\n    return lowIndex;\n}\n\nfunction findMedianValue(matrix) {\n    let lowValue = Infinity;\n    let highValue = -Infinity;\n    const rowCount = matrix.length;\n    const columnCount = matrix[0].length;\n\n    // Find the minimum and maximum values in the matrix\n    for (let i = 0; i < rowCount; i++) {\n        for (let j = 0; j < columnCount; j++) {\n            lowValue = Math.min(lowValue, matrix[i][j]);\n            highValue = Math.max(highValue, matrix[i][j]);\n        }\n    }\n\n    // Binary search for the median\n    while (lowValue <= highValue) {\n        const midValue = Math.floor((lowValue + highValue) / 2);\n        let count = 0;\n        for (let i = 0; i < rowCount; i++) {\n            count += countElementsSmallerThanMid(matrix[i], midValue);\n        }\n        if (count <= (rowCount * columnCount) / 2) {\n            lowValue = midValue + 1;\n        } else {\n            highValue = midValue - 1;\n        }\n    }\n    return lowValue;\n}\n\nconst readline = require('readline');\nconst rl = readline.createInterface({\n    input: process.stdin,\n    output: process.stdout\n});\n\nconst input = [];\nrl.on('line', (line) => {\n    input.push(line.trim());\n});\n\nrl.on('close', () => {\n    const [n, m] = input[0].split(' ').map(Number);\n    const matrix = [];\n\n    for (let i = 1; i <= n; i++) {\n        matrix.push(input[i].split(' ').map(Number));\n    }\n\n    console.log(findMedianValue(matrix));\n});\n"
+    }
+  }
+}

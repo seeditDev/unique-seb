@@ -1,0 +1,130 @@
+{
+  "questionId": "Q8345",
+  "title": "Professor And Directions",
+  "slug": "professor-and-directions",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings | Prefix Sum | Modulo",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Prefix Sum",
+      "Modulo Arithmetic",
+      "Subarray",
+      "Simulation"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Ad-hoc & Implementation"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "The Professor is facing the North. Tokyo is in trouble, and she is facing the South. Professor being her guardian angel wants to help her.\n\nSo, The Professor will follow some instructions, given as a string SSS of length NNN, and will turn either left or right according to these instructions. He can save Tokyo only if after following a substring of instructions he will face in the same direction that Tokyo is facing.\n\nWill the Professor be able to save Tokyo?\n\n\nInput Format\n\nThe first line contains an integer TTT denoting the number of test cases. The TTT test cases then follow.\nThe first line of each test case contains NNN.\nThe second line contains a string that contains only `'L'` and `'R'`, where `'L'` represents left and `'R'` represents right.\n\n\nOutput Format\nFor each test case, output `\"YES\"` if the Professor will be able to save Tokyo and `\"NO\"` otherwise.\n\n\nOutput is case insensitive, which means that \"yes\", \"Yes\", \"YEs\", \"no\", \"nO\" - all such strings will be acceptable.",
+    "constraints": [
+      "1 <= T <= 100",
+      "1 <= N <= 10^5",
+      "The sum of N over all test cases does not exceed 10^6",
+      "S contains only characters 'L' and 'R'"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case: the first line contains an integer N, the length of the instruction string. The second line contains a string S of length N consisting only of characters 'L' and 'R'.",
+    "outputFormat": "For each test case output a single line containing \"YES\" if there exists a non‑empty contiguous substring of S that makes the Professor face South after starting from North, otherwise output \"NO\". The answer is case‑insensitive.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n12\nLRLRRRLRLLLL\n2\nLR\n4\nLRRL",
+        "output": "YES\nNO\nYES",
+        "explanation": "Test case 1: Substring \"RLRLLL\" gives net rotation +2 (mod 4) → South. Test case 2: No substring yields rotation 2 mod 4. Test case 3: Substring \"RR\" (or \"RL\") yields net rotation -2 ≡ 2 mod 4."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\nL",
+        "expectedOutput": "NO",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary (within allowed size)",
+        "input": "1\n100\nLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL",
+        "expectedOutput": "YES",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case alternating",
+        "input": "1\n4\nLRLR",
+        "expectedOutput": "NO",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case with right turns",
+        "input": "1\n4\nRRRR",
+        "expectedOutput": "YES",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case mixed",
+        "input": "1\n4\nLLRR",
+        "expectedOutput": "YES",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Treat a left turn as +1 and a right turn as -1 (each representing a 90° rotation). Starting direction is North (value 0). After executing a substring, the net rotation is the sum of its values. The Professor faces South iff the net rotation is 180°, i.e., the sum ≡ 2 (mod 4). Let pref[i] be the prefix sum modulo 4 up to position i (pref[0]=0). A substring (l+1 … r) has sum ≡ 2 iff pref[r] ≡ pref[l] + 2 (mod 4). While scanning the string we keep a boolean array seen[4] of residues that have appeared as a prefix. For each new prefix p we check if seen[(p + 2) % 4] (or equivalently seen[(p - 2 + 4) % 4]) is true; if so, a required substring exists. After the check we mark seen[p]=true. If the scan finishes without a match, answer is NO. This runs in O(N) time per test case with O(1) extra space.",
+    "timeComplexity": "O(N) per test case, where N is the length of the string. Overall O(total N) ≤ 10^6.",
+    "spaceComplexity": "O(1) – only a small array of size 4 is used.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\nint main(){\n    int T; if(scanf(\"%d\",&T)!=1) return 0;\n    while(T--){\n        int N; scanf(\"%d\",&N);\n        char s[100005]; scanf(\"%s\",s);\n        int seen[4]={0};\n        seen[0]=1; // prefix 0\n        int pref=0; int ok=0;\n        for(int i=0;i<N;i++){\n            pref += (s[i]=='L'?1:-1);\n            pref = ((pref%4)+4)%4;\n            int need = (pref+2)%4; // pref - 2 mod 4\n            if(seen[need]){ ok=1; break; }\n            seen[pref]=1;\n        }\n        printf(ok?\"YES\\n\":\"NO\\n\");\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N; cin>>N; string s; cin>>s;\n        bool seen[4] = {false};\n        seen[0]=true; // prefix sum 0\n        int pref=0; bool ok=false;\n        for(char c: s){\n            pref += (c=='L'?1:-1);\n            pref = (pref%4+4)%4;\n            int need = (pref+2)%4; // pref-2 mod4\n            if(seen[need]){ ok=true; break; }\n            seen[pref]=true;\n        }\n        cout<<(ok?\"YES\":\"NO\")<<'\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder out = new StringBuilder();\n        int T = Integer.parseInt(br.readLine().trim());\n        while (T-- > 0) {\n            int N = Integer.parseInt(br.readLine().trim());\n            String s = br.readLine().trim();\n            boolean[] seen = new boolean[4];\n            seen[0] = true;\n            int pref = 0;\n            boolean ok = false;\n            for (int i = 0; i < N; i++) {\n                char c = s.charAt(i);\n                pref += (c == 'L') ? 1 : -1;\n                pref = ((pref % 4) + 4) % 4;\n                int need = (pref + 2) % 4; // pref-2 mod4\n                if (seen[need]) { ok = true; break; }\n                seen[pref] = true;\n            }\n            out.append(ok ? \"YES\" : \"NO\").append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it))\n        s = next(it).strip()\n        seen = [False]*4\n        seen[0] = True\n        pref = 0\n        ok = False\n        for ch in s:\n            pref += 1 if ch == 'L' else -1\n            pref %= 4\n            need = (pref + 2) % 4\n            if seen[need]:\n                ok = True\n                break\n            seen[pref] = True\n        out_lines.append('YES' if ok else 'NO')\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet out = [];\nfor (let t = 0; t < T; t++) {\n  const N = Number(input[idx++]);\n  const s = input[idx++];\n  const seen = [true, false, false, false]; // prefix 0 seen\n  let pref = 0;\n  let ok = false;\n  for (let i = 0; i < N; i++) {\n    pref += s[i] === 'L' ? 1 : -1;\n    pref = ((pref % 4) + 4) % 4;\n    const need = (pref + 2) % 4; // pref-2 mod4\n    if (seen[need]) { ok = true; break; }\n    seen[pref] = true;\n  }\n  out.push(ok ? 'YES' : 'NO');\n}\nconsole.log(out.join('\\n'));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

@@ -1,0 +1,140 @@
+{
+  "questionId": "Q4818",
+  "title": "Level Order Traversal",
+  "slug": "level-order-traversal",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Binary Tree",
+      "Level Order Traversal",
+      "BFS"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Trees"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "**Level Order Traversal**\n\nYou are given a binary tree defined using parent-child relationships.\nYour task is to print its level order traversal.\n\n\nInput Format\n\nThe first line contains a single integer `N` — the number of nodes in the binary tree.\nThe next `N - 1` lines each contain three space-separated values:\n\n`pᵢ` (integer): parent node\n`cᵢ` (integer): child node\n`Rᵢ` (character):\n\n`'L'` if `cᵢ` is the left child of `pᵢ`\n`'R'` if `cᵢ` is the right child\n\n\n\n\n\n\nOutput Format\nPrint the level order traversal of the binary tree as space-separated integers.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 15",
+      "Node values are unique integers from 1 to N"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case:\n- The first line contains an integer N, the number of nodes in the binary tree.\n- The next N‑1 lines each contain three space‑separated values: p c R, where p is the parent node value, c is the child node value, and R is either 'L' (c is the left child of p) or 'R' (c is the right child of p). Node values are unique integers from 1 to N.",
+    "outputFormat": "For each test case, output a single line containing the level order traversal of the tree as space‑separated integers.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\\n5\\n1 2 L\\n1 3 R\\n3 4 L\\n3 5 R",
+        "output": "1 2 3 4 5",
+        "explanation": "The tree has root 1 with children 2 (left) and 3 (right). Node 3 has children 4 (left) and 5 (right). Level order visits nodes level by level: 1, then 2 3, then 4 5."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\\n3\\n1 2 L\\n1 3 R",
+        "output": "1 2 3",
+        "explanation": "Root 1 with left child 2 and right child 3. Level order: 1 2 3."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\\n4\\n1 2 L\\n1 3 R\\n2 4 L",
+        "output": "1 2 3 4",
+        "explanation": "Root 1, left child 2 (which itself has left child 4) and right child 3. Traversal order: 1, then 2 3, then 4."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "1\\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "1\\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "1\\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "1\\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each test case we build the tree using an array of node pointers indexed by node value. While reading the edges we also mark which nodes have a parent. After all edges are processed the node without a parent is the root. A standard breadth‑first search (queue) starting from the root yields the nodes level by level. We output the values in the order they are dequeued. The algorithm runs in O(N) time and O(N) auxiliary space per test case.",
+    "timeComplexity": "O(N) per test case, where N is the number of nodes in that test case.",
+    "spaceComplexity": "O(N) per test case for storing the tree and the BFS queue.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdbool.h>\n\ntypedef struct Node {\n    int val;\n    struct Node* left;\n    struct Node* right;\n} Node;\n\nNode* newNode(int v) {\n    Node* n = (Node*)malloc(sizeof(Node));\n    n->val = v;\n    n->left = n->right = NULL;\n    return n;\n}\n\nint main() {\n    int T; if (scanf(\"%d\", &T)!=1) return 0;\n    while (T--) {\n        int N; scanf(\"%d\", &N);\n        Node** nodes = (Node**)malloc((N+1) * sizeof(Node*));\n        bool* hasParent = (bool*)calloc(N+1, sizeof(bool));\n        for (int i = 1; i <= N; ++i) nodes[i] = newNode(i);\n        for (int i = 0; i < N-1; ++i) {\n            int p, c; char R; scanf(\"%d %d %c\", &p, &c, &R);\n            if (R == 'L') nodes[p]->left = nodes[c];\n            else nodes[p]->right = nodes[c];\n            hasParent[c] = true;\n        }\n        int rootVal = 1;\n        for (int i = 1; i <= N; ++i) if (!hasParent[i]) { rootVal = i; break; }\n        Node* root = nodes[rootVal];\n        // BFS\n        Node** q = (Node**)malloc((N+5) * sizeof(Node*));\n        int front = 0, rear = 0;\n        q[rear++] = root;\n        while (front < rear) {\n            Node* cur = q[front++];\n            printf(\"%d\", cur->val);\n            if (front < rear) printf(\" \");\n            if (cur->left) q[rear++] = cur->left;\n            if (cur->right) q[rear++] = cur->right;\n        }\n        printf(\"\\n\");\n        free(q);\n        free(nodes);\n        free(hasParent);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nstruct Node {\n    int val;\n    Node* left;\n    Node* right;\n    Node(int v): val(v), left(nullptr), right(nullptr) {}\n};\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N; cin>>N;\n        vector<Node*> nodes(N+1,nullptr);\n        vector<bool> hasParent(N+1,false);\n        for(int i=1;i<=N;++i) nodes[i]=new Node(i);\n        for(int i=0;i<N-1;++i){\n            int p,c; char R; cin>>p>>c>>R;\n            if(R=='L') nodes[p]->left = nodes[c];\n            else nodes[p]->right = nodes[c];\n            hasParent[c]=true;\n        }\n        int rootVal=1; for(int i=1;i<=N;++i) if(!hasParent[i]){rootVal=i;break;}\n        Node* root = nodes[rootVal];\n        queue<Node*> q; q.push(root);\n        bool first=true;\n        while(!q.empty()){\n            Node* cur=q.front(); q.pop();\n            if(!first) cout<<' ';\n            cout<<cur->val; first=false;\n            if(cur->left) q.push(cur->left);\n            if(cur->right) q.push(cur->right);\n        }\n        cout<<\"\\n\";\n        // optional cleanup (not required for contest)\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    static class Node {\n        int val;\n        Node left, right;\n        Node(int v){ val=v; }\n    }\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st = new StringTokenizer(br.readLine());\n        int T = Integer.parseInt(st.nextToken());\n        StringBuilder out = new StringBuilder();\n        while (T-- > 0) {\n            int N = Integer.parseInt(br.readLine().trim());\n            Node[] nodes = new Node[N+1];\n            boolean[] hasParent = new boolean[N+1];\n            for (int i = 1; i <= N; i++) nodes[i] = new Node(i);\n            for (int i = 0; i < N-1; i++) {\n                st = new StringTokenizer(br.readLine());\n                int p = Integer.parseInt(st.nextToken());\n                int c = Integer.parseInt(st.nextToken());\n                char R = st.nextToken().charAt(0);\n                if (R == 'L') nodes[p].left = nodes[c];\n                else nodes[p].right = nodes[c];\n                hasParent[c] = true;\n            }\n            int root = 1;\n            for (int i = 1; i <= N; i++) if (!hasParent[i]) { root = i; break; }\n            Queue<Node> q = new ArrayDeque<>();\n            q.add(nodes[root]);\n            boolean first = true;\n            while (!q.isEmpty()) {\n                Node cur = q.poll();\n                if (!first) out.append(' ');\n                out.append(cur.val);\n                first = false;\n                if (cur.left != null) q.add(cur.left);\n                if (cur.right != null) q.add(cur.right);\n            }\n            out.append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "import sys\nfrom collections import deque\n\ndef solve():\n    data = sys.stdin.read().strip().splitlines()\n    if not data:\n        return\n    idx = 0\n    T = int(data[idx].strip()); idx += 1\n    out_lines = []\n    for _ in range(T):\n        N = int(data[idx].strip()); idx += 1\n        # nodes indexed by value (1..N)\n        left = [0]*(N+1)\n        right = [0]*(N+1)\n        has_parent = [False]*(N+1)\n        for __ in range(N-1):\n            p,c,R = data[idx].split(); idx += 1\n            p = int(p); c = int(c)\n            if R == 'L':\n                left[p] = c\n            else:\n                right[p] = c\n            has_parent[c] = True\n        root = 1\n        for i in range(1,N+1):\n            if not has_parent[i]:\n                root = i\n                break\n        q = deque([root])\n        order = []\n        while q:\n            node = q.popleft()\n            order.append(str(node))\n            if left[node]: q.append(left[node])\n            if right[node]: q.append(right[node])\n        out_lines.append(' '.join(order))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst T = parseInt(lines[idx++].trim(), 10);\nlet output = [];\nfor (let t = 0; t < T; t++) {\n  const N = parseInt(lines[idx++].trim(), 10);\n  const left = new Array(N + 1).fill(0);\n  const right = new Array(N + 1).fill(0);\n  const hasParent = new Array(N + 1).fill(false);\n  for (let i = 0; i < N - 1; i++) {\n    const [pStr, cStr, R] = lines[idx++].trim().split(' ');\n    const p = parseInt(pStr, 10);\n    const c = parseInt(cStr, 10);\n    if (R === 'L') left[p] = c; else right[p] = c;\n    hasParent[c] = true;\n  }\n  let root = 1;\n  for (let i = 1; i <= N; i++) if (!hasParent[i]) { root = i; break; }\n  const queue = [root];\n  const order = [];\n  while (queue.length) {\n    const node = queue.shift();\n    order.push(node);\n    if (left[node]) queue.push(left[node]);\n    if (right[node]) queue.push(right[node]);\n  }\n  output.push(order.join(' '));\n}\nconsole.log(output.join('\\n'));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

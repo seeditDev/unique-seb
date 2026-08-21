@@ -1,0 +1,116 @@
+{
+  "questionId": "Q2774",
+  "title": "Merging Files",
+  "slug": "merging-files",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Greedy",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Priority Queue",
+      "K-way merging",
+      "Greedy"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Greedy Algorithms"
+    ]
+  },
+  "content": {
+    "problemStatement": "In olden days, when primary memory was not as available as it is now, files were stored in external storage devices like tapes, and then two files or their parts were loaded in memory for merging. In merging two sorted files, in the worst case, the number of comparisons required equals the sum of the lengths of the two files. Assume in **K**-way merging the number of comparisons equals the sum of the lengths of files to be merged. Given the length of a set of files, you are required to find the order in which these files will have to be merged in the minimum number of comparisons.\n\n\nInput Format\nThe first line of input is an integer **T**, denoting the number of test cases.\n\n\nFrom the next line, test cases follow. For each case, the first line contains two integers, **N** and **K**, representing respectively the number of files to be merged and the maximum number of files that can be merged at the same time. The next line contains **N** positive integers representing the length of each file.\n\n\n\nOutput Format\nFor each test case, you must print a single line with the test case number and the minimum number of comparisons incurred to merge the files. Please refer to the sample input and output for exact formatting.",
+    "constraints": [
+      "1 <= T <= 50",
+      "1 <= N <= 1000",
+      "2 <= K <= N",
+      "The maximum length of a file can be 10^8"
+    ],
+    "inputFormat": "The first line contains T, the number of test cases. Each test case contains two integers N and K, representing the number of files to be merged and the maximum number of files that can be merged at the same time. The next line contains N positive integers representing the length of each file.",
+    "outputFormat": "For each test case, print a single line with the test case number and the minimum number of comparisons incurred to merge the files.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n11 2\n3 1 4 5 2 7 6 8 3 9 4\n11 3\n3 1 4 5 2 7 6 8 3 9 4",
+        "output": "Case 1: 172\nCase 2: 110",
+        "explanation": "The first test case involves merging 11 files with a maximum of 2 files merged at a time, resulting in 172 comparisons. The second test case involves merging the same 11 files but with a maximum of 3 files merged at a time, resulting in 110 comparisons."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 2\n1",
+        "expectedOutput": "Case 1: 0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n1000 1000\n100000000 100000000 100000000 100000000 100000000 100000000 100000000 100000000 100000000 100000000",
+        "expectedOutput": "Case 1: 9000000000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n5 2\n1 1 1 1 1",
+        "expectedOutput": "Case 1: 10",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n5 3\n1 2 3 4 5",
+        "expectedOutput": "Case 1: 25",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "2\n10 2\n1 2 3 4 5 6 7 8 9 10\n10 3\n1 2 3 4 5 6 7 8 9 10",
+        "expectedOutput": "Case 1: 55\nCase 2: 45",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved using a priority queue to store the lengths of the files. In each iteration, we remove the K smallest files from the queue, merge them, and add the merged file back to the queue. The total number of comparisons is the sum of the lengths of the files removed in each iteration.",
+    "timeComplexity": "O(T * N * logN) per test case, O(T * N * logN) total. The priority queue operations (insertion and removal) take O(logN) time.",
+    "spaceComplexity": "O(N) \u2014 the space required to store the priority queue.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#define MAX 1000\n\nint compare(const void *a, const void *b) {\n    return (*(int*)a - *(int*)b);\n}\n\nint main() {\n    int T, N, K, i, j, sum, comparisons;\n    int files[MAX];\n    scanf(\"%d\", &T);\n    for (i = 0; i < T; i++) {\n        scanf(\"%d %d\", &N, &K);\n        for (j = 0; j < N; j++) {\n            scanf(\"%d\", &files[j]);\n        }\n        qsort(files, N, sizeof(int), compare);\n        comparisons = 0;\n        while (N > 1) {\n            sum = 0;\n            for (j = 0; j < K && j < N; j++) {\n                sum += files[j];\n            }\n            comparisons += sum;\n            for (j = K; j < N; j++) {\n                files[j - K] = files[j];\n            }\n            N -= K - 1;\n            qsort(files, N, sizeof(int), compare);\n        }\n        printf(\"Case %d: %d\\n\", i + 1, comparisons);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <queue>\nusing namespace std;\n\nint main() {\n    int T, N, K, i, j, sum, comparisons;\n    cin >> T;\n    for (i = 0; i < T; i++) {\n        cin >> N >> K;\n        priority_queue<int, vector<int>, greater<int>> pq;\n        for (j = 0; j < N; j++) {\n            int x;\n            cin >> x;\n            pq.push(x);\n        }\n        comparisons = 0;\n        while (pq.size() > 1) {\n            sum = 0;\n            for (j = 0; j < K && j < pq.size(); j++) {\n                sum += pq.top();\n                pq.pop();\n            }\n            comparisons += sum;\n            pq.push(sum);\n        }\n        cout << \"Case \" << i + 1 << \": \" << comparisons << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.PriorityQueue;\nimport java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n        for (int i = 0; i < T; i++) {\n            int N = sc.nextInt();\n            int K = sc.nextInt();\n            PriorityQueue<Integer> pq = new PriorityQueue<>();\n            for (int j = 0; j < N; j++) {\n                int x = sc.nextInt();\n                pq.add(x);\n            }\n            long comparisons = 0;\n            while (pq.size() > 1) {\n                long sum = 0;\n                for (int j = 0; j < K && j < pq.size(); j++) {\n                    sum += pq.poll();\n                }\n                comparisons += sum;\n                pq.add((int) sum);\n            }\n            System.out.println(\"Case \" + (i + 1) + \": \" + comparisons);\n        }\n    }\n}",
+      "Python3": "import sys\nimport heapq\n\nT = int(sys.stdin.readline())\nfor i in range(T):\n    N, K = map(int, sys.stdin.readline().split())\n    files = list(map(int, sys.stdin.readline().split()))\n    pq = []\n    for file in files:\n        heapq.heappush(pq, file)\n    comparisons = 0\n    while len(pq) > 1:\n        sum = 0\n        temp = []\n        for _ in range(min(K, len(pq))):\n            sum += heapq.heappop(pq)\n        comparisons += sum\n        heapq.heappush(pq, sum)\n    print(f\"Case {i + 1}: {comparisons}\")",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\n\nfunction readline() {\n    return lines[idx++];\n}\n\nlet T = parseInt(readline());\nfor (let i = 0; i < T; i++) {\n    let [N, K] = readline().split(' ').map(x => parseInt(x));\n    let files = readline().split(' ').map(x => parseInt(x));\n    let pq = [];\n    for (let file of files) {\n        pq.push(file);\n    }\n    pq.sort((a, b) => a - b);\n    let comparisons = 0;\n    while (pq.length > 1) {\n        let sum = 0;\n        for (let j = 0; j < Math.min(K, pq.length); j++) {\n            sum += pq.shift();\n        }\n        comparisons += sum;\n        pq.push(sum);\n        pq.sort((a, b) => a - b);\n    }\n    console.log(`Case ${i + 1}: ${comparisons}`);\n}"
+    }
+  }
+}

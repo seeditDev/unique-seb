@@ -1,0 +1,118 @@
+{
+  "questionId": "Q11783",
+  "title": "Palindrome partitioning II ",
+  "slug": "palindrome-partitioning-ii",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "String",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Palindrome",
+      "Partitioning",
+      "Dynamic Programming"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "**Problem Description: **Given a string s, partition s such that every substring of the partition is a palindrome. Return the minimum cuts needed for a palindrome partitioning of s.\n\n\n\n\n\n\n\n    \n        \n            **\n                    Examples\n                **",
+    "constraints": [
+      "1 <= length of s <= 10^5",
+      "s consists of lowercase English letters"
+    ],
+    "inputFormat": "A string s",
+    "outputFormat": "The minimum cuts needed for a palindrome partitioning of s",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "a",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "abcdefghij",
+        "expectedOutput": "9",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": "aaaaaa",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "abba",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": "aab",
+        "expectedOutput": "1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Dynamic Programming",
+    "timeComplexity": "O(n^2)",
+    "spaceComplexity": "O(n)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n\nint minCut(char* s) {\n    int n = strlen(s);\n    int dp[n];\n    for (int i = 0; i < n; i++) {\n        dp[i] = i;\n    }\n    for (int i = 0; i < n; i++) {\n        for (int j = 0; j <= i; j++) {\n            if (isPalindrome(s, j, i)) {\n                if (j == 0) {\n                    dp[i] = 0;\n                } else if (dp[j - 1] + 1 < dp[i]) {\n                    dp[i] = dp[j - 1] + 1;\n                }\n            }\n        }\n    }\n    return dp[n - 1];\n}\n\nint isPalindrome(char* s, int start, int end) {\n    while (start < end) {\n        if (s[start] != s[end])\n            return 0;\n        start++;\n        end--;\n    }\n    return 1;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nclass Solution {\nprivate:\n    // Check if substring s[start...end] is palindrome\n    bool isPalindrome(const string& s, int start, int end) {\n        while (start < end) {\n            if (s[start] != s[end])\n                return false;\n            start++;\n            end--;\n        }\n        return true;\n    }\n\n    // Recursive helper with memoization to find min cuts from index 'start'\n    int minCutsHelper(const string& s, int start, vector<int>& memo) {\n        int n = (int)s.size();\n\n        // If reached end or substring is palindrome, no cut needed\n        if (start == n || isPalindrome(s, start, n - 1))\n            return 0;\n\n        // Return stored result if already computed\n        if (memo[start] != -1)\n            return memo[start];\n\n        int minCuts = INT_MAX;\n\n        // Try all possible partitions\n        for (int end = start; end < n; end++) {\n            if (isPalindrome(s, start, end)) {\n                // 1 cut plus cuts for the remaining substring\n                int cuts = 1 + minCutsHelper(s, end + 1, memo);\n                minCuts = min(minCuts, cuts);\n            }\n        }\n\n        // Store and return minimum cuts needed from this start\n        return memo[start] = minCuts;\n    }\n\npublic:\n    // Public function to get minimum cuts for palindrome partitioning\n    int minCut(string s) {\n        int n = (int)s.size();\n        vector<int> memo(n, -1);\n        return minCutsHelper(s, 0, memo);\n    }\n};\n",
+      "Java": "class Solution {\n    // Check if substring s[start...end] is palindrome\n    private boolean isPalindrome(String s, int start, int end) {\n        while (start < end) {\n            if (s.charAt(start) != s.charAt(end))\n                return false;\n            start++;\n            end--;\n        }\n        return true;\n    }\n\n    // Recursive helper with memoization to find min cuts from index 'start'\n    private int minCutsHelper(String s, int start, int[] memo) {\n        int n = s.length();\n\n        // If reached end or substring is palindrome, no cut needed\n        if (start == n || isPalindrome(s, start, n - 1))\n            return 0;\n\n        // Return stored result if already computed\n        if (memo[start] != -1)\n            return memo[start];\n\n        int minCuts = Integer.MAX_VALUE;\n\n        // Try all possible partitions\n        for (int end = start; end < n; end++) {\n            if (isPalindrome(s, start, end)) {\n                // 1 cut plus cuts for the remaining substring\n                int cuts = 1 + minCutsHelper(s, end + 1, memo);\n                minCuts = Math.min(minCuts, cuts);\n            }\n        }\n\n        // Store and return minimum cuts needed from this start\n        return memo[start] = minCuts;\n    }\n\n    // Public function to get minimum cuts for palindrome partitioning\n    public int minCut(String s) {\n        int n = s.length();\n        int[] memo = new int[n];\n        Arrays.fill(memo, -1);\n        return minCutsHelper(s, 0, memo);\n    }\n}\n",
+      "Python3": "class Solution:\n    # Check if substring s[start...end] is palindrome\n    def isPalindrome(self, s: str, start: int, end: int) -> bool:\n        while start < end:\n            if s[start] != s[end]:\n                return False\n            start += 1\n            end -= 1\n        return True\n\n    # Recursive helper with memoization to find min cuts from index 'start'\n    def minCutsHelper(self, s: str, start: int, memo: list[int]) -> int:\n        n = len(s)\n\n        # If reached end or substring is palindrome, no cut needed\n        if start == n or self.isPalindrome(s, start, n - 1):\n            return 0\n\n        # Return stored result if already computed\n        if memo[start] != -1:\n            return memo[start]\n\n        minCuts = float('inf')\n\n        # Try all possible partitions\n        for end in range(start, n):\n            if self.isPalindrome(s, start, end):\n                # 1 cut plus cuts for the remaining substring\n                cuts = 1 + self.minCutsHelper(s, end + 1, memo)\n                minCuts = min(minCuts, cuts)\n\n        # Store and return minimum cuts needed from this start\n        memo[start] = minCuts\n        return minCuts\n\n    # Public function to get minimum cuts for palindrome partitioning\n    def minCut(self, s: str) -> int:\n        n = len(s)\n        memo = [-1] * n\n        return self.minCutsHelper(s, 0, memo)\n",
+      "JavaScript": "class Solution {\n    // Check if substring s[start...end] is palindrome\n    isPalindrome(s, start, end) {\n        while (start < end) {\n            if (s[start] !== s[end])\n                return false;\n            start++;\n            end--;\n        }\n        return true;\n    }\n\n    // Recursive helper with memoization to find min cuts from index 'start'\n    minCutsHelper(s, start, memo) {\n        const n = s.length;\n\n        // If reached end or substring is palindrome, no cut needed\n        if (start === n || this.isPalindrome(s, start, n - 1))\n            return 0;\n\n        // Return stored result if already computed\n        if (memo[start] !== -1)\n            return memo[start];\n\n        let minCuts = Infinity;\n\n        // Try all possible partitions\n        for (let end = start; end < n; end++) {\n            if (this.isPalindrome(s, start, end)) {\n                // 1 cut plus cuts for the remaining substring\n                const cuts = 1 + this.minCutsHelper(s, end + 1, memo);\n                minCuts = Math.min(minCuts, cuts);\n            }\n        }\n\n        // Store and return minimum cuts needed from this start\n        memo[start] = minCuts;\n        return minCuts;\n    }\n\n    // Public function to get minimum cuts for palindrome partitioning\n    minCut(s) {\n        const n = s.length;\n        const memo = new Array(n).fill(-1);\n        return this.minCutsHelper(s, 0, memo);\n    }\n}\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

@@ -1,0 +1,127 @@
+{
+  "questionId": "Q2911",
+  "title": "Chef and sequence",
+  "slug": "chef-and-sequence",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Arrays",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "Arrays",
+      "Arithmetic Progression",
+      "Brute Force"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Ad-hoc & Implementation"
+    ]
+  },
+  "content": {
+    "problemStatement": "You are given an array that consists of **n** integer numbers. You have to change at most **K** elements of this array, so that the resulting array will be a arithmetic progression. From all the possible arithmetic progressions, you should choose most beautiful. \n\nYou can uniquely define the arithmetic progression by two numbers **a0** and **d** - the first element of the given progression and the step that defines next element. (**ai = a0+i * d**). The progression **A(a0 , d0)** is more beautiful than the progression **B(b0, d1)** iff **(a0 &lt; b0 or (a0 = b0 and d0 &lt; d1))**",
+    "constraints": [
+      "2 <= N <= 100000",
+      "0 <= K <= min(10, N-2)",
+      "-10^9 <= Ai <= 10^9"
+    ],
+    "inputFormat": "The first line contains two integers N and K denoting the number of elements in the given array and the number of elements that you can change. The second line contains N space-separated integers A1, A2, ..., AN denoting the given array.",
+    "outputFormat": "Output a single line containing the resulting array with at most K changes.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4 2\n1 2 1 4",
+        "output": "-5 -2 1 4",
+        "explanation": "The most beautiful arithmetic progression is -5, -2, 1, 4 with a0 = -5 and d = 3."
+      },
+      {
+        "id": "sample_2",
+        "input": "5 1\n1 2 3 4 5",
+        "output": "1 2 3 4 5",
+        "explanation": "The most beautiful arithmetic progression is 1, 2, 3, 4, 5 with a0 = 1 and d = 1."
+      },
+      {
+        "id": "sample_3",
+        "input": "3 0\n1 2 3",
+        "output": "1 2 3",
+        "explanation": "The most beautiful arithmetic progression is 1, 2, 3 with a0 = 1 and d = 1."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "2 0\n1 2",
+        "expectedOutput": "1 2",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "10 5\n1 2 3 4 5 6 7 8 9 10",
+        "expectedOutput": "1 2 3 4 5 6 7 8 9 10",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "5 0\n1 1 1 1 1",
+        "expectedOutput": "1 1 1 1 1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "5 2\n1 2 3 4 10",
+        "expectedOutput": "1 2 3 4 5",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "10 3\n1 2 3 4 5 6 7 8 9 10",
+        "expectedOutput": "1 2 3 4 5 6 7 8 9 10",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved by iterating over all possible pairs of elements in the array and calculating the arithmetic progression that passes through these two elements. We then check if the number of changes required to transform the array into this arithmetic progression is less than or equal to K. If it is, we update our answer if the new progression is more beautiful than the current one.",
+    "timeComplexity": "O(N^3) per test case, O(T*N^3) total.",
+    "spaceComplexity": "O(N) \u2014 for storing the array and the resulting arithmetic progression.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nint compare(const void *a, const void *b) {\n    return (*(int*)a - *(int*)b);\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while(T--) {\n        int N, K;\n        scanf(\"%d %d\", &N, &K);\n        int A[N];\n        for (int i = 0; i < N; i++) {\n            scanf(\"%d\", &A[i]);\n        }\n        int a0, d;\n        int min_a0 = A[0];\n        int min_d = A[1] - A[0];\n        for (int i = 0; i < N; i++) {\n            for (int j = i + 1; j < N; j++) {\n                a0 = A[i];\n                d = A[j] - A[i];\n                int changes = 0;\n                for (int k = 0; k < N; k++) {\n                    if (A[k] != a0 + k * d) {\n                        changes++;\n                    }\n                }\n                if (changes <= K) {\n                    if (a0 < min_a0 || (a0 == min_a0 && d < min_d)) {\n                        min_a0 = a0;\n                        min_d = d;\n                    }\n                }\n            }\n        }\n        for (int i = 0; i < N; i++) {\n            printf(\"%d \", min_a0 + i * min_d);\n        }\n        printf(\"\\n\");\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <algorithm>\nusing namespace std;\n\nint main() {\n    int T;\n    cin >> T;\n    while(T--) {\n        int N, K;\n        cin >> N >> K;\n        int A[N];\n        for (int i = 0; i < N; i++) {\n            cin >> A[i];\n        }\n        int a0, d;\n        int min_a0 = A[0];\n        int min_d = A[1] - A[0];\n        for (int i = 0; i < N; i++) {\n            for (int j = i + 1; j < N; j++) {\n                a0 = A[i];\n                d = A[j] - A[i];\n                int changes = 0;\n                for (int k = 0; k < N; k++) {\n                    if (A[k] != a0 + k * d) {\n                        changes++;\n                    }\n                }\n                if (changes <= K) {\n                    if (a0 < min_a0 || (a0 == min_a0 && d < min_d)) {\n                        min_a0 = a0;\n                        min_d = d;\n                    }\n                }\n            }\n        }\n        for (int i = 0; i < N; i++) {\n            cout << min_a0 + i * min_d << \" \";\n        }\n        cout << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n        while(T-- > 0) {\n            int N = sc.nextInt();\n            int K = sc.nextInt();\n            int[] A = new int[N];\n            for (int i = 0; i < N; i++) {\n                A[i] = sc.nextInt();\n            }\n            int a0, d;\n            int min_a0 = A[0];\n            int min_d = A[1] - A[0];\n            for (int i = 0; i < N; i++) {\n                for (int j = i + 1; j < N; j++) {\n                    a0 = A[i];\n                    d = A[j] - A[i];\n                    int changes = 0;\n                    for (int k = 0; k < N; k++) {\n                        if (A[k] != a0 + k * d) {\n                            changes++;\n                        }\n                    }\n                    if (changes <= K) {\n                        if (a0 < min_a0 || (a0 == min_a0 && d < min_d)) {\n                            min_a0 = a0;\n                            min_d = d;\n                        }\n                    }\n                }\n            }\n            for (int i = 0; i < N; i++) {\n                System.out.print(min_a0 + i * min_d + \" \");\n            }\n            System.out.println();\n        }\n    }\n}",
+      "Python3": "import sys\nT = int(sys.stdin.readline())\nfor _ in range(T):\n    N, K = map(int, sys.stdin.readline().split())\n    A = list(map(int, sys.stdin.readline().split()))\n    a0, d = A[0], A[1] - A[0]\n    min_a0, min_d = a0, d\n    for i in range(N):\n        for j in range(i + 1, N):\n            a0, d = A[i], A[j] - A[i]\n            changes = sum(1 for k in range(N) if A[k] != a0 + k * d)\n            if changes <= K:\n                if a0 < min_a0 or (a0 == min_a0 and d < min_d):\n                    min_a0, min_d = a0, d\n    print(' '.join(map(str, [min_a0 + i * min_d for i in range(N)])))",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet i = 0;\nconst readline = () => lines[i++];\nconst T = parseInt(readline());\nfor (let t = 0; t < T; t++) {\n    const [N, K] = readline().split(' ').map(x => parseInt(x));\n    const A = readline().split(' ').map(x => parseInt(x));\n    let a0, d;\n    let min_a0 = A[0];\n    let min_d = A[1] - A[0];\n    for (let i = 0; i < N; i++) {\n        for (let j = i + 1; j < N; j++) {\n            a0 = A[i];\n            d = A[j] - A[i];\n            let changes = 0;\n            for (let k = 0; k < N; k++) {\n                if (A[k] !== a0 + k * d) {\n                    changes++;\n                }\n            }\n            if (changes <= K) {\n                if (a0 < min_a0 || (a0 === min_a0 && d < min_d)) {\n                    min_a0 = a0;\n                    min_d = d;\n                }\n            }\n        }\n    }\n    console.log(Array(N).fill(0).map((_, i) => min_a0 + i * min_d).join(' '));\n}"
+    }
+  }
+}

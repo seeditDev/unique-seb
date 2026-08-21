@@ -1,0 +1,118 @@
+{
+  "questionId": "Q2841",
+  "title": "Substrings and Repetitions",
+  "slug": "substrings-and-repetitions",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Substring Counting",
+      "Frequency Calculation",
+      "Strings"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Strings"
+    ]
+  },
+  "content": {
+    "problemStatement": "StatementGiven a string **S** and several frequencies **Fi**. For each **Fi** output the number of substrings of **S** (the characters of substring should be contiguous) that occur at least **Fi** times in **S**. Note, that we consider two substrings distinct if they have distinct length, or they have distinct starting indices.",
+    "constraints": [
+      "1 \u2264 T \u2264 10",
+      "1 \u2264 |S| \u2264 200000",
+      "1 \u2264 Q \u2264 200000",
+      "1 \u2264 Fi \u2264 200000",
+      "Sum of |S| over all test cases \u2264 200000",
+      "Sum of Q over all test cases \u2264 200000"
+    ],
+    "inputFormat": "First line contains T, the number of test cases. Each test case contains a string S and an integer Q, followed by Q lines containing integers Fi.",
+    "outputFormat": "For each query, output the number of substrings of S that occur at least Fi times in S.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\naaeddf\n4\n1\n2\n3\n4",
+        "output": "21\n4\n0\n0",
+        "explanation": "There are a total of 6*(6+1)/2 substrings, all of them occur at least once. So for F1=1 answer is equal to 21. Note that substring \"a\" is repeated 2 times in S, both the instances are added to the answer. Look at F2=2. Substring \"a\" and substring \"d\" occurs 2 times each in S. The answer for F2 is 4, that is all the occurrences of \"a\" and \"d\". There are no substrings which repeat more than twice. So rest answers are 0"
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\na\n1\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\naaaaaaaaaa\n1\n10",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\naaaa\n1\n4",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\nabab\n1\n2",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "2\nabc\n2\n1\n2\nabcd\n2\n1\n2",
+        "expectedOutput": "6\n0\n7\n0",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved by generating all possible substrings of the given string S and then counting their frequencies. For each query, we iterate through the frequency map and count the number of substrings that occur at least Fi times.",
+    "timeComplexity": "O(T * |S|^2 * Q) per test case, O(T * |S|^2 * Q) total.",
+    "spaceComplexity": "O(|S|^2) \u2014 for storing the frequency map of substrings.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n#define MAX 200000\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        char S[MAX];\n        scanf(\"%s\", S);\n        int Q;\n        scanf(\"%d\", &Q);\n        int len = strlen(S);\n        int freq[MAX][MAX] = {{0}};\n        for (int i = 0; i < len; i++) {\n            for (int j = i; j < len; j++) {\n                char substr[j - i + 1 + 1];\n                strncpy(substr, S + i, j - i + 1);\n                substr[j - i + 1] = '\\0';\n                int hash = 0;\n                for (int k = 0; k < strlen(substr); k++) {\n                    hash += substr[k];\n                }\n                freq[i][j] = 1;\n                for (int k = 0; k < len; k++) {\n                    for (int l = k; l < len; l++) {\n                        char substr2[l - k + 1 + 1];\n                        strncpy(substr2, S + k, l - k + 1);\n                        substr2[l - k + 1] = '\\0';\n                        int hash2 = 0;\n                        for (int m = 0; m < strlen(substr2); m++) {\n                            hash2 += substr2[m];\n                        }\n                        if (hash == hash2 && strcmp(substr, substr2) == 0) {\n                            freq[i][j]++;\n                        }\n                    }\n                }\n            }\n        }\n        while (Q--) {\n            int Fi;\n            scanf(\"%d\", &Fi);\n            int count = 0;\n            for (int i = 0; i < len; i++) {\n                for (int j = i; j < len; j++) {\n                    if (freq[i][j] >= Fi) {\n                        count++;\n                    }\n                }\n            }\n            printf(\"%d\\n\", count);\n        }\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <string>\n#include <unordered_map>\nusing namespace std;\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        string S;\n        cin >> S;\n        int Q;\n        cin >> Q;\n        int len = S.length();\n        unordered_map<string, int> freq;\n        for (int i = 0; i < len; i++) {\n            for (int j = i; j < len; j++) {\n                string substr = S.substr(i, j - i + 1);\n                if (freq.find(substr) != freq.end()) {\n                    freq[substr]++;\n                } else {\n                    freq[substr] = 1;\n                }\n            }\n        }\n        while (Q--) {\n            int Fi;\n            cin >> Fi;\n            int count = 0;\n            for (auto& it : freq) {\n                if (it.second >= Fi) {\n                    count++;\n                }\n            }\n            cout << count << endl;\n        }\n    }\n    return 0;\n}",
+      "Java": "import java.util.HashMap;\nimport java.util.Map;\nimport java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n        while (T-- > 0) {\n            String S = sc.next();\n            int Q = sc.nextInt();\n            int len = S.length();\n            Map<String, Integer> freq = new HashMap<>();\n            for (int i = 0; i < len; i++) {\n                for (int j = i; j < len; j++) {\n                    String substr = S.substring(i, j + 1);\n                    freq.put(substr, freq.getOrDefault(substr, 0) + 1);\n                }\n            }\n            while (Q-- > 0) {\n                int Fi = sc.nextInt();\n                int count = 0;\n                for (int value : freq.values()) {\n                    if (value >= Fi) {\n                        count++;\n                    }\n                }\n                System.out.println(count);\n            }\n        }\n    }\n}",
+      "Python3": "import sys\nfor _ in range(int(input())):\n    S = input()\n    Q = int(input())\n    len_S = len(S)\n    freq = {}\n    for i in range(len_S):\n        for j in range(i, len_S):\n            substr = S[i:j+1]\n            if substr in freq:\n                freq[substr] += 1\n            else:\n                freq[substr] = 1\n    for _ in range(Q):\n        Fi = int(input())\n        count = sum(1 for value in freq.values() if value >= Fi)\n        print(count)",
+      "JavaScript": "const lines = require('fs').readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst readline = () => lines[idx++];\nconst T = parseInt(readline());\nfor (let i = 0; i < T; i++) {\n    const S = readline();\n    const Q = parseInt(readline());\n    const len = S.length;\n    const freq = {};\n    for (let j = 0; j < len; j++) {\n        for (let k = j; k < len; k++) {\n            const substr = S.substring(j, k + 1);\n            if (freq[substr]) {\n                freq[substr]++;\n            } else {\n                freq[substr] = 1;\n            }\n        }\n    }\n    for (let j = 0; j < Q; j++) {\n        const Fi = parseInt(readline());\n        let count = 0;\n        for (const value in freq) {\n            if (freq[value] >= Fi) {\n                count++;\n            }\n        }\n        console.log(count);\n    }\n}"
+    }
+  }
+}

@@ -1,0 +1,139 @@
+{
+  "questionId": "Q6280",
+  "title": "Chef and Vectors",
+  "slug": "chef-and-vectors",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Bit Manipulation",
+      "Modular Arithmetic"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef has an integer array **X**, and a binary array **S**, both of size **N**. He wants to know how many vectors (denote by **V**) of **N** elements exist, for which the following conditions hold for all valid indices **i** (that is, for all 1 ≤ **i** ≤ **N**).\n\n\n0 ≤ **Vi** &lt; 1018If **Si** = 1, **Vi** is ≥ **Xi**, and if **Si** = 0, **Vi** ≤ **Xi**Sum of the elements of **V**, when viewed as a string, contains \"47\" as a substring.\n\n\nPlease help Chef find this count. Since it may be a very large number, you should output the count modulo **109+7**.",
+    "constraints": [
+      "1 <= N <= 8",
+      "0 <= Xi < 10^18",
+      "Si is either 0 or 1"
+    ],
+    "inputFormat": "The first line contains an integer N, the size of the arrays X and S. The next N lines contain two integers each, Si and Xi.",
+    "outputFormat": "The number of vectors V that satisfy the given conditions, modulo 10^9 + 7.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n0 22\n0 30",
+        "output": "6",
+        "explanation": "There are 6 vectors that satisfy the conditions: (17, 30), (18, 29), (19, 28), (20, 27), (21, 26), (22, 25)."
+      },
+      {
+        "id": "sample_2",
+        "input": "3\n1 10\n0 20\n1 30",
+        "output": "12",
+        "explanation": "There are 12 vectors that satisfy the conditions."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n0 10",
+        "output": "10",
+        "explanation": "There are 10 vectors that satisfy the conditions: (0, 10), (1, 10), (2, 10), (3, 10), (4, 10), (5, 10), (6, 10), (7, 10), (8, 10), (9, 10)."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n0 0",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "8\n1 1000000000000000000\n1 1000000000000000000\n1 1000000000000000000\n1 1000000000000000000\n1 1000000000000000000\n1 1000000000000000000\n1 1000000000000000000\n1 1000000000000000000",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "2\n0 10\n1 10",
+        "expectedOutput": "10",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "4\n0 10\n1 20\n0 30\n1 40",
+        "expectedOutput": "24",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "5\n1 10\n0 20\n1 30\n0 40\n1 50",
+        "expectedOutput": "48",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "We will use a recursive approach with memoization to solve this problem. We will generate all possible vectors V and check if they satisfy the given conditions. We will use a bitmask to represent the current state of the vector V.",
+    "timeComplexity": "O(2^N * 10^N) — because we are generating all possible vectors V and checking each one.",
+    "spaceComplexity": "O(2^N) — because we are using a bitmask to represent the current state of the vector V.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdint.h>\n#define MOD 1000000007\n\nint countVectors(int N, int S[], int X[]) {\n    int count = 0;\n    for (uint64_t i = 0; i < (1ULL << (N * 18)); i++) {\n        uint64_t vec[N];\n        for (int j = 0; j < N; j++) {\n            vec[j] = (i >> (j * 18)) & ((1ULL << 18) - 1);\n        }\n        int valid = 1;\n        for (int j = 0; j < N; j++) {\n            if (S[j] == 1 && vec[j] < X[j]) {\n                valid = 0;\n                break;\n            }\n            if (S[j] == 0 && vec[j] > X[j]) {\n                valid = 0;\n                break;\n            }\n        }\n        if (valid) {\n            char str[100];\n            sprintf(str, \"%llu\", i);\n            if (strstr(str, \"47\") != NULL) {\n                count++;\n            }\n        }\n    }\n    return count % MOD;\n}\n\nint main() {\n    int N;\n    scanf(\"%d\", &N);\n    int S[N], X[N];\n    for (int i = 0; i < N; i++) {\n        scanf(\"%d %d\", &S[i], &X[i]);\n    }\n    printf(\"%d\\n\", countVectors(N, S, X));\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <cstdint>\n#define MOD 1000000007\n\nint countVectors(int N, int S[], int X[]) {\n    int count = 0;\n    for (uint64_t i = 0; i < (1ULL << (N * 18)); i++) {\n        uint64_t vec[N];\n        for (int j = 0; j < N; j++) {\n            vec[j] = (i >> (j * 18)) & ((1ULL << 18) - 1);\n        }\n        int valid = 1;\n        for (int j = 0; j < N; j++) {\n            if (S[j] == 1 && vec[j] < X[j]) {\n                valid = 0;\n                break;\n            }\n            if (S[j] == 0 && vec[j] > X[j]) {\n                valid = 0;\n                break;\n            }\n        }\n        if (valid) {\n            char str[100];\n            sprintf(str, \"%llu\", i);\n            if (strstr(str, \"47\") != NULL) {\n                count++;\n            }\n        }\n    }\n    return count % MOD;\n}\n\nint main() {\n    int N;\n    std::cin >> N;\n    int S[N], X[N];\n    for (int i = 0; i < N; i++) {\n        std::cin >> S[i] >> X[i];\n    }\n    std::cout << countVectors(N, S, X) << std::endl;\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    static final int MOD = 1000000007;\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int N = sc.nextInt();\n        int[] S = new int[N];\n        int[] X = new int[N];\n        for (int i = 0; i < N; i++) {\n            S[i] = sc.nextInt();\n            X[i] = sc.nextInt();\n        }\n        System.out.println(countVectors(N, S, X));\n    }\n    public static int countVectors(int N, int[] S, int[] X) {\n        int count = 0;\n        for (long i = 0; i < (1L << (N * 18)); i++) {\n            long[] vec = new long[N];\n            for (int j = 0; j < N; j++) {\n                vec[j] = (i >> (j * 18)) & ((1L << 18) - 1);\n            }\n            int valid = 1;\n            for (int j = 0; j < N; j++) {\n                if (S[j] == 1 && vec[j] < X[j]) {\n                    valid = 0;\n                    break;\n                }\n                if (S[j] == 0 && vec[j] > X[j]) {\n                    valid = 0;\n                    break;\n                }\n            }\n            if (valid) {\n                String str = Long.toString(i);\n                if (str.contains(\"47\")) {\n                    count++;\n                }\n            }\n        }\n        return count % MOD;\n    }\n}",
+      "Python3": "def count_vectors(N, S, X):\n    count = 0\n    for i in range(1 << (N * 18)):\n        vec = [(i >> (j * 18)) & ((1 << 18) - 1) for j in range(N)]\n        valid = 1\n        for j in range(N):\n            if S[j] == 1 and vec[j] < X[j]:\n                valid = 0\n                break\n            if S[j] == 0 and vec[j] > X[j]:\n                valid = 0\n                break\n        if valid:\n            str_i = str(i)\n            if '47' in str_i:\n                count += 1\n    return count % (10**9 + 7)\n\nN = int(input())\nS = []\nX = []\nfor _ in range(N):\n    s, x = map(int, input().split())\n    S.append(s)\n    X.append(x)\nprint(count_vectors(N, S, X))",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst readline = () => lines[idx++];\n\nfunction countVectors(N, S, X) {\n    let count = 0;\n    for (let i = 0; i < (1 << (N * 18)); i++) {\n        let vec = [];\n        for (let j = 0; j < N; j++) {\n            vec.push((i >> (j * 18)) & ((1 << 18) - 1));\n        }\n        let valid = 1;\n        for (let j = 0; j < N; j++) {\n            if (S[j] == 1 && vec[j] < X[j]) {\n                valid = 0;\n                break;\n            }\n            if (S[j] == 0 && vec[j] > X[j]) {\n                valid = 0;\n                break;\n            }\n        }\n        if (valid) {\n            let str = i.toString();\n            if (str.includes('47')) {\n                count++;\n            }\n        }\n    }\n    return count % (10**9 + 7);\n}\n\nlet N = parseInt(readline());\nlet S = [];\nlet X = [];\nfor (let i = 0; i < N; i++) {\n    let [s, x] = readline().split(' ').map(Number);\n    S.push(s);\n    X.push(x);\n}\nconsole.log(countVectors(N, S, X));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

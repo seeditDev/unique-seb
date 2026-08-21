@@ -1,0 +1,136 @@
+{
+  "questionId": "Q6902",
+  "title": "High Interview",
+  "slug": "high-interview",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math | Dynamic Programming",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Expected Value",
+      "Combinatorics",
+      "Fraction Arithmetic"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Combinatorics & Probability"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "There are **N** barmen, given their probabilities **Pi** for passing the interview of a bar. Each barman has a productivity **Bi**. If more than one barman work together their productivity adds up. The bar hires exactly **K** barmen. Find out the expected productivity value of the bar.\n\n\nIf the expected value is of the form **p/q** where **p** and **q** are coprime, print (**p*q-1**) modulo 786433.",
+    "constraints": [
+      "1 <= N <= 100000",
+      "1 <= K <= N",
+      "0 <= Numi <= 100000",
+      "1 <= Deni <= 100000",
+      "0 <= Bi <= 100000"
+    ],
+    "inputFormat": "The first line contains two integers N and K, where N is the number of barmen and K is the number of barmen to be hired. The next N lines contain four integers each: Numi, Deni, Bi, and Pi, where Numi and Deni are the numerator and denominator of the probability of the ith barman passing the interview, Bi is the productivity of the ith barman, and Pi is the probability of the ith barman passing the interview, given as a fraction Numi/Deni.",
+    "outputFormat": "The expected productivity value of the bar as a fraction p/q, where p and q are coprime, followed by the values of p and q, and then the value of p*q-1 modulo 786433.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3 1\n1 2 4\n1 3 4\n1 3 6",
+        "output": "2",
+        "explanation": "The expected productivity is calculated as the sum of the products of the probabilities and the total productivities of all combinations of 1 barman out of 3."
+      },
+      {
+        "id": "sample_2",
+        "input": "3 2\n1 2 4\n1 3 4\n1 3 6",
+        "output": "23/9",
+        "explanation": "The expected productivity is calculated as the sum of the products of the probabilities and the total productivities of all combinations of 2 barmen out of 3."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1 1\n1 1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "100000 100000\n1 1 1\n1 1 1\n1 1 1",
+        "expectedOutput": "100000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "3 1\n0 1 1\n0 1 1\n0 1 1",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "5 3\n1 2 1\n1 3 1\n1 3 1\n1 2 1\n1 3 1",
+        "expectedOutput": "5/6",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "10 5\n1 2 1\n1 3 1\n1 3 1\n1 2 1\n1 3 1\n1 2 1\n1 3 1\n1 2 1\n1 3 1\n1 2 1",
+        "expectedOutput": "10/12",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we need to calculate the expected productivity of the bar by considering all possible combinations of K barmen out of N. For each combination, we calculate the probability of the combination and the total productivity of the combination. The expected productivity is then the sum of the products of the probabilities and the total productivities of all combinations. We can use dynamic programming to efficiently calculate the expected productivity.",
+    "timeComplexity": "O(N choose K * N) — the time complexity is dominated by the calculation of the expected productivity for each combination of K barmen out of N.",
+    "spaceComplexity": "O(N) — the space complexity is dominated by the storage of the input data.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <math.h>\n#define MOD 786433\n#define MAXN 100000\n\n// Function to calculate the greatest common divisor (GCD) of two numbers\nlong long gcd(long long a, long long b) {\n    if (b == 0) return a;\n    return gcd(b, a % b);\n}\n\n// Function to calculate the expected productivity\nlong long calculateExpectedProductivity(int N, int K, int* Num, int* Den, int* B) {\n    long long expectedProductivity = 0;\n    // Calculate the expected productivity for each combination of K barmen out of N\n    for (int i = 0; i < (1 << N); i++) {\n        int count = 0;\n        long long probability = 1;\n        long long totalProductivity = 0;\n        for (int j = 0; j < N; j++) {\n            if ((i & (1 << j)) != 0) {\n                count++;\n                probability *= Num[j];\n                probability /= Den[j];\n                totalProductivity += B[j];\n            } else {\n                probability *= Den[j] - Num[j];\n                probability /= Den[j];\n            }\n        }\n        if (count == K) {\n            expectedProductivity += probability * totalProductivity;\n        }\n    }\n    // Simplify the fraction and calculate the result modulo MOD\n    long long numerator = expectedProductivity;\n    long long denominator = 1;\n    for (int i = 0; i < N; i++) {\n        denominator *= Den[i];\n    }\n    long long gcdValue = gcd(numerator, denominator);\n    numerator /= gcdValue;\n    denominator /= gcdValue;\n    long long result = (numerator * denominator - 1) % MOD;\n    return result;\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int N, K;\n        scanf(\"%d %d\", &N, &K);\n        int* Num = (int*)malloc(N * sizeof(int));\n        int* Den = (int*)malloc(N * sizeof(int));\n        int* B = (int*)malloc(N * sizeof(int));\n        for (int i = 0; i < N; i++) {\n            scanf(\"%d %d %d\", &Num[i], &Den[i], &B[i]);\n        }\n        long long result = calculateExpectedProductivity(N, K, Num, Den, B);\n        printf(\"%lld\\n\", result);\n        free(Num);\n        free(Den);\n        free(B);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\n#include <algorithm>\n#include <numeric>\nusing namespace std;\n#define MOD 786433\n#define MAXN 100000\n\n// Function to calculate the greatest common divisor (GCD) of two numbers\nlong long gcd(long long a, long long b) {\n    if (b == 0) return a;\n    return gcd(b, a % b);\n}\n\n// Function to calculate the expected productivity\nlong long calculateExpectedProductivity(int N, int K, vector<int>& Num, vector<int>& Den, vector<int>& B) {\n    long long expectedProductivity = 0;\n    // Calculate the expected productivity for each combination of K barmen out of N\n    for (int i = 0; i < (1 << N); i++) {\n        int count = 0;\n        long long probability = 1;\n        long long totalProductivity = 0;\n        for (int j = 0; j < N; j++) {\n            if ((i & (1 << j)) != 0) {\n                count++;\n                probability *= Num[j];\n                probability /= Den[j];\n                totalProductivity += B[j];\n            } else {\n                probability *= Den[j] - Num[j];\n                probability /= Den[j];\n            }\n        }\n        if (count == K) {\n            expectedProductivity += probability * totalProductivity;\n        }\n    }\n    // Simplify the fraction and calculate the result modulo MOD\n    long long numerator = expectedProductivity;\n    long long denominator = 1;\n    for (int i = 0; i < N; i++) {\n        denominator *= Den[i];\n    }\n    long long gcdValue = gcd(numerator, denominator);\n    numerator /= gcdValue;\n    denominator /= gcdValue;\n    long long result = (numerator * denominator - 1) % MOD;\n    return result;\n}\n\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        int N, K;\n        cin >> N >> K;\n        vector<int> Num(N);\n        vector<int> Den(N);\n        vector<int> B(N);\n        for (int i = 0; i < N; i++) {\n            cin >> Num[i] >> Den[i] >> B[i];\n        }\n        long long result = calculateExpectedProductivity(N, K, Num, Den, B);\n        cout << result << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    static final long MOD = 786433;\n    static final int MAXN = 100000;\n    // Function to calculate the greatest common divisor (GCD) of two numbers\n    public static long gcd(long a, long b) {\n        if (b == 0) return a;\n        return gcd(b, a % b);\n    }\n    // Function to calculate the expected productivity\n    public static long calculateExpectedProductivity(int N, int K, int[] Num, int[] Den, int[] B) {\n        long expectedProductivity = 0;\n        // Calculate the expected productivity for each combination of K barmen out of N\n        for (int i = 0; i < (1 << N); i++) {\n            int count = 0;\n            long probability = 1;\n            long totalProductivity = 0;\n            for (int j = 0; j < N; j++) {\n                if ((i & (1 << j)) != 0) {\n                    count++;\n                    probability *= Num[j];\n                    probability /= Den[j];\n                    totalProductivity += B[j];\n                } else {\n                    probability *= Den[j] - Num[j];\n                    probability /= Den[j];\n                }\n            }\n            if (count == K) {\n                expectedProductivity += probability * totalProductivity;\n            }\n        }\n        // Simplify the fraction and calculate the result modulo MOD\n        long numerator = expectedProductivity;\n        long denominator = 1;\n        for (int i = 0; i < N; i++) {\n            denominator *= Den[i];\n        }\n        long gcdValue = gcd(numerator, denominator);\n        numerator /= gcdValue;\n        denominator /= gcdValue;\n        long result = (numerator * denominator - 1) % MOD;\n        return result;\n    }\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int T = scanner.nextInt();\n        while (T-- > 0) {\n            int N = scanner.nextInt();\n            int K = scanner.nextInt();\n            int[] Num = new int[N];\n            int[] Den = new int[N];\n            int[] B = new int[N];\n            for (int i = 0; i < N; i++) {\n                Num[i] = scanner.nextInt();\n                Den[i] = scanner.nextInt();\n                B[i] = scanner.nextInt();\n            }\n            long result = calculateExpectedProductivity(N, K, Num, Den, B);\n            System.out.println(result);\n        }\n    }\n}",
+      "Python3": "import sys\nMOD = 786433\nMAXN = 100000\n\ndef gcd(a, b):\n    if b == 0:\n        return a\n    return gcd(b, a % b)\n\ndef calculate_expected_productivity(N, K, Num, Den, B):\n    expected_productivity = 0\n    # Calculate the expected productivity for each combination of K barmen out of N\n    for i in range(1 << N):\n        count = 0\n        probability = 1\n        total_productivity = 0\n        for j in range(N):\n            if (i & (1 << j)) != 0:\n                count += 1\n                probability *= Num[j]\n                probability //= Den[j]\n                total_productivity += B[j]\n            else:\n                probability *= Den[j] - Num[j]\n                probability //= Den[j]\n        if count == K:\n            expected_productivity += probability * total_productivity\n    # Simplify the fraction and calculate the result modulo MOD\n    numerator = expected_productivity\n    denominator = 1\n    for i in range(N):\n        denominator *= Den[i]\n    gcd_value = gcd(numerator, denominator)\n    numerator //= gcd_value\n    denominator //= gcd_value\n    result = (numerator * denominator - 1) % MOD\n    return result\n\nt = int(sys.stdin.readline().strip())\nwhile t > 0:\n    N, K = map(int, sys.stdin.readline().strip().split())\n    Num = []\n    Den = []\n    B = []\n    for _ in range(N):\n        num, den, b = map(int, sys.stdin.readline().strip().split())\n        Num.append(num)\n        Den.append(den)\n        B.append(b)\n    result = calculate_expected_productivity(N, K, Num, Den, B)\n    print(result)\n    t -= 1",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst MOD = 786433;\nconst MAXN = 100000;\nfunction gcd(a, b) {\n    if (b === 0) return a;\n    return gcd(b, a % b);\n}\nfunction calculateExpectedProductivity(N, K, Num, Den, B) {\n    let expectedProductivity = 0;\n    // Calculate the expected productivity for each combination of K barmen out of N\n    for (let i = 0; i < (1 << N); i++) {\n        let count = 0;\n        let probability = 1;\n        let totalProductivity = 0;\n        for (let j = 0; j < N; j++) {\n            if ((i & (1 << j)) !== 0) {\n                count++;\n                probability *= Num[j];\n                probability /= Den[j];\n                totalProductivity += B[j];\n            } else {\n                probability *= Den[j] - Num[j];\n                probability /= Den[j];\n            }\n        }\n        if (count === K) {\n            expectedProductivity += probability * totalProductivity;\n        }\n    }\n    // Simplify the fraction and calculate the result modulo MOD\n    let numerator = expectedProductivity;\n    let denominator = 1;\n    for (let i = 0; i < N; i++) {\n        denominator *= Den[i];\n    }\n    let gcdValue = gcd(numerator, denominator);\n    numerator /= gcdValue;\n    denominator /= gcdValue;\n    let result = (numerator * denominator - 1) % MOD;\n    return result;\n}\nlet T = parseInt(input[idx++]);\nwhile (T-- > 0) {\n    let [N, K] = input[idx++].trim().split(' ').map(Number);\n    let Num = [];\n    let Den = [];\n    let B = [];\n    for (let i = 0; i < N; i++) {\n        let [num, den, b] = input[idx++].trim().split(' ').map(Number);\n        Num.push(num);\n        Den.push(den);\n        B.push(b);\n    }\n    let result = calculateExpectedProductivity(N, K, Num, Den, B);\n    console.log(result);\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

@@ -1,0 +1,139 @@
+{
+  "questionId": "Q5213",
+  "title": "Lighting the shop",
+  "slug": "lighting-the-shop",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Graph Coloring",
+      "Greedy Algorithm"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Flow & Matching"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "The exciting World Cup 2010's summer is coming! And Johnny's family shop is busy preparing a colorful lighting board for the summer.\n\nThe board has a rectangular shape of size M x N. There are certain positions on the board which Johnny wants to put in light bulbs.\n\nJohnny wants to decorate the board by colorful light bulbs. To make the board look attractive, he wants the bulbs in the same column or row to have different colors! On the other hand, to preserve the harmony look, Johnny doesn't want the bulbs to have many different colors.\n\nWrite a program to help Johnny decorate the boards in such a way that the number of color used is minimum.",
+    "constraints": [
+      "1 <= T <= 15",
+      "1 <= M, N <= 700",
+      "Each character in the board is either '0' or '1'"
+    ],
+    "inputFormat": "First line contains T, the number of test cases. Each test case contains two integers M and N on the first line, followed by M lines of N characters each.",
+    "outputFormat": "For each test case, print the minimum number of colors used on the first line, followed by M lines of N integers each, representing the color assigned to each cell.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n4 4\n1001\n1101\n1011\n1001",
+        "output": "4\n1 0 0 2 \n2 1 0 3 \n3 0 1 4 \n4 0 0 1",
+        "explanation": "The minimum number of colors required is 4. The colors assigned to each cell are shown in the output."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n3 3\n111\n111\n111",
+        "output": "3\n1 2 3\n2 3 1\n3 1 2",
+        "explanation": "The minimum number of colors required is 3. The colors assigned to each cell are shown in the output."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n2 2\n11\n11",
+        "output": "2\n1 2\n2 1",
+        "explanation": "The minimum number of colors required is 2. The colors assigned to each cell are shown in the output."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1\n1",
+        "expectedOutput": "1\n1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n700 700\n",
+        "expectedOutput": "700\n",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n3 3\n000\n000\n000",
+        "expectedOutput": "0\n0 0 0\n0 0 0\n0 0 0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n3 3\n101\n101\n101",
+        "expectedOutput": "2\n1 0 2\n2 0 1\n1 0 2",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "2\n4 4\n1001\n1101\n1011\n1001\n3 3\n111\n111\n111",
+        "expectedOutput": "4\n1 0 0 2 \n2 1 0 3 \n3 0 1 4 \n4 0 0 1\n\n3\n1 2 3\n2 3 1\n3 1 2",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved by representing the board as a graph, where each cell is a node, and two nodes are connected if they are in the same row or column. We then use a greedy algorithm to assign colors to each node, ensuring that no two adjacent nodes have the same color.",
+    "timeComplexity": "O(T * M * N * (M + N)) per test case, O(T * M * N * (M + N)) total.",
+    "spaceComplexity": "O(M * N) — for the graph and color assignments.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\n#define MAX_M 700\n#define MAX_N 700\n\nint min_colors[MAX_M][MAX_N];\nint graph[MAX_M * MAX_N][MAX_M * MAX_N];\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int M, N;\n        scanf(\"%d %d\", &M, &N);\n        for (int i = 0; i < M; i++) {\n            for (int j = 0; j < N; j++) {\n                char c;\n                scanf(\" %c\", &c);\n                if (c == '1') {\n                    // Add edges to the graph\n                    for (int k = 0; k < N; k++) {\n                        if (k != j) {\n                            graph[i * N + j][i * N + k] = 1;\n                        }\n                    }\n                    for (int k = 0; k < M; k++) {\n                        if (k != i) {\n                            graph[i * N + j][k * N + j] = 1;\n                        }\n                    }\n                }\n            }\n        }\n        // Assign colors using a greedy algorithm\n        int max_color = 0;\n        for (int i = 0; i < M * N; i++) {\n            int color = 1;\n            while (1) {\n                int used = 0;\n                for (int j = 0; j < M * N; j++) {\n                    if (graph[i][j] && min_colors[j / N][j % N] == color) {\n                        used = 1;\n                        break;\n                    }\n                }\n                if (!used) {\n                    min_colors[i / N][i % N] = color;\n                    max_color = (max_color > color) ? max_color : color;\n                    break;\n                }\n                color++;\n            }\n        }\n        printf(\"%d\\n\", max_color);\n        for (int i = 0; i < M; i++) {\n            for (int j = 0; j < N; j++) {\n                printf(\"%d \", min_colors[i][j]);\n            }\n            printf(\"\\n\");\n        }\n        printf(\"\\n\");\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\nusing namespace std;\n\nconst int MAX_M = 700;\nconst int MAX_N = 700;\n\nint min_colors[MAX_M][MAX_N];\nint graph[MAX_M * MAX_N][MAX_M * MAX_N];\n\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        int M, N;\n        cin >> M >> N;\n        for (int i = 0; i < M; i++) {\n            for (int j = 0; j < N; j++) {\n                char c;\n                cin >> c;\n                if (c == '1') {\n                    // Add edges to the graph\n                    for (int k = 0; k < N; k++) {\n                        if (k != j) {\n                            graph[i * N + j][i * N + k] = 1;\n                        }\n                    }\n                    for (int k = 0; k < M; k++) {\n                        if (k != i) {\n                            graph[i * N + j][k * N + j] = 1;\n                        }\n                    }\n                }\n            }\n        }\n        // Assign colors using a greedy algorithm\n        int max_color = 0;\n        for (int i = 0; i < M * N; i++) {\n            int color = 1;\n            while (1) {\n                int used = 0;\n                for (int j = 0; j < M * N; j++) {\n                    if (graph[i][j] && min_colors[j / N][j % N] == color) {\n                        used = 1;\n                        break;\n                    }\n                }\n                if (!used) {\n                    min_colors[i / N][i % N] = color;\n                    max_color = max(max_color, color);\n                    break;\n                }\n                color++;\n            }\n        }\n        cout << max_color << endl;\n        for (int i = 0; i < M; i++) {\n            for (int j = 0; j < N; j++) {\n                cout << min_colors[i][j] << \" \";\n            }\n            cout << endl;\n        }\n        cout << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    static final int MAX_M = 700;\n    static final int MAX_N = 700;\n    static int[][] min_colors = new int[MAX_M][MAX_N];\n    static int[][] graph = new int[MAX_M * MAX_N][MAX_M * MAX_N];\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int T = scanner.nextInt();\n        while (T-- > 0) {\n            int M = scanner.nextInt();\n            int N = scanner.nextInt();\n            for (int i = 0; i < M; i++) {\n                String line = scanner.next();\n                for (int j = 0; j < N; j++) {\n                    char c = line.charAt(j);\n                    if (c == '1') {\n                        // Add edges to the graph\n                        for (int k = 0; k < N; k++) {\n                            if (k != j) {\n                                graph[i * N + j][i * N + k] = 1;\n                            }\n                        }\n                        for (int k = 0; k < M; k++) {\n                            if (k != i) {\n                                graph[i * N + j][k * N + j] = 1;\n                            }\n                        }\n                    }\n                }\n            }\n            // Assign colors using a greedy algorithm\n            int max_color = 0;\n            for (int i = 0; i < M * N; i++) {\n                int color = 1;\n                while (true) {\n                    int used = 0;\n                    for (int j = 0; j < M * N; j++) {\n                        if (graph[i][j] && min_colors[j / N][j % N] == color) {\n                            used = 1;\n                            break;\n                        }\n                    }\n                    if (used == 0) {\n                        min_colors[i / N][i % N] = color;\n                        max_color = Math.max(max_color, color);\n                        break;\n                    }\n                    color++;\n                }\n            }\n            System.out.println(max_color);\n            for (int i = 0; i < M; i++) {\n                for (int j = 0; j < N; j++) {\n                    System.out.print(min_colors[i][j] + \" \");\n                }\n                System.out.println();\n            }\n            System.out.println();\n        }\n    }\n}",
+      "Python3": "import sys\nMAX_M = 700\nMAX_N = 700\nmin_colors = [[0 for _ in range(MAX_N)] for _ in range(MAX_M)]\ngraph = [[0 for _ in range(MAX_M * MAX_N)] for _ in range(MAX_M * MAX_N)]\n\nfor line in sys.stdin:\n    T = int(line.strip())\n    break\nfor _ in range(T):\n    M, N = map(int, sys.stdin.readline().strip().split())\n    for i in range(M):\n        line = sys.stdin.readline().strip()\n        for j in range(N):\n            c = line[j]\n            if c == '1':\n                # Add edges to the graph\n                for k in range(N):\n                    if k != j:\n                        graph[i * N + j][i * N + k] = 1\n                for k in range(M):\n                    if k != i:\n                        graph[i * N + j][k * N + j] = 1\n    # Assign colors using a greedy algorithm\n    max_color = 0\n    for i in range(M * N):\n        color = 1\n        while True:\n            used = 0\n            for j in range(M * N):\n                if graph[i][j] and min_colors[j // N][j % N] == color:\n                    used = 1\n                    break\n            if used == 0:\n                min_colors[i // N][i % N] = color\n                max_color = max(max_color, color)\n                break\n            color += 1\n    print(max_color)\n    for i in range(M):\n        for j in range(N):\n            print(min_colors[i][j], end=' ')\n        print()\n    print()\n",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst MAX_M = 700;\nconst MAX_N = 700;\nconst min_colors = Array(MAX_M).fill(0).map(() => Array(MAX_N).fill(0));\nconst graph = Array(MAX_M * MAX_N).fill(0).map(() => Array(MAX_M * MAX_N).fill(0));\n\nfunction nextLine() {\n    return lines[idx++];\n}\n\nconst T = parseInt(nextLine());\nfor (let t = 0; t < T; t++) {\n    const [M, N] = nextLine().split(' ').map(Number);\n    for (let i = 0; i < M; i++) {\n        const line = nextLine();\n        for (let j = 0; j < N; j++) {\n            const c = line[j];\n            if (c === '1') {\n                // Add edges to the graph\n                for (let k = 0; k < N; k++) {\n                    if (k !== j) {\n                        graph[i * N + j][i * N + k] = 1;\n                    }\n                }\n                for (let k = 0; k < M; k++) {\n                    if (k !== i) {\n                        graph[i * N + j][k * N + j] = 1;\n                    }\n                }\n            }\n        }\n    }\n    // Assign colors using a greedy algorithm\n    let max_color = 0;\n    for (let i = 0; i < M * N; i++) {\n        let color = 1;\n        while (true) {\n            let used = 0;\n            for (let j = 0; j < M * N; j++) {\n                if (graph[i][j] && min_colors[Math.floor(j / N)][j % N] === color) {\n                    used = 1;\n                    break;\n                }\n            }\n            if (used === 0) {\n                min_colors[Math.floor(i / N)][i % N] = color;\n                max_color = Math.max(max_color, color);\n                break;\n            }\n            color++;\n        }\n    }\n    console.log(max_color);\n    for (let i = 0; i < M; i++) {\n        let row = '';\n        for (let j = 0; j < N; j++) {\n            row += min_colors[i][j] + ' ';\n        }\n        console.log(row);\n    }\n    console.log();\n}\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

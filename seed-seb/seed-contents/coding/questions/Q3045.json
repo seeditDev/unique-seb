@@ -1,0 +1,116 @@
+{
+  "questionId": "Q3045",
+  "title": "Little Party",
+  "slug": "little-party",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "String Processing",
+      "Greedy Algorithm",
+      "Subset Generation",
+      "Strings"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ]
+  },
+  "content": {
+    "problemStatement": "A little party never killed nobody... After listening to this song  many times Leha has decided to get together with his friends and have some fun again. But things are not as simple as you might think.\n\n Leha has **N** friends and he already had **M** parties with them and for some reason all these events were not good. He guesses that sometimes guys can't get across with each other. \n\nAll his friends respect him and they always have come independently of their mood. And here is the problem: there is always some subset of his friends at the party that guys from these subset become angry. \n\nNow Leha wants to analyze previous events and find some groups of his friends(maybe empty) with correspondent moods which usually lead to problems. He perfectly remembers their states during previous time. A friend could have come either with good mood(in this case we will denote it as an upper-case Latin letter) or with bad mood(in this case we will denote it as an lower-case Latin letter). The same letters(even if their cases differ) correspond to one friend and different letters correspond to different friends.\n\nLet's consider an example: Leha has 3 friends and he had 3 parties with them with states **AbC**(friends A and C were in good mood, but B was in bad mood), **Abc**(A was in good mood, others were in bad), **aBC**(A was in bad mood, others were in good). During all these parties something had gone wrong. We can notice that when there is subset **Ab**(A was in good mood, but B was in bad mood) party is spoiled and the mood of friend **C** doesn't matter. We also have party with state **aBC** which gives us problems. We can't say anything special about other subsets(for example: here all parties are spoiled with subsets **A**, **b** but we don't have enough information to assume that these subsets are always bad)\n\nSo we have two subsets which if are presented guarantee us some problems: **Ab** and **aBC**. We will call them key subsets. Leha wants to find several key subsets with minimal total size that describe all problem parties. In the example enough key subsets with minimal total size are: **Ab** and **aBC** with total size of 5. He could also find subsets straightforwardly **AbC**, **Abc**, **aBC** but their total size would be 9, so he will choose the first option.\n\nThe idea of finding problem key subsets with minimal total size is good, but Leha doesn't like time-consuming and boring tasks. He asks you to do this job for him.",
+    "constraints": [
+      "1 <= T <= 120",
+      "0 <= M <= 1000",
+      "1 <= N <= 5"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case starts with two integers N and M, where N is the number of friends and M is the number of parties. M strings follow, each representing the state of friends at a party.",
+    "outputFormat": "For each test case, output a single integer, the minimal possible total size of key subsets.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n3 3\nAbC\nAbc\naBC\n3 2\nabc\nAbC",
+        "output": "5\n6",
+        "explanation": "Explanation: The first test case is explained in the problem statement. In the second test case we can only take two given subsets and can't find anything less."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1\nA",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n5 1000\naAbBcCdDeE",
+        "expectedOutput": "10",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n0 0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n3 3\nAbC\nAbc\naBC",
+        "expectedOutput": "5",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n3 2\nabc\nAbC",
+        "expectedOutput": "6",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The approach involves generating all possible subsets of friends and their states, then checking which subsets are present in all parties. We use a greedy algorithm to select the subsets that cover the most parties. The time complexity is O(2^N * M * N) due to subset generation and checking, and the space complexity is O(2^N) for storing subsets.",
+    "timeComplexity": "O(2^N * M * N) \u2014 per test case is O(2^N * M * N), total is O(T * 2^N * M * N)",
+    "spaceComplexity": "O(2^N) \u2014 for storing subsets",
+    "code": {
+      "C": "// COMPLETE, COMPILABLE C code\n#include <stdio.h>\n#include <string.h>\n#define MAXN 5\n#define MAXM 1000\n#define MAXS 100\nint T, N, M;\nchar states[MAXM][MAXN];\nint main() {\n    scanf(\"%d\", &T);\n    while (T--) {\n        scanf(\"%d %d\", &N, &M);\n        for (int i = 0; i < M; i++) {\n            scanf(\"%s\", states[i]);\n        }\n        // Generate all possible subsets and their states\n        int min_size = MAXM * MAXN;\n        for (int mask = 0; mask < (1 << N); mask++) {\n            int size = 0;\n            for (int i = 0; i < N; i++) {\n                if ((mask & (1 << i)) != 0) {\n                    size++;\n                }\n            }\n            // Check if the subset is present in all parties\n            int valid = 1;\n            for (int j = 0; j < M; j++) {\n                int found = 0;\n                for (int i = 0; i < N; i++) {\n                    if ((mask & (1 << i)) != 0 && states[j][i] != '0') {\n                        found = 1;\n                        break;\n                    }\n                }\n                if (!found) {\n                    valid = 0;\n                    break;\n                }\n            }\n            if (valid) {\n                min_size = size;\n            }\n        }\n        printf(\"%d\\n\", min_size);\n    }\n    return 0;\n}",
+      "C++": "// COMPLETE, COMPILABLE C++ code\n#include <iostream>\n#include <string>\n#include <vector>\nusing namespace std;\n#define MAXN 5\n#define MAXM 1000\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        int N, M;\n        cin >> N >> M;\n        vector<string> states(M);\n        for (int i = 0; i < M; i++) {\n            cin >> states[i];\n        }\n        // Generate all possible subsets and their states\n        int min_size = MAXM * MAXN;\n        for (int mask = 0; mask < (1 << N); mask++) {\n            int size = 0;\n            for (int i = 0; i < N; i++) {\n                if ((mask & (1 << i)) != 0) {\n                    size++;\n                }\n            }\n            // Check if the subset is present in all parties\n            bool valid = true;\n            for (int j = 0; j < M; j++) {\n                bool found = false;\n                for (int i = 0; i < N; i++) {\n                    if ((mask & (1 << i)) != 0 && states[j][i] != '0') {\n                        found = true;\n                        break;\n                    }\n                }\n                if (!found) {\n                    valid = false;\n                    break;\n                }\n            }\n            if (valid) {\n                min_size = min(min_size, size);\n            }\n        }\n        cout << min_size << endl;\n    }\n    return 0;\n}",
+      "Java": "// COMPLETE, COMPILABLE Java code\nimport java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n        while (T-- > 0) {\n            int N = sc.nextInt();\n            int M = sc.nextInt();\n            String[] states = new String[M];\n            for (int i = 0; i < M; i++) {\n                states[i] = sc.next();\n            }\n            // Generate all possible subsets and their states\n            int min_size = M * N;\n            for (int mask = 0; mask < (1 << N); mask++) {\n                int size = 0;\n                for (int i = 0; i < N; i++) {\n                    if ((mask & (1 << i)) != 0) {\n                        size++;\n                    }\n                }\n                // Check if the subset is present in all parties\n                boolean valid = true;\n                for (int j = 0; j < M; j++) {\n                    boolean found = false;\n                    for (int i = 0; i < N; i++) {\n                        if ((mask & (1 << i)) != 0 && states[j].charAt(i) != '0') {\n                            found = true;\n                            break;\n                        }\n                    }\n                    if (!found) {\n                        valid = false;\n                        break;\n                    }\n                }\n                if (valid) {\n                    min_size = Math.min(min_size, size);\n                }\n            }\n            System.out.println(min_size);\n        }\n    }\n}",
+      "Python3": "# COMPLETE, RUNNABLE Python3 code\nimport sys\nT = int(input())\nfor _ in range(T):\n    N, M = map(int, input().split())\n    states = [input() for _ in range(M)]\n    # Generate all possible subsets and their states\n    min_size = M * N\n    for mask in range(1 << N):\n        size = 0\n        for i in range(N):\n            if (mask & (1 << i)) != 0:\n                size += 1\n        # Check if the subset is present in all parties\n        valid = True\n        for j in range(M):\n            found = False\n            for i in range(N):\n                if (mask & (1 << i)) != 0 and states[j][i] != '0':\n                    found = True\n                    break\n            if not found:\n                valid = False\n                break\n        if valid:\n            min_size = min(min_size, size)\n    print(min_size)",
+      "JavaScript": "// COMPLETE, RUNNABLE JavaScript code\nconst fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst readline = () => lines[idx++];\nconst T = parseInt(readline());\nfor (let i = 0; i < T; i++) {\n    const [N, M] = readline().split(' ').map(Number);\n    const states = [];\n    for (let j = 0; j < M; j++) {\n        states.push(readline());\n    }\n    // Generate all possible subsets and their states\n    let min_size = M * N;\n    for (let mask = 0; mask < (1 << N); mask++) {\n        let size = 0;\n        for (let k = 0; k < N; k++) {\n            if ((mask & (1 << k)) !== 0) {\n                size++;\n            }\n        }\n        // Check if the subset is present in all parties\n        let valid = true;\n        for (let l = 0; l < M; l++) {\n            let found = false;\n            for (let k = 0; k < N; k++) {\n                if ((mask & (1 << k)) !== 0 && states[l][k] !== '0') {\n                    found = true;\n                    break;\n                }\n            }\n            if (!found) {\n                valid = false;\n                break;\n            }\n        }\n        if (valid) {\n            min_size = Math.min(min_size, size);\n        }\n    }\n    console.log(min_size);\n}"
+    }
+  }
+}

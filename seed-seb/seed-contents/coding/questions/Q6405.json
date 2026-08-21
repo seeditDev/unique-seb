@@ -1,0 +1,132 @@
+{
+  "questionId": "Q6405",
+  "title": "Cutting Cake",
+  "slug": "cutting-cake",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Prefix Sum",
+      "Sub-rectangles"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Bit Manipulation"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef recently cooked a big cake that can be represented as a grid of **N** rows and **M** columns, each cell can be either empty or contain a currant, Chef wants to cut out a sub-rectangle from the cake which contains even number of currants. Before cutting such a sub-rectangle, he is interested in knowing how many sub-rectangles are there which contains even number of currants.",
+    "constraints": [
+      "1 <= N <= 1500",
+      "1 <= M <= 1500"
+    ],
+    "inputFormat": "The first line contains two integers N and M, representing the number of rows and columns in the cake grid. Each of the next N lines contains a string of length M, where '1' represents a cell with a currant and '0' represents an empty cell.",
+    "outputFormat": "The number of sub-rectangles that contain an even number of currants.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2 2\n01\n10",
+        "output": "3",
+        "explanation": "The sub-rectangles with an even number of currants are: the top-left 1x1 sub-rectangle, the top-right 1x1 sub-rectangle, and the 2x2 sub-rectangle."
+      },
+      {
+        "id": "sample_2",
+        "input": "3 4\n1010\n0101\n1110",
+        "output": "26",
+        "explanation": "There are 26 sub-rectangles with an even number of currants."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1 1\n0",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1500 1500\n",
+        "expectedOutput": "1125899906842624",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "2 2\n11\n11",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "3 3\n101\n010\n101",
+        "expectedOutput": "12",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "4 4\n1001\n0100\n1010\n0101",
+        "expectedOutput": "36",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a prefix sum array to store the cumulative sum of currants in each cell. Then, for each possible sub-rectangle, we can calculate the total number of currants it contains by subtracting the prefix sum of the top-left cell from the prefix sum of the bottom-right cell and adding the prefix sum of the cells above and to the left of the sub-rectangle. If the total number of currants is even, we increment the count of sub-rectangles with an even number of currants.",
+    "timeComplexity": "O(N*M*(N+M)) — The time complexity is dominated by the three nested loops that iterate over all possible sub-rectangles.",
+    "spaceComplexity": "O(N*M) — The space complexity is dominated by the prefix sum array.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n\nint main() {\n    int N, M;\n    scanf(\"%d %d\", &N, &M);\n    char cake[N][M+1];\n    for (int i = 0; i < N; i++) {\n        scanf(\"%s\", cake[i]);\n    }\n    int prefixSum[N][M];\n    for (int i = 0; i < N; i++) {\n        for (int j = 0; j < M; j++) {\n            if (i == 0 && j == 0) {\n                prefixSum[i][j] = cake[i][j] - '0';\n            } else if (i == 0) {\n                prefixSum[i][j] = prefixSum[i][j-1] + cake[i][j] - '0';\n            } else if (j == 0) {\n                prefixSum[i][j] = prefixSum[i-1][j] + cake[i][j] - '0';\n            } else {\n                prefixSum[i][j] = prefixSum[i-1][j] + prefixSum[i][j-1] - prefixSum[i-1][j-1] + cake[i][j] - '0';\n            }\n        }\n    }\n    int count = 0;\n    for (int i = 0; i < N; i++) {\n        for (int j = 0; j < M; j++) {\n            for (int k = i; k < N; k++) {\n                for (int l = j; l < M; l++) {\n                    int currants = prefixSum[k][l];\n                    if (i > 0) {\n                        currants -= prefixSum[i-1][l];\n                    }\n                    if (j > 0) {\n                        currants -= prefixSum[k][j-1];\n                    }\n                    if (i > 0 && j > 0) {\n                        currants += prefixSum[i-1][j-1];\n                    }\n                    if (currants % 2 == 0) {\n                        count++;\n                    }\n                }\n            }\n        }\n    }\n    printf(\"%d\\n\", count);\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\nusing namespace std;\n\nint main() {\n    int N, M;\n    cin >> N >> M;\n    vector<vector<int>> cake(N, vector<int>(M));\n    for (int i = 0; i < N; i++) {\n        for (int j = 0; j < M; j++) {\n            char c;\n            cin >> c;\n            cake[i][j] = c - '0';\n        }\n    }\n    vector<vector<int>> prefixSum(N, vector<int>(M));\n    for (int i = 0; i < N; i++) {\n        for (int j = 0; j < M; j++) {\n            if (i == 0 && j == 0) {\n                prefixSum[i][j] = cake[i][j];\n            } else if (i == 0) {\n                prefixSum[i][j] = prefixSum[i][j-1] + cake[i][j];\n            } else if (j == 0) {\n                prefixSum[i][j] = prefixSum[i-1][j] + cake[i][j];\n            } else {\n                prefixSum[i][j] = prefixSum[i-1][j] + prefixSum[i][j-1] - prefixSum[i-1][j-1] + cake[i][j];\n            }\n        }\n    }\n    int count = 0;\n    for (int i = 0; i < N; i++) {\n        for (int j = 0; j < M; j++) {\n            for (int k = i; k < N; k++) {\n                for (int l = j; l < M; l++) {\n                    int currants = prefixSum[k][l];\n                    if (i > 0) {\n                        currants -= prefixSum[i-1][l];\n                    }\n                    if (j > 0) {\n                        currants -= prefixSum[k][j-1];\n                    }\n                    if (i > 0 && j > 0) {\n                        currants += prefixSum[i-1][j-1];\n                    }\n                    if (currants % 2 == 0) {\n                        count++;\n                    }\n                }\n            }\n        }\n    }\n    cout << count << endl;\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int N = scanner.nextInt();\n        int M = scanner.nextInt();\n        int[][] cake = new int[N][M];\n        for (int i = 0; i < N; i++) {\n            String row = scanner.next();\n            for (int j = 0; j < M; j++) {\n                cake[i][j] = row.charAt(j) - '0';\n            }\n        }\n        int[][] prefixSum = new int[N][M];\n        for (int i = 0; i < N; i++) {\n            for (int j = 0; j < M; j++) {\n                if (i == 0 && j == 0) {\n                    prefixSum[i][j] = cake[i][j];\n                } else if (i == 0) {\n                    prefixSum[i][j] = prefixSum[i][j-1] + cake[i][j];\n                } else if (j == 0) {\n                    prefixSum[i][j] = prefixSum[i-1][j] + cake[i][j];\n                } else {\n                    prefixSum[i][j] = prefixSum[i-1][j] + prefixSum[i][j-1] - prefixSum[i-1][j-1] + cake[i][j];\n                }\n            }\n        }\n        int count = 0;\n        for (int i = 0; i < N; i++) {\n            for (int j = 0; j < M; j++) {\n                for (int k = i; k < N; k++) {\n                    for (int l = j; l < M; l++) {\n                        int currants = prefixSum[k][l];\n                        if (i > 0) {\n                            currants -= prefixSum[i-1][l];\n                        }\n                        if (j > 0) {\n                            currants -= prefixSum[k][j-1];\n                        }\n                        if (i > 0 && j > 0) {\n                            currants += prefixSum[i-1][j-1];\n                        }\n                        if (currants % 2 == 0) {\n                            count++;\n                        }\n                    }\n                }\n            }\n        }\n        System.out.println(count);\n    }\n}",
+      "Python3": "import sys\nN, M = map(int, sys.stdin.readline().split())\ncake = [list(map(int, sys.stdin.readline().strip())) for _ in range(N)]\nprefixSum = [[0]*M for _ in range(N)]\nfor i in range(N):\n    for j in range(M):\n        if i == 0 and j == 0:\n            prefixSum[i][j] = cake[i][j]\n        elif i == 0:\n            prefixSum[i][j] = prefixSum[i][j-1] + cake[i][j]\n        elif j == 0:\n            prefixSum[i][j] = prefixSum[i-1][j] + cake[i][j]\n        else:\n            prefixSum[i][j] = prefixSum[i-1][j] + prefixSum[i][j-1] - prefixSum[i-1][j-1] + cake[i][j]\ncount = 0\nfor i in range(N):\n    for j in range(M):\n        for k in range(i, N):\n            for l in range(j, M):\n                currants = prefixSum[k][l]\n                if i > 0:\n                    currants -= prefixSum[i-1][l]\n                if j > 0:\n                    currants -= prefixSum[k][j-1]\n                if i > 0 and j > 0:\n                    currants += prefixSum[i-1][j-1]\n                if currants % 2 == 0:\n                    count += 1\nprint(count)",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst readline = () => lines[idx++];\nconst N = parseInt(readline().split(' ')[0]);\nconst M = parseInt(readline().split(' ')[1]);\nconst cake = [];\nfor (let i = 0; i < N; i++) {\n    cake.push(readline().split('').map(x => parseInt(x)));\n}\nconst prefixSum = Array(N).fill(0).map(() => Array(M).fill(0));\nfor (let i = 0; i < N; i++) {\n    for (let j = 0; j < M; j++) {\n        if (i == 0 && j == 0) {\n            prefixSum[i][j] = cake[i][j];\n        } else if (i == 0) {\n            prefixSum[i][j] = prefixSum[i][j-1] + cake[i][j];\n        } else if (j == 0) {\n            prefixSum[i][j] = prefixSum[i-1][j] + cake[i][j];\n        } else {\n            prefixSum[i][j] = prefixSum[i-1][j] + prefixSum[i][j-1] - prefixSum[i-1][j-1] + cake[i][j];\n        }\n    }\n}\nlet count = 0;\nfor (let i = 0; i < N; i++) {\n    for (let j = 0; j < M; j++) {\n        for (let k = i; k < N; k++) {\n            for (let l = j; l < M; l++) {\n                let currants = prefixSum[k][l];\n                if (i > 0) {\n                    currants -= prefixSum[i-1][l];\n                }\n                if (j > 0) {\n                    currants -= prefixSum[k][j-1];\n                }\n                if (i > 0 && j > 0) {\n                    currants += prefixSum[i-1][j-1];\n                }\n                if (currants % 2 == 0) {\n                    count++;\n                }\n            }\n        }\n    }\n}\nconsole.log(count);"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

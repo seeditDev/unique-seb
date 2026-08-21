@@ -1,0 +1,137 @@
+{
+  "questionId": "Q5663",
+  "title": "Furik and Rubik and Sub Array",
+  "slug": "furik-and-rubik-and-sub-array",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Arrays",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Prefix Sum",
+      "Set",
+      "Brute Force",
+      "O(N^2)"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Data Structures"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Furik and Rubik are playing the game **Sub array**. This game is played over an **array of integers**, consisting of **N** elements.\n\n\nIn this game, Furik decides an integer that is equal to **sum** of some **sub-array** of this array and Rubik wants to guess this number.\n\n\nBut, since Rubik is a busy man, he wants to know how many times in the worst case he will have to try to guess this number. You may assume he acts optimally, i.e. he doesn't call the same number twice, and calls only those numbers, that might have been decided by Furik, meaning, the sum of some or the other **sub-array**.\n\n\nLet's call the array **b**, sub-array of the array **a**, if there are numbers **l** and **r** such, that **b1 = al AND b2 = al+1 AND ... b|b| = ar**, where **|b|** is the length of the array **b**.",
+    "constraints": [
+      "1 ≤ T ≤ 10",
+      "1 ≤ N ≤ 1000",
+      "1 ≤ ai",
+      "N·S ≤ 10^10 (S is the sum of the array)",
+      "All sums fit into 64‑bit signed integer"
+    ],
+    "inputFormat": "The first line contains an integer T (1 ≤ T ≤ 10) – the number of test cases. Then for each test case:\n- a line with integer N (1 ≤ N ≤ 1000)\n- a line with N positive integers a1 … aN (1 ≤ ai, and N·S ≤ 10^10 where S is the sum of the array)\nAll numbers are separated by single spaces.",
+    "outputFormat": "For each test case output a single line containing the number of distinct sums of all possible sub‑arrays of the given array.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n3\n1 2 3",
+        "output": "4",
+        "explanation": "All sub‑array sums are {1,2,3,6}. There are 4 distinct values, so Rubik may need at most 4 guesses."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n9\n6 1 7 3 7 1 8 5 7",
+        "output": "28",
+        "explanation": "The 28 distinct sums listed in the statement are the only possible sums of sub‑arrays."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n5",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary (15 elements)",
+        "input": "1\n15\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15",
+        "expectedOutput": "120",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case with many equal elements",
+        "input": "1\n3\n2 2 2",
+        "expectedOutput": "3",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n5\n5 1 2 5 1",
+        "expectedOutput": "10",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2 with large values",
+        "input": "1\n4\n1000000000 1000000000 1000000000 1000000000",
+        "expectedOutput": "4",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each test case we compute all sub‑array sums. Using prefix sums we can obtain the sum of sub‑array [l, r] as pref[r]‑pref[l‑1] in O(1). We iterate over all pairs (l, r) with l ≤ r (O(N^2) pairs) and insert each sum into a hash set (or a sorted array later). The size of the set after processing the whole array is the answer. With N ≤ 1000 the O(N^2) algorithm is easily fast enough (≈10^6 operations per test case).",
+    "timeComplexity": "O(T·N^2) – each test case enumerates all O(N^2) sub‑arrays.",
+    "spaceComplexity": "O(N^2) in the worst case for the set of distinct sums (at most N·(N+1)/2 elements).",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nint cmp_ll(const void *a, const void *b) {\n    long long la = *(const long long *)a;\n    long long lb = *(const long long *)b;\n    if (la < lb) return -1;\n    if (la > lb) return 1;\n    return 0;\n}\n\nint main() {\n    int T; if (scanf(\"%d\", &T)!=1) return 0;\n    while (T--) {\n        int N; scanf(\"%d\", &N);\n        long long *arr = (long long*)malloc(N * sizeof(long long));\n        for (int i = 0; i < N; ++i) scanf(\"%lld\", &arr[i]);\n        int total = N * (N + 1) / 2;\n        long long *sums = (long long*)malloc(total * sizeof(long long));\n        int cnt = 0;\n        for (int i = 0; i < N; ++i) {\n            long long cur = 0;\n            for (int j = i; j < N; ++j) {\n                cur += arr[j];\n                sums[cnt++] = cur;\n            }\n        }\n        qsort(sums, cnt, sizeof(long long), cmp_ll);\n        int distinct = (cnt > 0) ? 1 : 0;\n        for (int i = 1; i < cnt; ++i) if (sums[i] != sums[i-1]) ++distinct;\n        printf(\"%d\\n\", distinct);\n        free(arr);\n        free(sums);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N; cin>>N;\n        vector<long long>a(N);\n        for(int i=0;i<N;++i)cin>>a[i];\n        unordered_set<long long> st;\n        st.reserve(N*(N+1)/2*2);\n        for(int i=0;i<N;++i){\n            long long cur=0;\n            for(int j=i;j<N;++j){\n                cur+=a[j];\n                st.insert(cur);\n            }\n        }\n        cout<<st.size()<<\"\\n\";\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st = new StringTokenizer(br.readLine());\n        int T = Integer.parseInt(st.nextToken());\n        StringBuilder sb = new StringBuilder();\n        for (int tc = 0; tc < T; ++tc) {\n            int N = Integer.parseInt(br.readLine().trim());\n            long[] arr = new long[N];\n            st = new StringTokenizer(br.readLine());\n            for (int i = 0; i < N; ++i) arr[i] = Long.parseLong(st.nextToken());\n            HashSet<Long> set = new HashSet<>(N * (N + 1) / 2 * 2);\n            for (int i = 0; i < N; ++i) {\n                long cur = 0;\n                for (int j = i; j < N; ++j) {\n                    cur += arr[j];\n                    set.add(cur);\n                }\n            }\n            sb.append(set.size()).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it))\n        arr = [int(next(it)) for _ in range(N)]\n        seen = set()\n        for i in range(N):\n            cur = 0\n            for j in range(i, N):\n                cur += arr[j]\n                seen.add(cur)\n        out_lines.append(str(len(seen)))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()",
+      "JavaScript": "const fs = require('fs');\nconst data = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nif (data.length === 0) process.exit(0);\nconst T = Number(data[idx++]);\nlet outputs = [];\nfor (let t = 0; t < T; ++t) {\n  const N = Number(data[idx++]);\n  const arr = new Array(N);\n  for (let i = 0; i < N; ++i) arr[i] = Number(data[idx++]);\n  const set = new Set();\n  for (let i = 0; i < N; ++i) {\n    let cur = 0;\n    for (let j = i; j < N; ++j) {\n      cur += arr[j];\n      set.add(cur);\n    }\n  }\n  outputs.push(String(set.size));\n}\nconsole.log(outputs.join('\\n'));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

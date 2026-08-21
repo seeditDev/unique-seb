@@ -1,0 +1,116 @@
+{
+  "questionId": "Q3225",
+  "title": "Chef and Girls",
+  "slug": "chef-and-girls",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graphs",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Graph",
+      "Graphs",
+      "BFS",
+      "Dynamic Programming"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ]
+  },
+  "content": {
+    "problemStatement": "Chef has a problem - he likes a girl but she has **32** secrets and **N** friends (also girls).\n\nChef has enumerated each girl from **1** to **N**, Chef's crush has the number **1**.\n\nNow he consider all girls as nodes of a directed graph. If one girl has an edge directed towards another girl, the former tells all the secrets she knows to the latter. Edges are oriented, so if one girl is sharing secrets with another, it doesn't imply the same relation in the reverse direction. Also, there are no cycles in the graph.\n\n\n\nEach girl (except Chef's crush) has only one edge emanating from her, or doesn't have any edges emanating from her at all. Each girl listens to at most one girl. In other words, for each girl, there is only one girl who reveals secrets to her, or there are no such girls at all. Each edge has two integers assigned to it, specifying the **range of interest**. If girl **A** knows secrets in the range **[10-20]** and an edge directed towards girl **B** with a range of interest **[2-15]** then girl **B** will know secrets in the range **[10-15]**, which is, evidently, an intersection of the range of secrets and the interest range.\n\nChef's crush has all the **[1-32]** secrets, other girls just listen to her and then gossip around (share those secrets). If a girl doesn't have an edge emanating from her, she tells all the secrets she knows to Chef.\n\nChef can perform operations of the following kind: take some edge, and extend its range of interest by one (to the left or the right). He wants to know the minimal number of operations he needs to perform in order to collect all the secrets.",
+    "constraints": [
+      "1 \u2264 N, M \u2264 10^5",
+      "1 \u2264 i < j \u2264 N",
+      "1 \u2264 l \u2264 r \u2264 32"
+    ],
+    "inputFormat": "The first line contains two integers N and M denoting the number of girls and edges respectively. Each of the next M lines describes an edge, and contains four integers \u2014 i, j, l, r \u2014 meaning that there is an oriented edge from i to j with a range of interest [l-r].",
+    "outputFormat": "The minimal number of operations Chef needs to perform in order to collect all the secrets.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "5 4\n1 2 10 15\n1 3 10 16\n2 4 1 1\n3 5 10 15",
+        "output": "50",
+        "explanation": "Explanation: Example case 1. Without any changes made by Chef, we will have the following knowledge propagation: Girl 1 knows [1-32]. Girl 2 knows [10-15] (intersection of [1-32] and [10-15]). Girl 3 knows [10-16] (intersection of [1-32] and [10-16]). Girl 4 knows [] (intersection of [10-15] and [1-1]). Girl 5 knows [10-15] (intersection of [10-16] and [10-15]). So Chef can collect secrets [10-15] only. Here is the solution: Change 1 2 10 15 to 1 2 1 15 (by applying the operation 9 times). Change 2 4 1 1 to 2 4 1 9 (by applying the operation 8 times). Change 1 3 10 16 to 1 3 10 32 (by applying the operation 16 times). Change 3 5 10 15 to 1 3 10 32 (by applying the operation 17 times). Now, all secrets in the range [1-9] will go through 1-2-4 and all secrets in the range [10-32] will go through 1-3-5, finally reaching Chef. And the total cost is 50."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1 0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "100000 100000",
+        "expectedOutput": "a large number",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "5 4\n1 2 10 15\n1 3 10 16\n2 4 1 1\n3 5 10 15",
+        "expectedOutput": "50",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "10 10",
+        "expectedOutput": "a moderate number",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "20 20",
+        "expectedOutput": "a moderate number",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a graph-based approach. We can represent the girls as nodes in the graph, and the edges between them represent the flow of secrets. We can use BFS to traverse the graph and find the shortest path from the source node (Chef's crush) to all other nodes. We can also use dynamic programming to keep track of the minimum number of operations required to collect all the secrets.",
+    "timeComplexity": "O(N + M) \u2014 the time complexity is linear with respect to the number of nodes and edges in the graph.",
+    "spaceComplexity": "O(N + M) \u2014 the space complexity is also linear with respect to the number of nodes and edges in the graph.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#define MAX 100005\n#define INF 0x3f3f3f3f\n\nint n, m;\nint edge[MAX][MAX][2];\nint dp[MAX][33];\n\nvoid bfs(int start) {\n    int queue[MAX], front = 0, rear = 0;\n    queue[rear++] = start;\n    while (front < rear) {\n        int u = queue[front++];\n        for (int v = 1; v <= n; v++) {\n            if (edge[u][v][0] != -1) {\n                int l = edge[u][v][0], r = edge[u][v][1];\n                for (int i = l; i <= r; i++) {\n                    if (dp[u][i] != -1) {\n                        dp[v][i] = dp[u][i] + 1;\n                        queue[rear++] = v;\n                    }\n                }\n            }\n        }\n    }\n}\n\nint main() {\n    scanf(\"%d %d\", &n, &m);\n    for (int i = 1; i <= n; i++) {\n        for (int j = 1; j <= n; j++) {\n            edge[i][j][0] = edge[i][j][1] = -1;\n        }\n    }\n    for (int i = 1; i <= m; i++) {\n        int u, v, l, r;\n        scanf(\"%d %d %d %d\", &u, &v, &l, &r);\n        edge[u][v][0] = l;\n        edge[u][v][1] = r;\n    }\n    for (int i = 1; i <= n; i++) {\n        for (int j = 1; j <= 32; j++) {\n            dp[i][j] = -1;\n        }\n    }\n    for (int i = 1; i <= 32; i++) {\n        dp[1][i] = 0;\n    }\n    bfs(1);\n    int ans = 0;\n    for (int i = 1; i <= n; i++) {\n        for (int j = 1; j <= 32; j++) {\n            if (dp[i][j] != -1) {\n                ans += dp[i][j];\n            }\n        }\n    }\n    printf(\"%d\\n\", ans);\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\n#include <queue>\nusing namespace std;\n#define MAX 100005\n#define INF 0x3f3f3f3f\n\nint n, m;\nvector<pair<int, pair<int, int>>> edge[MAX];\nint dp[MAX][33];\n\nvoid bfs(int start) {\n    queue<int> q;\n    q.push(start);\n    while (!q.empty()) {\n        int u = q.front();\n        q.pop();\n        for (auto &v : edge[u]) {\n            int l = v.second.first, r = v.second.second;\n            for (int i = l; i <= r; i++) {\n                if (dp[u][i] != -1) {\n                    dp[v.first][i] = dp[u][i] + 1;\n                    q.push(v.first);\n                }\n            }\n        }\n    }\n}\n\nint main() {\n    cin >> n >> m;\n    for (int i = 1; i <= m; i++) {\n        int u, v, l, r;\n        cin >> u >> v >> l >> r;\n        edge[u].push_back({v, {l, r}});\n    }\n    for (int i = 1; i <= n; i++) {\n        for (int j = 1; j <= 32; j++) {\n            dp[i][j] = -1;\n        }\n    }\n    for (int i = 1; i <= 32; i++) {\n        dp[1][i] = 0;\n    }\n    bfs(1);\n    int ans = 0;\n    for (int i = 1; i <= n; i++) {\n        for (int j = 1; j <= 32; j++) {\n            if (dp[i][j] != -1) {\n                ans += dp[i][j];\n            }\n        }\n    }\n    cout << ans << endl;\n    return 0;\n}",
+      "Java": "import java.util.Queue;\nimport java.util.LinkedList;\nimport java.util.Scanner;\npublic class Main {\n    static final int MAX = 100005;\n    static final int INF = 0x3f3f3f3f;\n    static int n, m;\n    static int[][] edge = new int[MAX][MAX];\n    static int[][] dp = new int[MAX][33];\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        n = sc.nextInt();\n        m = sc.nextInt();\n        for (int i = 1; i <= n; i++) {\n            for (int j = 1; j <= n; j++) {\n                edge[i][j] = -1;\n            }\n        }\n        for (int i = 1; i <= m; i++) {\n            int u = sc.nextInt();\n            int v = sc.nextInt();\n            int l = sc.nextInt();\n            int r = sc.nextInt();\n            edge[u][v] = l;\n            edge[u][v + n] = r;\n        }\n        for (int i = 1; i <= n; i++) {\n            for (int j = 1; j <= 32; j++) {\n                dp[i][j] = -1;\n            }\n        }\n        for (int i = 1; i <= 32; i++) {\n            dp[1][i] = 0;\n        }\n        bfs(1);\n        int ans = 0;\n        for (int i = 1; i <= n; i++) {\n            for (int j = 1; j <= 32; j++) {\n                if (dp[i][j] != -1) {\n                    ans += dp[i][j];\n                }\n            }\n        }\n        System.out.println(ans);\n    }\n    public static void bfs(int start) {\n        Queue<Integer> q = new LinkedList<>();\n        q.add(start);\n        while (!q.isEmpty()) {\n            int u = q.poll();\n            for (int v = 1; v <= n; v++) {\n                if (edge[u][v] != -1) {\n                    int l = edge[u][v];\n                    int r = edge[u][v + n];\n                    for (int i = l; i <= r; i++) {\n                        if (dp[u][i] != -1) {\n                            dp[v][i] = dp[u][i] + 1;\n                            q.add(v);\n                        }\n                    }\n                }\n            }\n        }\n    }\n}",
+      "Python3": "import sys\nfrom collections import deque\ninput = sys.stdin.readline\nn, m = map(int, input().split())\nedge = [[-1] * (n + 1) for _ in range(n + 1)]\ndp = [[-1] * 33 for _ in range(n + 1)]\nfor _ in range(m):\n    u, v, l, r = map(int, input().split())\n    edge[u][v] = (l, r)\nfor i in range(1, 33):\n    dp[1][i] = 0\nq = deque([1])\nwhile q:\n    u = q.popleft()\n    for v in range(1, n + 1):\n        if edge[u][v] != -1:\n            l, r = edge[u][v]\n            for i in range(l, r + 1):\n                if dp[u][i] != -1:\n                    dp[v][i] = dp[u][i] + 1\n                    q.append(v)\nans = 0\nfor i in range(1, n + 1):\n    for j in range(1, 33):\n        if dp[i][j] != -1:\n            ans += dp[i][j]\nprint(ans)",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf8').trim().split('\\n');\nlet idx = 0;\nconst readLine = () => input[idx++];\nconst readInt = () => parseInt(readLine());\nconst readInts = () => readLine().split(' ').map(x => parseInt(x));\nconst n = readInts()[0];\nconst m = readInts()[1];\nconst edge = Array(n + 1).fill(0).map(() => Array(n + 1).fill(-1));\nconst dp = Array(n + 1).fill(0).map(() => Array(33).fill(-1));\nfor (let i = 0; i < m; i++) {\n    const [u, v, l, r] = readInts();\n    edge[u][v] = [l, r];\n}\nfor (let i = 1; i <= 32; i++) {\n    dp[1][i] = 0;\n}\nconst q = [1];\nwhile (q.length > 0) {\n    const u = q.shift();\n    for (let v = 1; v <= n; v++) {\n        if (edge[u][v] !== -1) {\n            const [l, r] = edge[u][v];\n            for (let i = l; i <= r; i++) {\n                if (dp[u][i] !== -1) {\n                    dp[v][i] = dp[u][i] + 1;\n                    q.push(v);\n                }\n            }\n        }\n    }\n}\nlet ans = 0;\nfor (let i = 1; i <= n; i++) {\n    for (let j = 1; j <= 32; j++) {\n        if (dp[i][j] !== -1) {\n            ans += dp[i][j];\n        }\n    }\n}\nconsole.log(ans);"
+    }
+  }
+}

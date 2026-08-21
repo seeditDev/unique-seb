@@ -1,0 +1,128 @@
+{
+  "questionId": "Q2335",
+  "title": "D-Power Permutations",
+  "slug": "d-power-permutations",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Math",
+      "Cycle Detection",
+      "Permutations",
+      "Bijections"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Mathematics"
+    ]
+  },
+  "content": {
+    "problemStatement": "Let **N** be a positive integer and **S = {1, 2, 3, ..., N}**. For a given positive integer **d** the function **f : S --&gt; S** is called **d**-power permutation if there exists a bijection **g : S --&gt; S** such that **g ( g ( ... g ( x ) ... ) ) = f(x)** for each **x** from **S** , where **g** is repeated exactly **d** times.\n\n\n\n\n\nYou are given some bijection **f : S --&gt; S** and a positive integer **D**. You need to find the number of those **d &lt;= D** such that **f** is **d**-power permutation.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 700",
+      "1 <= D <= 10^18"
+    ],
+    "inputFormat": "First line contains T, the number of test cases. Each test case contains two lines. The first line contains two positive integers N and D, where N <= 700 and D <= 10^18. The second line contains N space-separated integers, representing the bijection f : S -> S.",
+    "outputFormat": "For each test case, print the number of d <= D such that f is a d-power permutation.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n3 6\n1 2 3\n5 10\n2 1 4 5 3",
+        "output": "6\n3",
+        "explanation": "For the first test case, the permutation f is the identity permutation, so it is a d-power permutation for all d. For the second test case, the permutation f has cycle length 2, so it is a d-power permutation for d = 2, 4, 6, 8, 10."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n4 12\n2 1 4 3",
+        "output": "3",
+        "explanation": "The permutation f has cycle length 2, so it is a d-power permutation for d = 2, 4, 6, 8, 10, 12."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n5 10\n5 4 3 2 1",
+        "output": "2",
+        "explanation": "The permutation f has cycle length 5, so it is a d-power permutation for d = 5, 10."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n700 1000000000000000000\n",
+        "expectedOutput": "1000000000000000000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n5 10\n1 1 1 1 1",
+        "expectedOutput": "10",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n5 10\n2 3 4 5 1",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "10\n5 10\n2 1 4 5 3\n5 10\n2 1 4 5 3\n5 10\n2 1 4 5 3\n5 10\n2 1 4 5 3\n5 10\n2 1 4 5 3\n5 10\n2 1 4 5 3",
+        "expectedOutput": "3\n3\n3\n3\n3\n3\n3\n3\n3\n3",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use the concept of cycle detection in permutations. We can represent the bijection f as a permutation and find its cycle decomposition. Then, for each cycle, we can find the smallest positive integer d such that f^d is the identity permutation. The number of d <= D such that f is a d-power permutation is then the number of divisors of the least common multiple of these smallest positive integers.",
+    "timeComplexity": "O(T * N * log(N)) per test case, O(T * N * log(N)) total.",
+    "spaceComplexity": "O(N) \u2014 the dominant structure is the permutation array.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nint gcd(int a, int b) {\n    if (b == 0) return a;\n    return gcd(b, a % b);\n}\n\nint lcm(int a, int b) {\n    return a * b / gcd(a, b);\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int N, D;\n        scanf(\"%d %d\", &N, &D);\n        int* f = (int*) malloc(N * sizeof(int));\n        for (int i = 0; i < N; i++) {\n            scanf(\"%d\", &f[i]);\n            f[i]--;\n        }\n        int count = 0;\n        for (int d = 1; d <= D; d++) {\n            int* g = (int*) malloc(N * sizeof(int));\n            for (int i = 0; i < N; i++) {\n                g[i] = i;\n            }\n            for (int j = 0; j < d; j++) {\n                for (int i = 0; i < N; i++) {\n                    g[i] = f[g[i]];\n                }\n            }\n            int valid = 1;\n            for (int i = 0; i < N; i++) {\n                if (g[i] != i) {\n                    valid = 0;\n                    break;\n                }\n            }\n            if (valid) count++;\n            free(g);\n        }\n        printf(\"%d\\n\", count);\n        free(f);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\nusing namespace std;\n\nint gcd(int a, int b) {\n    if (b == 0) return a;\n    return gcd(b, a % b);\n}\n\nint lcm(int a, int b) {\n    return a * b / gcd(a, b);\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(NULL);\n    int T;\n    cin >> T;\n    while (T--) {\n        int N, D;\n        cin >> N >> D;\n        vector<int> f(N);\n        for (int i = 0; i < N; i++) {\n            cin >> f[i];\n            f[i]--;\n        }\n        int count = 0;\n        for (int d = 1; d <= D; d++) {\n            vector<int> g(N);\n            for (int i = 0; i < N; i++) {\n                g[i] = i;\n            }\n            for (int j = 0; j < d; j++) {\n                for (int i = 0; i < N; i++) {\n                    g[i] = f[g[i]];\n                }\n            }\n            bool valid = true;\n            for (int i = 0; i < N; i++) {\n                if (g[i] != i) {\n                    valid = false;\n                    break;\n                }\n            }\n            if (valid) count++;\n        }\n        cout << count << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    public static int gcd(int a, int b) {\n        if (b == 0) return a;\n        return gcd(b, a % b);\n    }\n\n    public static int lcm(int a, int b) {\n        return a * b / gcd(a, b);\n    }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n        while (T-- > 0) {\n            int N = sc.nextInt();\n            int D = sc.nextInt();\n            int[] f = new int[N];\n            for (int i = 0; i < N; i++) {\n                f[i] = sc.nextInt() - 1;\n            }\n            int count = 0;\n            for (int d = 1; d <= D; d++) {\n                int[] g = new int[N];\n                for (int i = 0; i < N; i++) {\n                    g[i] = i;\n                }\n                for (int j = 0; j < d; j++) {\n                    for (int i = 0; i < N; i++) {\n                        g[i] = f[g[i]];\n                    }\n                }\n                boolean valid = true;\n                for (int i = 0; i < N; i++) {\n                    if (g[i] != i) {\n                        valid = false;\n                        break;\n                    }\n                }\n                if (valid) count++;\n            }\n            System.out.println(count);\n        }\n    }\n}",
+      "Python3": "import sys\n\ndef gcd(a, b):\n    if b == 0: return a\n    return gcd(b, a % b)\n\ndef lcm(a, b):\n    return a * b // gcd(a, b)\n\nT = int(input())\nwhile T > 0:\n    N, D = map(int, input().split())\n    f = list(map(lambda x: int(x) - 1, input().split()))\n    count = 0\n    for d in range(1, D + 1):\n        g = list(range(N))\n        for _ in range(d):\n            g = [f[i] for i in g]\n        if all(g[i] == i for i in range(N)):\n            count += 1\n    print(count)\n    T -= 1",
+      "JavaScript": "const lines = require('fs').readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\n\nfunction gcd(a, b) {\n    if (b == 0) return a;\n    return gcd(b, a % b);\n}\n\nfunction lcm(a, b) {\n    return a * b / gcd(a, b);\n}\n\nlet T = parseInt(lines[idx++]);\nwhile (T-- > 0) {\n    let [N, D] = lines[idx++].trim().split(' ').map(Number);\n    let f = lines[idx++].trim().split(' ').map(Number).map(x => x - 1);\n    let count = 0;\n    for (let d = 1; d <= D; d++) {\n        let g = Array(N).fill(0).map((_, i) => i);\n        for (let j = 0; j < d; j++) {\n            g = g.map(i => f[i]);\n        }\n        if (g.every((x, i) => x == i)) count++;\n    }\n    console.log(count);\n}"
+    }
+  }
+}

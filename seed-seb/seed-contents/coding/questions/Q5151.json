@@ -1,0 +1,128 @@
+{
+  "questionId": "Q5151",
+  "title": "Product of divisors",
+  "slug": "product-of-divisors",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Number Theory",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Divisors",
+      "Precomputation",
+      "Sieve-like enumeration",
+      "Modular arithmetic"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Mathematics"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "A tutorial for this problem is now available on our blog. Click here to read it. Being in love with number theory, Johnny decided to take a number theory course. On the first day, he was challenged by his teacher with the following problem: given a number N, compute the product of its positive divisors. Johnny is desperate to impress his new teacher so he asks you for help.\n\nIn this problem, the divisors of N do not include the number N itself. For example, if N=12, the divisors of N (excluding N) are 1, 2, 3, 4, and 6. Thus, the product of divisors is 1x2x3x4x6=144. Since the result may be very large, if the result has more than 4 decimal digits, Johnny only needs to compute the **last 4 digits** of it.",
+    "constraints": [
+      "1 ≤ T ≤ 300000",
+      "1 ≤ N ≤ 500000"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains a single integer N (1 ≤ N ≤ 500000).",
+    "outputFormat": "For each test case output a single line with the product of all positive divisors of N excluding N itself, taken modulo 10000. The result is printed as a decimal integer (no extra leading zeros are required).",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "6\\n3\\n4\\n12\\n25\\n957\\n10000",
+        "output": "1\\n2\\n144\\n5\\n7493\\n0",
+        "explanation": "For each N we multiply all proper divisors and take the result modulo 10000.\\n- N=3: divisors {1} → product 1.\\n- N=4: divisors {1,2} → 1·2=2.\\n- N=12: divisors {1,2,3,4,6} → 144.\\n- N=25: divisors {1,5} → 5.\\n- N=957: proper divisors product ≡ 7493 (mod 10000).\\n- N=10000: 10000 is divisible by 2 and 5, so its proper divisors include a factor 2 and 5 that make the product a multiple of 10000, thus result 0."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\\n500000",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "prime number edge case",
+        "input": "1\\n13",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\\n36",
+        "expectedOutput": "9936",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\\n9973",
+        "expectedOutput": "1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "We pre‑compute for every integer x (1 ≤ x ≤ 500000) the product of its proper divisors modulo 10000. The pre‑computation works like a sieve: for each possible divisor i we multiply i into all multiples j = 2*i, 3*i, … . Because we never multiply the number itself, we start the inner loop at 2*i. After the O(N log N) pre‑computation each query is answered in O(1) by reading the stored value. The product of an empty set (N = 1) is defined as 1, which matches the formula N^{d(N)/2‑1} when d(N)=1.\n\nSteps:\n1. Set MAX = 500000. Create an array prod[0…MAX] and fill it with 1.\n2. For i from 1 to MAX/2:\n   for (j = i*2; j ≤ MAX; j += i) prod[j] = (prod[j] * i) % 10000;\n3. Read T and for each test case output prod[N].\n\nThe algorithm uses only integer arithmetic, runs fast enough for the maximal limits, and needs O(MAX) memory.",
+    "timeComplexity": "Pre‑computation: O(MAX log MAX) ≈ 6·10⁶ operations for MAX = 5·10⁵. Answering each query: O(1). Total: O(MAX log MAX + T).",
+    "spaceComplexity": "O(MAX) integers for the pre‑computed array (≈ 2 MB).",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\n#define MAXN 500000\n#define MOD 10000\n\nint main(void) {\n    static int prod[MAXN + 1];\n    for (int i = 0; i <= MAXN; ++i) prod[i] = 1;\n    for (int i = 1; i <= MAXN / 2; ++i) {\n        for (int j = i * 2; j <= MAXN; j += i) {\n            prod[j] = (prod[j] * i) % MOD;\n        }\n    }\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        int n;\n        scanf(\"%d\", &n);\n        printf(\"%d\\n\", prod[n]);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nconst int MAXN = 500000;\nconst int MOD = 10000;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    static int prod[MAXN + 1];\n    fill(begin(prod), end(prod), 1);\n    for (int i = 1; i <= MAXN / 2; ++i) {\n        for (int j = i * 2; j <= MAXN; j += i) {\n            prod[j] = (prod[j] * i) % MOD;\n        }\n    }\n    int T; \n    if (!(cin >> T)) return 0;\n    while (T--) {\n        int n; cin >> n;\n        cout << prod[n] << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    private static final int MAXN = 500000;\n    private static final int MOD = 10000;\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder sb = new StringBuilder();\n        int[] prod = new int[MAXN + 1];\n        Arrays.fill(prod, 1);\n        for (int i = 1; i <= MAXN / 2; i++) {\n            for (int j = i * 2; j <= MAXN; j += i) {\n                prod[j] = (prod[j] * i) % MOD;\n            }\n        }\n        int T = Integer.parseInt(br.readLine().trim());\n        for (int t = 0; t < T; t++) {\n            int n = Integer.parseInt(br.readLine().trim());\n            sb.append(prod[n]).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "import sys\nMAXN = 500000\nMOD = 10000\nprod = [1] * (MAXN + 1)\nfor i in range(1, MAXN // 2 + 1):\n    step = i\n    for j in range(i * 2, MAXN + 1, step):\n        prod[j] = (prod[j] * i) % MOD\n\ndata = sys.stdin.read().strip().split()\nif not data:\n    sys.exit()\nit = iter(data)\nT = int(next(it))\nout_lines = []\nfor _ in range(T):\n    n = int(next(it))\n    out_lines.append(str(prod[n]))\nsys.stdout.write('\\n'.join(out_lines))\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nif (input.length === 0) process.exit();\nconst MAXN = 500000;\nconst MOD = 10000;\nconst prod = new Uint32Array(MAXN + 1);\nfor (let i = 0; i <= MAXN; ++i) prod[i] = 1;\nfor (let i = 1; i <= Math.floor(MAXN / 2); ++i) {\n    for (let j = i * 2; j <= MAXN; j += i) {\n        prod[j] = (prod[j] * i) % MOD;\n    }\n}\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet out = [];\nfor (let t = 0; t < T; ++t) {\n    const n = Number(input[idx++]);\n    out.push(String(prod[n]));\n}\nconsole.log(out.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

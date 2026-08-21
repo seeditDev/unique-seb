@@ -1,0 +1,109 @@
+{
+  "questionId": "Q4166",
+  "title": "Event Organizer",
+  "slug": "event-organizer",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-12",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Weighted Interval Scheduling",
+      "Binary Search",
+      "DP"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef Po has given an online advertisement to provide **Event organizing services**. Chef got a huge response for his advertisement. He got various orders to conduct the events from different organizations. In turn, Chef will receive a compensation depend upon the type of event and the total numbers of persons in the event. Chef has received **N** orders for conducting events in this weekend in all. As weekend consists of two days all events will take place during the period of **48** hours. For the **i**-th order the corresponding event will start at **Si** hours, ends at **Ei** hours and Chef will receive a compensation **Ci** for this event. For example, if **Si = 17** and **Ei = 22** then duration of event is **22 – 17 = 5** hours and its time period is **17:00 – 22:00** of Saturday. Hours of Sunday are numbered by numbers from **24** to **48**. So, for example, **10:00** of Sunday will be represented as **10 + 24 = 34**. Because Chef is a newbie, the organizations had put a condition that Chef will receive a compensation for the event if and only if he is available for the entire duration of the event. It means that he can not choose overlapping events. Note, however, that if some event starts just in the moment another event has finished the Chef can safely conduct them both.\n\n\n\nIn general Chef will obey the orders on first come first serve basis. But on weekends Chef will select the orders in such a way that the total compensation for all the events he will conduct will be the maximal. Now your task is to help Chef and find this maximal total compensation.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 2000",
+      "0 <= Si < Ei <= 48",
+      "0 <= Ci <= 10^6"
+    ],
+    "inputFormat": "First line contains an integer T, the number of test cases. Each test case starts with an integer N, the number of orders. Then N lines follow, each containing three integers Si, Ei and Ci — the start time, end time and compensation of an order.",
+    "outputFormat": "For each test case, print a single line containing the maximal total compensation Chef can obtain by selecting a subset of non‑overlapping events.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n4\n1 2 100\n2 3 200\n3 4 1600\n1 3 2100\n3\n1 10 2000\n2 5 100\n6 9 400",
+        "output": "3700\n2000",
+        "explanation": "In the first test case the optimal set is events (1,2,100), (2,3,200) and (3,4,1600) giving 1900, but taking event (1,3,2100) together with (3,4,1600) yields 3700 which is maximal. In the second test case only the first event can be taken without overlap, giving 2000."
+      },
+      {
+        "id": "sample_2",
+        "input": "2\n2\n1 2 100\n2 3 200\n2\n1 3 100\n2 4 200",
+        "output": "300\n200",
+        "explanation": "First test case both events are compatible, total 300. In the second test case they overlap, so we pick the higher paying event (2,4,200)."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n1\n1 2 100",
+        "output": "100",
+        "explanation": "Only one event, so the answer is its compensation."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 1
+      }
+    ],
+    "totalTestCases": 1,
+    "totalWeight": 1
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      1
+    ],
+    "maxScore": 1
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Sort all events by their finishing time. For each event i, using binary search find the last event j that finishes not later than the start of i. Let dp[i] be the maximum compensation considering events up to i (in sorted order). Then dp[i] = max(dp[i‑1], compensation[i] + (j >= 0 ? dp[j] : 0)). The answer is dp[last]. This is the classic weighted interval scheduling algorithm and runs in O(N log N) per test case.",
+    "timeComplexity": "O(N log N) per test case (sorting + binary searches)",
+    "spaceComplexity": "O(N) for storing the sorted events and the dp array",
+    "code": {
+      "C": "",
+      "C++": "",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    private static class FastScanner {\n        private final InputStream in;\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        FastScanner(InputStream in) { this.in = in; }\n        private int readByte() throws IOException {\n            if (ptr >= len) {\n                len = in.read(buffer);\n                ptr = 0;\n                if (len <= 0) return -1;\n            }\n            return buffer[ptr++];\n        }\n        Integer nextInt() throws IOException {\n            int c;\n            do {\n                c = readByte();\n                if (c == -1) return null;\n            } while (c <= ' ');\n            boolean neg = false;\n            if (c == '-' ) { neg = true; c = readByte(); }\n            int val = 0;\n            while (c > ' ') {\n                val = val * 10 + (c - '0');\n                c = readByte();\n            }\n            return neg ? -val : val;\n        }\n    }\n\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner(System.in);\n        Integer tObj = fs.nextInt();\n        if (tObj == null) return; // no input\n        int T = tObj;\n        StringBuilder sb = new StringBuilder();\n        for (int tc = 0; tc < T; tc++) {\n            Integer nObj = fs.nextInt();\n            if (nObj == null) break; // safety\n            int N = nObj;\n            int[] s = new int[N];\n            int[] e = new int[N];\n            long[] c = new long[N];\n            for (int i = 0; i < N; i++) {\n                s[i] = fs.nextInt();\n                e[i] = fs.nextInt();\n                c[i] = fs.nextInt();\n            }\n            // sort by end time\n            Integer[] idx = new Integer[N];\n            for (int i = 0; i < N; i++) idx[i] = i;\n            Arrays.sort(idx, (a, b) -> Integer.compare(e[a], e[b]));\n            int[] start = new int[N];\n            int[] end = new int[N];\n            long[] comp = new long[N];\n            for (int i = 0; i < N; i++) {\n                start[i] = s[idx[i]];\n                end[i] = e[idx[i]];\n                comp[i] = c[idx[i]];\n            }\n            long[] dp = new long[N];\n            for (int i = 0; i < N; i++) {\n                // binary search for last non‑overlapping interval\n                int lo = 0, hi = i - 1, pos = -1;\n                while (lo <= hi) {\n                    int mid = (lo + hi) >>> 1;\n                    if (end[mid] <= start[i]) {\n                        pos = mid;\n                        lo = mid + 1;\n                    } else {\n                        hi = mid - 1;\n                    }\n                }\n                long incl = comp[i] + (pos >= 0 ? dp[pos] : 0);\n                long excl = i > 0 ? dp[i - 1] : 0;\n                dp[i] = Math.max(incl, excl);\n            }\n            long ans = N == 0 ? 0 : dp[N - 1];\n            sb.append(ans);\n            if (tc < T - 1) sb.append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "",
+      "JavaScript": ""
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

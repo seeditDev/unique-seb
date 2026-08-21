@@ -1,0 +1,138 @@
+{
+  "questionId": "Q9765",
+  "title": "Disappearing Domino Game",
+  "slug": "disappearing-domino-game",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Game Theory",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Impartial Game",
+      "Sprague‑Grundy",
+      "State Compression",
+      "Cycle Detection",
+      "DFS with Memoisation"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "There is a strip of NNN cells. Some of the cells are empty, and some cells are blocked.\n\nAlice and Bob play a game on this strip. The players take turns, with Alice going first.\n\nThe rules of the game are as follows:\n\n\nOn their turn, a player must choose KKK **contiguous empty** cells, and place a disappearing domino on **each** of these cells.\nA disappearing domino will vanish exactly DDD turns after it is placed; and the cell it was on, will be considered empty once again.\n\nFormally, a domino placed on turn TTT will disappear just before the start of turn T+DT+DT+D.\nThe player who cannot make a move loses.\n\nGiven N,K,DN, K, DN,K,D, and which cells are initially blocked, find the winner of the game; or whether it will go on infinitely.\n\n\nInput Format\n\nThe first line of input contains three space-separated integers — N,K,N, K, N,K, and DDD, as mentioned in the statement.\nThe second line of input contains a binary string SSS of length NNN, denoting the initial state of the strip.\n\nA `'0'` denotes an empty cell, and a `'1`' denotes a blocked cell.\n\n\nOutput Format\nOutput a single string containing the answer:\n\n\n\nIf there is a winner, print either `Alice` or `Bob` on a single line, denoting the winner.\nIf the game will go on infinitely, output `Draw` instead.\n\nEach character of the output may be printed in either lowercase or uppercase, i.e, the strings `Bob`, `BOB`, `bob`, and `bOb` will all be treated as equivalent.",
+    "constraints": [
+      "1 ≤ K ≤ N ≤ 30",
+      "1 ≤ D ≤ 10^9",
+      "S consists only of characters '0' and '1'"
+    ],
+    "inputFormat": "The first line contains three integers N, K and D — the length of the strip, the number of contiguous empty cells that must be chosen on each move and the lifetime of a placed domino. The second line contains a binary string S of length N describing the initial strip: '0' denotes an empty cell, '1' denotes a blocked cell.\nAll cells that are blocked at the beginning are never usable.\nThere is a single test case (no T).",
+    "outputFormat": "Print a single word:\n- \"Alice\" if the first player has a winning strategy,\n- \"Bob\" if the second player has a winning strategy,\n- \"Draw\" if both players can avoid losing forever, i.e. the game can continue indefinitely.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "5 2 4\n00010",
+        "output": "Alice",
+        "explanation": ""
+      },
+      {
+        "id": "sample_2",
+        "input": "12 3 4\n100000000100",
+        "output": "Bob",
+        "explanation": ""
+      },
+      {
+        "id": "sample_3",
+        "input": "5 1 3\n00000",
+        "output": "Draw",
+        "explanation": "Explanation:\nTest case 111: On her turn, Alice can place dominoes in the first two positions; making the strip 11010\\texttt{11010}11010.\nBob cannot make a move.\nTest case 222: No matter what move Alice makes, there will always be place for Bob to make his move.\nBob can always ensure that Alice cannot make a second move, and hence wins.\nTest case 333: Since dominoes disappear after 333 moves, there will always be an empty cell no matter whose turn it is; so the game goes on forever."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The game can be seen as an impartial game on a line of N cells.  A move consists of choosing K consecutive cells that are currently free (not blocked and not under cooldown) and putting a domino on each of them.  After the move the chosen cells become unavailable for the next D turns; just before turn t+D+1 they become free again.\n\nBecause N ≤ 30 we can keep the whole board in a 30‑bit mask.  For every cell we also need to know how many turns are left before it becomes free again.  The exact value can be as large as D (up to 10^9) but the only thing that matters for the future is the *relative* time to the next turn.  Therefore we store the remaining time modulo (D+1).  If D is larger than N we can safely replace it by N – a cooldown longer than the whole board behaves like a permanent block for the duration of the game, because the game cannot last more than N moves before all cells are occupied.\n\nState definition:\n- `mask` – N‑bit integer, 1 means the cell is currently under cooldown, 0 means it is free (and also not a permanent block).\n- `timerMask` – N‑bit integer, the i‑th bit is 1 iff the cell will become free exactly one turn later.  By shifting this mask each turn we obtain the new `mask`.\n- `turnMod` – current turn number modulo (D+1).  The pair (`mask`, `turnMod`) uniquely determines the future of the game.\n\nWe perform a depth‑first search with memoisation on the pair (`mask`, `turnMod`).  The function `win(mask, turnMod)` returns:\n- 1 if the player to move can force a win,\n- 0 if the player to move will lose with optimal play,\n- -1 if the search encounters a previously visited state → a cycle → the game can be forced to continue forever, i.e. a draw.\n\nTransition:\n1. First we update the board for the new turn: cells whose timer reaches zero are cleared from `mask` (they become free).  This is done by `mask = mask & ~timerMask` and then `timerMask = (timerMask << 1) & ((1<<N)-1)`.\n2. Enumerate every possible segment of length K that is completely free (`mask` has 0 on those K bits).  For each such segment we create a new state where those K bits are set in `mask` and a timer of D turns is started for them.  Starting a timer of D turns is equivalent to setting the corresponding bits in a secondary array `futureMask[D]`.  Because we keep only the next‑turn information, we store the fact that the cells will stay occupied for the next D turns by adding them to a circular buffer of size D+1.  The implementation uses an array `future[ D+1 ]` where `future[(turnMod + D) % (D+1)]` receives the bits of the newly placed dominoes.\n3. Recurse on the resulting state.  If any move leads to a losing state for the opponent, the current state is winning.\n4. If no move is possible, the current player loses.\n5. If during the DFS we revisit a state that is already on the recursion stack, a cycle is detected → the game can be forced to repeat forever → return Draw.\n\nBecause the number of different masks is at most 2^N (≈ 10^9 for N=30, but the reachable subset is far smaller) and `turnMod` has at most D+1 ≤ N+1 different values (after the reduction D = min(D, N)), the total number of states is bounded by (N+1)·2^N which comfortably fits into memory for N=30.\n\nThe algorithm therefore determines the exact outcome (Alice, Bob or Draw) in a few milliseconds.\n\n**Why the reduction D = min(D, N) works**\nThe longest possible game cannot contain more than N moves, because each move occupies at least K ≥ 1 cells and a cell that is occupied for more than N turns can never become free before the game ends.  Hence a cooldown larger than N behaves exactly like a cooldown of N.\n\n**Correctness Sketch**\n- The state representation captures all information that influences future moves (which cells are currently blocked and when they will become free).  No other hidden information exists.\n- The transition enumerates *all* legal moves from a state, therefore the recursion explores the complete game tree.\n- Standard impartial‑game theory tells us that a position is winning iff there exists a move to a losing position; losing iff no such move exists; and a draw iff a cycle is reachable from the current position.  The DFS with a recursion‑stack detection implements exactly this definition.\n- Reducing D to min(D,N) does not change the set of reachable states, because any timer larger than N never expires before the game would already have terminated.\n\nThus the algorithm returns the correct result.\n",
+    "timeComplexity": "O( (D'+1) * 2^N * N ) where D' = min(D, N).  For the maximal constraints N=30 this is well below 10^7 operations.",
+    "spaceComplexity": "O( (D'+1) * 2^N ) for the memoisation table, at most a few hundred megabytes for N=30 (fits into typical limits).",
+    "code": {
+      "C": ""
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

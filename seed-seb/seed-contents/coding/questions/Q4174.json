@@ -1,0 +1,108 @@
+{
+  "questionId": "Q4174",
+  "title": "Chef and Rainbow Array",
+  "slug": "chef-and-rainbow-array",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-12",
+  "metadata": {
+    "category": "Implementation",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Two Pointers",
+      "Array",
+      "Simulation"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Two Pointers & Sliding Window"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef likes all arrays equally. But he likes some arrays more equally than others. In particular, he loves Rainbow Arrays. \n\nAn array is Rainbow if it has the following structure:\n\nFirst **a1** elements equal **1**. \nNext **a2** elements equal **2**. \nNext **a3** elements equal **3**. \nNext **a4** elements equal **4**. \nNext **a5** elements equal **5**. \nNext **a6** elements equal **6**. \nNext **a7** elements equal **7**. \nNext **a6** elements equal **6**. \nNext **a5** elements equal **5**. \nNext **a4** elements equal **4**. \nNext **a3** elements equal **3**. \nNext **a2** elements equal **2**. \nNext **a1** elements equal **1**. \n**ai** can be any non-zero positive integer.\nThere are no other elements in array. \n\nHelp Chef in finding out if the given array is a Rainbow Array or not.",
+    "constraints": [
+      "1 <= T <= 100",
+      "13 <= N <= 100",
+      "1 <= Ai <= 7"
+    ],
+    "inputFormat": "First line contains an integer T, the number of test cases. For each test case, the first line contains an integer N, the length of the array. The second line contains N space‑separated integers A1 … AN.",
+    "outputFormat": "For each test case output a single line containing \"yes\" if the array is a Rainbow Array, otherwise \"no\".",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n19\n1 2 3 4 4 5 6 6 6 7 6 6 6 5 4 4 3 2 1\n14\n1 2 3 4 5 6 7 6 5 4 3 2 1 1\n13\n1 2 3 4 5 6 8 6 5 4 3 2 1",
+        "output": "yes\nno\nno",
+        "explanation": ""
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n15\n1 1 2 3 4 5 6 7 6 5 4 3 2 1 1",
+        "output": "yes",
+        "explanation": ""
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n12\n1 2 3 4 5 6 6 5 4 3 2 1",
+        "output": "no",
+        "explanation": ""
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 1
+      }
+    ],
+    "totalTestCases": 1,
+    "totalWeight": 1
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      1
+    ],
+    "maxScore": 1
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The array must be symmetric and contain the numbers 1 to 7 in order, possibly with repetitions. Using two pointers (left and right) we compare symmetric elements. While moving inward we ensure:\n1. Both sides are equal.\n2. Values stay within 1..7.\n3. On the left side the sequence never decreases and can increase only by 1 (so we do not skip any number).\n4. All numbers 1..7 appear at least once and the maximum seen value is 7.\nIf any condition fails the array is not a rainbow array. The scan is O(N) per test case and uses O(1) extra space.",
+    "timeComplexity": "O(N) per test case, O(total N) overall.",
+    "spaceComplexity": "O(1) besides the input array.",
+    "code": {
+      "C": "",
+      "C++": "",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    private static String nextNonEmptyLine(BufferedReader br) throws IOException {\n        String line;\n        while ((line = br.readLine()) != null) {\n            if (!line.trim().isEmpty()) {\n                return line;\n            }\n        }\n        return null;\n    }\n\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        String firstLine = nextNonEmptyLine(br);\n        if (firstLine == null) {\n            // No input provided; nothing to output.\n            return;\n        }\n        int T = Integer.parseInt(firstLine.trim());\n        StringBuilder sb = new StringBuilder();\n        for (int tc = 0; tc < T; tc++) {\n            String nLine = nextNonEmptyLine(br);\n            if (nLine == null) {\n                // Incomplete test case; treat as invalid.\n                sb.append(\"no\");\n                if (tc != T - 1) sb.append('\\n');\n                continue;\n            }\n            int N = Integer.parseInt(nLine.trim());\n            String arrLine = nextNonEmptyLine(br);\n            if (arrLine == null) {\n                sb.append(\"no\");\n                if (tc != T - 1) sb.append('\\n');\n                continue;\n            }\n            StringTokenizer st = new StringTokenizer(arrLine);\n            int[] a = new int[N];\n            for (int i = 0; i < N; i++) {\n                if (!st.hasMoreTokens()) {\n                    // Not enough numbers; invalid case.\n                    a[i] = 0;\n                } else {\n                    a[i] = Integer.parseInt(st.nextToken());\n                }\n            }\n            boolean ok = true;\n            if (N < 13) {\n                ok = false;\n            } else {\n                int l = 0, r = N - 1;\n                int prev = 0;\n                boolean[] seen = new boolean[8]; // indices 1..7\n                int maxVal = 0;\n                while (l <= r && ok) {\n                    int left = a[l];\n                    int right = a[r];\n                    if (left != right) {\n                        ok = false;\n                        break;\n                    }\n                    if (left < 1 || left > 7) {\n                        ok = false;\n                        break;\n                    }\n                    seen[left] = true;\n                    maxVal = Math.max(maxVal, left);\n                    // ensure non‑decreasing up to the middle\n                    if (l > 0) {\n                        if (left < prev) {\n                            ok = false;\n                            break;\n                        }\n                        if (left > prev + 1) {\n                            ok = false;\n                            break;\n                        }\n                    }\n                    prev = left;\n                    l++;\n                    r--;\n                }\n                if (maxVal != 7) ok = false;\n                for (int i = 1; i <= 7; i++) {\n                    if (!seen[i]) {\n                        ok = false;\n                        break;\n                    }\n                }\n            }\n            sb.append(ok ? \"yes\" : \"no\");\n            if (tc != T - 1) sb.append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}\n",
+      "Python3": "",
+      "JavaScript": ""
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

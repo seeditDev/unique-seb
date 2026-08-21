@@ -1,0 +1,142 @@
+{
+  "questionId": "Q10310",
+  "title": "Non-Divisor Array",
+  "slug": "non-divisor-array",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Arrays | Number Theory | Greedy | DP",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Divisibility",
+      "Graph Coloring",
+      "Partial Order",
+      "Dynamic Programming",
+      "Sieve"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Constructive Algorithms"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given an integer NNN.\n\nYour task is to find the **minimum** integer CCC such that there exists an array AAA of size NNN satisfying:\n\n\n1≤Ai≤C1\\le A_i \\le C1≤Ai​≤C;\nFor distinct indices xxx and yyy where xxx **divides** y;&nbsp;Ax≠Ayy; \\ A_x \\neq A_yy;&nbsp;Ax​=Ay​.\nYou need to print the minimum value of CCC as well as the array AAA. In case multiple arrays exist, you may print any one.\n\n\nInput Format\n\nThe first line of input will contain a single integer TTT, denoting the number of test cases.\nEach test case consists of a single integer NNN.\n\n\nOutput Format\nFor each test case, output two lines.\n\n\n\nThe first line should contain a single integer CCC, the minimum integer for which array AAA exists.\nThe second line should contain NNN space-separated integers A1,A2,…,ANA_1, A_2, \\ldots, A_NA1​,A2​,…,AN​ denoting the array AAA satisfying given conditions.\n\nIn case multiple arrays satisfy the conditions, you may print any one.",
+    "constraints": [
+      "1 ≤ T ≤ 10³",
+      "1 ≤ N ≤ 2·10⁵",
+      "∑ N over all test cases ≤ 2·10⁵"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains a single integer N (1 ≤ N ≤ 2·10⁵). The sum of N over all test cases does not exceed 2·10⁵.",
+    "outputFormat": "For each test case output two lines. The first line contains the minimum possible integer C. The second line contains N space‑separated integers A₁ … A_N (1 ≤ A_i ≤ C) such that for any distinct indices x and y with x dividing y, A_x ≠ A_y.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n1\n3",
+        "output": "1\n1\n2\n1 2 2",
+        "explanation": "For N=1 the only possible array is [1]; C=1. For N=3 the DP values are dp[1]=1, dp[2]=2 (1|2), dp[3]=2 (1|3). The maximum dp is 2, so C=2 and the array [1,2,2] satisfies the condition because the only divisor pairs are (1,2) and (1,3) and the values differ."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n10",
+        "output": "4\n1 2 2 3 2 3 2 4 3 3",
+        "explanation": "The longest divisor chain up to 10 is 1→2→4→8, length 4, so C=4. The DP values give the array shown, and any pair (x,y) with x|y has different values."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n7",
+        "output": "3\n1 2 2 3 2 3 2",
+        "explanation": "Longest chain is 1→2→4 (or 1→2→6), length 3, thus C=3. The produced array respects the divisor condition."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1",
+        "expectedOutput": "1\n1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "1\n1",
+        "expectedOutput": "1\n1",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "1\n1",
+        "expectedOutput": "1\n1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "1\n1",
+        "expectedOutput": "1\n1",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "1\n1",
+        "expectedOutput": "1\n1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The condition creates an undirected edge between every pair (x, y) where x|y. The resulting graph is the comparability graph of a poset, which is a perfect graph. Therefore its chromatic number equals the size of the largest clique, i.e. the length of the longest chain of indices where each divides the next. The longest possible chain is obtained by repeatedly multiplying by the smallest prime (2), so its length is floor(log₂ N) + 1. To construct an optimal array we compute for each i (1 ≤ i ≤ N) the length of the longest divisor chain ending at i: dp[i] = 1 + max{ dp[d] | d < i and d|i }. This can be computed in O(N log N) using a sieve‑like loop: initialise dp[i] = 1 for all i, then for each i iterate over its multiples j = 2i, 3i, … and relax dp[j] = max(dp[j], dp[i] + 1). After the loop, C = max dp[i] and the array A_i = dp[i] satisfies the required property because if x|y then dp[y] ≥ dp[x] + 1, hence A_x ≠ A_y. The algorithm runs in linearithmic time and linear memory, which fits the constraints.",
+    "timeComplexity": "O(N log N) per test case (overall O(∑N log N) ≤ 2·10⁵·log 2·10⁵).",
+    "spaceComplexity": "O(N) for the dp array.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    while(T--){\n        int N; scanf(\"%d\", &N);\n        int *dp = (int*)calloc(N+1, sizeof(int));\n        for(int i=1;i<=N;i++) dp[i]=1;\n        int C=1;\n        for(int i=1;i<=N;i++){\n            for(int j=i*2;j<=N;j+=i){\n                if(dp[j] < dp[i]+1) dp[j] = dp[i]+1;\n            }\n            if(dp[i]>C) C=dp[i];\n        }\n        printf(\"%d\\n\", C);\n        for(int i=1;i<=N;i++){\n            if(i>1) printf(\" \");\n            printf(\"%d\", dp[i]);\n        }\n        printf(\"\\n\");\n        free(dp);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N; cin>>N;\n        vector<int> dp(N+1,1);\n        int C=1;\n        for(int i=1;i<=N;i++){\n            for(int j=i*2;j<=N;j+=i){\n                dp[j]=max(dp[j], dp[i]+1);\n            }\n            C=max(C, dp[i]);\n        }\n        cout<<C<<'\\n';\n        for(int i=1;i<=N;i++){\n            if(i>1) cout<<' ';\n            cout<<dp[i];\n        }\n        cout<<'\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner(System.in);\n        int T = fs.nextInt();\n        StringBuilder out = new StringBuilder();\n        while (T-- > 0) {\n            int N = fs.nextInt();\n            int[] dp = new int[N+1];\n            Arrays.fill(dp, 1);\n            int C = 1;\n            for (int i = 1; i <= N; i++) {\n                for (int j = i*2; j <= N; j += i) {\n                    if (dp[j] < dp[i] + 1) dp[j] = dp[i] + 1;\n                }\n                if (dp[i] > C) C = dp[i];\n            }\n            out.append(C).append('\\n');\n            for (int i = 1; i <= N; i++) {\n                if (i > 1) out.append(' ');\n                out.append(dp[i]);\n            }\n            out.append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n    // Fast scanner for competitive programming\n    static class FastScanner {\n        private final InputStream in;\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        FastScanner(InputStream in) { this.in = in; }\n        private int readByte() throws IOException {\n            if (ptr >= len) {\n                len = in.read(buffer);\n                ptr = 0;\n                if (len <= 0) return -1;\n            }\n            return buffer[ptr++];\n        }\n        int nextInt() throws IOException {\n            int c, sign = 1, val = 0;\n            do { c = readByte(); } while (c <= ' ');\n            if (c == '-') { sign = -1; c = readByte(); }\n            while (c > ' ') {\n                val = val * 10 + (c - '0');\n                c = readByte();\n            }\n            return val * sign;\n        }\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it))\n        dp = [1] * (N + 1)\n        C = 1\n        for i in range(1, N + 1):\n            step = i\n            j = i + step\n            while j <= N:\n                if dp[j] < dp[i] + 1:\n                    dp[j] = dp[i] + 1\n                j += step\n            if dp[i] > C:\n                C = dp[i]\n        out_lines.append(str(C))\n        out_lines.append(' '.join(str(dp[i]) for i in range(1, N + 1)))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/).map(Number);\nlet idx = 0;\nconst T = input[idx++];\nlet output = [];\nfor (let t = 0; t < T; t++) {\n  const N = input[idx++];\n  const dp = new Array(N + 1).fill(1);\n  let C = 1;\n  for (let i = 1; i <= N; i++) {\n    for (let j = i * 2; j <= N; j += i) {\n      if (dp[j] < dp[i] + 1) dp[j] = dp[i] + 1;\n    }\n    if (dp[i] > C) C = dp[i];\n  }\n  output.push(String(C));\n  const arr = [];\n  for (let i = 1; i <= N; i++) arr.push(dp[i]);\n  output.push(arr.join(' '));\n}\nconsole.log(output.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

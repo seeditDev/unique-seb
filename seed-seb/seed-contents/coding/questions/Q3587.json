@@ -1,0 +1,115 @@
+{
+  "questionId": "Q3587",
+  "title": "Cooking Game",
+  "slug": "cooking-game",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Modular Arithmetic",
+      "Dynamic Programming"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ]
+  },
+  "content": {
+    "problemStatement": "Chef is playing a new computer game in which he is the chef of a restaurant and is required to prepare the dishes ordered by the customers with high quality and in time.\n\nChef will start in level 1 and whenever Chef passes a level in this game he will advance to the next level, but if Chef fails, he will return to level 1.\n\nChef has already played **N** rounds, but he can't remember what the levels were in all the rounds. He will give you an array **A** of length **N** such that **Ai** is equal to **-1** if Chef can't remember what level the **i**-th round was, otherwise it will contain positive integer denoting the level of the round.\n\nNow Chef is asking you to count the number of ways to fill the missing numbers (ie. the **-1**s) of the array with level numbers, so that it corresponds to a valid game. Since the answer can be large, output it modulo **109+7**.",
+    "constraints": [
+      "1 <= T <= 10,000",
+      "1 <= N <= 100,000",
+      "sum of N in all test cases will not exceed 100,000",
+      "1 <= Ai <= N or Ai = -1"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, the first line contains an integer N, the number of rounds. The second line contains N space-separated integers, which are the elements of the array A.",
+    "outputFormat": "The number of ways to fill the missing numbers in the array with level numbers, so that it corresponds to a valid game, modulo 10^9+7.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n6\n1 1 2 -1 -1 2",
+        "output": "2",
+        "explanation": "The only two valid fully filled arrays are (1,1,2,3,1,2) and (1,1,2,1,1,2). Hence the answer is 2."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n100000\n-1",
+        "expectedOutput": "100000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n5\n1 2 3 4 5",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n10\n1 2 3 -1 -1 2 3 4 5 6",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n15\n1 2 3 -1 -1 2 3 4 5 6 -1 -1 2 3 4",
+        "expectedOutput": "4",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use dynamic programming. We will maintain a DP array where dp[i][j] represents the number of ways to fill the first i rounds with the last round being j. We will iterate over each round and for each round, we will iterate over all possible levels. If the current round is not -1, we will only consider the case where the current round is equal to the given level. If the current round is -1, we will consider all possible levels. We will update the DP array accordingly and finally return the sum of all dp[N][j] modulo 10^9+7.",
+    "timeComplexity": "O(T*N^2) \u2014 where T is the number of test cases and N is the number of rounds in each test case.",
+    "spaceComplexity": "O(N) \u2014 where N is the number of rounds in each test case.",
+    "code": {
+      "C": "// COMPLETE, COMPILABLE C code\n#include <stdio.h>\n#define MOD 1000000007\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int N;\n        scanf(\"%d\", &N);\n        int A[N];\n        for (int i = 0; i < N; i++) {\n            scanf(\"%d\", &A[i]);\n        }\n        long long dp[N + 1][N + 1] = {0};\n        dp[0][0] = 1;\n        for (int i = 0; i < N; i++) {\n            for (int j = 0; j <= N; j++) {\n                if (dp[i][j] == 0) continue;\n                if (A[i] != -1) {\n                    if (j + 1 == A[i]) {\n                        dp[i + 1][A[i]] = (dp[i + 1][A[i]] + dp[i][j]) % MOD;\n                    }\n                } else {\n                    if (j == 0) {\n                        for (int k = 1; k <= N; k++) {\n                            dp[i + 1][k] = (dp[i + 1][k] + dp[i][j]) % MOD;\n                        }\n                    } else {\n                        dp[i + 1][j + 1] = (dp[i + 1][j + 1] + dp[i][j]) % MOD;\n                        dp[i + 1][1] = (dp[i + 1][1] + dp[i][j]) % MOD;\n                    }\n                }\n            }\n        }\n        long long ans = 0;\n        for (int i = 1; i <= N; i++) {\n            ans = (ans + dp[N][i]) % MOD;\n        }\n        printf(\"%lld\\n\", ans);\n    }\n    return 0;\n}",
+      "C++": "// COMPLETE, COMPILABLE C++ code\n#include <iostream>\n#define MOD 1000000007\nusing namespace std;\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        int N;\n        cin >> N;\n        int A[N];\n        for (int i = 0; i < N; i++) {\n            cin >> A[i];\n        }\n        long long dp[N + 1][N + 1] = {0};\n        dp[0][0] = 1;\n        for (int i = 0; i < N; i++) {\n            for (int j = 0; j <= N; j++) {\n                if (dp[i][j] == 0) continue;\n                if (A[i] != -1) {\n                    if (j + 1 == A[i]) {\n                        dp[i + 1][A[i]] = (dp[i + 1][A[i]] + dp[i][j]) % MOD;\n                    }\n                } else {\n                    if (j == 0) {\n                        for (int k = 1; k <= N; k++) {\n                            dp[i + 1][k] = (dp[i + 1][k] + dp[i][j]) % MOD;\n                        }\n                    } else {\n                        dp[i + 1][j + 1] = (dp[i + 1][j + 1] + dp[i][j]) % MOD;\n                        dp[i + 1][1] = (dp[i + 1][1] + dp[i][j]) % MOD;\n                    }\n                }\n            }\n        }\n        long long ans = 0;\n        for (int i = 1; i <= N; i++) {\n            ans = (ans + dp[N][i]) % MOD;\n        }\n        cout << ans << endl;\n    }\n    return 0;\n}",
+      "Java": "// COMPLETE, COMPILABLE Java code\nimport java.util.Scanner;\npublic class Main {\n    static final int MOD = 1000000007;\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n        while (T-- > 0) {\n            int N = sc.nextInt();\n            int[] A = new int[N];\n            for (int i = 0; i < N; i++) {\n                A[i] = sc.nextInt();\n            }\n            long[][] dp = new long[N + 1][N + 1];\n            dp[0][0] = 1;\n            for (int i = 0; i < N; i++) {\n                for (int j = 0; j <= N; j++) {\n                    if (dp[i][j] == 0) continue;\n                    if (A[i] != -1) {\n                        if (j + 1 == A[i]) {\n                            dp[i + 1][A[i]] = (dp[i + 1][A[i]] + dp[i][j]) % MOD;\n                        }\n                    } else {\n                        if (j == 0) {\n                            for (int k = 1; k <= N; k++) {\n                                dp[i + 1][k] = (dp[i + 1][k] + dp[i][j]) % MOD;\n                            }\n                        } else {\n                            dp[i + 1][j + 1] = (dp[i + 1][j + 1] + dp[i][j]) % MOD;\n                            dp[i + 1][1] = (dp[i + 1][1] + dp[i][j]) % MOD;\n                        }\n                    }\n                }\n            }\n            long ans = 0;\n            for (int i = 1; i <= N; i++) {\n                ans = (ans + dp[N][i]) % MOD;\n            }\n            System.out.println(ans);\n        }\n    }\n}",
+      "Python3": "# COMPLETE, RUNNABLE Python3 code\nMOD = 1000000007\nfor _ in range(int(input())):\n    N = int(input())\n    A = list(map(int, input().split()))\n    dp = [[0] * (N + 1) for _ in range(N + 1)]\n    dp[0][0] = 1\n    for i in range(N):\n        for j in range(N + 1):\n            if dp[i][j] == 0: continue\n            if A[i] != -1:\n                if j + 1 == A[i]:\n                    dp[i + 1][A[i]] = (dp[i + 1][A[i]] + dp[i][j]) % MOD\n            else:\n                if j == 0:\n                    for k in range(1, N + 1):\n                        dp[i + 1][k] = (dp[i + 1][k] + dp[i][j]) % MOD\n                else:\n                    dp[i + 1][j + 1] = (dp[i + 1][j + 1] + dp[i][j]) % MOD\n                    dp[i + 1][1] = (dp[i + 1][1] + dp[i][j]) % MOD\n    ans = 0\n    for i in range(1, N + 1):\n        ans = (ans + dp[N][i]) % MOD\n    print(ans)",
+      "JavaScript": "// COMPLETE, RUNNABLE JavaScript code\nconst fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst MOD = 1000000007;\nconst nextLine = () => lines[idx++];\nconst nextInt = () => parseInt(nextLine());\nconst nextInts = () => nextLine().split(' ').map(x => parseInt(x));\nlet T = nextInt();\nwhile (T-- > 0) {\n    let N = nextInt();\n    let A = nextInts();\n    let dp = Array(N + 1).fill(0).map(() => Array(N + 1).fill(0));\n    dp[0][0] = 1;\n    for (let i = 0; i < N; i++) {\n        for (let j = 0; j <= N; j++) {\n            if (dp[i][j] == 0) continue;\n            if (A[i] != -1) {\n                if (j + 1 == A[i]) {\n                    dp[i + 1][A[i]] = (dp[i + 1][A[i]] + dp[i][j]) % MOD;\n                }\n            } else {\n                if (j == 0) {\n                    for (let k = 1; k <= N; k++) {\n                        dp[i + 1][k] = (dp[i + 1][k] + dp[i][j]) % MOD;\n                    }\n                } else {\n                    dp[i + 1][j + 1] = (dp[i + 1][j + 1] + dp[i][j]) % MOD;\n                    dp[i + 1][1] = (dp[i + 1][1] + dp[i][j]) % MOD;\n                }\n            }\n        }\n    }\n    let ans = 0;\n    for (let i = 1; i <= N; i++) {\n        ans = (ans + dp[N][i]) % MOD;\n    }\n    console.log(ans);\n}"
+    }
+  }
+}

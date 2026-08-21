@@ -1,0 +1,131 @@
+{
+  "questionId": "Q6179",
+  "title": "Capital Movement",
+  "slug": "capital-movement",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Graph Traversal",
+      "BFS",
+      "Capital Movement"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Trees"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef is playing a video game. In a video game, there's a advanced civilization that has a total of **N** planets under control. All of those planets are connected with **N-1** teleports in such a way, that it's possible to travel between any two planets using those teleports.\n\nThere's a chance that some planet gets infected. In this case it takes 24 hours for civilization to find out infection and prevent it from spreading. During this time infection uses teleport one time and infect all the planets that can be achieved in one teleport jump. So, once infection is detected at planet **V**, scientists already know that all planets connected to **V** via teleport are also infected. All the neccessary teleports are disabled right away and medics start working on eliminating the infection.\n\nEach planet has population. Planets are numbered from **1** to **N** and their populations are **P1**, **P2**, ..., **PN**. It is known that all the **Pi** are distinct.\n\nThere's a capital among all those planets. The capital is known to have the biggest population.\n\nOnce infection is detected at planet **V**, after disabling teleports on planet **V** and all connected to them, government has to establish a new capital if needed in the remaining not-infected planets. So, they list all the planets that are not connected to **V** and are not **V**. Then they pick the planet with biggest population. Your task is to find the number of this planet for every possible **V**.",
+    "constraints": [
+      "1 ≤ T ≤ 5",
+      "1 ≤ N ≤ 50000",
+      "1 ≤ Pi ≤ 10^9",
+      "All Pi are distinct",
+      "1 ≤ V ≤ N",
+      "1 ≤ U ≤ N"
+    ],
+    "inputFormat": "The first line of the input contains an integer T denoting the number of test cases. The description of T test cases follows. The first line of each test case contains one integer N. Next line contains N space-separated integers P1, P2, ..., PN denoting the population of each planet. Next N-1 lines contain two space-separated integers each V and U denoting that there's a teleport between planet V and U.",
+    "outputFormat": "For each test case, output a single line containing N integers A1, A2, ..., AN separated by a space. Here Ai denotes the number of the planet picked to be new capital in case infection starts spreading from the planet i. In case infection affects all the planets output 0.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n6\n5 10 15 20 25 30\n1 3\n2 3\n3 4\n4 5\n4 6",
+        "output": "6 6 6 2 6 5",
+        "explanation": "For each planet, we find the new capital by performing a BFS traversal and finding the planet with the maximum population that is not infected."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n10\n",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n50000\n",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n2\n10 20\n1 2",
+        "expectedOutput": "2 1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n5\n10 20 30 40 50\n1 2\n2 3\n3 4\n4 5",
+        "expectedOutput": "5 5 5 2 5",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n10\n10 20 30 40 50 60 70 80 90 100\n1 2\n2 3\n3 4\n4 5\n5 6\n6 7\n7 8\n8 9\n9 10",
+        "expectedOutput": "10 10 10 10 10 10 10 10 10 1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a graph traversal approach. We will create an adjacency list representation of the graph and then perform a BFS traversal from each planet to find the new capital in case of infection. We will keep track of the maximum population planet that is not infected and output its index as the new capital.",
+    "timeComplexity": "O(T * N^2) — explain: per query is O(N^2), total is O(T * N^2)",
+    "spaceComplexity": "O(N) — explain what dominates",
+    "code": {
+      "C": "// COMPLETE, COMPILABLE C code\n#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#define MAX 50000\n#define INF 1000000000\n\nint compare(const void *a, const void *b) {\n    return (*(int*)a - *(int*)b);\n}\n\nint main() {\n    int T, N, i, j, k, x, y, max, max_index;\n    int *P, *A;\n    int **G;\n    scanf(\"%d\", &T);\n    while (T--) {\n        scanf(\"%d\", &N);\n        P = (int*)malloc(N * sizeof(int));\n        A = (int*)malloc(N * sizeof(int));\n        G = (int**)malloc(N * sizeof(int*));\n        for (i = 0; i < N; i++) {\n            scanf(\"%d\", &P[i]);\n            G[i] = (int*)malloc(2 * sizeof(int));\n            G[i][0] = G[i][1] = 0;\n        }\n        for (i = 0; i < N - 1; i++) {\n            scanf(\"%d %d\", &x, &y);\n            G[x - 1][G[x - 1][0]++] = y - 1;\n            G[y - 1][G[y - 1][0]++] = x - 1;\n        }\n        for (i = 0; i < N; i++) {\n            max = -INF;\n            max_index = 0;\n            for (j = 0; j < N; j++) {\n                if (i != j) {\n                    int *visited = (int*)malloc(N * sizeof(int));\n                    for (k = 0; k < N; k++) {\n                        visited[k] = 0;\n                    }\n                    int queue[N], front = 0, rear = 0;\n                    queue[rear++] = i;\n                    visited[i] = 1;\n                    while (front < rear) {\n                        x = queue[front++];\n                        for (k = 0; k < G[x][0]; k++) {\n                            if (!visited[G[x][k]]) {\n                                queue[rear++] = G[x][k];\n                                visited[G[x][k]] = 1;\n                            }\n                        }\n                    }\n                    if (!visited[j] && P[j] > max) {\n                        max = P[j];\n                        max_index = j + 1;\n                    }\n                    free(visited);\n                }\n            }\n            A[i] = max_index;\n        }\n        for (i = 0; i < N; i++) {\n            printf(\"%d \", A[i]);\n        }\n        printf(\"\\n\");\n        free(P);\n        free(A);\n        for (i = 0; i < N; i++) {\n            free(G[i]);\n        }\n        free(G);\n    }\n    return 0;\n}",
+      "C++": "// COMPLETE, COMPILABLE C++ code\n#include <iostream>\n#include <vector>\n#include <queue>\nusing namespace std;\n\nint main() {\n    int T, N, i, j, k, x, y, max, max_index;\n    cin >> T;\n    while (T--) {\n        cin >> N;\n        vector<int> P(N), A(N);\n        vector<vector<int>> G(N);\n        for (i = 0; i < N; i++) {\n            cin >> P[i];\n        }\n        for (i = 0; i < N - 1; i++) {\n            cin >> x >> y;\n            G[x - 1].push_back(y - 1);\n            G[y - 1].push_back(x - 1);\n        }\n        for (i = 0; i < N; i++) {\n            max = -1000000000;\n            max_index = 0;\n            for (j = 0; j < N; j++) {\n                if (i != j) {\n                    vector<int> visited(N, 0);\n                    queue<int> q;\n                    q.push(i);\n                    visited[i] = 1;\n                    while (!q.empty()) {\n                        x = q.front();\n                        q.pop();\n                        for (k = 0; k < G[x].size(); k++) {\n                            if (!visited[G[x][k]]) {\n                                q.push(G[x][k]);\n                                visited[G[x][k]] = 1;\n                            }\n                        }\n                    }\n                    if (!visited[j] && P[j] > max) {\n                        max = P[j];\n                        max_index = j + 1;\n                    }\n                }\n            }\n            A[i] = max_index;\n        }\n        for (i = 0; i < N; i++) {\n            cout << A[i] << \" \";\n        }\n        cout << endl;\n    }\n    return 0;\n}",
+      "Java": "// COMPLETE, COMPILABLE Java code\nimport java.util.Scanner;\nimport java.util.Queue;\nimport java.util.LinkedList;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n        while (T-- > 0) {\n            int N = sc.nextInt();\n            int[] P = new int[N];\n            int[] A = new int[N];\n            int[][] G = new int[N][N];\n            for (int i = 0; i < N; i++) {\n                P[i] = sc.nextInt();\n            }\n            for (int i = 0; i < N - 1; i++) {\n                int x = sc.nextInt() - 1;\n                int y = sc.nextInt() - 1;\n                G[x][y] = G[y][x] = 1;\n            }\n            for (int i = 0; i < N; i++) {\n                int max = -1000000000;\n                int max_index = 0;\n                for (int j = 0; j < N; j++) {\n                    if (i != j) {\n                        boolean[] visited = new boolean[N];\n                        Queue<Integer> q = new LinkedList<>();\n                        q.add(i);\n                        visited[i] = true;\n                        while (!q.isEmpty()) {\n                            int x = q.poll();\n                            for (int k = 0; k < N; k++) {\n                                if (G[x][k] == 1 && !visited[k]) {\n                                    q.add(k);\n                                    visited[k] = true;\n                                }\n                            }\n                        }\n                        if (!visited[j] && P[j] > max) {\n                            max = P[j];\n                            max_index = j + 1;\n                        }\n                    }\n                }\n                A[i] = max_index;\n            }\n            for (int i = 0; i < N; i++) {\n                System.out.print(A[i] + \" \");\n            }\n            System.out.println();\n        }\n    }\n}",
+      "Python3": "# COMPLETE, RUNNABLE Python3 code\nimport sys\nfrom collections import deque\n\nT = int(input())\nfor _ in range(T):\n    N = int(input())\n    P = list(map(int, input().split()))\n    G = [[] for _ in range(N)]\n    for _ in range(N - 1):\n        x, y = map(int, input().split())\n        G[x - 1].append(y - 1)\n        G[y - 1].append(x - 1)\n    A = [0] * N\n    for i in range(N):\n        max_val = -1000000000\n        max_index = 0\n        for j in range(N):\n            if i != j:\n                visited = [False] * N\n                q = deque([i])\n                visited[i] = True\n                while q:\n                    x = q.popleft()\n                    for k in G[x]:\n                        if not visited[k]:\n                            q.append(k)\n                            visited[k] = True\n                if not visited[j] and P[j] > max_val:\n                    max_val = P[j]\n                    max_index = j + 1\n        A[i] = max_index\n    print(*A)\n",
+      "JavaScript": "// COMPLETE, RUNNABLE JavaScript code\nconst fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\n\nfunction nextInt() {\n    return parseInt(input[idx++]);\n}\n\nfunction nextIntArray() {\n    return input[idx++].split(' ').map(x => parseInt(x));\n}\n\nlet T = nextInt();\nwhile (T-- > 0) {\n    let N = nextInt();\n    let P = nextIntArray();\n    let G = Array(N).fill(0).map(() => []);\n    for (let i = 0; i < N - 1; i++) {\n        let [x, y] = nextIntArray();\n        G[x - 1].push(y - 1);\n        G[y - 1].push(x - 1);\n    }\n    let A = Array(N).fill(0);\n    for (let i = 0; i < N; i++) {\n        let max = -1000000000;\n        let max_index = 0;\n        for (let j = 0; j < N; j++) {\n            if (i != j) {\n                let visited = Array(N).fill(false);\n                let q = [i];\n                visited[i] = true;\n                while (q.length > 0) {\n                    let x = q.shift();\n                    for (let k of G[x]) {\n                        if (!visited[k]) {\n                            q.push(k);\n                            visited[k] = true;\n                        }\n                    }\n                }\n                if (!visited[j] && P[j] > max) {\n                    max = P[j];\n                    max_index = j + 1;\n                }\n            }\n        }\n        A[i] = max_index;\n    }\n    console.log(A.join(' '));\n}\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

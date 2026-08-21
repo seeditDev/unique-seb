@@ -1,0 +1,119 @@
+{
+  "questionId": "Q2412",
+  "title": "Card Shuffle",
+  "slug": "card-shuffle",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-03",
+  "metadata": {
+    "category": "Data Structures",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Split\u2011Merge",
+      "Implicit Treap",
+      "Sequence Manipulation",
+      "Reversal",
+      "Data Structures"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Data Structures"
+    ]
+  },
+  "content": {
+    "problemStatement": "Chef is organizing an online card game tournament and for this purpose he has to provide a card shuffling software. This software has to simulate the following shuffling process. A stack of N cards is placed face down on the table. Cards in the stack are ordered by value. Topmost card has value 1 and the one on the bottom has value N. To shuffle the cards we repeat the following steps M times:\n\n\ntake A cards from the top of the deck.\ntake another B cards from the top of the deck.\nput the A cards, which you removed in the first step, back on top of the remaining deck.\ntake C cards from the deck\nput the B cards, which you're still holding from the second move, **card by card** on top of the deck.\nfinally, return the block of C cards on top",
+    "constraints": [
+      "1 \u2264 T \u2264 10",
+      "1 \u2264 N \u2264 100000",
+      "0 \u2264 M \u2264 100000",
+      "0 \u2264 Ai, Bi, Ci",
+      "Ai + Bi + Ci \u2264 N for every move (the described cuts are always possible)",
+      "Sum of N over all test cases \u2264 100000",
+      "Sum of M over all test cases \u2264 100000"
+    ],
+    "inputFormat": "The first line contains an integer T \u2013 the number of test cases. For each test case, the first line contains two integers N and M \u2013 the number of cards and the number of shuffling moves. The next M lines each contain three integers Ai, Bi, Ci describing one move.\nAll cards are initially ordered from top to bottom as 1,2,\u2026,N.",
+    "outputFormat": "For each test case output a single line containing the values of the cards from top to bottom after performing all M moves. Separate the numbers by a single space.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "10 2\n6 2 2\n5 3 6",
+        "output": "1 2 8 7 3 9 6 5 4 10",
+        "explanation": ""
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The deck is a mutable sequence. Each move consists of cutting three consecutive blocks (A, B, the rest), putting A back, cutting a prefix C, reversing block B and finally concatenating the pieces as X + reverse(B) + Y where X is the first C cards after A has been restored. All operations are *cut\u2011and\u2011paste* on contiguous intervals, which can be performed in O(log N) using an implicit treap (a randomized binary search tree keyed by position). The treap stores the card value, subtree size, and a lazy flag for reversal. For a move we:\n1. split(root, A) \u2192 (tA, rest1)\n2. split(rest1, B) \u2192 (tB, tRest)\n3. root = merge(tA, tRest)               // A is placed back on top\n4. split(root, C) \u2192 (tX, tY)            // first C cards after step 3\n5. pushReverse(tB)                       // lazy reversal of B\n6. root = merge( merge(tX, tB), tY )    // final order for this move\nAfter processing all moves we perform an inorder traversal of the treap to obtain the final deck.\nThe treap guarantees O((N+M)\u00b7log N) time and O(N) memory, which satisfies the limits.",
+    "timeComplexity": "O((N + M) \u00b7 log N) per test case \u2013 each split/merge is logarithmic.",
+    "spaceComplexity": "O(N) \u2013 one node per card plus recursion stack.",
+    "code": {
+      "C": "// ------------------------------------------------------------\n//  Card Shuffle \u2013 Implicit Treap (C implementation)\n// ------------------------------------------------------------\n#include <stdio.h>\n#include <stdlib.h>\n#include <time.h>\n\ntypedef struct Node {\n    int val;\n    int pr;\n    int sz;\n    int rev;               // lazy reversal flag\n    struct Node *l, *r;\n} Node;\n\nint sz(Node *t) { return t ? t->sz : 0; }\nvoid upd(Node *t) { if (t) t->sz = 1 + sz(t->l) + sz(t->r); }\nvoid push(Node *t) {\n    if (t && t->rev) {\n        t->rev = 0;\n        Node *tmp = t->l; t->l = t->r; t->r = tmp;\n        if (t->l) t->l->rev ^= 1;\n        if (t->r) t->r->rev ^= 1;\n    }\n}\nNode* newNode(int v) {\n    Node *n = (Node*)malloc(sizeof(Node));\n    n->val = v; n->pr = rand(); n->sz = 1; n->rev = 0; n->l = n->r = NULL;\n    return n;\n}\nNode* merge(Node *a, Node *b) {\n    if (!a) return b; if (!b) return a;\n    push(a); push(b);\n    if (a->pr > b->pr) {\n        a->r = merge(a->r, b);\n        upd(a);\n        return a;\n    } else {\n        b->l = merge(a, b->l);\n        upd(b);\n        return b;\n    }\n}\nvoid split(Node *t, int k, Node **a, Node **b) { // first k nodes go to a\n    if (!t) { *a = *b = NULL; return; }\n    push(t);\n    if (sz(t->l) >= k) {\n        split(t->l, k, a, &t->l);\n        *b = t;\n        upd(t);\n    } else {\n        split(t->r, k - sz(t->l) - 1, &t->r, b);\n        *a = t;\n        upd(t);\n    }\n}\n\nvoid inorder(Node *t, int *out, int *idx) {\n    if (!t) return;\n    push(t);\n    inorder(t->l, out, idx);\n    out[(*idx)++] = t->val;\n    inorder(t->r, out, idx);\n}\n\nint main() {\n    srand((unsigned)time(NULL));\n    int T; if (scanf(\"%d\", &T)!=1) return 0;\n    while (T--) {\n        int N, M; scanf(\"%d %d\", &N, &M);\n        Node *root = NULL;\n        for (int i = 1; i <= N; ++i) root = merge(root, newNode(i));\n        for (int i = 0; i < M; ++i) {\n            int A, B, C; scanf(\"%d %d %d\", &A, &B, &C);\n            Node *tA, *tB, *tRest, *tX, *tY, *tmp;\n            // 1) split A\n            split(root, A, &tA, &tmp);\n            // 2) split B from the remainder\n            split(tmp, B, &tB, &tRest);\n            // 3) put A back on top -> merge A + tRest\n            root = merge(tA, tRest);\n            // 4) split first C cards\n            split(root, C, &tX, &tY);\n            // 5) reverse B\n            if (tB) tB->rev ^= 1;\n            // 6) final merge X + B + Y\n            root = merge( merge(tX, tB), tY );\n        }\n        int *out = (int*)malloc(N * sizeof(int));\n        int idx = 0;\n        inorder(root, out, &idx);\n        for (int i = 0; i < N; ++i) {\n            if (i) printf(\" \");\n            printf(\"%d\", out[i]);\n        }\n        printf(\"\\n\");\n        free(out);\n        // Note: memory of treap nodes is not freed for brevity (fits limits).\n    }\n    return 0;\n}\n",
+      "C++": "// ------------------------------------------------------------\n//  Card Shuffle \u2013 Implicit Treap (C++17)\n// ------------------------------------------------------------\n#include <bits/stdc++.h>\nusing namespace std;\nstruct Node {\n    int val, pr, sz;\n    bool rev;\n    Node *l, *r;\n    Node(int v): val(v), pr(rand()), sz(1), rev(false), l(nullptr), r(nullptr) {}\n};\nint getsz(Node* t){ return t? t->sz : 0; }\nvoid upd(Node* t){ if(t) t->sz = 1 + getsz(t->l) + getsz(t->r); }\nvoid push(Node* t){ if(t && t->rev){ t->rev = false; swap(t->l, t->r); if(t->l) t->l->rev ^= 1; if(t->r) t->r->rev ^= 1; } }\nNode* merge(Node* a, Node* b){ if(!a) return b; if(!b) return a; push(a); push(b); if(a->pr > b->pr){ a->r = merge(a->r, b); upd(a); return a; } else { b->l = merge(a, b->l); upd(b); return b; } }\nvoid split(Node* t, int k, Node* &a, Node* &b){ // first k go to a\n    if(!t){ a = b = nullptr; return; }\n    push(t);\n    if(getsz(t->l) >= k){ split(t->l, k, a, t->l); b = t; upd(t); }\n    else{ split(t->r, k - getsz(t->l) - 1, t->r, b); a = t; upd(t); }\n}\nvoid inorder(Node* t, vector<int>& res){ if(!t) return; push(t); inorder(t->l, res); res.push_back(t->val); inorder(t->r, res); }\nint main(){ ios::sync_with_stdio(false); cin.tie(nullptr);\n    srand((unsigned)time(nullptr));\n    int T; if(!(cin>>T)) return 0; while(T--){ int N,M; cin>>N>>M; Node* root = nullptr; for(int i=1;i<=N;++i) root = merge(root, new Node(i));\n        for(int i=0;i<M;++i){ int A,B,C; cin>>A>>B>>C; Node *tA,*tB,*tRest,*tX,*tY,*tmp; split(root, A, tA, tmp); split(tmp, B, tB, tRest); root = merge(tA, tRest); split(root, C, tX, tY); if(tB) tB->rev ^= 1; root = merge( merge(tX, tB), tY ); }\n        vector<int> ans; ans.reserve(N); inorder(root, ans); for(int i=0;i<N;++i){ if(i) cout<<' '; cout<<ans[i]; } cout<<'\\n'; }\n    return 0; }\n",
+      "Java": ""
+    }
+  }
+}

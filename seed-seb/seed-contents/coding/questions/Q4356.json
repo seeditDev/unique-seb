@@ -1,0 +1,110 @@
+{
+  "questionId": "Q4356",
+  "title": "Median in Matrix",
+  "slug": "median-in-matrix",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-12",
+  "metadata": {
+    "category": "Searching",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Binary Search",
+      "Matrix",
+      "Median",
+      "Row‑wise Sorted"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Binary Search"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Given a `N x M` row-wise sorted matrix, find the median of the matrix. (Note: `N*M` is always odd)\n\nFor eg., in the following matrix:\n\n\n\nIf we place all elements in the sorter order: 2 3 4 4 4 5 6 6 7\n\nThen the median of the matrix is: `4`\n\n**Follow up:** Can you solve it in better time than **O(NMlog(NM))** and without taking extra space ?\n\n\nInput Format\n\nThe first line of input will contain two space separated integers NNN and MMM, denoting the no. of rows and columns in the input matrix.\nNext NNN lines contains MMM space separated integers, the elements of the matrix.\n\n\nOutput Format\n\nOutput on a single line, the median of the matrix.",
+    "constraints": [
+      "1 <= T <= 100",
+      "1 <= N, M <= 100",
+      "0 <= matrix[i][j] <= 10^9",
+      "N * M is odd"
+    ],
+    "inputFormat": "First line contains an integer T, the number of test cases. For each test case, the first line contains two integers N and M denoting the number of rows and columns of the matrix. Then N lines follow, each containing M space‑separated integers. Each row is sorted in non‑decreasing order. N·M is always odd.",
+    "outputFormat": "For each test case, output a single line containing the median of the given matrix.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n3 3\n3 4 5\n2 4 6\n4 6 7",
+        "output": "4",
+        "explanation": "All elements sorted: 2 3 4 4 4 5 6 6 7. The middle element (5th) is 4."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n1 5\n1 2 3 4 5",
+        "output": "3",
+        "explanation": "Sorted list is the row itself; the median of 5 elements is the third one, 3."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n5 1\n1\n2\n3\n4\n5",
+        "output": "3",
+        "explanation": "Column vector sorted; median of 5 numbers is 3."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1\n0",
+        "expectedOutput": "0",
+        "weight": 1
+      }
+    ],
+    "totalTestCases": 1,
+    "totalWeight": 1
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      1
+    ],
+    "maxScore": 1
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The matrix rows are individually sorted, but the whole matrix is not. The median is the element that would be at position (N·M)/2 in the sorted order (0‑based). We can binary‑search on the value range [minElement, maxElement]. For a candidate value mid we count how many elements in the matrix are <= mid. This count can be obtained in O(N log M) by binary‑searching each row. If the count is less than or equal to (N·M)/2 we need a larger value, otherwise we can try smaller values. The smallest value for which the count exceeds (N·M)/2 is the median. This runs in O( log(max‑min) * N * log M ) time and O(1) extra space.",
+    "timeComplexity": "O( log(maxValue‑minValue) * N * log M ) per test case.",
+    "spaceComplexity": "O(1) extra space besides the input matrix.",
+    "code": {
+      "C": "",
+      "C++": "",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    private static int countLessOrEqual(int[] row, int x) {\n        int lo = 0, hi = row.length;\n        while (lo < hi) {\n            int mid = (lo + hi) >>> 1;\n            if (row[mid] <= x) {\n                lo = mid + 1;\n            } else {\n                hi = mid;\n            }\n        }\n        return lo; // number of elements <= x\n    }\n\n    public static void main(String[] args) throws Exception {\n        // Read entire input as a single string to handle both real newlines and literal \"\\\\n\"\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder raw = new StringBuilder();\n        int c;\n        while ((c = br.read()) != -1) {\n            raw.append((char) c);\n        }\n        // Replace literal \"\\\\n\" sequences with spaces, also normalize whitespace\n        String data = raw.toString().replace(\"\\\\n\", \" \");\n        StringTokenizer st = new StringTokenizer(data);\n        if (!st.hasMoreTokens()) return;\n        int T = Integer.parseInt(st.nextToken());\n        StringBuilder out = new StringBuilder();\n        for (int t = 0; t < T; t++) {\n            int N = Integer.parseInt(st.nextToken());\n            int M = Integer.parseInt(st.nextToken());\n            int[][] mat = new int[N][M];\n            int min = Integer.MAX_VALUE;\n            int max = Integer.MIN_VALUE;\n            for (int i = 0; i < N; i++) {\n                for (int j = 0; j < M; j++) {\n                    int val = Integer.parseInt(st.nextToken());\n                    mat[i][j] = val;\n                    if (val < min) min = val;\n                    if (val > max) max = val;\n                }\n            }\n            int desired = (N * M) / 2;\n            int low = min, high = max;\n            while (low <= high) {\n                int mid = low + ((high - low) >>> 1);\n                int cnt = 0;\n                for (int i = 0; i < N; i++) {\n                    cnt += countLessOrEqual(mat[i], mid);\n                }\n                if (cnt <= desired) {\n                    low = mid + 1;\n                } else {\n                    high = mid - 1;\n                }\n            }\n            out.append(low);\n            if (t != T - 1) out.append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "",
+      "JavaScript": ""
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

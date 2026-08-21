@@ -1,0 +1,128 @@
+{
+  "questionId": "Q2509",
+  "title": "Matchsticks",
+  "slug": "matchsticks",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Arrays",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "Binary Indexed Tree",
+      "Range Maximum Query",
+      "Segment Tree",
+      "Preprocessing",
+      "Arrays"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Data Structures"
+    ]
+  },
+  "content": {
+    "problemStatement": "Chef Ceil has some matchsticks in his kitchen.\n\n**Detail of matchsticks:**\n\nThere are NNN matchsticks in total. They are numbered from to 000 to N\u22121N-1N\u22121 inclusive. The ithi^{th}ith matchstick takes bib_{i}bi\u200b time to burn when lighted at one end, and it burns at a uniform rate.\n\nIf lighted at both ends simultaneously, the matchstick will take only half of the original time to burn down.\n\n**Arrangement:**\n\nHe ties rear end of the all the matchsticks together at one point and the front end is kept free. The matchstick numbered iii is adjacent to matchstick numbered i+1i+1i+1 for all 0\u2264i\u2264N\u221220 \\leq i \\leq N-20\u2264i\u2264N\u22122.\n\nBodies of matchsticks do not touch each other, except at the rear end.\n\n**Task:**\n\nThere are QQQ queries, in each query we ask:\nIf he lights the free end of all matchsticks numbered between LLL and RRR inclusive, what will be the time needed for all matchsticks to get completely burnt?",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 100000",
+      "1 <= b_i <= 10^8",
+      "1 <= Q <= 100000",
+      "0 <= L <= R <= N-1"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case: first line contains integer N, the number of matchsticks. Second line contains N space\u2011separated integers b_i, the time (in seconds) each matchstick i takes to burn when lit at one end. Third line contains integer Q, the number of queries. Each of the next Q lines contains two integers L and R (0\u2011based, inclusive) describing a query.",
+    "outputFormat": "For each query output a single line containing the time (in seconds) after which all matchsticks are completely burnt. The answer must be printed as a floating point number with exactly one digit after the decimal point.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n5\n1\n0 0",
+        "output": "5.0",
+        "explanation": "There is only one matchstick, and it takes 5 seconds to burn."
+      },
+      {
+        "id": "sample_2",
+        "input": "2\n3 5\n1\n0 1",
+        "output": "4.0",
+        "explanation": "The first matchstick takes 3 seconds to burn, and the second matchstick takes 5 seconds to burn. When lighted at both ends, the second matchstick will burn in 2.5 seconds, which is less than the time it takes for the first matchstick to burn."
+      },
+      {
+        "id": "sample_3",
+        "input": "18\n3 4 2 1 5 7 9 7 10 5 12 3 1 1 2 1 3 2\n1\n4 10",
+        "output": "9.0",
+        "explanation": "The matchsticks in the range [4, 10] will burn in 9 seconds, which is the maximum time among all matchsticks."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For a query [L,R] every matchstick i in the range is lit at both ends, therefore it burns in b_i/2 seconds. Matchsticks outside the range are lit only at the rear end and need the full b_i seconds. The total time for the query is the maximum of these two groups:\n    answer = max( max_{i\u2209[L,R]} b_i ,  max_{i\u2208[L,R]} (b_i/2) ).\nWe need fast retrieval of the maximum b_i in any interval. A segment tree (or a sparse table) built on the original array provides O(log N) range\u2011maximum queries. Additionally we keep two prefix\u2011maximum arrays to obtain the maximum outside the interval in O(1):\n    leftMax = (L>0) ? prefixMax[L-1] : -\u221e\n    rightMax = (R+1<N) ? suffixMax[R+1] : -\u221e\n    outsideMax = max(leftMax, rightMax).\nThe inside maximum is obtained from the segment tree. The final answer is max(outsideMax, insideMax/2). All operations are O(log N) per query, O(N) preprocessing per test case.\n",
+    "timeComplexity": "O(N log N + Q log N) per test case (building the segment tree takes O(N), each query O(log N)).",
+    "spaceComplexity": "O(N) for the segment tree, prefix and suffix arrays.",
+    "code": {
+      "C": "// COMPLETE, COMPILABLE C code\n#include <stdio.h>\n#include <stdlib.h>\n\ntypedef struct {int l, r, val;} Node;\n\nNode *seg;\nint N;\n\nint max(int a, int b){return a>b?a:b;}\n\nvoid build(int idx, int l, int r, int *a){\n    seg[idx].l=l; seg[idx].r=r;\n    if(l==r){seg[idx].val=a[l];return;}\n    int mid=(l+r)/2;\n    build(idx*2,l,mid,a);\n    build(idx*2+1,mid+1,r,a);\n    seg[idx].val=max(seg[idx*2].val, seg[idx*2+1].val);\n}\n\nint query(int idx, int ql, int qr){\n    if(ql>seg[idx].r || qr<seg[idx].l) return -1; // -1 works because b_i >=1\n    if(ql<=seg[idx].l && seg[idx].r<=qr) return seg[idx].val;\n    int left=query(idx*2,ql,qr);\n    int right=query(idx*2+1,ql,qr);\n    return max(left,right);\n}\n\nint main(){\n    int T; if(scanf(\"%d\",&T)!=1) return 0;\n    while(T--){\n        scanf(\"%d\",&N);\n        int *b = (int*)malloc(N*sizeof(int));\n        for(int i=0;i<N;i++) scanf(\"%d\",&b[i]);\n        // prefix and suffix max\n        int *pref = (int*)malloc(N*sizeof(int));\n        int *suff = (int*)malloc(N*sizeof(int));\n        for(int i=0;i<N;i++) pref[i]= (i==0)?b[i]: (pref[i-1]>b[i]?pref[i-1]:b[i]);\n        for(int i=N-1;i>=0;i--) suff[i]= (i==N-1)?b[i]: (suff[i+1]>b[i]?suff[i+1]:b[i]);\n        // segment tree\n        seg = (Node*)malloc(sizeof(Node)*4*N);\n        build(1,0,N-1,b);\n        int Q; scanf(\"%d\",&Q);\n        while(Q--){\n            int L,R; scanf(\"%d %d\",&L,&R);\n            int outside = -1;\n            if(L>0) outside = pref[L-1];\n            if(R+1<N) outside = (outside> suff[R+1]?outside:suff[R+1]);\n            int insideMax = query(1,L,R);\n            double ans = outside;\n            double halfInside = insideMax/2.0;\n            if(halfInside>ans) ans=halfInside;\n            printf(\"%.1f\\n\",ans);\n        }\n        free(b); free(pref); free(suff); free(seg);\n    }\n    return 0;\n}",
+      "C++": ""
+    }
+  }
+}

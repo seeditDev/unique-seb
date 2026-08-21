@@ -1,0 +1,132 @@
+{
+  "questionId": "Q11764",
+  "title": "Shortest common supersequence",
+  "slug": "shortest-common-supersequence",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "String",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Dynamic Programming",
+      "Shortest Common Supersequence"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "We are given two strings ‘S1’ and ‘S2’. We need to return their shortest common supersequence. A supersequence is defined as the string which contains both the strings S1 and S2 as subsequences.",
+    "constraints": [
+      "1 <= length of S1, S2 <= 1000",
+      "S1 and S2 contain only lowercase English letters"
+    ],
+    "inputFormat": "Two strings S1 and S2",
+    "outputFormat": "The shortest common supersequence of S1 and S2",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": {
+          "S1": "a",
+          "S2": "b"
+        },
+        "expectedOutput": "ab",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": {
+          "S1": "abcdefghijklmnopqrstuvwxyz",
+          "S2": "zyxwvutsrqponmlkjihgfedcba"
+        },
+        "expectedOutput": "abcdefghijklmnopqrstuvwxyzzyxwvutsrqponmlkjihgfedcba",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": {
+          "S1": "aaaa",
+          "S2": "aaaa"
+        },
+        "expectedOutput": "aaaa",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": {
+          "S1": "",
+          "S2": "hello"
+        },
+        "expectedOutput": "hello",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": {
+          "S1": "brute",
+          "S2": "groot"
+        },
+        "expectedOutput": "bgruote",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Use dynamic programming to find the lengths of the longest common subsequences and then construct the shortest common supersequence",
+    "timeComplexity": "O(n*m)",
+    "spaceComplexity": "O(n*m)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n\nchar s1[1001], s2[1001];\nint dp[1001][1001];\n\nvoid printSupersequence(int i, int j) {\n    if (i == 0 && j == 0) return;\n    if (i > 0 && j > 0 && s1[i-1] == s2[j-1]) {\n        printSupersequence(i-1, j-1);\n        printf(\"%c\", s1[i-1]);\n    } else if (j > 0 && (i == 0 || dp[i][j] == dp[i][j-1])) {\n        printSupersequence(i, j-1);\n        printf(\"%c\", s2[j-1]);\n    } else {\n        printSupersequence(i-1, j);\n        printf(\"%c\", s1[i-1]);\n    }\n}\n\nint main() {\n    scanf(\"%s %s\", s1, s2);\n    int n = strlen(s1), m = strlen(s2);\n    for (int i = 0; i <= n; i++) {\n        for (int j = 0; j <= m; j++) {\n            if (i == 0) dp[i][j] = j;\n            else if (j == 0) dp[i][j] = i;\n            else if (s1[i-1] == s2[j-1]) dp[i][j] = 1 + dp[i-1][j-1];\n            else dp[i][j] = 1 + (dp[i-1][j] < dp[i][j-1] ? dp[i-1][j] : dp[i][j-1]);\n        }\n    }\n    printSupersequence(n, m);\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nclass Solution {\npublic:\n    // Function to return the shortest common supersequence of two strings\n    string shortestSupersequence(string s1, string s2) {\n\n        // Get the lengths of the two strings\n        int n = s1.size();\n        int m = s2.size();\n\n        // Create a 2D DP table to store lengths of LCS\n        vector<vector<int>> dp(n + 1, vector<int>(m + 1, 0));\n\n        // Initialize base cases: when either string is empty\n        for (int i = 0; i <= n; i++) {\n            dp[i][0] = 0;\n        }\n        for (int i = 0; i <= m; i++) {\n            dp[0][i] = 0;\n        }\n\n        // Fill the DP table using bottom-up approach\n        for (int ind1 = 1; ind1 <= n; ind1++) {\n            for (int ind2 = 1; ind2 <= m; ind2++) {\n\n                // If characters match, take diagonal + 1\n                if (s1[ind1 - 1] == s2[ind2 - 1])\n                    dp[ind1][ind2] = 1 + dp[ind1 - 1][ind2 - 1];\n\n                // Otherwise, take max from left or top\n                else\n                    dp[ind1][ind2] = max(dp[ind1 - 1][ind2], dp[ind1][ind2 - 1]);\n            }\n        }\n\n        // Start from bottom-right of the DP table to build the supersequence\n        int i = n;\n        int j = m;\n        string ans = \"\";\n\n        // Traverse the table in reverse to find the supersequence\n        while (i > 0 && j > 0) {\n\n            // If characters are equal, include it once\n            if (s1[i - 1] == s2[j - 1]) {\n                ans += s1[i - 1];\n                i--;\n                j--;\n            }\n\n            // Move in the direction of greater value\n            else if (dp[i - 1][j] > dp[i][j - 1]) {\n                ans += s1[i - 1];\n                i--;\n            } else {\n                ans += s2[j - 1];\n                j--;\n            }\n        }\n\n        // If any characters are left in s1, add them\n        while (i > 0) {\n            ans += s1[i - 1];\n            i--;\n        }\n\n        // If any characters are left in s2, add them\n        while (j > 0) {\n            ans += s2[j - 1];\n            j--;\n        }\n\n        // Since we added characters in reverse order, reverse the result\n        reverse(ans.begin(), ans.end());\n\n        // Return the final shortest supersequence\n        return ans;\n    }\n};",
+      "Java": "import java.util.*;\n\nclass Solution {\n\n    // Function to return the shortest common supersequence of two strings\n    public String shortestSupersequence(String s1, String s2) {\n\n        // Get the lengths of both strings\n        int n = s1.length();\n        int m = s2.length();\n\n        // Create a 2D DP array to store lengths of LCS\n        int[][] dp = new int[n + 1][m + 1];\n\n        // Fill the DP array using bottom-up tabulation\n        for (int i = 1; i <= n; i++) {\n            for (int j = 1; j <= m; j++) {\n\n                // If characters match, add 1 to diagonal value\n                if (s1.charAt(i - 1) == s2.charAt(j - 1)) {\n                    dp[i][j] = 1 + dp[i - 1][j - 1];\n                } \n                \n                // Otherwise, take the max from left or top cell\n                else {\n                    dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);\n                }\n            }\n        }\n\n        // Initialize StringBuilder to build the result\n        StringBuilder ans = new StringBuilder();\n\n        // Start from bottom-right corner of the table\n        int i = n, j = m;\n\n        // Traverse the table in reverse to build supersequence\n        while (i > 0 && j > 0) {\n\n            // If characters match, add to answer and move diagonally\n            if (s1.charAt(i - 1) == s2.charAt(j - 1)) {\n                ans.append(s1.charAt(i - 1));\n                i--;\n                j--;\n            }\n\n            // Move in the direction of larger value\n            else if (dp[i - 1][j] > dp[i][j - 1]) {\n                ans.append(s1.charAt(i - 1));\n                i--;\n            } else {\n                ans.append(s2.charAt(j - 1));\n                j--;\n            }\n        }\n\n        // Append remaining characters from s1\n        while (i > 0) {\n            ans.append(s1.charAt(i - 1));\n            i--;\n        }\n\n        // Append remaining characters from s2\n        while (j > 0) {\n            ans.append(s2.charAt(j - 1));\n            j--;\n        }\n\n        // Reverse the result since it was built backwards\n        return ans.reverse().toString();\n    }\n}",
+      "Python3": "# Class to compute shortest common supersequence\nclass Solution:\n\n    # Function to return shortest common supersequence of two strings\n    def shortestSupersequence(self, s1: str, s2: str) -> str:\n\n        # Get the lengths of the strings\n        n = len(s1)\n        m = len(s2)\n\n        # Create a 2D DP table to store LCS lengths\n        dp = [[0] * (m + 1) for _ in range(n + 1)]\n\n        # Fill the DP table using bottom-up approach\n        for i in range(1, n + 1):\n            for j in range(1, m + 1):\n\n                # If characters match, take diagonal + 1\n                if s1[i - 1] == s2[j - 1]:\n                    dp[i][j] = 1 + dp[i - 1][j - 1]\n\n                # Otherwise, take max from top or left\n                else:\n                    dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])\n\n        # Start from bottom-right and build the supersequence\n        i, j = n, m\n        result = []\n\n        # Traverse the table in reverse to collect characters\n        while i > 0 and j > 0:\n\n            # If characters are equal, include once and move diagonally\n            if s1[i - 1] == s2[j - 1]:\n                result.append(s1[i - 1])\n                i -= 1\n                j -= 1\n\n            # Move in direction of greater value\n            elif dp[i - 1][j] > dp[i][j - 1]:\n                result.append(s1[i - 1])\n                i -= 1\n            else:\n                result.append(s2[j - 1])\n                j -= 1\n\n        # Add remaining characters from s1\n        while i > 0:\n            result.append(s1[i - 1])\n            i -= 1\n\n        # Add remaining characters from s2\n        while j > 0:\n            result.append(s2[j - 1])\n            j -= 1\n\n        # Reverse the result as it was built in reverse\n        result.reverse()\n\n        # Join the list to form final string\n        return ''.join(result)\n",
+      "JavaScript": "class Solution {\n\n    // Function to return shortest common supersequence of two strings\n    shortestSupersequence(s1, s2) {\n\n        // Get lengths of both strings\n        const n = s1.length;\n        const m = s2.length;\n\n        // Create a 2D DP array filled with 0s\n        const dp = Array.from({ length: n + 1 }, () => Array(m + 1).fill(0));\n\n        // Fill the DP table using bottom-up approach\n        for (let i = 1; i <= n; i++) {\n            for (let j = 1; j <= m; j++) {\n\n                // If characters match, take diagonal + 1\n                if (s1[i - 1] === s2[j - 1]) {\n                    dp[i][j] = 1 + dp[i - 1][j - 1];\n                }\n\n                // Otherwise, take max from top or left\n                else {\n                    dp[i][j] = 1 + (dp[i - 1][j] > dp[i][j - 1] ? dp[i - 1][j] : dp[i][j - 1]);\n                }\n            }\n        }\n\n        // Initialize result string builder\n        let result = [];\n\n        // Start from bottom-right of DP table\n        let i = n, j = m;\n\n        // Traverse in reverse to build supersequence\n        while (i > 0 && j > 0) {\n\n            // If characters match, add to result\n            if (s1[i - 1] === s2[j - 1]) {\n                result.push(s1[i - 1]);\n                i--;\n                j--;\n            }\n\n            // Move in direction of larger value\n            else if (dp[i - 1][j] > dp[i][j - 1]) {\n                result.push(s1[i - 1]);\n                i--;\n            } else {\n                result.push(s2[j - 1]);\n                j--;\n            }\n        }\n\n        // Add remaining characters from s1\n        while (i > 0) {\n            result.push(s1[i - 1]);\n            i--;\n        }\n\n        // Add remaining characters from s2\n        while (j > 0) {\n            result.push(s2[j - 1]);\n            j--;\n        }\n\n        // Reverse the result to correct order\n        result.reverse();\n\n        // Return final string\n        return result.join('');\n    }\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

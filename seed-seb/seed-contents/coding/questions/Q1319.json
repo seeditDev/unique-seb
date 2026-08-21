@@ -1,0 +1,129 @@
+{
+  "questionId": "Q1319",
+  "title": "Deletion - Doubly Linked List",
+  "slug": "deletion-doubly-linked-list",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Data Structures",
+    "difficulty": "Easy",
+    "isPremium": false,
+    "tags": [
+      "Doubly Linked List",
+      "Deletion",
+      "Pointer Manipulation",
+      "Data Structures"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Linked Lists"
+    ]
+  },
+  "content": {
+    "problemStatement": "In this section, we will learn how to do the deletion operation in a doubly linked list.\n\nLet's suppose you need to delete the node `target` between node `A` and node `B`, the pointers we need to update are:\n\n\nnext pointer of `A`\nprev pointer of `B`\nhead pointer if `target` is the head\nComplete the function delete(int val) where `val` denotes the value of the node to be deleted.\n\nVideo Explanation\n**Do not make changes anywhere else in the code except this function**",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= n <= 15",
+      "1 <= node values <= 1000",
+      "The value x appears exactly once in each test case"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, the first line contains two integers n and x, where n is the number of nodes in the doubly linked list and x is the value of the node to be deleted. The second line contains n space\u2011separated integers representing the node values in order.",
+    "outputFormat": "For each test case output a single line containing the values of the remaining nodes after deletion, in order, separated by a single space. If the list becomes empty, output an empty line.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n5 3\n1 2 3 4 5\n4 1\n1 2 3 4\n4 4\n1 2 3 4",
+        "output": "1 2 4 5\n2 3 4\n1 2 3",
+        "explanation": "First test case deletes node 3 (middle). Second deletes head 1. Third deletes tail 4."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n2 5\n5 10",
+        "output": "10",
+        "explanation": "List has two nodes, delete the head (value 5), leaving only 10."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n1 7\n7",
+        "output": "",
+        "explanation": "Single\u2011node list; after deleting the only node the list becomes empty, so an empty line is printed."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 42\n42",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n15 8\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15",
+        "expectedOutput": "1 2 3 4 5 6 7 9 10 11 12 13 14 15",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n5 10\n10 20 30 40 50",
+        "expectedOutput": "20 30 40 50",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n4 100\n10 20 30 100",
+        "expectedOutput": "10 20 30",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n6 7\n5 7 9 1 3 2",
+        "expectedOutput": "5 9 1 3 2",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each test case we build a doubly linked list from the given values. Then we locate the node whose value equals x by traversing from the head. Once found, we reconnect its predecessor (if any) to its successor (if any) by updating the next pointer of the predecessor and the prev pointer of the successor. If the node to delete is the head, we move the head pointer to the next node. Finally we traverse the possibly new head and collect the remaining values for output. The algorithm is linear in the number of nodes.\n\nSteps:\n1. Read T.\n2. Loop over test cases:\n   a. Read n and x.\n   b. Read the n values and create nodes linking them via next and prev.\n   c. Find the node with value x.\n   d. Update pointers as described and adjust head if needed.\n   e. Iterate from head, printing values separated by spaces.\nThe time complexity per test case is O(n) and the extra space used besides the list itself is O(1).",
+    "timeComplexity": "O(n) per test case, where n is the number of nodes in that test case.",
+    "spaceComplexity": "O(n) for the linked list nodes; auxiliary space O(1).",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\ntypedef struct Node {\n    int value;\n    struct Node* next;\n    struct Node* prev;\n} Node;\n\nvoid deleteNode(Node** head, int value) {\n    Node* target = *head;\n    while (target && target->value != value) target = target->next;\n    if (!target) return; // should not happen per constraints\n    Node* A = target->prev;\n    Node* B = target->next;\n    if (A) A->next = B;\n    if (B) B->prev = A;\n    if (target == *head) *head = B;\n    free(target);\n}\n\nint main() {\n    int T; if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        int n, x; scanf(\"%d %d\", &n, &x);\n        Node* head = NULL; Node* cur = NULL;\n        for (int i = 0; i < n; ++i) {\n            int v; scanf(\"%d\", &v);\n            Node* nd = (Node*)malloc(sizeof(Node));\n            nd->value = v; nd->next = NULL; nd->prev = NULL;\n            if (!head) { head = nd; cur = nd; }\n            else { cur->next = nd; nd->prev = cur; cur = nd; }\n        }\n        deleteNode(&head, x);\n        cur = head;\n        while (cur) {\n            printf(\"%d\", cur->value);\n            if (cur->next) printf(\" \");\n            cur = cur->next;\n        }\n        printf(\"\\n\");\n        // free remaining nodes\n        while (head) { Node* tmp = head; head = head->next; free(tmp); }\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nstruct Node {\n    int value;\n    Node* next;\n    Node* prev;\n    Node(int v): value(v), next(nullptr), prev(nullptr) {}\n};\n\nvoid deleteNode(Node** head, int value) {\n    Node* target = *head;\n    while (target && target->value != value) target = target->next;\n    if (!target) return; // per constraints this never happens\n    Node* A = target->prev;\n    Node* B = target->next;\n    if (A) A->next = B;\n    if (B) B->prev = A;\n    if (target == *head) *head = B;\n    delete target;\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while (T--) {\n        int n, x; cin >> n >> x;\n        Node* head = nullptr; Node* cur = nullptr;\n        for (int i = 0; i < n; ++i) {\n            int v; cin >> v;\n            Node* nd = new Node(v);\n            if (!head) { head = nd; cur = nd; }\n            else { cur->next = nd; nd->prev = cur; cur = nd; }\n        }\n        deleteNode(&head, x);\n        cur = head;\n        while (cur) {\n            cout << cur->value;\n            if (cur->next) cout << ' ';\n            cur = cur->next;\n        }\n        cout << '\\n';\n        while (head) { Node* tmp = head; head = head->next; delete tmp; }\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    static class Node {\n        int value;\n        Node next, prev;\n        Node(int v) { value = v; }\n    }\n\n    static void deleteNode(Node[] headRef, int value) {\n        Node target = headRef[0];\n        while (target != null && target.value != value) target = target.next;\n        if (target == null) return; // per constraints never happens\n        Node A = target.prev;\n        Node B = target.next;\n        if (A != null) A.next = B;\n        if (B != null) B.prev = A;\n        if (target == headRef[0]) headRef[0] = B;\n    }\n\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st = new StringTokenizer(br.readLine());\n        int T = Integer.parseInt(st.nextToken());\n        StringBuilder out = new StringBuilder();\n        while (T-- > 0) {\n            st = new StringTokenizer(br.readLine());\n            int n = Integer.parseInt(st.nextToken());\n            int x = Integer.parseInt(st.nextToken());\n            st = new StringTokenizer(br.readLine());\n            Node head = null, cur = null;\n            for (int i = 0; i < n; ++i) {\n                int v = Integer.parseInt(st.nextToken());\n                Node nd = new Node(v);\n                if (head == null) { head = nd; cur = nd; }\n                else { cur.next = nd; nd.prev = cur; cur = nd; }\n            }\n            Node[] headRef = new Node[]{head};\n            deleteNode(headRef, x);\n            cur = headRef[0];\n            while (cur != null) {\n                out.append(cur.value);\n                if (cur.next != null) out.append(' ');\n                cur = cur.next;\n            }\n            out.append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef delete_node(head, value):\n    target = head\n    while target and target.value != value:\n        target = target.next\n    if not target:\n        return head  # per constraints never happens\n    A = target.prev\n    B = target.next\n    if A:\n        A.next = B\n    if B:\n        B.prev = A\n    if target is head:\n        head = B\n    return head\n\nclass Node:\n    __slots__ = ('value', 'next', 'prev')\n    def __init__(self, v):\n        self.value = v\n        self.next = None\n        self.prev = None\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        n = int(next(it)); x = int(next(it))\n        head = None; cur = None\n        for _ in range(n):\n            v = int(next(it))\n            nd = Node(v)\n            if head is None:\n                head = nd; cur = nd\n            else:\n                cur.next = nd\n                nd.prev = cur\n                cur = nd\n        head = delete_node(head, x)\n        vals = []\n        cur = head\n        while cur:\n            vals.append(str(cur.value))\n            cur = cur.next\n        out_lines.append(' '.join(vals))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet outputs = [];\nclass Node {\n    constructor(value) {\n        this.value = value;\n        this.next = null;\n        this.prev = null;\n    }\n}\nfunction deleteNode(head, value) {\n    let target = head;\n    while (target && target.value !== value) target = target.next;\n    if (!target) return head; // per constraints never happens\n    const A = target.prev;\n    const B = target.next;\n    if (A) A.next = B;\n    if (B) B.prev = A;\n    if (target === head) head = B;\n    return head;\n}\nfor (let t = 0; t < T; ++t) {\n    const n = Number(input[idx++]);\n    const x = Number(input[idx++]);\n    let head = null, cur = null;\n    for (let i = 0; i < n; ++i) {\n        const v = Number(input[idx++]);\n        const nd = new Node(v);\n        if (!head) { head = nd; cur = nd; }\n        else { cur.next = nd; nd.prev = cur; cur = nd; }\n    }\n    head = deleteNode(head, x);\n    const line = [];\n    while (head) {\n        line.push(head.value);\n        head = head.next;\n    }\n    outputs.push(line.join(' '));\n}\nconsole.log(outputs.join('\\n'));"
+    }
+  }
+}

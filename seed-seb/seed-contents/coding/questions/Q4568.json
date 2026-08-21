@@ -1,0 +1,141 @@
+{
+  "questionId": "Q4568",
+  "title": "Shortest Palindrome",
+  "slug": "shortest-palindrome",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "KMP",
+      "Prefix Function",
+      "Palindrome",
+      "String Manipulation"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Strings & Pattern Matching"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given a string sss consisting of lowercase English letters. You can convert sss into a **palindrome** by adding characters **only at the beginning** of the string.\n\nYour task is to **find the shortest palindrome** that can be obtained using this transformation.\n\nFunction DeclarationFunction NameshortestPalindromeshortestPalindromeshortestPalindrome – This function finds the shortest palindrome that can be formed by adding characters **only at the beginning** of the given string.\n\nParameters\nsss : A string consisting of lowercase English letters.\nReturn Value\nReturns a string representing the **shortest palindrome** that can be obtained by adding characters only at the beginning of sss.\nConstraints\n1≤T≤1001 \\leq T \\leq 1001≤T≤100\n0≤∣s∣≤5×1040 \\leq |s| \\leq 5 \\times 10^40≤∣s∣≤5×104\nsss consists of lowercase English letters only",
+    "constraints": [
+      "1 ≤ T ≤ 100",
+      "0 ≤ |s| ≤ 100000",
+      "s consists only of lowercase English letters"
+    ],
+    "inputFormat": "The first line contains an integer T (1 ≤ T ≤ 100), the number of test cases. Each of the next T lines contains a string s consisting of lowercase English letters (0 ≤ |s| ≤ 100000).",
+    "outputFormat": "For each test case output a single line – the shortest palindrome that can be obtained by adding characters only at the beginning of s.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\nrace\nlevel\nxyz",
+        "output": "ecarace\nlevel\nzyxyz",
+        "explanation": "For \"race\" the longest palindromic prefix is \"r\"; adding reverse of \"ace\" (\"eca\") in front gives \"ecarace\". \"level\" is already a palindrome, so it stays unchanged. For \"xyz\" the longest palindromic prefix is \"x\"; adding reverse of \"yz\" (\"zy\") yields \"zyxyz\"."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\naaab",
+        "output": "baaab",
+        "explanation": "Longest palindromic prefix of \"aaab\" is \"aaa\". The remaining suffix is \"b\"; its reverse is \"b\", which is added to the front."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\nabc",
+        "output": "cbaabc",
+        "explanation": "Only the first character \"a\" forms a palindromic prefix. Adding reverse of \"bc\" (\"cb\") in front gives \"cbaabc\"."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary (empty string)",
+        "input": "1\n",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary (all 'a's, length 100)",
+        "input": "1\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "expectedOutput": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "already palindrome but mixed characters",
+        "input": "1\nababa",
+        "expectedOutput": "ababa",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\nabcd",
+        "expectedOutput": "dcbabcd",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2 (SEED-IT example)",
+        "input": "1\naacecaaa",
+        "expectedOutput": "aaacecaaa",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The shortest palindrome obtained by adding characters only at the front is built by keeping the longest palindromic prefix of the original string unchanged and mirroring the remaining suffix. To find the longest palindromic prefix efficiently we use the KMP prefix function on the string \"s#reverse(s)\". The value of the last element of the prefix array gives the length L of the longest prefix of s which is also a suffix of reverse(s), i.e., the longest palindromic prefix. The characters that need to be added are the first |s|-L characters of reverse(s). The final answer is reverse(s)[0..|s|-L-1] + s. The algorithm runs in O(|s|) time per test case and O(|s|) auxiliary space for the prefix array.",
+    "timeComplexity": "O(N) per test case, where N = |s|. Overall O( Σ|s| ) for all test cases.",
+    "spaceComplexity": "O(N) auxiliary space for the prefix function and the reversed string.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n#include <stdlib.h>\n\n// Compute prefix function (KMP) for a character array\nvoid computePrefix(const char *str, int n, int *pi) {\n    pi[0] = 0;\n    for (int i = 1; i < n; ++i) {\n        int j = pi[i - 1];\n        while (j > 0 && str[i] != str[j])\n            j = pi[j - 1];\n        if (str[i] == str[j])\n            ++j;\n        pi[i] = j;\n    }\n}\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        char s[100005];\n        scanf(\"%s\", s);\n        int n = strlen(s);\n        // reverse of s\n        char rev[100005];\n        for (int i = 0; i < n; ++i) rev[i] = s[n - 1 - i];\n        rev[n] = '\\0';\n        // build temporary string s#rev\n        char tmp[200010];\n        sprintf(tmp, \"%s#%s\", s, rev);\n        int m = strlen(tmp);\n        int *pi = (int *)malloc(m * sizeof(int));\n        computePrefix(tmp, m, pi);\n        int L = pi[m - 1]; // length of longest palindromic prefix\n        // output characters to add\n        for (int i = 0; i < n - L; ++i) putchar(rev[i]);\n        printf(\"%s\\n\", s);\n        free(pi);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nvector<int> prefixFunction(const string &s) {\n    int n = s.size();\n    vector<int> pi(n);\n    for (int i = 1; i < n; ++i) {\n        int j = pi[i - 1];\n        while (j > 0 && s[i] != s[j]) j = pi[j - 1];\n        if (s[i] == s[j]) ++j;\n        pi[i] = j;\n    }\n    return pi;\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T;\n    if (!(cin >> T)) return 0;\n    while (T--) {\n        string s;\n        cin >> s;\n        string rev = s;\n        reverse(rev.begin(), rev.end());\n        string tmp = s + '#' + rev;\n        vector<int> pi = prefixFunction(tmp);\n        int L = pi.back();\n        string add = rev.substr(0, s.size() - L);\n        cout << add << s << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    private static int[] prefixFunction(String s) {\n        int n = s.length();\n        int[] pi = new int[n];\n        for (int i = 1; i < n; i++) {\n            int j = pi[i - 1];\n            while (j > 0 && s.charAt(i) != s.charAt(j)) {\n                j = pi[j - 1];\n            }\n            if (s.charAt(i) == s.charAt(j)) j++;\n            pi[i] = j;\n        }\n        return pi;\n    }\n\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        String line = br.readLine();\n        if (line == null || line.isEmpty()) return;\n        int T = Integer.parseInt(line.trim());\n        StringBuilder out = new StringBuilder();\n        for (int t = 0; t < T; t++) {\n            String s = br.readLine();\n            if (s == null) s = \"\";\n            String rev = new StringBuilder(s).reverse().toString();\n            String tmp = s + \"#\" + rev;\n            int[] pi = prefixFunction(tmp);\n            int L = pi[pi.length - 1];\n            String add = rev.substring(0, s.length() - L);\n            out.append(add).append(s);\n            if (t + 1 < T) out.append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef prefix_function(s: str):\n    n = len(s)\n    pi = [0] * n\n    for i in range(1, n):\n        j = pi[i - 1]\n        while j > 0 and s[i] != s[j]:\n            j = pi[j - 1]\n        if s[i] == s[j]:\n            j += 1\n        pi[i] = j\n    return pi\n\ndef shortest_palindrome(s: str) -> str:\n    rev = s[::-1]\n    tmp = s + '#' + rev\n    pi = prefix_function(tmp)\n    L = pi[-1]\n    add = rev[:len(s) - L]\n    return add + s\n\ndef main():\n    data = sys.stdin.read().splitlines()\n    if not data:\n        return\n    t = int(data[0])\n    out = []\n    for i in range(1, t + 1):\n        s = data[i] if i < len(data) else ''\n        out.append(shortest_palindrome(s))\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    main()",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst T = parseInt(lines[idx++], 10);\nlet output = [];\nfunction prefixFunction(str) {\n  const n = str.length;\n  const pi = new Array(n).fill(0);\n  for (let i = 1; i < n; i++) {\n    let j = pi[i - 1];\n    while (j > 0 && str[i] !== str[j]) j = pi[j - 1];\n    if (str[i] === str[j]) j++;\n    pi[i] = j;\n  }\n  return pi;\n}\nfor (let caseNum = 0; caseNum < T; caseNum++) {\n  const s = lines[idx++] || '';\n  const rev = s.split('').reverse().join('');\n  const tmp = s + '#' + rev;\n  const pi = prefixFunction(tmp);\n  const L = pi[pi.length - 1];\n  const add = rev.substring(0, s.length - L);\n  output.push(add + s);\n}\nconsole.log(output.join('\\n'));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

@@ -1,0 +1,129 @@
+{
+  "questionId": "Q2415",
+  "title": "Favourite Numbers",
+  "slug": "favourite-numbers",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-03",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Binary search",
+      "Aho\u2011Corasick",
+      "Strings",
+      "Substring",
+      "K\u2011th order statistic",
+      "Digit DP"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ]
+  },
+  "content": {
+    "problemStatement": "Chef likes numbers and number theory, we all know that. There are **N** digit strings that he particularly likes. He likes them so much that he defines some numbers to be **beautiful numbers** based on these digit strings. \n\n\n\nBeautiful numbers are those numbers whose decimal representation contains **at least one** of chef's favorite digit strings as a substring.\nYour task is to calculate the **Kth** smallest number amongst the beautiful numbers in the range from **L** to **R** (both inclusive). \nIf the number of beautiful numbers between **L** and **R** is less than **K**, then output \"**no such number**\".",
+    "constraints": [
+      "1 \u2264 T \u2264 10",
+      "1 \u2264 L \u2264 R \u2264 10^18",
+      "1 \u2264 K \u2264 R\u2011L+1",
+      "1 \u2264 N \u2264 62",
+      "1 \u2264 length of each favourite string \u2264 18",
+      "Total length of all favourite strings in a test case \u2264 1116"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases.\nFor each test case:\n- A line with four space\u2011separated integers L, R, K and N.\n- N following lines, each containing one favourite digit string (no leading zeros, length \u2264 18).\nAll numbers are in decimal representation.\nConstraints: 1 \u2264 L \u2264 R \u2264 10^18, 1 \u2264 K \u2264 R\u2011L+1, 1 \u2264 N \u2264 62, 1 \u2264 length of each favourite string \u2264 18.",
+    "outputFormat": "For each test case output a single line:\n- The K\u2011th smallest beautiful number in the interval [L, R] (inclusive), or\n- the string \"no such number\" if fewer than K beautiful numbers exist in that interval.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "",
+        "output": "Input:\n1 1000000000 4 2\n62\n63\n\nOutput:\n163",
+        "explanation": ""
+      },
+      {
+        "id": "sample_2",
+        "input": "",
+        "output": "Input:\n1 1 1 1\n2\nOutput:\r\nno such number",
+        "explanation": ""
+      },
+      {
+        "id": "sample_3",
+        "input": "",
+        "output": "Input:\n1 1000 15 2\n6\n22\n\nOutput:\n67",
+        "explanation": ""
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each test case we need to answer a K\u2011th order statistic query on the set of numbers in [L,R] that contain at least one of the given patterns as a substring.\n\n1. **Aho\u2011Corasick automaton** \u2013 Build a trie of all favourite strings, add failure links and a flag `out` for each state that tells whether any pattern ends in that state (or in a state reachable via failure links). The number of states is at most the total length of all patterns (\u2264 1116).\n\n2. **Digit DP** \u2013 Let `cnt(x)` be the amount of beautiful numbers in the range [0, x]. We compute it with a DP over the decimal representation of `x` (at most 19 digits). DP state:\n   - position `pos` (0 \u2026 len)\n   - automaton state `state`\n   - `tight` (whether the prefix is already equal to the prefix of `x`)\n   - `started` (whether we have placed a non\u2011leading\u2011zero digit yet)\n   - `found` (whether we have already visited a state whose `out` flag is true)\n   The transition tries all possible next digits respecting `tight`. When `started` becomes true we move in the automaton; otherwise we stay in the root state and keep `found` false. When `found` is true we can ignore further matches \u2013 the number is already beautiful.\n   The DP returns the number of ways that end with `found == true`.\n\n3. **Binary search** \u2013 The function `cnt(x)` is monotone. To obtain the K\u2011th beautiful number inside [L,R] we binary\u2011search `mid` in [L,R]. For a candidate `mid` we compute `cnt(mid) - cnt(L\u20111)`. If this value \u2265 K, the answer lies at most at `mid`; otherwise it lies after `mid`. The search finishes in O(log(R\u2011L)) \u2248 60 steps.\n\nOverall per test case:\n- Building the automaton: O(total pattern length).\n- One DP evaluation: O(number_of_digits * number_of_states * 10) \u2264 19 * 1116 * 10 \u2248 2\u00b710^5 operations.\n- Binary search needs \u2264 60 DP calls, well within limits.\n\nEdge cases handled:\n- No beautiful numbers in the interval \u2192 output \"no such number\".\n- Patterns may overlap; the automaton correctly propagates `out` through failure links.\n- Leading zeros are ignored \u2013 a number like 0012 is treated as 12.\n- L can be 1, so `cnt(L\u20111)` is evaluated as `cnt(0)` which correctly returns 0.\n\nThe same logic is implemented in C, C++, Java, Python\u202f3 and JavaScript, each reading `T` test cases and printing the answer per line.",
+    "timeComplexity": "O(T * (log(R\u2011L) + 1) * D * S * 10) where D \u2264 19 (digits) and S \u2264 1116 (automaton states). Practically \u2264 1.5\u00b710^7 operations for the maximal limits.",
+    "spaceComplexity": "O(S) for the automaton plus O(D * S) for memoisation of the DP (\u2248 2\u00b710^4 integers).",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n#include <stdlib.h>\n\n#define MAXS 1200"
+    }
+  }
+}

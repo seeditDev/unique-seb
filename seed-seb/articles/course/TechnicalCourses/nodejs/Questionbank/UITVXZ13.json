@@ -1,0 +1,82 @@
+{
+  "questionId": "UITVXZ13",
+  "title": "Handling Database Errors",
+  "slug": "uitvxz13",
+  "version": 1,
+  "createdAt": "2026-07-13",
+  "updatedAt": "2026-07-13",
+  "source": {
+    "platform": "SEED-IT",
+    "courseSlug": "nodejs",
+    "contestCode": "FHRVRX",
+    "module": "Database Integration",
+    "submodule": "Mongoose Fundamentals",
+    "contentType": "mcq",
+    "originalUrl": "https://www.codechef.com/learn/course/nodejs/FHRVRX/problems/UITVXZ13"
+  },
+  "metadata": {
+    "category": "Concept",
+    "difficulty": "Beginner",
+    "isPremium": false,
+    "tags": [
+      "javascript"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Database Integration",
+      "Mongoose Fundamentals"
+    ],
+    "QBCategory": "SEED-IT"
+  },
+  "content": {
+    "problemStatement": "When we build applications that interact with a database like MongoDB using Mongoose, things don't always go as planned. The database server might be down, there could be network issues, or we might try to save data that doesn't follow the rules we defined in our Mongoose schemas (this is a validation error, which you learned about in \"Data validation with schemas\").\n\nIf we don't handle these situations, our Node.js application could crash, or users might see confusing error messages. Proper error handling makes our application more robust and user-friendly.\n\n**Mongoose Operations are Asynchronous**\n\nRemember from our \"Asynchronous JavaScript Basics\" lesson that operations that take time, like talking to a database, are usually asynchronous in Node.js. Mongoose methods like `save()`, `find()`, `findByIdAndUpdate()`, etc., return **Promises**. This is great because Promises have built-in ways to handle both successful outcomes and errors.\n\n**Handling Errors with `async/await` and `try...catch` (Recommended)**\n\nThe `async/await` syntax, which you're familiar with, provides a very clean way to work with Promises and handle their errors using `try...catch` blocks. This is generally the recommended approach.\n\nLet's see how this works within an Express route handler, which you learned about in \"Routing & Middleware\" and \"Handling Requests & Data\":\n\n```javascript\n// Assuming you have a 'Book' model defined with Mongoose\n// const Book = mongoose.model('Book', bookSchema);\n\n// Example: Creating a new book\napp.post('/books', async (req, res) => {\n    try {\n        // 1. Create a new Book instance with data from the request body\n        const newBook = new Book(req.body);\n\n        // 2. Try to save the new book to the database\n        //    The 'await' keyword pauses execution here until save() completes or fails\n        const savedBook = await newBook.save();\n\n        // 3. If save() is successful, send a 201 (Created) response\n        res.status(201).json(savedBook);\n\n    } catch (error) {\n        // 4. If any error occurs in the 'try' block (e.g., during newBook.save()),\n        //    execution jumps to this 'catch' block.\n\n        // It's very important to log the error on the server for debugging!\n        console.error(\"Error saving book:\", error);\n\n        // Now, let's figure out what kind of error it is and respond appropriately.\n        // We'll explore this next. For now, a generic server error:\n        res.status(500).json({ message: \"Oh no! Something went wrong on our end.\" });\n    }\n});\n```\n\nIn the `catch (error)` block, the `error` object contains information about what went wrong.\n\n**Common Types of Database Errors and How to Respond**\n\n1.  **Validation Errors:**\n    *   These happen if the data you're trying to save doesn't meet the requirements of your Mongoose schema (e.g., a required field is missing, or a number is out of range).\n    *   Mongoose sets `error.name` to `'ValidationError'`.\n    *   The `error.errors` object will contain details about which fields failed validation.\n    *   **Response:** Send an HTTP `400 Bad Request` status, as the client sent invalid data.\n\n    ```javascript\n    // Inside the catch block:\n    if (error.name === 'ValidationError') {\n        // You can get more specific messages from error.errors if needed\n        return res.status(400).json({ message: \"Validation Failed\", details: error.message });\n    }\n    ```\n\n2.  **Duplicate Key Errors (MongoDB specific):**\n    *   This occurs if you try to insert a document that violates a `unique` constraint in your schema (e.g., two users with the same unique email address).\n    *   MongoDB returns a specific error code for this: `11000`. You can check `error.code === 11000`.\n    *   **Response:** Send an HTTP `409 Conflict` or `400 Bad Request` status.\n\n    ```javascript\n    // Inside the catch block (usually after checking for ValidationError):\n    if (error.code === 11000) {\n        // The error.message might give clues about which field caused the duplication.\n        return res.status(409).json({ message: \"This item already exists. Please use a unique value.\" });\n    }\n    ```\n\n3.  **Other/Unexpected Server Errors:**\n    *   These could be due to various reasons like a lost database connection mid-operation, or other unexpected issues on the server.\n    *   If the error isn't one of the specific types above, it's good practice to treat it as a general server error.\n    *   **Response:** Send an HTTP `500 Internal Server Error`. Always log these errors thoroughly on the server side for debugging.\n\n    ```javascript\n    // This would be the fallback in your catch block:\n    console.error(\"Unhandled database operation error:\", error);\n    res.status(500).json({ message: \"An unexpected error occurred while processing your request.\" });\n    ```\n\n**Putting It Together in an Express Route:**\n\n```javascript\napp.post('/books', async (req, res) => {\n    try {\n        const newBook = new Book(req.body);\n        const savedBook = await newBook.save();\n        res.status(201).json(savedBook);\n    } catch (error) {\n        console.error(\"Failed to save book:\", error); // Log for the developer\n\n        if (error.name === 'ValidationError') {\n            return res.status(400).json({ message: \"Validation failed.\", errors: error.errors });\n        }\n        if (error.code === 11000) { // Duplicate key error\n            return res.status(409).json({ message: \"A book with this identifier already exists.\" });\n        }\n        // For any other errors, send a generic 500 server error\n        res.status(500).json({ message: \"An internal server error occurred.\" });\n    }\n});\n```\nThis pattern applies to other Mongoose operations like `Model.findByIdAndUpdate()`, `Model.findByIdAndDelete()`, `Model.find()`, etc. Always wrap them in `try...catch` if you're using `async/await`.\n\n**Initial Database Connection Errors**\n\nWhen your application first starts, it needs to connect to MongoDB. This initial connection (using `mongoose.connect()`) can also fail (e.g., if MongoDB isn't running). You learned about \"MongoDB Setup\" earlier. It's crucial to handle this:\n\n```javascript\n// Typically in your main server file (e.g., app.js or server.js)\nconst mongoose = require('mongoose');\nconst MONGODB_URI = 'mongodb://localhost:27017/myLibrary'; // Your MongoDB connection string\n\nmongoose.connect(MONGODB_URI)\n    .then(() => {\n        console.log('Successfully connected to MongoDB!');\n        // Start your Express server only after successful DB connection\n        // app.listen(PORT, () => console.log(`Server running on port ${PORT}`));\n    })\n    .catch(err => {\n        console.error('Failed to connect to MongoDB:', err);\n        process.exit(1); // Exit the application if DB connection fails at start\n    });\n```\nIf the connection drops *after* your application has started and successfully connected, the `try...catch` blocks around your individual Mongoose operations (like `newBook.save()`) will catch those subsequent errors.\n\n**Alternative: Using `.then().catch()` with Promises**\n\nWhile `async/await` is often preferred for readability, you can also handle errors using the traditional Promise `.catch()` method:\n\n```javascript\napp.post('/books-promise', (req, res) => {\n    const newBook = new Book(req.body);\n\n    newBook.save()\n        .then(savedBook => {\n            res.status(201).json(savedBook);\n        })\n        .catch(error => {\n            console.error(\"Failed to save book (promise):\", error);\n\n            if (error.name === 'ValidationError') {\n                return res.status(400).json({ message: \"Validation failed.\", errors: error.errors });\n            }\n            if (error.code === 11000) {\n                return res.status(409).json({ message: \"A book with this identifier already exists.\" });\n            }\n            res.status(500).json({ message: \"An internal server error occurred.\" });\n        });\n});\n```\n\n**Key Takeaway**\n\nWhenever you perform a database operation with Mongoose:\n1.  **Anticipate errors:** They can and will happen.\n2.  **Use `try...catch` with `async/await`** (or `.catch()` with promises) to handle them.\n3.  **Log the full error** on the server for your debugging (`console.error(error)`).\n4.  **Inspect the `error` object** to understand the type of error.\n5.  **Send an appropriate HTTP status code and a user-friendly message** back to the client (`res.status().json()`).\n\nBy handling database errors correctly, you make your application more reliable and provide a better experience for your users and an easier debugging experience for yourself.",
+    "constraints": [
+      "Time Limit: 1s",
+      "Memory Limit: 256MB"
+    ],
+    "inputFormat": "Standard input",
+    "outputFormat": "Standard output",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "input": "",
+        "expectedOutput": "expected",
+        "weight": 100
+      }
+    ],
+    "totalTestCases": 1,
+    "totalWeight": 100
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      100
+    ],
+    "maxScore": 100
+  },
+  "judging": {
+    "timeLimitMs": 1000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // Write your C code here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your C++ code here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) {\n        // Write your Java code here\n    }\n}",
+    "Python3": "# Write your Python code here\n",
+    "JavaScript": "// Write your JavaScript code here\n",
+    "Go": "package main\n\nimport \"fmt\"\n\nfunc main() {\n    // Write your Go code here\n}",
+    "Rust": "fn main() {\n    // Write your Rust code here\n}",
+    "C#": "using System;\n\nclass Program {\n    static void Main() {\n        // Write your C# code here\n    }\n}",
+    "SQL": "-- Write your SQL query here\n"
+  }
+}

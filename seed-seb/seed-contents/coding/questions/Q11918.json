@@ -1,0 +1,131 @@
+{
+  "questionId": "Q11918",
+  "title": "Zig Zag or Spiral Traversal",
+  "slug": "binary-tree-zigzag-level-order-traversal",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Tree Traversal",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Binary Tree",
+      "Zigzag Traversal",
+      "Level Order Traversal"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Given a Binary Tree, print the zigzag traversal of the Binary Tree.\nZigzag traversal of a binary tree is a way of visiting the nodes of the tree in a zigzag pattern, alternating between left-to-right and right-to-left at each level.",
+    "constraints": [
+      "1 <= number of nodes <= 10^4",
+      "0 <= node value <= 10^4"
+    ],
+    "inputFormat": "The input is a binary tree represented as an array where for each i, the left child of i is 2*i + 1 and the right child is 2*i + 2. The input array is 0-indexed. -1 represents a null node.",
+    "outputFormat": "The output is a 2D array representing the zigzag level order traversal of the binary tree.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "Binary Tree: 1 2 3 4 5 -1 6",
+        "output": "[[1],[3, 2],[4, 5, 6]]\n**Explanation: **Level 1 (Root): Visit the root node 1 from left to right. Zigzag Traversal: [1]Level 2: Visit nodes at this level in a right-to-left order. Zigzag Traversal:  [1], [3, 2]Level 3: Visit nodes at this level in a left-to-right order. Zigzag Traversal:  [1], [3, 2], [4, 5, 6]",
+        "explanation": ""
+      },
+      {
+        "id": "sample_2",
+        "input": "Binary Tree: 1 2 -1 4 5 -1 -1 7 8",
+        "output": "[[1], [2], [4, 5], [8, 7]]\n**Explanation: **Level 1 (Root): Visit the root node 1 from left to right. Zigzag Traversal: [1]Level 2: Visit nodes at this level in a right-to-left order. Zigzag Traversal:  [1], [2]Level 3: Visit nodes at this level in a left-to-right order. Zigzag Traversal:  [1], [3, 2], [4, 5]Level 4: Visit nodes at this level in a right-to-left order. Zigzag Traversal:  [1], [3, 2], [4, 5], [8, 7]",
+        "explanation": ""
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "tc_1",
+        "input": "1",
+        "expectedOutput": "[[1]]",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "tc_2",
+        "input": "1 2 3 4 5 6 7 8 9 10",
+        "expectedOutput": "[[1],[3,2],[4,5,6],[7,8,9,10]]",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "tc_3",
+        "input": "1 -1 -1",
+        "expectedOutput": "[[1]]",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tc_4",
+        "input": "-1",
+        "expectedOutput": "[]",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "tc_5",
+        "input": "3 9 20 -1 -1 15 7",
+        "expectedOutput": "[[3],[20,9],[15,7]]",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Breadth-First Search (BFS)",
+    "timeComplexity": "O(N)",
+    "spaceComplexity": "O(N)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\n// Structure to represent a binary tree node\ntypedef struct Node {\n    int val;\n    struct Node* left;\n    struct Node* right;\n} Node;\n\n// Function to create a new node\nNode* createNode(int val) {\n    Node* newNode = (Node*)malloc(sizeof(Node));\n    if (!newNode) {\n        printf(\"Memory error\n\");\n        return NULL;\n    }\n    newNode->val = val;\n    newNode->left = newNode->right = NULL;\n    return newNode;\n}\n\n// Function to perform zigzag level order traversal\nvoid zigzagLevelOrder(Node* root) {\n    if (root == NULL) return;\n\n    // Create a queue for BFS\n    Node** q = (Node**)malloc(sizeof(Node*) * 10000);\n    int front = 0, rear = 0;\n    q[rear++] = root;\n\n    // Boolean flag to control traversal direction\n    int leftToRight = 1;\n\n    while (front < rear) {\n        int size = rear - front;\n        int* level = (int*)malloc(sizeof(int) * size);\n\n        for (int i = 0; i < size; i++) {\n            Node* node = q[front++];\n            int index = leftToRight ? i : size - 1 - i;\n            level[index] = node->val;\n\n            if (node->left) q[rear++] = node->left;\n            if (node->right) q[rear++] = node->right;\n        }\n\n        // Print the current level\n        printf(\"[\");\n        for (int i = 0; i < size; i++) {\n            printf(\"%d\", level[i]);\n            if (i < size - 1) printf(\", \");\n        }\n        printf(\"] \");\n        free(level);\n\n        // Flip traversal direction for the next level\n        leftToRight = !leftToRight;\n    }\n    free(q);\n}\n\nint main() {\n    // Create binary tree:\n    //        1\n    //      /   \\\n    //     2     3\n    //    / \\     \\\n    //   4   5     6\n    Node* root = createNode(1);\n    root->left = createNode(2);\n    root->right = createNode(3);\n    root->left->left = createNode(4);\n    root->left->right = createNode(5);\n    root->right->right = createNode(6);\n\n    // Perform zigzag level order traversal\n    zigzagLevelOrder(root);\n\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\n// Structure to represent a binary tree node\nstruct TreeNode {\n    int val;                // Value of the node\n    TreeNode* left;         // Pointer to left child\n    TreeNode* right;        // Pointer to right child\n    // Constructor to initialize node with a given value\n    TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}\n};\n\nclass Solution {\npublic:\n    // Function to perform zigzag (spiral) level order traversal of a binary tree\n    vector<vector<int>> zigzagLevelOrder(TreeNode* root) {\n        // Vector to store the final zigzag traversal result\n        vector<vector<int>> result;\n        // If the tree is empty, return an empty result\n        if (!root) return result;\n\n        // Queue to store nodes level by level (BFS)\n        queue<TreeNode*> q;\n        q.push(root);\n\n        // Boolean flag to control traversal direction: true for left-to-right, false for right-to-left\n        bool leftToRight = true;\n\n        // Loop until all levels are processed\n        while (!q.empty()) {\n            // Get the number of nodes at the current level\n            int size = q.size();\n\n            // Temporary vector to store the current level's values in correct zigzag order\n            vector<int> level(size);\n\n            // Process each node in the current level\n            for (int i = 0; i < size; i++) {\n                // Get the front node from the queue\n                TreeNode* node = q.front();\n                q.pop();\n\n                // Determine index where this node's value should be placed based on traversal direction\n                int index = leftToRight ? i : size - 1 - i;\n                level[index] = node->val;\n\n                // If left child exists, add it to the queue\n                if (node->left) q.push(node->left);\n                // If right child exists, add it to the queue\n                if (node->right) q.push(node->right);\n            }\n\n            // After finishing this level, toggle the direction for the next level\n            leftToRight = !leftToRight;\n\n            // Add this level's data to the final result\n            result.push_back(level);\n        }\n\n        // Return the zigzag traversal result\n        return result;\n    }\n};\n\nint main() {\n    // Create binary tree:\n    //        1\n    //      /   \\\n    //     2     3\n    //    / \\     \\\n    //   4   5     6\n    TreeNode* root = new TreeNode(1);\n    root->left = new TreeNode(2);\n    root->right = new TreeNode(3);\n    root->left->left = new TreeNode(4);\n    root->left->right = new TreeNode(5);\n    root->right->right = new TreeNode(6);\n\n    // Create Solution object\n    Solution sol;\n\n    // Get zigzag traversal result\n    vector<vector<int>> ans = sol.zigzagLevelOrder(root);\n\n    // Print result in desired format\n    cout << \"[\";\n    for (auto &level : ans) {\n        cout << \"[\";\n        for (int i = 0; i < level.size(); i++) {\n            cout << level[i];\n            if (i != level.size() - 1) cout << \", \";\n        }\n        cout << \"]\";\n    }\n    cout << \"]\" << endl;\n\n    return 0;\n}",
+      "Java": "import java.util.*;\n\n// Class to represent a binary tree node\nclass TreeNode {\n    int val;              // Value of the node\n    TreeNode left;        // Pointer to left child\n    TreeNode right;       // Pointer to right child\n\n    // Constructor to initialize node with a given value\n    TreeNode(int x) {\n        val = x;\n        left = null;\n        right = null;\n    }\n}\n\nclass Solution {\n    // Function to perform zigzag (spiral) level order traversal of a binary tree\n    public List<List<Integer>> zigzagLevelOrder(TreeNode root) {\n        // List to store the final zigzag traversal result\n        List<List<Integer>> result = new ArrayList<>();\n\n        // If the tree is empty, return an empty list\n        if (root == null) return result;\n\n        // Queue to store nodes for BFS (level order traversal)\n        Queue<TreeNode> q = new LinkedList<>();\n        q.offer(root);\n\n        // Boolean flag to control traversal direction\n        boolean leftToRight = true;\n\n        // Loop until all levels are processed\n        while (!q.isEmpty()) {\n            // Get the number of nodes at the current level\n            int size = q.size();\n\n            // Temporary array to store current level's values in zigzag order\n            Integer[] level = new Integer[size];\n\n            // Process each node in the current level\n            for (int i = 0; i < size; i++) {\n                // Get the front node from the queue\n                TreeNode node = q.poll();\n\n                // Determine index where this value should be stored\n                int index = leftToRight ? i : size - 1 - i;\n                level[index] = node.val;\n\n                // Add left child to queue if it exists\n                if (node.left != null) q.offer(node.left);\n                // Add right child to queue if it exists\n                if (node.right != null) q.offer(node.right);\n            }\n\n            // Flip traversal direction for the next level\n            leftToRight = !leftToRight;\n\n            // Add current level to the final result\n            result.add(Arrays.asList(level));\n        }\n\n        // Return the zigzag traversal result\n        return result;\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        // Create binary tree:\n        //        1\n        //      /   \\\n        //     2     3\n        //    / \\     \\\n        //   4   5     6\n        TreeNode root = new TreeNode(1);\n        root.left = new TreeNode(2);\n        root.right = new TreeNode(3);\n        root.left.left = new TreeNode(4);\n        root.left.right = new TreeNode(5);\n        root.right.right = new TreeNode(6);\n\n        // Create solution object\n        Solution sol = new Solution();\n\n        // Get zigzag traversal\n        List<List<Integer>> ans = sol.zigzagLevelOrder(root);\n\n        // Print result\n        System.out.println(ans);\n    }\n}",
+      "Python3": "from collections import deque\n\n# Class to represent a binary tree node\nclass TreeNode:\n    def __init__(self, x):\n        self.val = x          # Value of the node\n        self.left = None      # Pointer to left child\n        self.right = None     # Pointer to right child\n\nclass Solution:\n    # Function to perform zigzag (spiral) level order traversal\n    def zigzagLevelOrder(self, root):\n        # List to store the final zigzag traversal result\n        result = []\n\n        # If tree is empty, return empty list\n        if not root:\n            return result\n\n        # Queue for BFS traversal\n        q = deque([root])\n\n        # Boolean flag to control traversal direction\n        leftToRight = True\n\n        # Loop until all levels are processed\n        while q:\n            # Get the number of nodes at the current level\n            size = len(q)\n\n            # Temporary list to store current level's values\n            level = [0] * size\n\n            # Process each node in the current level\n            for i in range(size):\n                # Get the front node from queue\n                node = q.popleft()\n\n                # Determine index where this value should be stored\n                index = i if leftToRight else size - 1 - i\n                level[index] = node.val\n\n                # Add left child to queue if it exists\n                if node.left:\n                    q.append(node.left)\n                # Add right child to queue if it exists\n                if node.right:\n                    q.append(node.right)\n\n            # Flip direction for the next level\n            leftToRight = not leftToRight\n\n            # Add current level to result\n            result.append(level)\n\n        # Return zigzag traversal result\n        return result\n\n# Driver code\nif __name__ == \"__main__\":\n    # Create binary tree:\n    #        1\n    #      /   \\\n    #     2     3\n    #    / \\     \\\n    #   4   5     6\n    root = TreeNode(1)\n    root.left = TreeNode(2)\n    root.right = TreeNode(3)\n    root.left.left = TreeNode(4)\n    root.left.right = TreeNode(5)\n    root.right.right = TreeNode(6)\n\n    # Create solution object\n    sol = Solution()\n\n    # Get zigzag traversal\n    ans = sol.zigzagLevelOrder(root)\n\n    # Print result\n    print(ans)",
+      "JavaScript": "// Class to represent a binary tree node\nclass TreeNode {\n    constructor(x) {\n        this.val = x;        // Value of the node\n        this.left = null;    // Pointer to left child\n        this.right = null;   // Pointer to right child\n    }\n}\n\nclass Solution {\n    // Function to perform zigzag (spiral) level order traversal\n    zigzagLevelOrder(root) {\n        // Array to store the final zigzag traversal result\n        const result = [];\n\n        // If tree is empty, return empty array\n        if (!root) return result;\n\n        // Queue for BFS traversal\n        const q = [root];\n\n        // Boolean flag to control traversal direction\n        let leftToRight = true;\n\n        // Loop until all levels are processed\n        while (q.length > 0) {\n            // Get the number of nodes at the current level\n            const size = q.length;\n\n            // Temporary array to store current level's values\n            const level = new Array(size);\n\n            // Process each node in the current level\n            for (let i = 0; i < size; i++) {\n                // Remove first node from queue\n                const node = q.shift();\n\n                // Determine index where this value should be stored\n                const index = leftToRight ? i : size - 1 - i;\n                level[index] = node.val;\n\n                // Add left child to queue if it exists\n                if (node.left) q.push(node.left);\n                // Add right child to queue if it exists\n                if (node.right) q.push(node.right);\n            }\n\n            // Flip traversal direction for next level\n            leftToRight = !leftToRight;\n\n            // Add current level to final result\n            result.push(level);\n        }\n\n        // Return zigzag traversal result\n        return result;\n    }\n}\n\n// Driver code\nfunction main() {\n    // Create binary tree:\n    //        1\n    //      /   \\\n    //     2     3\n    //    / \\     \\\n    //   4   5     6\n    let root = new TreeNode(1);\n    root.left = new TreeNode(2);\n    root.right = new TreeNode(3);\n    root.left.left = new TreeNode(4);\n    root.left.right = new TreeNode(5);\n    root.right.right = new TreeNode(6);\n\n    // Create solution object\n    let sol = new Solution();\n\n    // Get zigzag traversal\n    let ans = sol.zigzagLevelOrder(root);\n\n    // Print result\n    console.log(ans);\n}\n\nmain();"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

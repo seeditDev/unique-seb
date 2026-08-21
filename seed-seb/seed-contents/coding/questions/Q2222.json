@@ -1,0 +1,128 @@
+{
+  "questionId": "Q2222",
+  "title": "The Black and White Knights",
+  "slug": "the-black-and-white-knights",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "Combinatorics",
+      "Counting",
+      "Knights",
+      "Math",
+      "Board Games"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Ad-hoc & Implementation"
+    ]
+  },
+  "content": {
+    "problemStatement": "How many ways are there to place a black and a white knight on an N * M chessboard such that they do not attack each other? The knights have to be placed on different squares. A knight can move two squares horizontally and one square vertically, or two squares vertically and one square horizontally. The knights attack each other if one can reach the other in one move.\n\n\n\nInput :\n\n\n\nThe first line contains the number of test cases T. Each of the next T lines contains two integers N and M.\n\n\n\nOutput :\n\n\n\nOutput T lines, one for each test case, each containing the required answer for the corresponding test case.\n\n\nConstraints :\n1 &lt;= T &lt;= 10000\n1 &lt;= N,M &lt;= 100000",
+    "constraints": [
+      "1 <= T <= 10000",
+      "1 <= N, M <= 100000"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains two space\u2011separated integers N and M denoting the dimensions of the chessboard.",
+    "outputFormat": "For each test case output a single line containing the number of ordered ways to place a black knight and a white knight on different squares of an N\u00d7M board so that they do not attack each other. The answer fits in a signed 64\u2011bit integer.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n2 2\n2 3\n4 5",
+        "output": "12\n26\n312",
+        "explanation": "For each board compute total ordered placements C\u00b7(C\u20111) and subtract the ordered attacking placements derived from 2\u00d73 and 3\u00d72 rectangles."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n1 1",
+        "output": "0",
+        "explanation": "Only one square exists, so two knights cannot be placed."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n3 3",
+        "output": "56",
+        "explanation": "C=9, total=9\u00b78=72. Attack=4\u00b72\u00b71 + 4\u00b71\u00b72 = 16. Answer=72\u201116=56."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n100000 100000",
+        "expectedOutput": "99999999910002399984",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case with one dimension 2",
+        "input": "1\n2 100000",
+        "expectedOutput": "39999400008",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n7 8",
+        "expectedOutput": "2796",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n3 5",
+        "expectedOutput": "170",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For an N\u00d7M board there are C = N\u00b7M squares. The number of ordered placements of two distinct knights is C\u00b7(C\u20111). A pair of squares attacks each other if a knight can move from one to the other in a single move. On a board, each 2\u00d73 or 3\u00d72 rectangle contributes exactly 4 ordered attacking placements (the two knights can occupy the two opposite corners in two orders, and there are two orientations of the rectangle). The number of 2\u00d73 rectangles is (N\u20111)\u00b7(M\u20112) and the number of 3\u00d72 rectangles is (N\u20112)\u00b7(M\u20111). Therefore the total ordered attacking placements are:\n    attack = 4\u00b7(N\u20111)\u00b7(M\u20112) + 4\u00b7(N\u20112)\u00b7(M\u20111)\nwhere a term is taken only if its dimensions are non\u2011negative (i.e., N>=2 && M>=3 for the first term, N>=3 && M>=2 for the second). The required answer is:\n    answer = C\u00b7(C\u20111) \u2013 attack.\nThe formula is O(1) per test case, so the whole solution runs in O(T) time and O(1) extra space.",
+    "timeComplexity": "O(T) \u2013 constant work for each test case.",
+    "spaceComplexity": "O(1) \u2013 only a few 64\u2011bit variables.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <inttypes.h>\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    while(T--){\n        long long N, M; scanf(\"%lld %lld\", &N, &M);\n        long long cells = N * M;\n        long long total = cells * (cells - 1);\n        long long attack = 0;\n        if(N >= 2 && M >= 3) attack += 4LL * (N - 1) * (M - 2);\n        if(N >= 3 && M >= 2) attack += 4LL * (N - 2) * (M - 1);\n        printf(\"%lld\\n\", total - attack);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        long long N, M; cin>>N>>M;\n        long long cells = N * M;\n        long long total = cells * (cells - 1);\n        long long attack = 0;\n        if(N >= 2 && M >= 3) attack += 4LL * (N - 1) * (M - 2);\n        if(N >= 3 && M >= 2) attack += 4LL * (N - 2) * (M - 1);\n        cout << total - attack << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder sb = new StringBuilder();\n        int T = Integer.parseInt(br.readLine().trim());\n        for(int t = 0; t < T; t++){\n            StringTokenizer st = new StringTokenizer(br.readLine());\n            long N = Long.parseLong(st.nextToken());\n            long M = Long.parseLong(st.nextToken());\n            long cells = N * M;\n            long total = cells * (cells - 1);\n            long attack = 0;\n            if(N >= 2 && M >= 3) attack += 4L * (N - 1) * (M - 2);\n            if(N >= 3 && M >= 2) attack += 4L * (N - 2) * (M - 1);\n            sb.append(total - attack).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it))\n        M = int(next(it))\n        cells = N * M\n        total = cells * (cells - 1)\n        attack = 0\n        if N >= 2 and M >= 3:\n            attack += 4 * (N - 1) * (M - 2)\n        if N >= 3 and M >= 2:\n            attack += 4 * (N - 2) * (M - 1)\n        out_lines.append(str(total - attack))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet results = [];\nfor(let t = 0; t < T; t++){\n  const N = BigInt(input[idx++]);\n  const M = BigInt(input[idx++]);\n  const cells = N * M;\n  const total = cells * (cells - 1n);\n  let attack = 0n;\n  if(N >= 2n && M >= 3n) attack += 4n * (N - 1n) * (M - 2n);\n  if(N >= 3n && M >= 2n) attack += 4n * (N - 2n) * (M - 1n);\n  results.push((total - attack).toString());\n}\nconsole.log(results.join('\\n'));"
+    }
+  }
+}

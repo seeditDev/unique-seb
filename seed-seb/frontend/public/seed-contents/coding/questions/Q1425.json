@@ -1,0 +1,116 @@
+{
+  "questionId": "Q1425",
+  "title": "Minimum Conference Rooms (Stark Industry)",
+  "slug": "minimum-conference-rooms-stark-industry",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Greedy",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "Sorting",
+      "Greedy",
+      "Two Pointers"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Two Pointers & Sliding Window"
+    ]
+  },
+  "content": {
+    "problemStatement": "JARVIS needs help managing meeting rooms at Stark Tower. Given N meetings with their start and end times, determine the minimum number of conference rooms required so that all meetings can be conducted without overlap. If a meeting ends at time X, another meeting can start at time X using the same room.\n\n\nInput Format\n\nFirst line contains TTT, number of test cases\nFor each test case:\n\nFirst line contains NNN, number of meetings\nSecond line contains NNN space-separated integers denoting start times\nThird line contains NNN space-separated integers denoting end times\n\n\n\n\nOutput Format\n\nFor each test case, print the minimum number of conference rooms needed.",
+    "constraints": [
+      "1 <= T <= 100",
+      "1 <= N <= 1000",
+      "0 <= start_i, end_i <= 2359",
+      "All times are given in 24\u2011hour integer format"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case:\\n- The first line contains an integer N, the number of meetings.\\n- The second line contains N space\u2011separated integers, the start times of the meetings.\\n- The third line contains N space\u2011separated integers, the end times of the meetings. A meeting that ends at time X frees the room for another meeting that starts at time X.",
+    "outputFormat": "For each test case output a single line with the minimum number of conference rooms required.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\\n3\\n1300 1500 1600\\n1600 1700 1800",
+        "output": "2",
+        "explanation": "Meetings are [1300\u20111600], [1500\u20111700], [1600\u20111800]. At 1300 one room is used, at 1500 a second room is needed, at 1600 the first meeting ends and the third can reuse that room. Maximum concurrent meetings = 2."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Sort the start times and the end times separately. Then walk through both arrays with two pointers. If the next meeting starts before the earliest ending meeting finishes (start[i] < end[j]) we need an extra room, so increment the current room count and move the start pointer. Otherwise a meeting has finished, we can reuse a room: decrement the current room count and move the end pointer. The maximum value of the current room count during the walk is the answer. This works because sorting aligns meetings in chronological order and the two\u2011pointer scan always reflects the exact number of ongoing meetings at any moment.",
+    "timeComplexity": "O(N log N) per test case due to sorting the start and end arrays.",
+    "spaceComplexity": "O(N) for the two sorted arrays (or in\u2011place sorting).",
+    "code": {
+      "C": "#include <stdio.h>\\n#include <stdlib.h>\\n\\nint compareInt(const void *a, const void *b) {\\n    return (*(int*)a) - (*(int*)b);\\n}\\n\\nint minConferenceRooms(int *start, int *end, int n) {\\n    qsort(start, n, sizeof(int), compareInt);\\n    qsort(end, n, sizeof(int), compareInt);\\n    int i = 0, j = 0, rooms = 0, maxRooms = 0;\\n    while (i < n && j < n) {\\n        if (start[i] < end[j]) {\\n            rooms++;\\n            i++;\\n        } else {\\n            rooms--;\\n            j++;\\n        }\\n        if (rooms > maxRooms) maxRooms = rooms;\\n    }\\n    return maxRooms;\\n}\\n\\nint main() {\\n    int T;\\n    if (scanf(\"%d\", &T) != 1) return 0;\\n    while (T--) {\\n        int N;\\n        scanf(\"%d\", &N);\\n        int *start = (int*)malloc(N * sizeof(int));\\n        int *end = (int*)malloc(N * sizeof(int));\\n        for (int i = 0; i < N; ++i) scanf(\"%d\", &start[i]);\\n        for (int i = 0; i < N; ++i) scanf(\"%d\", &end[i]);\\n        printf(\"%d\\n\", minConferenceRooms(start, end, N));\\n        free(start);\\n        free(end);\\n    }\\n    return 0;\\n}",
+      "C++": "#include <bits/stdc++.h>\\nusing namespace std;\\n\\nint minConferenceRooms(vector<int> &start, vector<int> &end) {\\n    sort(start.begin(), start.end());\\n    sort(end.begin(), end.end());\\n    int i = 0, j = 0, rooms = 0, maxRooms = 0;\\n    int n = start.size();\\n    while (i < n && j < n) {\\n        if (start[i] < end[j]) {\\n            ++rooms; ++i;\\n        } else {\\n            --rooms; ++j;\\n        }\\n        maxRooms = max(maxRooms, rooms);\\n    }\\n    return maxRooms;\\n}\\n\\nint main() {\\n    ios::sync_with_stdio(false);\\n    cin.tie(nullptr);\\n    int T;\\n    if (!(cin >> T)) return 0;\\n    while (T--) {\\n        int N; cin >> N;\\n        vector<int> start(N), end(N);\\n        for (int i = 0; i < N; ++i) cin >> start[i];\\n        for (int i = 0; i < N; ++i) cin >> end[i];\\n        cout << minConferenceRooms(start, end) << '\\n';\\n    }\\n    return 0;\\n}",
+      "Java": "import java.io.*;\\nimport java.util.*;\\n\\npublic class Main {\\n    private static int minConferenceRooms(int[] start, int[] end) {\\n        Arrays.sort(start);\\n        Arrays.sort(end);\\n        int i = 0, j = 0, rooms = 0, maxRooms = 0;\\n        int n = start.length;\\n        while (i < n && j < n) {\\n            if (start[i] < end[j]) {\\n                rooms++; i++;\\n            } else {\\n                rooms--; j++;\\n            }\\n            if (rooms > maxRooms) maxRooms = rooms;\\n        }\\n        return maxRooms;\\n    }\\n\\n    public static void main(String[] args) throws Exception {\\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\\n        StringTokenizer st;\\n        int T = Integer.parseInt(br.readLine().trim());\\n        StringBuilder sb = new StringBuilder();\\n        while (T-- > 0) {\\n            int N = Integer.parseInt(br.readLine().trim());\\n            int[] start = new int[N];\\n            int[] end = new int[N];\\n            st = new StringTokenizer(br.readLine());\\n            for (int i = 0; i < N; i++) start[i] = Integer.parseInt(st.nextToken());\\n            st = new StringTokenizer(br.readLine());\\n            for (int i = 0; i < N; i++) end[i] = Integer.parseInt(st.nextToken());\\n            sb.append(minConferenceRooms(start, end)).append('\\n');\\n        }\\n        System.out.print(sb.toString());\\n    }\\n}",
+      "Python3": "import sys\\ninput = sys.stdin.readline\\n\\ndef min_rooms(start, end):\\n    start.sort()\\n    end.sort()\\n    i = j = rooms = max_rooms = 0\\n    n = len(start)\\n    while i < n and j < n:\\n        if start[i] < end[j]:\\n            rooms += 1\\n            i += 1\\n        else:\\n            rooms -= 1\\n            j += 1\\n        if rooms > max_rooms:\\n            max_rooms = rooms\\n    return max_rooms\\n\\nT = int(input())\\nfor _ in range(T):\\n    n = int(input())\\n    start = list(map(int, input().split()))\\n    end = list(map(int, input().split()))\\n    print(min_rooms(start, end))",
+      "JavaScript": "const fs = require('fs');\\nconst data = fs.readFileSync(0, 'utf-8').trim().split('\\n');\\nlet idx = 0;\\nfunction nextLine(){return data[idx++];}\\nconst T = parseInt(nextLine(),10);\\nlet outputs = [];\\nfor(let t=0;t<T;t++) {\\n  const N = parseInt(nextLine(),10);\\n  const start = nextLine().trim().split(/\\s+/).map(Number);\\n  const end = nextLine().trim().split(/\\s+/).map(Number);\\n  start.sort((a,b)=>a-b);\\n  end.sort((a,b)=>a-b);\\n  let i=0,j=0,rooms=0,maxRooms=0;\\n  while(i<N && j<N){\\n    if(start[i] < end[j]){rooms++; i++;}\\n    else {rooms--; j++;}\\n    if(rooms>maxRooms) maxRooms=rooms;\\n  }\\n  outputs.push(String(maxRooms));\\n}\\nconsole.log(outputs.join('\\n'));"
+    }
+  }
+}

@@ -1,0 +1,119 @@
+{
+  "questionId": "Q3243",
+  "title": "IPL",
+  "slug": "ipl",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Optimization",
+      "Dynamic Programming"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ]
+  },
+  "content": {
+    "problemStatement": "Zonal Computing Olympiad 2014, 30 Nov 2013\n In IPL 2025, the amount that each player is paid varies from match to match.  The match fee depends on the quality of opposition, the venue etc.\n\n\nThe match fees for each match in the new season have been announced in advance.  Each team has to enforce a mandatory rotation policy so that no player ever plays three matches in a row during the season.\n\n\n Nikhil is the captain and chooses the team for each match. He wants to allocate a playing schedule for himself to maximize his earnings through match fees during the season.",
+    "constraints": [
+      "1 \u2264 N \u2264 2\u00d710^5",
+      "The fee for each match is between 0 and 10^4, inclusive."
+    ],
+    "inputFormat": "The first line contains a single integer N, the number of games in the IPL season. The second line contains N non-negative integers, where the integer in position i represents the fee for match i.",
+    "outputFormat": "The output consists of a single non-negative integer, the maximum amount of money that Nikhil can earn during this IPL season.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "5\n10 3 5 7 3",
+        "output": "23",
+        "explanation": "Explanation: 10+3+7+3"
+      },
+      {
+        "id": "sample_2",
+        "input": "8\n3 2 3 2 3 5 1 3",
+        "output": "17",
+        "explanation": "Explanation: 3+3+3+5+3"
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n10",
+        "expectedOutput": "10",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "200000\n10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000 10000",
+        "expectedOutput": "200000000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "2\n10 20",
+        "expectedOutput": "30",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "5\n10 20 30 40 50",
+        "expectedOutput": "90",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "10\n10 20 30 40 50 60 70 80 90 100",
+        "expectedOutput": "330",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use dynamic programming. We will maintain a 2D array dp where dp[i][0] represents the maximum amount of money that Nikhil can earn up to the ith match without playing the ith match, dp[i][1] represents the maximum amount of money that Nikhil can earn up to the ith match by playing the ith match but not the (i-1)th match, and dp[i][2] represents the maximum amount of money that Nikhil can earn up to the ith match by playing the ith match and the (i-1)th match but not the (i-2)th match.",
+    "timeComplexity": "O(N) \u2014 where N is the number of matches. We are doing a constant amount of work for each match.",
+    "spaceComplexity": "O(N) \u2014 where N is the number of matches. We are storing the maximum amount of money that Nikhil can earn up to each match.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nconst long long mod = 1e9 + 7; // Constant for modulo operation\nconst long long inf = 1e18;    // A large number representing infinity\n\nint main() {\n    int n; // Number of fees\n    scanf(\"%d\", &n); // Read the number of fees\n\n    int* fees = (int*)malloc(n * sizeof(int)); // Dynamically allocate memory for fees\n    for (int i = 0; i < n; i++)\n        scanf(\"%d\", &fees[i]); // Read each fee\n\n    // Special cases for 1 or 2 fees\n    if (n == 1) {\n        printf(\"%d\\n\", fees[0]); // Only one fee, output it\n        free(fees); // Free allocated memory\n        return 0;\n    }\n\n    if (n == 2) {\n        printf(\"%d\\n\", fees[0] + fees[1]); // Sum of two fees\n        free(fees); // Free allocated memory\n        return 0;\n    }\n\n    // Create a 2D array for dynamic programming\n    int** dp = (int**)malloc(n * sizeof(int*));\n    for (int i = 0; i < n; i++) {\n        dp[i] = (int*)malloc(3 * sizeof(int));\n    }\n\n    // Initialize the base cases for dp\n    dp[0][1] = dp[0][2] = fees[0]; \n    dp[1][0] = fees[0];\n    dp[1][1] = fees[1];\n    dp[1][2] = fees[0] + fees[1];\n\n    // Fill the dp table\n    for (int i = 2; i < n; i++) {\n        // Max sum if we don't choose fees[i]\n        dp[i][0] = dp[i - 1][0] > dp[i - 1][1] ? (dp[i - 1][0] > dp[i - 1][2] ? dp[i - 1][0] : dp[i - 1][2]) : (dp[i - 1][1] > dp[i - 1][2] ? dp[i - 1][1] : dp[i - 1][2]);\n        \n        // Max sum if we choose fees[i] but not fees[i - 1]\n        dp[i][1] = fees[i] + dp[i - 1][0];\n        \n        // Max sum if we choose fees[i] and fees[i - 1] but not fees[i - 2]\n        dp[i][2] = fees[i] + fees[i - 1] + dp[i - 2][0];\n    }\n\n    // Output the maximum sum possible\n    int maxSum = dp[n - 1][0];\n    for (int j = 1; j < 3; j++) {\n        if (dp[n - 1][j] > maxSum) {\n            maxSum = dp[n - 1][j];\n        }\n    }\n    printf(\"%d\\n\", maxSum); // Print the result\n\n    // Free allocated memory\n    for (int i = 0; i < n; i++) {\n        free(dp[i]); // Free each sub-array\n    }\n    free(dp); // Free the main array\n    free(fees); // Free allocated memory for fees\n\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nconst long long mod = 1e9 + 7; // Constant for modulo operation\nconst long long inf = 1e18;    // A large number representing infinity\n\nint main()\n{\n    int n; // Number of fees\n    cin >> n; // Read the number of fees\n\n    vector<int> fees(n); // Create a vector to store fees\n    for (int i = 0; i < n; i++)\n        cin >> fees[i]; // Read each fee\n\n    // Special cases for 1 or 2 fees\n    if (n == 1) {\n        cout << fees[0] << '\\n'; // Only one fee, output it\n        return 0;\n    }\n\n    if (n == 2) {\n        cout << fees[0] + fees[1] << '\\n'; // Sum of two fees\n        return 0;\n    }\n\n    vector<vector<int>> dp(n, vector<int>(3)); // Create a 2D vector for dynamic programming\n\n    // Initialize the base cases for dp\n    dp[0][1] = dp[0][2] = fees[0]; \n    dp[1][0] = fees[0];\n    dp[1][1] = fees[1];\n    dp[1][2] = fees[0] + fees[1];\n\n    // Fill the dp table\n    for (int i = 2; i < n; i++) {\n        // Max sum if we don't choose fees[i]\n        dp[i][0] = max({dp[i - 1][0], dp[i - 1][1], dp[i - 1][2]});\n        // Max sum if we choose fees[i] but not fees[i - 1]\n        dp[i][1] = fees[i] + dp[i - 1][0];\n        // Max sum if we choose fees[i] and fees[i - 1] but not fees[i - 2]\n        dp[i][2] = fees[i] + fees[i - 1] + dp[i - 2][0];\n    }\n\n    // Output the maximum sum possible\n    cout << max({dp[n - 1][0], dp[n - 1][1], dp[n - 1][2]}) << '\\n';\n    return 0;\n}",
+      "Java": "import java.util.*;\nimport java.lang.*;\nimport java.io.*;\n\nclass Main\n{\n    // Constant for modulo operation\n    static final long MOD = 1000000007; \n    // A large number representing infinity\n    static final long INF = 1000000000000000000L; \n\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        \n        // Read the number of fees\n        int n = scanner.nextInt(); \n\n        // Create an array to store fees\n        int[] fees = new int[n]; \n        for (int i = 0; i < n; i++) {\n            fees[i] = scanner.nextInt(); // Read each fee\n        }\n\n        // Special cases for 1 or 2 fees\n        if (n == 1) {\n            System.out.println(fees[0]); // Only one fee, output it\n            return;\n        }\n\n        if (n == 2) {\n            System.out.println(fees[0] + fees[1]); // Sum of two fees\n            return;\n        }\n\n        // Create a 2D array for dynamic programming\n        int[][] dp = new int[n][3];\n\n        // Initialize the base cases for dp\n        dp[0][1] = dp[0][2] = fees[0]; \n        dp[1][0] = fees[0];\n        dp[1][1] = fees[1];\n        dp[1][2] = fees[0] + fees[1];\n\n        // Fill the dp table\n        for (int i = 2; i < n; i++) {\n            // Max sum if we don't choose fees[i]\n            dp[i][0] = Math.max(Math.max(dp[i - 1][0], dp[i - 1][1]), dp[i - 1][2]);\n            // Max sum if we choose fees[i] but not fees[i - 1]\n            dp[i][1] = fees[i] + dp[i - 1][0];\n            // Max sum if we choose fees[i] and fees[i - 1] but not fees[i - 2]\n            dp[i][2] = fees[i] + fees[i - 1] + dp[i - 2][0];\n        }\n\n        // Output the maximum sum possible\n        System.out.println(Math.max(Math.max(dp[n - 1][0], dp[n - 1][1]), dp[n - 1][2]));\n        \n        scanner.close();\n    }\n}",
+      "Python3": "# Constants\nmod = 10**9 + 7  # Constant for modulo operation\ninf = 10**18     # A large number representing infinity\n\ndef main():\n    n = int(input())  # Read the number of fees\n    fees = list(map(int, input().split()))  # Read each fee into a list\n\n    # Special cases for 1 or 2 fees\n    if n == 1:\n        print(fees[0])  # Only one fee, output it\n        return\n\n    if n == 2:\n        print(fees[0] + fees[1])  # Sum of two fees\n        return\n\n    dp = [[0] * 3 for _ in range(n)]  # Create a 2D list for dynamic programming\n\n    # Initialize the base cases for dp\n    dp[0][1] = dp[0][2] = fees[0]\n    dp[1][0] = fees[0]\n    dp[1][1] = fees[1]\n    dp[1][2] = fees[0] + fees[1]\n\n    # Fill the dp table\n    for i in range(2, n):\n        # Max sum if we don't choose fees[i]\n        dp[i][0] = max(dp[i - 1][0], dp[i - 1][1], dp[i - 1][2])\n        # Max sum if we choose fees[i] but not fees[i - 1]\n        dp[i][1] = fees[i] + dp[i - 1][0]\n        # Max sum if we choose fees[i] and fees[i - 1] but not fees[i - 2]\n        dp[i][2] = fees[i] + fees[i - 1] + dp[i - 2][0]\n\n    # Output the maximum sum possible\n    print(max(dp[n - 1][0], dp[n - 1][1], dp[n - 1][2]))\n\nif __name__ == \"__main__\":\n    main()",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\n\nfunction nextLine() {\n    return lines[idx++];\n}\n\nfunction nextInt() {\n    return parseInt(nextLine());\n}\n\nfunction nextIntArray() {\n    return nextLine().split(' ').map(Number);\n}\n\nconst n = nextInt();\nconst fees = nextIntArray();\n\nif (n === 1) {\n    console.log(fees[0]);\n    return;\n}\n\nif (n === 2) {\n    console.log(fees[0] + fees[1]);\n    return;\n}\n\nconst dp = Array.from({ length: n }, () => new Array(3).fill(0));\n\n// Initialize the base cases for dp\ndp[0][1] = dp[0][2] = fees[0]; \n\ndp[1][0] = fees[0];\ndp[1][1] = fees[1];\ndp[1][2] = fees[0] + fees[1];\n\n// Fill the dp table\nfor (let i = 2; i < n; i++) {\n    // Max sum if we don't choose fees[i]\n    dp[i][0] = Math.max(dp[i - 1][0], dp[i - 1][1], dp[i - 1][2]);\n    // Max sum if we choose fees[i] but not fees[i - 1]\n    dp[i][1] = fees[i] + dp[i - 1][0];\n    // Max sum if we choose fees[i] and fees[i - 1] but not fees[i - 2]\n    dp[i][2] = fees[i] + fees[i - 1] + dp[i - 2][0];\n}\n\n// Output the maximum sum possible\nconsole.log(Math.max(dp[n - 1][0], dp[n - 1][1], dp[n - 1][2]));"
+    }
+  }
+}

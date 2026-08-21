@@ -1,0 +1,130 @@
+{
+  "questionId": "Q8769",
+  "title": "Parallel Processing",
+  "slug": "parallel-processing",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Greedy",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Prefix Sum",
+      "Array",
+      "Two Processors",
+      "Minimize Maximum"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Data Structures"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "There are NNN tasks waiting in line to be executed. The execution time for the ithi^{th}ith task is AiA_iAi​ seconds.\n\nChef has **two processors** to execute these NNN tasks. Both these processors work simultaneously. Each processor executes the assigned tasks one by one.\n\nChef assigns a **prefix** of these tasks to the first processor and the remaining tasks to the second processor.\n\nFor example, if there are 333 tasks, Chef can do one of the following:\n\n\nAssign no task to the first processor. This means, the second processor will execute tasks 1,21, 21,2 and 333.\nAssign task 111 to the first processor. This means, the second processor will execute tasks 222 and 333.\nAssign tasks 111 and 222 to the first processor. This means, the second processor will execute task 333.\nAssign tasks 1,21, 21,2 and 333 to the first processor. Thus, second processor would execute no tasks.\nFind the **minimum** time in which all the tasks can be executed.\n\n\nInput Format\n\nFirst line will contain TTT, number of test cases. Then the test cases follow.\nThe first line of each test case contains a single integer NNN, the number of tasks waiting to be executed.\nThe second line of each test case contains NNN space separated positive integers A1,A2,…,ANA_1, A_2, \\ldots, A_NA1​,A2​,…,AN​ denoting the execution time for each task.\n\n\nOutput Format\nFor each test case, output in a single line, the minimum time in which all tasks can be executed.",
+    "constraints": [
+      "1 ≤ T ≤ 100",
+      "1 ≤ N ≤ 10^5",
+      "1 ≤ Ai ≤ 10^5",
+      "The sum of N over all test cases does not exceed 2·10^5"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, the first line contains an integer N, the number of tasks. The second line contains N space‑separated positive integers A1, A2, …, AN denoting the execution time of each task in order.",
+    "outputFormat": "For each test case output a single line containing the minimum possible time needed to finish all tasks when the first processor receives a prefix of the tasks and the second processor receives the remaining suffix.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\\n3\\n4 2 3\\n6\\n1 1 1 1 1 1\\n1\\n5",
+        "output": "5\\n3\\n5",
+        "explanation": "Test case 1: total = 9. Best split after first task gives times 4 and 5, so answer = 5.\\nTest case 2: total = 6. Splitting after three tasks gives 3 and 3, answer = 3.\\nTest case 3: only one task, both processors cannot share it, answer = 5."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\\n1\\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary (compact)",
+        "input": "1\\n15\\n100000 100000 100000 100000 100000 100000 100000 100000 100000 100000 100000 100000 100000 100000 100000",
+        "expectedOutput": "800000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case with symmetric ends",
+        "input": "1\\n5\\n10 1 1 1 10",
+        "expectedOutput": "12",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\\n4\\n5 8 3 6",
+        "expectedOutput": "13",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\\n7\\n2 9 4 7 1 3 5",
+        "expectedOutput": "16",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each test case compute the total sum S of all task times. While scanning the array keep a running prefix sum P (the time taken by the first processor if it receives the first i tasks). For each i (including i = 0 meaning no task for the first processor) the time needed for the whole system is max(P, S‑P). The answer is the minimum of this value over all i. This works because the second processor always receives the suffix, so its total time is S‑P. The optimal split is the prefix whose sum is closest to S/2.",
+    "timeComplexity": "O(N) per test case, where N is the number of tasks in that test case. The total across all test cases is O(2·10^5).",
+    "spaceComplexity": "O(1) extra space besides the input array.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nint main() {\n    int T; if (scanf(\"%d\", &T)!=1) return 0;\n    while (T--) {\n        int N; scanf(\"%d\", &N);\n        long long total = 0;\n        long long *a = (long long*)malloc(N * sizeof(long long));\n        for (int i = 0; i < N; ++i) {\n            scanf(\"%lld\", &a[i]);\n            total += a[i];\n        }\n        long long pref = 0;\n        long long ans = total; // worst case\n        // consider split before first element (i=0)\n        ans = total; // max(0,total)\n        for (int i = 0; i < N; ++i) {\n            pref += a[i];\n            long long cur = pref > (total - pref) ? pref : (total - pref);\n            if (cur < ans) ans = cur;\n        }\n        printf(\"%lld\\n\", ans);\n        free(a);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--) {\n        int N; cin>>N;\n        vector<long long> a(N);\n        long long total=0;\n        for(int i=0;i<N;++i){cin>>a[i]; total+=a[i];}\n        long long pref=0, ans=total; // split before first element gives total\n        for(int i=0;i<N;++i){\n            pref+=a[i];\n            long long cur = max(pref, total - pref);\n            ans = min(ans, cur);\n        }\n        cout<<ans<<\"\\n\";\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner(System.in);\n        int T = fs.nextInt();\n        StringBuilder sb = new StringBuilder();\n        while (T-- > 0) {\n            int N = fs.nextInt();\n            long[] a = new long[N];\n            long total = 0;\n            for (int i = 0; i < N; i++) {\n                a[i] = fs.nextLong();\n                total += a[i];\n            }\n            long pref = 0;\n            long ans = total; // split before first task\n            for (int i = 0; i < N; i++) {\n                pref += a[i];\n                long cur = Math.max(pref, total - pref);\n                if (cur < ans) ans = cur;\n            }\n            sb.append(ans).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n\n    // Fast scanner for competitive programming\n    static class FastScanner {\n        private final BufferedInputStream in;\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        FastScanner(InputStream stream) { in = new BufferedInputStream(stream); }\n        private int readByte() throws IOException {\n            if (ptr >= len) {\n                len = in.read(buffer);\n                ptr = 0;\n                if (len <= 0) return -1;\n            }\n            return buffer[ptr++];\n        }\n        long nextLong() throws IOException {\n            int c; do { c = readByte(); } while (c <= ' ');\n            boolean neg = false;\n            if (c == '-') { neg = true; c = readByte(); }\n            long val = 0;\n            while (c > ' ') {\n                val = val * 10 + (c - '0');\n                c = readByte();\n            }\n            return neg ? -val : val;\n        }\n        int nextInt() throws IOException { return (int) nextLong(); }\n    }\n}",
+      "Python3": "import sys\n\ndef solve():\n    data = list(map(int, sys.stdin.read().strip().split()))\n    if not data:\n        return\n    it = iter(data)\n    T = next(it)\n    out_lines = []\n    for _ in range(T):\n        N = next(it)\n        a = [next(it) for _ in range(N)]\n        total = sum(a)\n        pref = 0\n        ans = total  # split before first task\n        for val in a:\n            pref += val\n            cur = pref if pref > total - pref else total - pref\n            if cur < ans:\n                ans = cur\n        out_lines.append(str(ans))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/).map(Number);\nlet idx = 0;\nconst T = input[idx++];\nlet outputs = [];\nfor (let t = 0; t < T; t++) {\n  const N = input[idx++];\n  let total = 0;\n  const arr = new Array(N);\n  for (let i = 0; i < N; i++) {\n    arr[i] = input[idx++];\n    total += arr[i];\n  }\n  let pref = 0;\n  let ans = total; // split before first task\n  for (let i = 0; i < N; i++) {\n    pref += arr[i];\n    const cur = pref > (total - pref) ? pref : (total - pref);\n    if (cur < ans) ans = cur;\n  }\n  outputs.push(String(ans));\n}\nconsole.log(outputs.join('\\n'));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

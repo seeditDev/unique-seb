@@ -1,0 +1,119 @@
+{
+  "questionId": "Q11785",
+  "title": "Maximum Rectangle Area with all 1's|(DP-55)",
+  "slug": "maximal-rectangle",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Binary Matrix",
+      "Largest Rectangle",
+      "Histogram"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Given a m x n binary matrix filled with 0's and 1's, find the largest rectangle containing only 1's and return its area.",
+    "constraints": [
+      "1 <= number of rows <= 200",
+      "1 <= number of columns <= 200",
+      "Each cell in the matrix is either '0' or '1'"
+    ],
+    "inputFormat": "A 2D binary matrix filled with 0's and 1's",
+    "outputFormat": "The area of the largest rectangle containing only 1's",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "[['1']]",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "[['1','1','1','1','1','1','1','1','1','1']]",
+        "expectedOutput": "10",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": "[['0','0','0','0','0']]",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case / empty-like",
+        "input": "[[]]",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": "[['1','0','1','0','0'],['1','0','1','1','1'],['1','1','1','1','1'],['1','0','0','1','0']]",
+        "expectedOutput": "6",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Use a histogram-based approach to find the largest rectangle in each row and update the maximum area",
+    "timeComplexity": "O(m * n^2) where m is the number of rows and n is the number of columns",
+    "spaceComplexity": "O(n) for the histogram array",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\n// Function to calculate largest rectangle area in histogram\nint largestRectangleArea(int* heights, int heightsSize) {\n    int maxArea = 0;\n    int* stack = (int*)malloc(heightsSize * sizeof(int));\n    int top = -1;\n    for (int i = 0; i <= heightsSize; i++) {\n        int height = (i == heightsSize) ? 0 : heights[i];\n        while (top != -1 && height < heights[stack[top]]) {\n            int h = heights[stack[top--]];\n            int w = (top == -1) ? i : i - stack[top] - 1;\n            maxArea = (maxArea > h * w) ? maxArea : h * w;\n        }\n        stack[++top] = i;\n    }\n    free(stack);\n    return maxArea;\n}\n\n// Function to find maximal rectangle in binary matrix\nint maximalRectangle(char** matrix, int matrixSize, int* matrixColSize) {\n    if (matrixSize == 0) return 0;\n    int maxArea = 0;\n    int* height = (int*)malloc(matrixColSize[0] * sizeof(int));\n    for (int i = 0; i < matrixColSize[0]; i++) height[i] = 0;\n    for (int i = 0; i < matrixSize; i++) {\n        for (int j = 0; j < matrixColSize[0]; j++) {\n            if (matrix[i][j] == '1') height[j]++;\n            else height[j] = 0;\n        }\n        maxArea = (maxArea > largestRectangleArea(height, matrixColSize[0])) ? maxArea : largestRectangleArea(height, matrixColSize[0]);\n    }\n    free(height);\n    return maxArea;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\n// Class containing the solution functions\nclass Solution {\npublic:\n\n    // Function to calculate largest rectangle area in histogram\n    int largestRectangleArea(vector<int>& heights) {\n\n        // Stack to store indices of histogram bars\n        stack<int> st;\n\n        // Variable to store the max area\n        int maxArea = 0;\n\n        // Add a sentinel zero height at the end\n        heights.push_back(0);\n\n        // Iterate through all bars\n        for (int i = 0; i < heights.size(); i++) {\n\n            // While current bar is smaller than the bar at stack top\n            while (!st.empty() && heights[i] < heights[st.top()]) {\n\n                // Pop the top height\n                int height = heights[st.top()];\n                st.pop();\n\n                // Calculate width\n                int width = st.empty() ? i : i - st.top() - 1;\n\n                // Update max area\n                maxArea = max(maxArea, height * width);\n            }\n\n            // Push current index\n            st.push(i);\n        }\n\n        return maxArea;\n    }\n\n    // Function to find maximal rectangle in binary matrix\n    int maximalRectangle(vector<vector<char>>& matrix) {\n\n        // Return 0 if matrix is empty\n        if (matrix.empty()) return 0;\n\n        // Get number of columns\n        int m = matrix[0].size();\n\n        // Height array to build histogram row-wise\n        vector<int> height(m, 0);\n\n        // Variable to track max rectangle area\n        int maxArea = 0;\n\n        // Traverse each row of the matrix\n        for (auto& row : matrix) {\n\n            // Update histogram based on current row\n            for (int i = 0; i < m; i++) {\n                if (row[i] == '1') height[i]++;\n                else height[i] = 0;\n            }\n\n            // Compute area for this histogram\n            maxArea = max(maxArea, largestRectangleArea(height));\n        }\n\n        return maxArea;\n    }\n};",
+      "Java": "import java.util.*;\n\n// Solution class containing all methods\nclass Solution {\n\n    // Function to calculate largest rectangle area in histogram\n    public int largestRectangleArea(int[] heights) {\n\n        // Stack to store indices\n        Stack<Integer> stack = new Stack<>();\n\n        // Variable to store max area\n        int maxArea = 0;\n\n        // Append a sentinel height\n        int[] newHeights = Arrays.copyOf(heights, heights.length + 1);\n\n        // Loop over bars\n        for (int i = 0; i < newHeights.length; i++) {\n\n            // While current bar is less than stack top\n            while (!stack.isEmpty() && newHeights[i] < newHeights[stack.peek()]) {\n\n                // Pop and calculate area\n                int height = newHeights[stack.pop()];\n                int width = stack.isEmpty() ? i : i - stack.peek() - 1;\n                maxArea = Math.max(maxArea, height * width);\n            }\n\n            // Push current index\n            stack.push(i);\n        }\n\n        return maxArea;\n    }\n\n    // Function to find the maximal rectangle in binary matrix\n    public int maximalRectangle(char[][] matrix) {\n\n        // Return 0 if matrix is empty\n        if (matrix.length == 0) return 0;\n\n        // Column count\n        int m = matrix[0].length;\n\n        // Histogram array\n        int[] height = new int[m];\n\n        // Variable to track max area\n        int maxArea = 0;\n\n        // Iterate each row\n        for (char[] row : matrix) {\n\n            // Update histogram\n            for (int i = 0; i < m; i++) {\n                if (row[i] == '1') height[i]++;\n                else height[i] = 0;\n            }\n\n            // Calculate max area\n            maxArea = Math.max(maxArea, largestRectangleArea(height));\n        }\n\n        return maxArea;\n    }\n}",
+      "Python3": "# Solution class containing both functions\nclass Solution:\n\n    # Function to calculate largest rectangle area in histogram\n    def largestRectangleArea(self, heights):\n\n        # Add a sentinel bar\n        heights.append(0)\n\n        # Stack for indices\n        stack = []\n        max_area = 0\n\n        # Traverse through histogram bars\n        for i in range(len(heights)):\n\n            # Pop and calculate while current is smaller\n            while stack and heights[i] < heights[stack[-1]]:\n                height = heights[stack.pop()]\n                width = i if not stack else i - stack[-1] - 1\n                max_area = max(max_area, height * width)\n\n            # Push current index\n            stack.append(i)\n\n        return max_area\n\n    # Function to find the maximal rectangle in binary matrix\n    def maximalRectangle(self, matrix):\n\n        # Return 0 if matrix is empty\n        if not matrix: return 0\n\n        # Get column count\n        m = len(matrix[0])\n\n        # Initialize histogram\n        height = [0] * m\n        max_area = 0\n\n        # Traverse each row\n        for row in matrix:\n\n            # Update histogram\n            for i in range(m):\n                if row[i] == '1':\n                    height[i] += 1\n                else:\n                    height[i] = 0\n\n            # Update max area\n            max_area = max(max_area, self.largestRectangleArea(height))\n\n        return max_area",
+      "JavaScript": "// Solution class with both functions\nclass Solution {\n\n    // Function to compute largest rectangle in histogram\n    largestRectangleArea(heights) {\n\n        // Add a sentinel bar\n        heights.push(0);\n\n        // Stack for indices\n        const stack = [];\n        let maxArea = 0;\n\n        // Traverse histogram\n        for (let i = 0; i < heights.length; i++) {\n\n            // Pop and calculate area\n            while (stack.length && heights[i] < heights[stack[stack.length - 1]]) {\n                const height = heights[stack.pop()];\n                const width = stack.length === 0 ? i : i - stack[stack.length - 1] - 1;\n                maxArea = Math.max(maxArea, height * width);\n            }\n\n            // Push current index\n            stack.push(i);\n        }\n\n        return maxArea;\n    }\n\n    // Function to compute maximal rectangle in binary matrix\n    maximalRectangle(matrix) {\n\n        // Return 0 for empty matrix\n        if (matrix.length === 0) return 0;\n\n        const m = matrix[0].length;\n        const height = new Array(m).fill(0);\n        let maxArea = 0;\n\n        // Traverse each row\n        for (let row of matrix) {\n\n            // Update histogram\n            for (let i = 0; i < m; i++) {\n                if (row[i] === '1') height[i]++;\n                else height[i] = 0;\n            }\n\n            // Update max area\n            maxArea = Math.max(maxArea, this.largestRectangleArea([...height]));\n        }\n\n        return maxArea;\n    }\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

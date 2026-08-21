@@ -1,0 +1,130 @@
+{
+  "questionId": "Q6163",
+  "title": "Counting Subgraphs",
+  "slug": "counting-subgraphs",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Connected Components",
+      "Dynamic Programming",
+      "Modular Arithmetic"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Trees"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Kostya recently began his internship in a very big and famous IT company. His first project is dedicated to visualization of graphs, but his manager wanted to make sure Kostya is good enough for this project before he starts writing any code. As it usually goes, Kostya was given an algorithmic problem and was asked to come up with a solution. After struggling with the problem for a couple of days, he finally managed to solve it. Now Kostya wants to challenge the participants of the September Cook-Off 2015 Contest with this problem. Unfortunately, you don't have a couple of days to solve it, and you'll have to make do with 2.5 hours. Are you ready to be challenged? :)\n\nYou are given an undirected graph **G** of **N** nodes and **M** edges. The nodes of **G** are labeled with unique integer numbers of the range [1, 2, ... , **N**]. It's guaranteed that no multiple edges or self-loops appear in the graph as well as that the graph is connected. There's one more restriction on the graph: any node of **G** belongs to at most one simple cycle in **G**.\n\nYour task is to count the subsets of nodes in **G**, such that the nodes in the subset are connected (you can reach any node of the subset from any other node of the subset only by moving to adjacent nodes that belong to the subset) and contain no more than **K** nodes. Since the answer may exceed the limits of usual primitive integer types, you are asked to do all the calculations modulo 109 + 7.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 5000",
+      "0 <= M <= 10000",
+      "1 <= K <= min(N, 30)",
+      "The size of any simple cycle in G does not exceed 50"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case starts with a line containing three integers N, M, and K, where N is the number of nodes, M is the number of edges, and K is the maximum number of nodes in a subset. Then, M lines follow, each containing two integers U and V, representing an edge between nodes U and V.",
+    "outputFormat": "For each test case, output a single integer representing the number of subsets of nodes that are connected and contain no more than K nodes, modulo 10^9 + 7.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n3 2 1\n2 1\n3 1\n5 5 4\n5 4\n4 3\n1 5\n3 2\n2 5\n3 2 2\n2 3\n1 3",
+        "output": "3\n20\n5",
+        "explanation": "For the first test case, the graph has 3 nodes and 2 edges. The only possible subsets are {1}, {2}, and {3}. For the second test case, the graph has 5 nodes and 5 edges. The possible subsets are {1}, {2}, {3}, {4}, {5}, {1, 2}, {1, 3}, {1, 4}, {1, 5}, {2, 3}, {2, 4}, {2, 5}, {3, 4}, {3, 5}, {4, 5}, {1, 2, 3}, {1, 2, 4}, {1, 2, 5}, {1, 3, 4}, {1, 3, 5}, and {1, 4, 5}. For the third test case, the graph has 3 nodes and 2 edges. The possible subsets are {1}, {2}, and {1, 2}."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 0 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n5000 10000 30",
+        "expectedOutput": "1073741824",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n3 2 2",
+        "expectedOutput": "7",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n5 5 4",
+        "expectedOutput": "20",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n10 15 8",
+        "expectedOutput": "12870",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a combination of graph traversal and dynamic programming. First, we need to find all connected components in the graph. Then, for each component, we can use dynamic programming to count the number of subsets with at most K nodes. We will use a recursive approach to calculate the number of subsets for each component.",
+    "timeComplexity": "O(T * (N + M) * 2^K) — The time complexity is dominated by the recursive calculation of subsets for each connected component.",
+    "spaceComplexity": "O(N + M) — The space complexity is dominated by the storage of the graph and the dynamic programming table.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#define MOD 1000000007\n\n// Function to calculate the number of subsets\nlong long calculateSubsets(int n, int k, int **graph) {\n    long long *dp = (long long *)malloc((k + 1) * sizeof(long long));\n    dp[0] = 1;\n    for (int i = 1; i <= k; i++) {\n        dp[i] = (dp[i - 1] * 2) % MOD;\n    }\n    // Calculate the number of subsets for each connected component\n    long long result = 0;\n    for (int i = 0; i < n; i++) {\n        int size = 0;\n        int *component = (int *)malloc(n * sizeof(int));\n        // Perform DFS to find the size of the connected component\n        dfs(graph, i, &size, component);\n        if (size <= k) {\n            result = (result + dp[size]) % MOD;\n        }\n    }\n    free(dp);\n    return result;\n}\n\n// Function to perform DFS\nvoid dfs(int **graph, int node, int *size, int *component) {\n    component[*size] = node;\n    (*size)++;\n    for (int i = 0; i < n; i++) {\n        if (graph[node][i] == 1 && !visited[i]) {\n            visited[i] = 1;\n            dfs(graph, i, size, component);\n        }\n    }\n}\n\nint main() {\n    int t;\n    scanf(\"%d\", &t);\n    while (t--) {\n        int n, m, k;\n        scanf(\"%d %d %d\", &n, &m, &k);\n        int **graph = (int **)malloc(n * sizeof(int *));\n        for (int i = 0; i < n; i++) {\n            graph[i] = (int *)malloc(n * sizeof(int));\n            for (int j = 0; j < n; j++) {\n                graph[i][j] = 0;\n            }\n        }\n        for (int i = 0; i < m; i++) {\n            int u, v;\n            scanf(\"%d %d\", &u, &v);\n            graph[u - 1][v - 1] = 1;\n            graph[v - 1][u - 1] = 1;\n        }\n        long long result = calculateSubsets(n, k, graph);\n        printf(\"%lld\\n\", result);\n        for (int i = 0; i < n; i++) {\n            free(graph[i]);\n        }\n        free(graph);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\nusing namespace std;\n#define MOD 1000000007\n\nlong long calculateSubsets(int n, int k, vector<vector<int>> &graph) {\n    long long *dp = new long long[k + 1];\n    dp[0] = 1;\n    for (int i = 1; i <= k; i++) {\n        dp[i] = (dp[i - 1] * 2) % MOD;\n    }\n    long long result = 0;\n    for (int i = 0; i < n; i++) {\n        int size = 0;\n        vector<int> component;\n        // Perform DFS to find the size of the connected component\n        dfs(graph, i, &size, component);\n        if (size <= k) {\n            result = (result + dp[size]) % MOD;\n        }\n    }\n    delete[] dp;\n    return result;\n}\n\nvoid dfs(vector<vector<int>> &graph, int node, int *size, vector<int> &component) {\n    component.push_back(node);\n    (*size)++;\n    for (int i = 0; i < graph.size(); i++) {\n        if (graph[node][i] == 1 && !visited[i]) {\n            visited[i] = 1;\n            dfs(graph, i, size, component);\n        }\n    }\n}\n\nint main() {\n    int t;\n    cin >> t;\n    while (t--) {\n        int n, m, k;\n        cin >> n >> m >> k;\n        vector<vector<int>> graph(n, vector<int>(n, 0));\n        for (int i = 0; i < m; i++) {\n            int u, v;\n            cin >> u >> v;\n            graph[u - 1][v - 1] = 1;\n            graph[v - 1][u - 1] = 1;\n        }\n        long long result = calculateSubsets(n, k, graph);\n        cout << result << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    static final int MOD = 1000000007;\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int t = sc.nextInt();\n        while (t-- > 0) {\n            int n = sc.nextInt();\n            int m = sc.nextInt();\n            int k = sc.nextInt();\n            int[][] graph = new int[n][n];\n            for (int i = 0; i < m; i++) {\n                int u = sc.nextInt() - 1;\n                int v = sc.nextInt() - 1;\n                graph[u][v] = 1;\n                graph[v][u] = 1;\n            }\n            long result = calculateSubsets(n, k, graph);\n            System.out.println(result);\n        }\n    }\n\n    public static long calculateSubsets(int n, int k, int[][] graph) {\n        long[] dp = new long[k + 1];\n        dp[0] = 1;\n        for (int i = 1; i <= k; i++) {\n            dp[i] = (dp[i - 1] * 2) % MOD;\n        }\n        long result = 0;\n        for (int i = 0; i < n; i++) {\n            int size = 0;\n            int[] component = new int[n];\n            // Perform DFS to find the size of the connected component\n            dfs(graph, i, size, component);\n            if (size <= k) {\n                result = (result + dp[size]) % MOD;\n            }\n        }\n        return result;\n    }\n\n    public static void dfs(int[][] graph, int node, int size, int[] component) {\n        component[size] = node;\n        size++;\n        for (int i = 0; i < graph.length; i++) {\n            if (graph[node][i] == 1 && !visited[i]) {\n                visited[i] = true;\n                dfs(graph, i, size, component);\n            }\n        }\n    }\n}",
+      "Python3": "import sys\nMOD = 1000000007\n\ndef calculate_subsets(n, k, graph):\n    dp = [0] * (k + 1)\n    dp[0] = 1\n    for i in range(1, k + 1):\n        dp[i] = (dp[i - 1] * 2) % MOD\n    result = 0\n    for i in range(n):\n        size = 0\n        component = []\n        # Perform DFS to find the size of the connected component\n        dfs(graph, i, size, component)\n        if size <= k:\n            result = (result + dp[size]) % MOD\n    return result\n\ndef dfs(graph, node, size, component):\n    component.append(node)\n    size += 1\n    for i in range(len(graph)):\n        if graph[node][i] == 1 and not visited[i]:\n            visited[i] = True\n            dfs(graph, i, size, component)\n\nif __name__ == '__main__':\n    t = int(input())\n    for _ in range(t):\n        n, m, k = map(int, input().split())\n        graph = [[0] * n for _ in range(n)]\n        for _ in range(m):\n            u, v = map(int, input().split())\n            graph[u - 1][v - 1] = 1\n            graph[v - 1][u - 1] = 1\n        result = calculate_subsets(n, k, graph)\n        print(result)",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst MOD = 1000000007;\n\nfunction calculateSubsets(n, k, graph) {\n    let dp = new Array(k + 1).fill(0);\n    dp[0] = 1;\n    for (let i = 1; i <= k; i++) {\n        dp[i] = (dp[i - 1] * 2) % MOD;\n    }\n    let result = 0;\n    for (let i = 0; i < n; i++) {\n        let size = 0;\n        let component = [];\n        // Perform DFS to find the size of the connected component\n        dfs(graph, i, size, component);\n        if (size <= k) {\n            result = (result + dp[size]) % MOD;\n        }\n    }\n    return result;\n}\n\nfunction dfs(graph, node, size, component) {\n    component.push(node);\n    size++;\n    for (let i = 0; i < graph.length; i++) {\n        if (graph[node][i] == 1 && !visited[i]) {\n            visited[i] = true;\n            dfs(graph, i, size, component);\n        }\n    }\n}\n\nlet t = parseInt(input[idx++]);\nwhile (t-- > 0) {\n    let [n, m, k] = input[idx++].split(' ').map(Number);\n    let graph = new Array(n).fill(0).map(() => new Array(n).fill(0));\n    for (let i = 0; i < m; i++) {\n        let [u, v] = input[idx++].split(' ').map(Number);\n        graph[u - 1][v - 1] = 1;\n        graph[v - 1][u - 1] = 1;\n    }\n    let result = calculateSubsets(n, k, graph);\n    console.log(result);\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

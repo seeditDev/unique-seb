@@ -1,0 +1,153 @@
+{
+  "questionId": "Q965",
+  "title": "Univalued Binary Tree",
+  "slug": "univalued-binary-tree",
+  "version": 1,
+  "createdAt": "2026-07-10",
+  "updatedAt": "2026-07-10",
+  "QBCategory": "LCD",
+  "metadata": {
+    "category": "Searching",
+    "difficulty": "Easy",
+    "isPremium": true,
+    "tags": [
+      "tree",
+      "depth-first-search",
+      "breadth-first-search",
+      "binary-tree"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "tree",
+      "depth-first-search",
+      "breadth-first-search",
+      "binary-tree"
+    ],
+    "QBCategory": "LCD"
+  },
+  "content": {
+    "problemStatement": "A binary tree is **uni-valued** if every node in the tree has the same value.\n\nGiven the `root` of a binary tree, return `true` *if the given tree is **uni-valued**, or* `false` *otherwise.*\n\n**Example 1:**\n\n![](https://assets.leetcode.com/uploads/2018/12/28/unival_bst_1.png)\n\n```\nInput: root = [1,1,1,1,1,null,1]\nOutput: true\n```\n\n**Example 2:**\n\n![](https://assets.leetcode.com/uploads/2018/12/28/unival_bst_2.png)\n\n```\nInput: root = [2,2,2,5,2]\nOutput: false\n```\n\n**Constraints:**\n\n* The number of nodes in the tree is in the range `[1, 100]`.\n* `0 <= Node.val < 100`",
+    "constraints": [
+      "The number of nodes in the tree is in the range [1, 100].",
+      "0 <= Node.val < 100"
+    ],
+    "inputFormat": "Single line: JSON array of all arguments, e.g. [arg1, arg2, ...]",
+    "outputFormat": "Single line: JSON-serialised return value",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "[[1,1,1,1,1,null,1]]",
+        "output": "true",
+        "explanation": ""
+      },
+      {
+        "id": "sample_2",
+        "input": "[[2,2,2,5,2]]",
+        "output": "false",
+        "explanation": ""
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "First element is answer",
+        "input": "[[1, 1, 1]]",
+        "expectedOutput": "true",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Last element is answer",
+        "input": "[[2, 2, 2, 2, 2]]",
+        "expectedOutput": "true",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Middle element is answer",
+        "input": "[[1, 1, 1, 1, 1, 1, 1]]",
+        "expectedOutput": "true",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Target not found",
+        "input": "[[1, 2, 3, 4, 5]]",
+        "expectedOutput": "false",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Single element array — found",
+        "input": "[[1]]",
+        "expectedOutput": "true",
+        "weight": 2
+      },
+      {
+        "id": "tc_6",
+        "label": "Single element array — not found",
+        "input": "[[2]]",
+        "expectedOutput": "true",
+        "weight": 2
+      },
+      {
+        "id": "tc_7",
+        "label": "Duplicate values — lower bound",
+        "input": "[[1, 1, 1, 1, 1]]",
+        "expectedOutput": "true",
+        "weight": 4
+      },
+      {
+        "id": "tc_8",
+        "label": "Two elements",
+        "input": "[[2, 2]]",
+        "expectedOutput": "true",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 8,
+    "totalWeight": 18
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      4,
+      2
+    ],
+    "maxScore": 18
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdbool.h>\n\n// Helper JSON parser/tokenizer in C\ntypedef struct {\n    char* s;\n    int pos;\n    int len;\n} Tok;\n\nstatic void skipWS(Tok* t) {\n    while (t->pos < t->len && (t->s[t->pos] == ' ' || t->s[t->pos] == ',' || t->s[t->pos] == '\\t' || t->s[t->pos] == '\\n' || t->s[t->pos] == '\\r')) {\n        t->pos++;\n    }\n}\n\nstatic char* nextToken(Tok* t) {\n    skipWS(t);\n    if (t->pos >= t->len) return NULL;\n    int start = t->pos;\n    if (t->s[t->pos] == '[') {\n        int depth = 0;\n        while (t->pos < t->len) {\n            char c = t->s[t->pos++];\n            if (c == '[') depth++;\n            else if (c == ']') {\n                depth--;\n                if (depth == 0) break;\n            }\n        }\n        int token_len = t->pos - start;\n        char* token = (char*)malloc(token_len + 1);\n        strncpy(token, t->s + start, token_len);\n        token[token_len] = '\\0';\n        return token;\n    } else if (t->s[t->pos] == '\"') {\n        t->pos++;\n        while (t->pos < t->len && t->s[t->pos] != '\"') t->pos++;\n        t->pos++;\n        int token_len = t->pos - start;\n        char* token = (char*)malloc(token_len + 1);\n        strncpy(token, t->s + start, token_len);\n        token[token_len] = '\\0';\n        return token;\n    } else {\n        while (t->pos < t->len && t->s[t->pos] != ',' && t->s[t->pos] != ']' && t->s[t->pos] != '[') t->pos++;\n        int token_len = t->pos - start;\n        char* token = (char*)malloc(token_len + 1);\n        strncpy(token, t->s + start, token_len);\n        token[token_len] = '\\0';\n        int idx = token_len - 1;\n        while (idx >= 0 && token[idx] == ' ') {\n            token[idx] = '\\0';\n            idx--;\n        }\n        return token;\n    }\n}\n\nstatic int parse_int(Tok* t) {\n    char* tok = nextToken(t);\n    if (!tok) return 0;\n    int val = atoi(tok);\n    free(tok);\n    return val;\n}\n\nstatic bool parse_bool(Tok* t) {\n    char* tok = nextToken(t);\n    if (!tok) return false;\n    bool val = (strcmp(tok, \"true\") == 0);\n    free(tok);\n    return val;\n}\n\nstatic double parse_double(Tok* t) {\n    char* tok = nextToken(t);\n    if (!tok) return 0.0;\n    double val = atof(tok);\n    free(tok);\n    return val;\n}\n\nstatic char* parse_string(Tok* t) {\n    char* tok = nextToken(t);\n    if (!tok) return NULL;\n    if (tok[0] == '\"') {\n        int len = strlen(tok);\n        char* res = (char*)malloc(len - 1);\n        strncpy(res, tok + 1, len - 2);\n        res[len - 2] = '\\0';\n        free(tok);\n        return res;\n    }\n    return tok;\n}\n\nstatic int* parse_int_array(Tok* t, int* out_size) {\n    char* tok = nextToken(t);\n    if (!tok || strcmp(tok, \"[]\") == 0) {\n        if (tok) free(tok);\n        *out_size = 0;\n        return NULL;\n    }\n    int len = strlen(tok);\n    char* inner = (char*)malloc(len - 1);\n    strncpy(inner, tok + 1, len - 2);\n    inner[len - 2] = '\\0';\n    free(tok);\n\n    int size = 1;\n    for (int i = 0; inner[i]; i++) {\n        if (inner[i] == ',') size++;\n    }\n    int* arr = (int*)malloc(size * sizeof(int));\n    Tok t2 = { inner, 0, (int)strlen(inner) };\n    for (int i = 0; i < size; i++) {\n        arr[i] = parse_int(&t2);\n    }\n    free(inner);\n    *out_size = size;\n    return arr;\n}\n\nstatic int** parse_int_2d(Tok* t, int* out_rows, int** out_cols) {\n    char* tok = nextToken(t);\n    if (!tok || strcmp(tok, \"[]\") == 0) {\n        if (tok) free(tok);\n        *out_rows = 0;\n        *out_cols = NULL;\n        return NULL;\n    }\n    int len = strlen(tok);\n    char* inner = (char*)malloc(len - 1);\n    strncpy(inner, tok + 1, len - 2);\n    inner[len - 2] = '\\0';\n    free(tok);\n\n    int rows = 0;\n    int depth = 0;\n    for (int i = 0; inner[i]; i++) {\n        if (inner[i] == '[') {\n            if (depth == 0) rows++;\n            depth++;\n        } else if (inner[i] == ']') {\n            depth--;\n        }\n    }\n    int** mat = (int**)malloc(rows * sizeof(int*));\n    int* cols = (int*)malloc(rows * sizeof(int));\n\n    Tok t2 = { inner, 0, (int)strlen(inner) };\n    for (int i = 0; i < rows; i++) {\n        mat[i] = parse_int_array(&t2, &cols[i]);\n    }\n    free(inner);\n    *out_rows = rows;\n    *out_cols = cols;\n    return mat;\n}\n\n// ---------------------------------------------------------------------\n// YOUR SOLUTION  <- Write your code inside the function below\n// ---------------------------------------------------------------------\n/**\n * Definition for a binary tree node.\n * struct TreeNode {\n *     int val;\n *     struct TreeNode *left;\n *     struct TreeNode *right;\n * };\n */\nbool isUnivalTree(struct TreeNode* root) {\n    \n    return NULL;\n}\n\n// ---------------------------------------------------------------------\n// DRIVER  (do not modify)\n// ---------------------------------------------------------------------\nint main() {\n    char line[1000000];\n    if (fgets(line, sizeof(line), stdin)) {\n        // Strip outer [ ]\n        int len = strlen(line);\n        while (len > 0 && (line[len - 1] == '\\n' || line[len - 1] == '\\r')) {\n            line[len - 1] = '\\0';\n            len--;\n        }\n        char* raw = (char*)malloc(len - 1);\n        strncpy(raw, line + 1, len - 2);\n        raw[len - 2] = '\\0';\n        Tok tok = { raw, 0, (int)strlen(raw) };\n        \n        // TODO: unpack logic for treenode root\n        bool result = isUnivalTree(root);\n        printf(\"%s\\n\", result ? \"true\" : \"false\");\n        free(raw);\n    }\n    return 0;\n}",
+    "Python3": "import sys, json\nfrom typing import List\n\n#  HELPER CLASSES  (do not modify)\n\nclass ListNode:\n    def __init__(self, val=0, next=None):\n        self.val = val; self.next = next\n    @staticmethod\n    def from_list(lst):\n        if not lst: return None\n        h = ListNode(lst[0]); c = h\n        for v in lst[1:]:\n            c.next = ListNode(v); c = c.next\n        return h\n    def to_list(self):\n        r=[]; c=self\n        while c: r.append(c.val); c=c.next\n        return r\n\nclass TreeNode:\n    def __init__(self, val=0, left=None, right=None):\n        self.val=val; self.left=left; self.right=right\n    @staticmethod\n    def from_list(lst):\n        if not lst: return None\n        root=TreeNode(lst[0]); q=[root]; i=1\n        while q and i<len(lst):\n            c=q.pop(0)\n            if i<len(lst) and lst[i] is not None:\n                c.left=TreeNode(lst[i]); q.append(c.left)\n            i+=1\n            if i<len(lst) and lst[i] is not None:\n                c.right=TreeNode(lst[i]); q.append(c.right)\n            i+=1\n        return root\n    def to_list(self):\n        if not self: return []\n        r=[]; q=[self]\n        while q:\n            c=q.pop(0)\n            if c: r.append(c.val); q.append(c.left); q.append(c.right)\n            else: r.append(None)\n        while r and r[-1] is None: r.pop()\n        return r\n\n\n# ----------------------------------------------------------------------\n#  YOUR SOLUTION  <- Write your code inside the method below\n# ----------------------------------------------------------------------\n# Definition for a binary tree node.\n# class TreeNode:\n#     def __init__(self, val=0, left=None, right=None):\n#         self.val = val\n#         self.left = left\n#         self.right = right\nclass Solution:\n    def isUnivalTree(self, root: Optional[TreeNode]) -> bool:\n        pass\n\n#  DRIVER  (do not modify)\nif __name__ == '__main__':\n    _args = json.loads(sys.stdin.readline())\n    _root = TreeNode.from_list(_args[0])\n    _result = Solution().isUnivalTree(_root)\n\n    print(json.dumps(_result))",
+    "JavaScript": "'use strict';\nconst readline = require('readline');\n\n// ---------------------------------------------------------------------\n// YOUR SOLUTION  <- Write your code inside the function below\n// ---------------------------------------------------------------------\n/**\n * Definition for a binary tree node.\n * function TreeNode(val, left, right) {\n *     this.val = (val===undefined ? 0 : val)\n *     this.left = (left===undefined ? null : left)\n *     this.right = (right===undefined ? null : right)\n * }\n */\n/**\n * @param {TreeNode} root\n * @return {boolean}\n */\nvar isUnivalTree = function(root) {\n    \n    return false;\n};\n\n// ---------------------------------------------------------------------\n// DRIVER  (do not modify)\n// ---------------------------------------------------------------------\nconst rl = readline.createInterface({ input: process.stdin });\nrl.on('line', line => {\n    const _args = JSON.parse(line.trim());\n    const _result = isUnivalTree(_args[0]);\n    console.log(JSON.stringify(_result));\n    rl.close();\n});",
+    "Java": "import java.util.*;\nimport java.io.*;\n\n// -\n// ---------------------------------------------------------------------\n// YOUR SOLUTION  <- Write your code inside the function below\n// ---------------------------------------------------------------------\n// -\n/**\n * Definition for a binary tree node.\n * public class TreeNode {\n *     int val;\n *     TreeNode left;\n *     TreeNode right;\n *     TreeNode() {}\n *     TreeNode(int val) { this.val = val; }\n *     TreeNode(int val, TreeNode left, TreeNode right) {\n *         this.val = val;\n *         this.left = left;\n *         this.right = right;\n *     }\n * }\n */\nclass Solution {\n    public boolean isUnivalTree(TreeNode root) {\n        \n        return false;\n    }\n}\n\n// ---------------------------------------------------------------------\n// DRIVER  (do not modify)\n// ---------------------------------------------------------------------\npublic class Main {\n\n    static java.util.ArrayDeque<String> tokenize(String s) {\n        java.util.ArrayDeque<String> q = new java.util.ArrayDeque<>();\n        int i = 0, n = s.length();\n        while (i < n) {\n            char c = s.charAt(i);\n            if (c == '[' || c == ']' || c == ',') { i++; continue; }\n            if (c == '\"') {\n                int j = s.indexOf('\"', i+1); q.add(s.substring(i, j+1)); i = j+1;\n            } else if (c != ' ') {\n                int j = i;\n                while (j < n && s.charAt(j) != ',' && s.charAt(j) != ']' && s.charAt(j) != '[') j++;\n                String tok = s.substring(i, j).trim();\n                if (!tok.isEmpty()) q.add(tok);\n                i = j;\n            } else { i++; }\n        }\n        return q;\n    }\n    static String[] readArrayRaw(String s) {\n        s = s.trim();\n        if (s.equals(\"[]\")) return new String[0];\n        s = s.substring(1, s.length()-1);\n        java.util.List<String> parts = new java.util.ArrayList<>();\n        int depth=0, start=0;\n        for (int i=0; i<s.length(); i++) {\n            char c=s.charAt(i);\n            if (c=='[') depth++; else if (c==']') depth--;\n            else if (c==',' && depth==0) { parts.add(s.substring(start,i).trim()); start=i+1; }\n        }\n        parts.add(s.substring(start).trim());\n        return parts.toArray(new String[0]);\n    }\n    static int[] toIntArray(String s) {\n        String[] parts = readArrayRaw(s);\n        int[] arr = new int[parts.length];\n        for (int i=0; i<parts.length; i++) arr[i] = Integer.parseInt(parts[i].trim());\n        return arr;\n    }\n    static int[][] toInt2D(String s) {\n        String[] rows = readArrayRaw(s);\n        int[][] mat = new int[rows.length][];\n        for (int i=0; i<rows.length; i++) mat[i] = toIntArray(rows[i]);\n        return mat;\n    }\n    static String[] toStringArray(String s) {\n        String[] parts = readArrayRaw(s);\n        for (int i=0; i<parts.length; i++) parts[i] = parts[i].trim().replaceAll(\"^\\\"|\\\"$\",\"\");\n        return parts;\n    }\n    static char[] toCharArray(String s) {\n        String[] parts = readArrayRaw(s);\n        char[] arr = new char[parts.length];\n        for (int i=0; i<parts.length; i++) arr[i] = parts[i].trim().replaceAll(\"^\\\"|\\\"$\",\"\").charAt(0);\n        return arr;\n    }\n    // Reads next top-level token from outer JSON array\n    static int _pos;\n    static String _raw;\n    static String nextToken() {\n        while (_pos < _raw.length() && (_raw.charAt(_pos)==',' || _raw.charAt(_pos)==' ')) _pos++;\n        if (_pos >= _raw.length()) return \"null\";\n        char c = _raw.charAt(_pos);\n        if (c == '[') {\n            int depth=0, start=_pos;\n            while (_pos < _raw.length()) {\n                char x=_raw.charAt(_pos); if(x=='[') depth++; else if(x==']') { depth--; if(depth==0){_pos++;break;} } _pos++;\n            }\n            return _raw.substring(start, _pos);\n        } else if (c == '\"') {\n            int start=_pos++;\n            while (_pos < _raw.length() && _raw.charAt(_pos) != '\"') _pos++;\n            _pos++;\n            return _raw.substring(start, _pos);\n        } else {\n            int start=_pos;\n            while (_pos < _raw.length() && _raw.charAt(_pos) != ',' && _raw.charAt(_pos) != ']') _pos++;\n            return _raw.substring(start, _pos).trim();\n        }\n    }\n    public static void main(String[] a) throws IOException {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        String line = br.readLine().trim();\n        // Strip outer [ ]\n        _raw = line.substring(1, line.length()-1);\n        _pos = 0;\n        // TODO: parse TreeNode for root\n        boolean result = new Solution().isUnivalTree(root);\n        System.out.println(result);\n    }\n}",
+    "C++": "\n#include <bits/stdc++.h>\nusing namespace std;\n\nstruct Tok {\n    string s;\n    int pos = 0;\n    void skipWS() { while(pos<(int)s.size()&&(s[pos]==' '||s[pos]==','||s[pos]=='\\t')) pos++; }\n    string nextToken() {\n        skipWS();\n        if(pos>=(int)s.size()) return \"\";\n        if(s[pos]=='['){\n            int depth=0,st=pos;\n            while(pos<(int)s.size()){char c=s[pos++];if(c=='[')depth++;else if(c==']'){depth--;if(depth==0)break;}}\n            return s.substr(st,pos-st);\n        } else if(s[pos]=='\"'){\n            int st=pos++;\n            while(pos<(int)s.size()&&s[pos]!='\"')pos++;\n            return s.substr(st,++pos-st);\n        } else {\n            int st=pos;\n            while(pos<(int)s.size()&&s[pos]!=','&&s[pos]!=']'&&s[pos]!='[')pos++;\n            string t=s.substr(st,pos-st);\n            while(!t.empty()&&t.back()==' ')t.pop_back();\n            return t;\n        }\n    }\n};\nstring innerArr(const string& s){return s.substr(1,s.size()-2);}\nvector<string> splitTop(const string& s){\n    vector<string> parts; int depth=0,start=0;\n    for(int i=0;i<(int)s.size();i++){\n        if(s[i]=='['||s[i]=='{')depth++;\n        else if(s[i]==']'||s[i]=='}')depth--;\n        else if(s[i]==','&&depth==0){parts.push_back(s.substr(start,i-start));start=i+1;}\n    }\n    parts.push_back(s.substr(start)); return parts;\n}\nvector<int> readIntVec(Tok& tok){\n    string arr=tok.nextToken();\n    if(arr==\"[]\")return {};\n    auto parts=splitTop(innerArr(arr)); vector<int> v;\n    for(auto&p:parts)v.push_back(stoi(p)); return v;\n}\nvector<vector<int>> readInt2D(Tok& tok){\n    string arr=tok.nextToken();\n    if(arr==\"[]\")return {};\n    auto rows=splitTop(innerArr(arr)); vector<vector<int>> mat;\n    for(auto&r:rows){Tok t2;t2.s=\"[\"+innerArr(r)+\"]\";t2.pos=0;mat.push_back(readIntVec(t2));} return mat;\n}\nvector<string> readStrVec(Tok& tok){\n    string arr=tok.nextToken();\n    if(arr==\"[]\")return {};\n    auto parts=splitTop(innerArr(arr)); vector<string> v;\n    for(auto&p:parts){string tmp=p;if(!tmp.empty()&&tmp.front()=='\"')tmp=tmp.substr(1,tmp.size()-2);v.push_back(tmp);}return v;\n}\nvector<char> readCharVec(Tok& tok){\n    auto sv=readStrVec(tok); vector<char> v; for(auto&s:sv)v.push_back(s[0]); return v;\n}\nint readInt(Tok& tok){ return stoi(tok.nextToken()); }\nstring readStr(Tok& tok){ string s=tok.nextToken(); if(!s.empty()&&s.front()=='\"')s=s.substr(1,s.size()-2); return s; }\nbool readBool(Tok& tok){ return tok.nextToken()==\"true\"; }\ndouble readDouble(Tok& tok){ return stod(tok.nextToken()); }\n\n// ---------------------------------------------------------------------\n// YOUR SOLUTION  <- Write your code inside the function below\n// ---------------------------------------------------------------------\n/**\n * Definition for a binary tree node.\n * struct TreeNode {\n *     int val;\n *     TreeNode *left;\n *     TreeNode *right;\n *     TreeNode() : val(0), left(nullptr), right(nullptr) {}\n *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}\n *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}\n * };\n */\nclass Solution {\npublic:\n    bool isUnivalTree(TreeNode* root) {\n        \n        return false;\n    }\n};\n\n// ---------------------------------------------------------------------\n// DRIVER  (do not modify)\n// ---------------------------------------------------------------------\nint main() {\n    string line; getline(cin, line);\n    // Strip outer [ ]\n    Tok tok; tok.s = line.substr(1, line.size()-2); tok.pos = 0;\n    /* TODO: parse TreeNode* for root */\n    auto result = Solution().isUnivalTree(root);\n    cout << (result ? \"true\" : \"false\") << endl;\n    return 0;\n}"
+  },
+  "solution": {
+    "approach": "The approach uses a stack-based traversal to check each node's value against the root's value, returning false as soon as a mismatch is found.",
+    "timeComplexity": "O(n)",
+    "spaceComplexity": "O(h)",
+    "code": {
+      "Python3": "# Time:  O(n)\n# Space: O(h)\n\n# Definition for a binary tree node.\nclass TreeNode(object):\n    def __init__(self, x):\n        self.val = x\n        self.left = None\n        self.right = None\n\n\nclass Solution(object):\n    def isUnivalTree(self, root):\n        \"\"\"\n        :type root: TreeNode\n        :rtype: bool\n        \"\"\"\n        s = [root]\n        while s:\n            node = s.pop()\n            if not node:\n                continue\n            if node.val != root.val:\n                return False\n            s.append(node.left)\n            s.append(node.right)\n        return True"
+    }
+  }
+}

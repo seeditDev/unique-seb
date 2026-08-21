@@ -1,0 +1,113 @@
+{
+  "questionId": "Q2616",
+  "title": "Dyslexic Gollum",
+  "slug": "dyslexic-gollum",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Palindromes",
+      "Bitmask",
+      "Automaton",
+      "Strings",
+      "Dynamic Programming"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ]
+  },
+  "content": {
+    "problemStatement": "Dyslexic GollumGollum has spent half a millennium in the long darkness of Moria, where his eyes grew used to the dark, and without caring for reading or writing, he became dyslexic. Indeed, as much as he hates the Moon and the Sun, he also hates strings with long palindromes in them.\n\nGollum has a tolerance level of **K**, which means that he can read a word so long as it does not contain any palindromic substring of length **K** or more. Given the values **N** and **K**, return how many BINARY strings of length **N** can Gollum tolerate reading.\n\n\nInput Format\nThe first line contains **T**, the number of test cases.\n\nEach test case consists of one line containing 2 integers, **N** and **K**.\n\n\n\nOutput Format\nFor each test case, output the answer modulo 1,000,000,007.",
+    "constraints": [
+      "1 <= T <= 100",
+      "1 <= N <= 400",
+      "1 <= K <= 10"
+    ],
+    "inputFormat": "First line contains an integer T, the number of test cases. Each of the next T lines contains two integers N and K separated by a space.",
+    "outputFormat": "For each test case output a single line containing the number of binary strings of length N that do not contain any palindromic substring of length K or more, modulo 1000000007.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n2 2\n3 3\n3 4",
+        "output": "2\n4\n8",
+        "explanation": "For the first test case, 01 and 10 are the valid binary strings, while 00 and 11 are invalid. For the second test case, 001, 011, 100, 110 are the valid binary strings. For the third test case, all possible binary strings of length 3 are valid."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "We build the string from left to right and keep only the last (K\u20111) bits as state because any palindrome of length \u2265 K that ends at the current position must contain a palindrome of length exactly K as a suffix. For each state we try to append '0' or '1' and check whether the new suffix of length K is a palindrome. If it is, the transition is forbidden; otherwise we move to the new state (the last (K\u20111) bits after the append). The DP array dp[mask] stores the number of ways to reach the current position with the last (K\u20111) bits encoded in mask. We iterate over positions 0\u2026N\u20111 updating a new DP array. The answer is the sum of dp after processing N characters. The algorithm runs in O(N\u00b72^{K\u20111}) time and O(2^{K\u20111}) memory, which fits the limits (N\u2264400, K\u226410).",
+    "timeComplexity": "O(N\u00b72^{K-1}) per test case",
+    "spaceComplexity": "O(2^{K-1})",
+    "code": {
+      "C": "#include <bits/stdc++.h>\nusing namespace std;\nconst int MOD=1000000007;\nbool isPal(int mask,int K){\n    int bits[20];\n    for(int i=0;i<K;i++) bits[i]=(mask>>i)&1;\n    for(int i=0;i<K/2;i++) if(bits[i]!=bits[K-1-i]) return false;\n    return true;\n}\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N,K;cin>>N>>K;\n        if(K==1){\n            cout<<0<<\"\\n\";\n            continue;\n        }\n        int stateBits=K-1;\n        int maxMask=1<<stateBits;\n        vector<int> dp(maxMask,0), ndp(maxMask,0);\n        dp[0]=1;\n        for(int pos=0;pos<N;pos++){\n            fill(ndp.begin(), ndp.end(), 0);\n            for(int mask=0; mask<maxMask; ++mask){\n                int cur=dp[mask];\n                if(!cur) continue;\n                for(int b=0;b<2;b++){\n                    int newMask=((mask<<1)|b)&((1<<K)-1);\n                    bool ok=true;\n                    if(pos+1>=K && isPal(newMask,K)) ok=false;\n                    if(ok){\n                        int nextMask=newMask & ((1<<stateBits)-1);\n                        ndp[nextMask]=(ndp[nextMask]+cur)%MOD;\n                    }\n                }\n            }\n            dp.swap(ndp);\n        }\n        long long ans=0;\n        for(int v:dp) ans=(ans+v)%MOD;\n        cout<<ans<<\"\\n\";\n    }\n    return 0;\n}\n"
+    }
+  }
+}

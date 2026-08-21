@@ -1,0 +1,120 @@
+{
+  "questionId": "Q11890",
+  "title": "LRU Cache",
+  "slug": "lrucache",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Data Structures",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "LRU Cache",
+      "Hash Map",
+      "Doubly Linked List"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Design a data structure that follows the constraints of a Least Recently Used (LRU) cache.",
+    "constraints": [
+      "1 <= capacity <= 10^5",
+      "0 <= key <= 10^9",
+      "0 <= value <= 10^9",
+      "At most 10^5 calls will be made to get and put."
+    ],
+    "inputFormat": "The input will be in the form of a constructor call with a capacity parameter, followed by a series of get and put method calls.",
+    "outputFormat": "The output will be the result of each get method call.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "LRUCache cache = new LRUCache(1); cache.put(1, 1); cache.get(1);",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "LRUCache cache = new LRUCache(100000); cache.put(1, 1); cache.get(1);",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform case",
+        "input": "LRUCache cache = new LRUCache(2); cache.put(1, 1); cache.put(2, 2); cache.get(1); cache.get(2);",
+        "expectedOutput": "1, 2",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "LRUCache cache = new LRUCache(2); cache.put(1, 1); cache.put(2, 2); cache.put(3, 3); cache.get(1);",
+        "expectedOutput": "-1",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "mixed case",
+        "input": "LRUCache cache = new LRUCache(3); cache.put(1, 1); cache.put(2, 2); cache.put(3, 3); cache.get(1); cache.put(4, 4); cache.get(2);",
+        "expectedOutput": "1, -1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Use a hash map to store key-node mappings and a doubly linked list to track the order of elements.",
+    "timeComplexity": "O(1) for get and put operations",
+    "spaceComplexity": "O(capacity) for storing the cache",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\ntypedef struct Node {\n    int key;\n    int val;\n    struct Node* next;\n    struct Node* prev;\n} Node;\ntypedef struct {\n    Node* head;\n    Node* tail;\n    int cap;\n    Node** m;\n} LRUCache;\nLRUCache* lRUCacheCreate(int capacity) {\n    LRUCache* cache = (LRUCache*) malloc(sizeof(LRUCache));\n    cache->head = (Node*) malloc(sizeof(Node));\n    cache->tail = (Node*) malloc(sizeof(Node));\n    cache->cap = capacity;\n    cache->m = (Node**) calloc(capacity, sizeof(Node*));\n    cache->head->next = cache->tail;\n    cache->tail->prev = cache->head;\n    return cache;\n}\nvoid lRUCacheFree(LRUCache* obj) {\n    free(obj->head);\n    free(obj->tail);\n    free(obj->m);\n    free(obj);\n}\nint lRUCacheGet(LRUCache* obj, int key) {\n    if (obj->m[key] != NULL) {\n        Node* node = obj->m[key];\n        int val = node->val;\n        // Remove node from list\n        node->prev->next = node->next;\n        node->next->prev = node->prev;\n        // Add node to front\n        node->next = obj->head->next;\n        node->prev = obj->head;\n        obj->head->next->prev = node;\n        obj->head->next = node;\n        return val;\n    }\n    return -1;\n}\nvoid lRUCachePut(LRUCache* obj, int key, int value) {\n    if (obj->m[key] != NULL) {\n        Node* node = obj->m[key];\n        node->val = value;\n        // Remove node from list\n        node->prev->next = node->next;\n        node->next->prev = node->prev;\n        // Add node to front\n        node->next = obj->head->next;\n        node->prev = obj->head;\n        obj->head->next->prev = node;\n        obj->head->next = node;\n    } else {\n        Node* node = (Node*) malloc(sizeof(Node));\n        node->key = key;\n        node->val = value;\n        // Add node to front\n        node->next = obj->head->next;\n        node->prev = obj->head;\n        obj->head->next->prev = node;\n        obj->head->next = node;\n        obj->m[key] = node;\n        if (obj->cap == 0) {\n            // Remove last node\n            Node* last = obj->tail->prev;\n            last->prev->next = obj->tail;\n            obj->tail->prev = last->prev;\n            free(last);\n            obj->cap = 1;\n        } else {\n            obj->cap--;\n        }\n    }\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n// Class representing the LRU Cache\nclass LRUCache {\npublic:\n    // Doubly linked list node class\n    class Node {\n    public:\n        int key;\n        int val;\n        Node* next;\n        Node* prev;\n        // Constructor to initialize node\n        Node(int _key, int _val) {\n            key = _key;\n            val = _val;\n        }\n    };\n\n    // Head and tail dummy nodes\n    Node* head = new Node(-1, -1);\n    Node* tail = new Node(-1, -1);\n\n    // Capacity of cache\n    int cap;\n    // Hash map to store key-node mapping\n    unordered_map<int, Node*> m;\n\n    // Constructor to initialize LRU cache\n    LRUCache(int capacity) {\n        cap = capacity;\n        head->next = tail;\n        tail->prev = head;\n    }\n\n    // Function to add a node right after head\n    void addNode(Node* newNode) {\n        Node* temp = head->next;\n        newNode->next = temp;\n        newNode->prev = head;\n        head->next = newNode;\n        temp->prev = newNode;\n    }\n\n    // Function to remove a given node from list\n    void deleteNode(Node* delNode) {\n        Node* delPrev = delNode->prev;\n        Node* delNext = delNode->next;\n        delPrev->next = delNext;\n        delNext->prev = delPrev;\n    }\n\n    // Function to get value from cache\n    int get(int key_) {\n        // If key exists in cache\n        if (m.find(key_) != m.end()) {\n            Node* resNode = m[key_];\n            int res = resNode->val;\n            // Remove old mapping\n            m.erase(key_);\n            // Move accessed node to front\n            deleteNode(resNode);\n            addNode(resNode);\n            // Update map\n            m[key_] = head->next;\n            return res;\n        }\n        // If not found\n        return -1;\n    }\n\n    // Function to put key-value into cache\n    void put(int key_, int value) {\n        // If key already exists\n        if (m.find(key_) != m.end()) {\n            Node* existingNode = m[key_];\n            m.erase(key_);\n            deleteNode(existingNode);\n        }\n        // If capacity reached\n        if (m.size() == cap) {\n            m.erase(tail->prev->key);\n            deleteNode(tail->prev);\n        }\n        // Insert new node at front\n        addNode(new Node(key_, value));\n        m[key_] = head->next;\n    }\n};",
+      "Java": "import java.util.*;\n\nclass LRUCache {\n    // Doubly linked list node class\n    class Node {\n        int key;\n        int val;\n        Node next;\n        Node prev;\n        // Constructor to initialize node\n        Node(int _key, int _val) {\n            key = _key;\n            val = _val;\n        }\n    }\n\n    // Head and tail dummy nodes\n    Node head = new Node(-1, -1);\n    Node tail = new Node(-1, -1);\n\n    // Capacity of cache\n    int cap;\n    // Hash map to store key-node mapping\n    HashMap<Integer, Node> m = new HashMap<>();\n\n    // Constructor to initialize LRU cache\n    public LRUCache(int capacity) {\n        cap = capacity;\n        head.next = tail;\n        tail.prev = head;\n    }\n\n    // Function to add a node right after head\n    void addNode(Node newNode) {\n        Node temp = head.next;\n        newNode.next = temp;\n        newNode.prev = head;\n        head.next = newNode;\n        temp.prev = newNode;\n    }\n\n    // Function to remove a given node from list\n    void deleteNode(Node delNode) {\n        Node delPrev = delNode.prev;\n        Node delNext = delNode.next;\n        delPrev.next = delNext;\n        delNext.prev = delPrev;\n    }\n\n    // Function to get value from cache\n    public int get(int key_) {\n        // If key exists in cache\n        if (m.containsKey(key_)) {\n            Node resNode = m.get(key_);\n            int res = resNode.val;\n            // Remove old mapping\n            m.remove(key_);\n            // Move accessed node to front\n            deleteNode(resNode);\n            addNode(resNode);\n            // Update map\n            m.put(key_, head.next);\n            return res;\n        }\n        // If not found\n        return -1;\n    }\n\n    // Function to put key-value into cache\n    public void put(int key_, int value) {\n        // If key already exists\n        if (m.containsKey(key_)) {\n            Node existingNode = m.get(key_);\n            m.remove(key_);\n            deleteNode(existingNode);\n        }\n        // If capacity reached\n        if (m.size() == cap) {\n            m.remove(tail.prev.key);\n            deleteNode(tail.prev);\n        }\n        // Insert new node at front\n        addNode(new Node(key_, value));\n        m.put(key_, head.next);\n    }\n}",
+      "Python3": "# Class representing the LRU Cache\nclass LRUCache:\n    # Doubly linked list node class\n    class Node:\n        # Constructor to initialize node\n        def __init__(self, _key, _val):\n            self.key = _key\n            self.val = _val\n            self.next = None\n            self.prev = None\n\n    # Constructor to initialize LRU cache\n    def __init__(self, capacity: int):\n        # Head and tail dummy nodes\n        self.head = self.Node(-1, -1)\n        self.tail = self.Node(-1, -1)\n        self.head.next = self.tail\n        self.tail.prev = self.head\n\n        # Capacity of cache\n        self.cap = capacity\n        # Hash map to store key-node mapping\n        self.m = {}\n\n    # Function to add a node right after head\n    def addNode(self, newNode):\n        temp = self.head.next\n        newNode.next = temp\n        newNode.prev = self.head\n        self.head.next = newNode\n        temp.prev = newNode\n\n    # Function to remove a given node from list\n    def deleteNode(self, delNode):\n        delPrev = delNode.prev\n        delNext = delNode.next\n        delPrev.next = delNext\n        delNext.prev = delPrev\n\n    # Function to get value from cache\n    def get(self, key_):\n        # If key exists in cache\n        if key_ in self.m:\n            resNode = self.m[key_]\n            res = resNode.val\n            # Remove old mapping\n            del self.m[key_]\n            # Move accessed node to front\n            self.deleteNode(resNode)\n            self.addNode(resNode)\n            # Update map\n            self.m[key_] = self.head.next\n            return res\n        # If not found\n        return -1\n\n    # Function to put key-value into cache\n    def put(self, key_, value):\n        # If key already exists\n        if key_ in self.m:\n            existingNode = self.m[key_]\n            del self.m[key_]\n            self.deleteNode(existingNode)\n        # If capacity reached\n        if len(self.m) == self.cap:\n            del self.m[self.tail.prev.key]\n            self.deleteNode(self.tail.prev)\n        # Insert new node at front\n        self.addNode(self.Node(key_, value))\n        self.m[key_] = self.head.next\n",
+      "JavaScript": "// Class representing the LRU Cache\nclass LRUCache {\n    // Constructor to initialize LRU cache\n    constructor(capacity) {\n        // Node constructor function\n        this.Node = function (_key, _val) {\n            return { key: _key, val: _val, next: null, prev: null };\n        };\n\n        // Head and tail dummy nodes\n        this.head = this.Node(-1, -1);\n        this.tail = this.Node(-1, -1);\n        this.head.next = this.tail;\n        this.tail.prev = this.head;\n\n        // Capacity of cache\n        this.cap = capacity;\n        // Hash map to store key-node mapping\n        this.m = new Map();\n    }\n\n    // Function to add a node right after head\n    addNode(newNode) {\n        let temp = this.head.next;\n        newNode.next = temp;\n        newNode.prev = this.head;\n        this.head.next = newNode;\n        temp.prev = newNode;\n    }\n\n    // Function to remove a given node from list\n    deleteNode(delNode) {\n        let delPrev = delNode.prev;\n        let delNext = delNode.next;\n        delPrev.next = delNext;\n        delNext.prev = delPrev;\n    }\n\n    // Function to get value from cache\n    get(key_) {\n        // If key exists in cache\n        if (this.m.has(key_)) {\n            let resNode = this.m.get(key_);\n            let res = resNode.val;\n            // Remove old mapping\n            this.m.delete(key_);\n            // Move accessed node to front\n            this.deleteNode(resNode);\n            this.addNode(resNode);\n            // Update map\n            this.m.set(key_, this.head.next);\n            return res;\n        }\n        // If not found\n        return -1;\n    }\n\n    // Function to put key-value into cache\n    put(key_, value) {\n        // If key already exists\n        if (this.m.has(key_)) {\n            let existingNode = this.m.get(key_);\n            this.m.delete(key_);\n            this.deleteNode(existingNode);\n        }\n        // If capacity reached\n        if (this.m.size === this.cap) {\n            this.m.delete(this.tail.prev.key);\n            this.deleteNode(this.tail.prev);\n        }\n        // Insert new node at front\n        this.addNode(this.Node(key_, value));\n        this.m.set(key_, this.head.next);\n    }\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

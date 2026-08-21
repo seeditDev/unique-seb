@@ -1,0 +1,134 @@
+{
+  "questionId": "Q7604",
+  "title": "Breaking Bricks",
+  "slug": "breaking-bricks",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-02",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Easy",
+    "isPremium": true,
+    "tags": [
+      "Brute Force",
+      "Greedy Algorithm"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Greedy Algorithms"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "For her next karate demonstration, Ada will break some bricks.\n\nAda stacked three bricks on top of each other. Initially, their widths (from top to bottom) are W1,W2,W3W_1, W_2, W_3W1​,W2​,W3​.\n\nAda's strength is SSS. Whenever she hits a stack of bricks, consider the largest k≥0k \\ge 0k≥0 such that the sum of widths of the topmost kkk bricks does not exceed SSS; the topmost kkk bricks break and are removed from the stack. Before each hit, Ada may also decide to reverse the current stack of bricks, with no cost.\n\nFind the minimum number of hits Ada needs in order to break all bricks if she performs the reversals optimally. You are not required to minimise the number of reversals.",
+    "constraints": [
+      "1 <= T <= 64",
+      "1 <= S <= 8",
+      "1 <= Wi <= 2 for each valid i"
+    ],
+    "inputFormat": "First line contains an integer T. Each test case contains four space-separated integers S, W1, W2, and W3.",
+    "outputFormat": "For each test case, print a single line containing one integer — the minimum required number of hits.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3 1 2 2\n2 1 1 1\n3 2 2 1",
+        "output": "2\n2\n2",
+        "explanation": "Ada can reverse the stack and then hit it two times. Before the first hit, the widths of bricks in the stack (from top to bottom) are (2,2,1). After the first hit, the topmost brick breaks and the stack becomes (2,1). The second hit breaks both remaining bricks."
+      },
+      {
+        "id": "sample_2",
+        "input": "2 1 1 1\n3 1 1 1",
+        "output": "1\n2",
+        "explanation": "Ada can hit the stack once. Before the hit, the widths of bricks in the stack (from top to bottom) are (1,1,1). After the hit, the topmost brick breaks and the stack becomes empty."
+      },
+      {
+        "id": "sample_3",
+        "input": "1 2 2 2",
+        "output": "1",
+        "explanation": "Ada can hit the stack once. Before the hit, the widths of bricks in the stack (from top to bottom) are (2,2,2). After the hit, the topmost brick breaks and the stack becomes empty."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "input": "1 1 1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "input": "8 2 2 2",
+        "expectedOutput": "4",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "input": "2 1 1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "input": "3 1 2 2",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "input": "4 2 2 2",
+        "expectedOutput": "3",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "We can use a brute force approach to solve this problem. We will try all possible ways to reverse the stack and hit the bricks. We will use a dynamic programming approach to store the minimum number of hits for each subproblem.",
+    "timeComplexity": "O(T * S * 2^3) with T being the number of test cases, S being the maximum strength, and 2^3 being the maximum number of ways to reverse the stack.",
+    "spaceComplexity": "O(T * S * 2^3) with T being the number of test cases, S being the maximum strength, and 2^3 being the maximum number of ways to reverse the stack.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n\n#define MAX_S 8\n#define MAX_W 2\n#define MAX_T 64\n\nint dp[MAX_S + 1][1 << 3];\n\nint main() {\n    int T, S, W1, W2, W3, i, j, k, ans;\n    scanf(\"%d\", &T);\n    while (T--) {\n        scanf(\"%d %d %d %d\", &S, &W1, &W2, &W3);\n        memset(dp, 0x3f, sizeof(dp));\n        dp[0][0] = 0;\n        for (i = 0; i <= S; i++) {\n            for (j = 0; j < (1 << 3); j++) {\n                for (k = 0; k < 3; k++) {\n                    if ((j >> k) & 1) {\n                        if (i + W1 + W2 + W3 <= S) {\n                            dp[i + W1 + W2 + W3][j ^ (1 << k)] = dp[i][j] + 1;\n                        } else {\n                            dp[S][j ^ (1 << k)] = dp[i][j] + 1;\n                        }\n                    }\n                }\n            }\n        }\n        ans = dp[S][(1 << 3) - 1];\n        for (i = 0; i <= S; i++) {\n            for (j = 0; j < (1 << 3); j++) {\n                if (dp[i][j] < ans) {\n                    ans = dp[i][j];\n                }\n            }\n        }\n        printf(\"%d\\n\", ans);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\n#include <algorithm>\n\nusing namespace std;\n\nconst int MAX_S = 8;\nconst int MAX_W = 2;\nconst int MAX_T = 64;\n\nint dp[MAX_S + 1][1 << 3];\n\nint main() {\n    int T, S, W1, W2, W3, i, j, k, ans;\n    cin >> T;\n    while (T--) {\n        cin >> S >> W1 >> W2 >> W3;\n        memset(dp, 0x3f, sizeof(dp));\n        dp[0][0] = 0;\n        for (i = 0; i <= S; i++) {\n            for (j = 0; j < (1 << 3); j++) {\n                for (k = 0; k < 3; k++) {\n                    if ((j >> k) & 1) {\n                        if (i + W1 + W2 + W3 <= S) {\n                            dp[i + W1 + W2 + W3][j ^ (1 << k)] = dp[i][j] + 1;\n                        } else {\n                            dp[S][j ^ (1 << k)] = dp[i][j] + 1;\n                        }\n                    }\n                }\n            }\n        }\n        ans = dp[S][(1 << 3) - 1];\n        for (i = 0; i <= S; i++) {\n            for (j = 0; j < (1 << 3); j++) {\n                if (dp[i][j] < ans) {\n                    ans = dp[i][j];\n                }\n            }\n        }\n        cout << ans << endl;\n    }\n    return 0;\n}",
+      "Java": "public class Main {\n    public static void main(String[] args) {\n        java.util.Scanner sc = new java.util.Scanner(System.in);\n        int T = sc.nextInt();\n        while (T-- > 0) {\n            int S = sc.nextInt();\n            int W1 = sc.nextInt();\n            int W2 = sc.nextInt();\n            int W3 = sc.nextInt();\n            int[][] dp = new int[S + 1][1 << 3];\n            for (int i = 0; i <= S; i++) {\n                for (int j = 0; j < (1 << 3); j++) {\n                    for (int k = 0; k < 3; k++) {\n                        if ((j >> k) & 1) {\n                            if (i + W1 + W2 + W3 <= S) {\n                                dp[i + W1 + W2 + W3][j ^ (1 << k)] = dp[i][j] + 1;\n                            } else {\n                                dp[S][j ^ (1 << k)] = dp[i][j] + 1;\n                            }\n                        }\n                    }\n                }\n            }\n            int ans = dp[S][(1 << 3) - 1];\n            for (int i = 0; i <= S; i++) {\n                for (int j = 0; j < (1 << 3); j++) {\n                    if (dp[i][j] < ans) {\n                        ans = dp[i][j];\n                    }\n                }\n            }\n            System.out.println(ans);\n        }\n    }\n}",
+      "Python3": "import sys\n\nT = int(input())\nfor _ in range(T):\n    S, W1, W2, W3 = map(int, input().split())\n    dp = [[float('inf')] * (1 << 3) for _ in range(S + 1)]\n    dp[0][0] = 0\n    for i in range(S + 1):\n        for j in range(1 << 3):\n            for k in range(3):\n                if (j >> k) & 1:\n                    if i + W1 + W2 + W3 <= S:\n                        dp[i + W1 + W2 + W3][j ^ (1 << k)] = dp[i][j] + 1\n                    else:\n                        dp[S][j ^ (1 << k)] = dp[i][j] + 1\n    ans = dp[S][(1 << 3) - 1]\n    for i in range(S + 1):\n        for j in range(1 << 3):\n            if dp[i][j] < ans:\n                ans = dp[i][j]\n    print(ans)\n",
+      "JavaScript": "const readline = require('readline').createInterface({\n    input: process.stdin,\n    output: process.stdout\n});\n\nlet T;\nlet S, W1, W2, W3;\nlet dp = new Array(9).fill(0).map(() => new Array(1 << 3).fill(Infinity));\n\nreadline.on('line', line => {\n    if (typeof T === 'undefined') {\n        T = parseInt(line);\n    } else {\n        [S, W1, W2, W3] = line.split(' ').map(num => parseInt(num));\n        dp[0][0] = 0;\n        for (let i = 0; i <= S; i++) {\n            for (let j = 0; j < (1 << 3); j++) {\n                for (let k = 0; k < 3; k++) {\n                    if ((j >> k) & 1) {\n                        if (i + W1 + W2 + W3 <= S) {\n                            dp[i + W1 + W2 + W3][j ^ (1 << k)] = dp[i][j] + 1;\n                        } else {\n                            dp[S][j ^ (1 << k)] = dp[i][j] + 1;\n                        }\n                    }\n                }\n            }\n        }\n        let ans = dp[S][(1 << 3) - 1];\n        for (let i = 0; i <= S; i++) {\n            for (let j = 0; j < (1 << 3); j++) {\n                if (dp[i][j] < ans) {\n                    ans = dp[i][j];\n                }\n            }\n        }\n        console.log(ans);\n        T--;\n        if (T === 0) {\n            process.exit(0);\n        }\n    }\n});"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

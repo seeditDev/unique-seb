@@ -1,0 +1,139 @@
+{
+  "questionId": "Q4675",
+  "title": "Short answer",
+  "slug": "short-answer",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Expression Evaluation",
+      "Type Casting"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Arrays"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Q3) A . Explain with examples how Python handles dynamic typing and type\ncasting between data types. How does implicit and explicit casting\ndiffer during arithmetic operations?   ---3 Marks.",
+    "constraints": [
+      "1 ≤ T ≤ 10",
+      "Expressions contain only numbers, +, -, *, /, int(), float() and parentheses.",
+      "Length of each expression ≤ 100 characters."
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains a single Python expression consisting of integers, floating-point numbers, the binary operators +, -, *, / and the casting functions int() and float().",
+    "outputFormat": "For each test case, output the result of evaluating the given expression exactly as Python would print it. If the result is an integer, print it without a decimal point; otherwise print the floating-point value (Python's default representation).",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n1 + 2",
+        "output": "3",
+        "explanation": "The expression 1 + 2 evaluates to the integer 3."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n1.0 + 2.0",
+        "output": "3.0",
+        "explanation": "The expression 1.0 + 2.0 evaluates to the floating-point number 3.0."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\nint(1.5)",
+        "output": "1",
+        "explanation": "The expression int(1.5) evaluates to the integer 1."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n1e10",
+        "expectedOutput": "10000000000.0",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\nfloat(1)",
+        "expectedOutput": "1.0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n1 / 0",
+        "expectedOutput": "Infinity",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "2\n1 + 2\n3 * 4",
+        "expectedOutput": "3\n12",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem requires evaluating a given Python expression and printing the result. The expression can contain integers, floating-point numbers, binary operators, and type casting functions. The key insight is to use a recursive descent parser to evaluate the expression. The parser should handle the operators and type casting functions according to Python's rules.",
+    "timeComplexity": "O(T * N) where T is the number of test cases and N is the maximum length of an expression.",
+    "spaceComplexity": "O(N) for storing the expression and the parser's state.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <ctype.h>\n#include <math.h>\n\ndouble parseExpression(char *s);\ndouble parseTerm(char *s);\ndouble parseFactor(char *s);\ndouble parseNumber(char *s);\n\ndouble parseNumber(char *s) {\n    char buf[64];\n    int i = 0;\n    while (isdigit(*s) || *s == '.') {\n        buf[i++] = *s++;\n    }\n    buf[i] = '\\0';\n    return strtod(buf, NULL);\n}\n\ndouble parseFactor(char *s) {\n    while (isspace(*s)) s++;\n    if (strncmp(s, \"int\", 3) == 0) {\n        s += 3; while (isspace(*s)) s++;\n        if (*s == '(') { s++; double val = parseExpression(s); while (isspace(*s)) s++;\n            if (*s == ')') s++; return (double)((int)val); }\n    }\n    if (strncmp(s, \"float\", 5) == 0) {\n        s += 5; while (isspace(*s)) s++;\n        if (*s == '(') { s++; double val = parseExpression(s); while (isspace(*s)) s++;\n            if (*s == ')') s++; return val; }\n    }\n    if (*s == '(') {\n        s++; double val = parseExpression(s); while (isspace(*s)) s++;\n        if (*s == ')') s++; return val;\n    }\n    return parseNumber(s);\n}\n\ndouble parseTerm(char *s) {\n    double val = parseFactor(s);\n    while (1) {\n        while (isspace(*s)) s++;\n        if (*s == '*') { s++; val *= parseFactor(s); }\n        else if (*s == '/') { s++; val /= parseFactor(s); }\n        else break;\n    }\n    return val;\n}\n\ndouble parseExpression(char *s) {\n    double val = parseTerm(s);\n    while (1) {\n        while (isspace(*s)) s++;\n        if (*s == '+') { s++; val += parseTerm(s); }\n        else if (*s == '-') { s++; val -= parseTerm(s); }\n        else break;\n    }\n    return val;\n}\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    getchar();\n    char line[128];\n    while (T--) {\n        if (!fgets(line, sizeof(line), stdin)) break;\n        line[strcspn(line, \"\\n\")] = '\\0';\n        double result = parseExpression(line);\n        if (fabs(result - round(result)) < 1e-9) {\n            printf(\"%d\\n\", (int)round(result));\n        } else {\n            printf(\"%g\\n\", result);\n        }\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nclass Parser {\n    const string *str;\n    size_t pos;\npublic:\n    Parser(const string &s) : str(&s), pos(0) {}\n    void skip() { while (pos < str->size() && isspace((*str)[pos])) ++pos; }\n    double parseExpression();\n    double parseTerm();\n    double parseFactor();\n    double parseNumber() {\n        skip();\n        size_t start = pos;\n        while (pos < str->size() && (isdigit((*str)[pos]) || (*str)[pos]=='.')) ++pos;\n        return stod(str->substr(start, pos-start));\n    }\n};\n\ndouble Parser::parseFactor() {\n    skip();\n    if (str->compare(pos, 3, \"int\") == 0) {\n        pos += 3; skip(); if (pos < str->size() && (*str)[pos]=='(') { ++pos; double v = parseExpression(); skip(); if (pos < str->size() && (*str)[pos]==')') ++pos; return (double)((int)v); }\n    }\n    if (str->compare(pos, 5, \"float\") == 0) {\n        pos += 5; skip(); if (pos < str->size() && (*str)[pos]=='(') { ++pos; double v = parseExpression(); skip(); if (pos < str->size() && (*str)[pos]==')') ++pos; return v; }\n    }\n    if (pos < str->size() && (*str)[pos]=='(') {\n        ++pos; double v = parseExpression(); skip(); if (pos < str->size() && (*str)[pos]==')') ++pos; return v;\n    }\n    return parseNumber();\n}\n\ndouble Parser::parseTerm() {\n    double v = parseFactor();\n    while (true) {\n        skip();\n        if (pos < str->size() && (*str)[pos]=='*') { ++pos; v *= parseFactor(); }\n        else if (pos < str->size() && (*str)[pos]=='/') { ++pos; v /= parseFactor(); }\n        else break;\n    }\n    return v;\n}\n\ndouble Parser::parseExpression() {\n    double v = parseTerm();\n    while (true) {\n        skip();\n        if (pos < str->size() && (*str)[pos]=='+') { ++pos; v += parseTerm(); }\n        else if (pos < str->size() && (*str)[pos]=='-') { ++pos; v -= parseTerm(); }\n        else break;\n    }\n    return v;\n}\n\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0; string line; getline(cin,line);\n    while(T--){\n        getline(cin,line);\n        Parser p(line);\n        double res = p.parseExpression();\n        if (fabs(res - round(res)) < 1e-9) cout << (long long)llround(res) << '\\n';\n        else cout << res << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    static class Parser {\n        String s; int pos;\n        Parser(String s){this.s=s;pos=0;}\n        void skip(){while(pos<s.length() && Character.isWhitespace(s.charAt(pos)))pos++;}\n        double parseExpression(){double v=parseTerm();while(true){skip();if(pos<s.length() && s.charAt(pos)=='+'){pos++;v+=parseTerm();}else if(pos<s.length() && s.charAt(pos)=='-'){pos++;v-=parseTerm();}else break;}return v;}\n        double parseTerm(){double v=parseFactor();while(true){skip();if(pos<s.length() && s.charAt(pos)=='*'){pos++;v*=parseFactor();}else if(pos<s.length() && s.charAt(pos)=='/'){pos++;v/=parseFactor();}else break;}return v;}\n        double parseFactor(){skip();if(s.startsWith(\"int\",pos)){pos+=3;skip();if(pos<s.length() && s.charAt(pos)=='('){pos++;double v=parseExpression();skip();if(pos<s.length() && s.charAt(pos)==')')pos++;return (double)((int)v);} }\n            if(s.startsWith(\"float\",pos)){pos+=5;skip();if(pos<s.length() && s.charAt(pos)=='('){pos++;double v=parseExpression();skip();if(pos<s.length() && s.charAt(pos)==')')pos++;return v;} }\n            if(pos<s.length() && s.charAt(pos)=='('){pos++;double v=parseExpression();skip();if(pos<s.length() && s.charAt(pos)==')')pos++;return v;}\n            return parseNumber();}\n        double parseNumber(){skip();int start=pos;while(pos<s.length() && (Character.isDigit(s.charAt(pos))||s.charAt(pos)=='.'))pos++;return Double.parseDouble(s.substring(start,pos));}\n    }\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder out = new StringBuilder();\n        for(int i=0;i<T;i++){\n            String line = br.readLine();\n            Parser p = new Parser(line);\n            double res = p.parseExpression();\n            if(Math.abs(res-Math.round(res))<1e-9) out.append((long)Math.round(res)).append('\\n');\n            else out.append(res).append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef main():\n    data = sys.stdin.read().strip().split('\\n')\n    if not data: return\n    T = int(data[0])\n    out = []\n    for i in range(1, T+1):\n        expr = data[i].strip()\n        result = eval(expr, {\"__builtins__\":None}, {\"int\":int, \"float\":float})\n        out.append(str(result))\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    main()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst T = parseInt(input[idx++], 10);\nlet results = [];\nfunction evaluate(expr) {\n  let pos = 0;\n  function skip(){while(pos<expr.length && /\\s/.test(expr[pos])) pos++;}\n  function parseNumber(){skip(); let start=pos; while(pos<expr.length && /[0-9.]/.test(expr[pos])) pos++; return parseFloat(expr.slice(start,pos)); }\n  function parseFactor(){skip(); if(expr.startsWith('int',pos)) {pos+=3; skip(); if(expr[pos]==='('){pos++; let v=parseExpression(); skip(); if(expr[pos]===')') pos++; return Math.trunc(v);} }\n    if(expr.startsWith('float',pos)) {pos+=5; skip(); if(expr[pos]==='('){pos++; let v=parseExpression(); skip(); if(expr[pos]===')') pos++; return v;} }\n    if(expr[pos]==='('){pos++; let v=parseExpression(); skip(); if(expr[pos]===')') pos++; return v; }\n    return parseNumber(); }\n  function parseTerm(){ let v=parseFactor(); while(true){ skip(); if(expr[pos]==='*'){pos++; v*=parseFactor();} else if(expr[pos]==='/'){pos++; v/=parseFactor();} else break; } return v; }\n  function parseExpression(){ let v=parseTerm(); while(true){ skip(); if(expr[pos]==='+'){pos++; v+=parseTerm();} else if(expr[pos]==='-'){pos++; v-=parseTerm();} else break; } return v; }\n  let val = parseExpression();\n  if (Math.abs(val - Math.round(val)) < 1e-9) return String(Math.round(val));\n  return String(val);\n}\nfor(let t=0; t<T; t++){\n  const line = input[idx++] || '';\n  results.push(evaluate(line.trim()));\n}\nconsole.log(results.join('\\n'));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

@@ -1,0 +1,125 @@
+{
+  "questionId": "Q7126",
+  "title": "Distinct Rows in Submatrices",
+  "slug": "distinct-rows-in-submatrices",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-03",
+  "metadata": {
+    "category": "Arrays | Hashing | Prefix Sums",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Rolling Hash",
+      "Distinct Elements in Subarrays",
+      "Hash Map",
+      "Brute Force with Optimization"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Strings"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Let's define the strength of a matrix as the number of distinct rows in it. Two rows a1,a2,…,ana_1, a_2, \\dots, a_na1​,a2​,…,an​ and b1,b2,…,bnb_1, b_2, \\dots, b_nb1​,b2​,…,bn​ are distinct if there is an index iii such that ai≠bia_i \\neq b_iai​=bi​.\n\nYou are given an integer matrix AAA with NNN rows (numbered 111 through NNN) and MMM columns (numbered 111 through MMM). A submatrix of AAA is formed as the intersection of rows r1r_1r1​ through r2r_2r2​ and columns c1c_1c1​ through c2c_2c2​ for any r1≤r2,c1≤c2r_1 \\le r_2, c_1 \\le c_2r1​≤r2​,c1​≤c2​. Find the sum of the strengths of all submatrices of AAA.",
+    "constraints": [
+      "1 ≤ N·M ≤ 500000",
+      "1 ≤ N, M",
+      "1 ≤ A[i][j] ≤ 10^9"
+    ],
+    "inputFormat": "The first line contains two integers N and M – the number of rows and columns of the matrix. Then N lines follow, each containing M integers A[i][j] (1 ≤ A[i][j] ≤ 10^9).",
+    "outputFormat": "A single integer – the sum of strengths (the number of distinct rows) of all possible submatrices of the given matrix.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2 2\n1 1\n1 2",
+        "output": "11",
+        "explanation": "Explanation:\nThe submatrices are\n1\n\n1\n\n1\n\n2\n\n1 1\n\n1 2\n\n1\n1\n\n1\n2\n\n1 1\n1 2\n\nwith strengths 1,1,1,1,1,1,1,2,21, 1, 1, 1, 1, 1, 1, 2, 21,1,1,1,1,1,1,2,2 respectively. The sum of these strengths is 111111."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For a fixed pair of column borders (c1, c2) the submatrix is defined by all rows and the columns between c1 and c2. For every row we can compute a rolling hash of the segment A[row][c1..c2]; the hash uniquely represents the row content inside the current column interval. The problem then reduces to: given an array H[1..N] of hashes, compute the sum over all row intervals of the number of distinct values in the interval. This classic sub‑array problem can be solved in O(N) using the \"last occurrence\" trick: iterate rows from top to bottom, keep a map last[hash] = last row index where this hash appeared, and add (i - last[hash]) to the answer (treat last[hash] = 0 when the hash has not appeared yet). Summing this contribution for every column interval yields the required total. The algorithm:\n1. If N == 1, answer = M·(M+1)/2 (every submatrix contains exactly one distinct row).\n2. For each left column L from 0 to M‑1:\n   • Initialise an array curHash[0..N‑1] = 0.\n   • For each right column R from L to M‑1:\n        – Update curHash[row] = curHash[row] * BASE + A[row][R] (unsigned 64‑bit overflow works as a modulo 2^64 hash).\n        – Clear an unordered_map lastPos.\n        – Iterate rows i = 0..N‑1, retrieve last = lastPos[ curHash[i] ] (0 if absent), add (i+1 - last) to the global answer, and set lastPos[ curHash[i] ] = i+1.\n3. Output the accumulated answer.\nThe double loop over columns runs O(M²) times, the inner row scan is O(N). Because N·M ≤ 5·10⁵, the worst‑case work is about (√5·10⁵)³ ≈ 3.5·10⁸ simple integer operations, which fits easily in the time limit with a fast language.\nThe rolling hash uses unsigned long long overflow, avoiding explicit modulo operations and guaranteeing good distribution for the given constraints.",
+    "timeComplexity": "O(M²·N) – for each of the O(M²) column intervals we scan all N rows once.",
+    "spaceComplexity": "O(N) – the current hash for each row and the hash‑to‑last‑position map.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <inttypes.h>\n#include <unordered.h>\n\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

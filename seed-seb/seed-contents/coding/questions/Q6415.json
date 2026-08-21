@@ -1,0 +1,130 @@
+{
+  "questionId": "Q6415",
+  "title": "Travelling in a tree",
+  "slug": "travelling-in-a-tree",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Graph Traversal",
+      "Tree",
+      "Route Intersection"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Trees"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Leha likes traveling a lot. In particular he likes discovering new routes in his world which he calls a tree-world. \n\nLeha's world is a connected tree of **N** vertices, so there is a unique path between any pair of vertices **a** and **b**. Every day Leha chooses some new pair of vertices and walks along this route. Sometimes he notices that he has already been in some vertices during his previous walks. So now for each new route that he takes, he is interested in knowing how many previous routes does it intersect? Two routes are considered to be intersecting with each other, if they have at least one common vertex.",
+    "constraints": [
+      "1 <= N, Q <= 102",
+      "1 <= N, Q <= 103",
+      "1 <= N, Q <= 5*104",
+      "1 <= N <= 2*105",
+      "1 <= Q <= 3*105"
+    ],
+    "inputFormat": "The first line contains one integer N denoting the number of vertices in the tree. The following N-1 lines describe the edges of the tree. Each of these lines contains two space-separated integers u, v denoting that there is an edge between vertex u and v. The next line contains an integer Q denoting the number of days Leha is traveling. Each of the next Q lines contains two space-separated integers u, v denoting the start and finish vertices of the corresponding route.",
+    "outputFormat": "For each day output one integer on a separate line - the number of previous routes it intersects with.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "5\n1 2\n1 3\n3 4\n3 5\n4\n4 5\n4 2\n1 3\n1 2",
+        "output": "0\n1\n2\n2",
+        "explanation": "Explanation:\nDay 1. As there is no previous route, the route from 4 to 5 can't intersect with any round. Hence answer is 0.\nDay 2. Route from 4 to 2 intersects with route 1 (at vertices 3 and 4), So the answer is 1.\nDay 3. Route from 1 to 3: intersects with both the previous routes. Hence answer is 2.\nDay 4. Route from 1 to 2: intersects with route 2 and 3. Hence answer is 2."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n0\n1\n1 1",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "100\n1 2\n1 3\n3 4\n3 5\n4\n4 5\n4 2\n1 3\n1 2",
+        "expectedOutput": "0\n1\n2\n2",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "5\n1 2\n1 3\n3 4\n3 5\n4\n4 5\n4 2\n1 3\n1 2",
+        "expectedOutput": "0\n1\n2\n2",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "1\n0\n1\n1 1",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "1\n0\n1\n1 1",
+        "expectedOutput": "0",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a graph traversal approach. We will first construct the tree using the given edges. Then, for each query, we will find the path between the start and finish vertices using a depth-first search (DFS) or breadth-first search (BFS) algorithm. We will keep track of the vertices that have been visited in previous queries and count the number of intersections with previous routes.",
+    "timeComplexity": "O(Q * N) - for each query, we traverse the tree to find the path between the start and finish vertices, and we also traverse the tree to count the number of intersections with previous routes.",
+    "spaceComplexity": "O(N + Q) - we need to store the tree and the visited vertices for each query.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#define MAX_N 1000\n#define MAX_Q 1000\n// Define the structure for a tree node\ntypedef struct Node {\n    int value;\n    struct Node* left;\n    struct Node* right;\n} Node;\n// Function to create a new node\nNode* createNode(int value) {\n    Node* newNode = (Node*) malloc(sizeof(Node));\n    if (!newNode) {\n        printf(\"Memory error\n\");\n        return NULL;\n    }\n    newNode->value = value;\n    newNode->left = newNode->right = NULL;\n    return newNode;\n}\n// Function to insert a node into the tree\nvoid insertNode(Node** root, int value) {\n    if (*root == NULL) {\n        *root = createNode(value);\n    } else if (value < (*root)->value) {\n        insertNode(&((*root)->left), value);\n    } else if (value > (*root)->value) {\n        insertNode(&((*root)->right), value);\n    }\n}\n// Function to find the path between two nodes\nvoid findPath(Node* root, int start, int finish, int* path, int* pathLength) {\n    if (root == NULL) return;\n    if (root->value == start || root->value == finish) {\n        path[*pathLength] = root->value;\n        (*pathLength)++;\n    }\n    findPath(root->left, start, finish, path, pathLength);\n    findPath(root->right, start, finish, path, pathLength);\n}\n// Function to count the number of intersections with previous routes\nint countIntersections(int* path, int pathLength, int** previousRoutes, int previousRoutesCount) {\n    int intersections = 0;\n    for (int i = 0; i < previousRoutesCount; i++) {\n        for (int j = 0; j < pathLength; j++) {\n            for (int k = 0; k < previousRoutes[i][1]; k++) {\n                if (path[j] == previousRoutes[i][0][k]) {\n                    intersections++;\n                }\n            }\n        }\n    }\n    return intersections;\n}\nint main() {\n    int N, Q;\n    scanf(\"%d\", &N);\n    Node* root = NULL;\n    for (int i = 0; i < N - 1; i++) {\n        int u, v;\n        scanf(\"%d %d\", &u, &v);\n        insertNode(&root, u);\n        insertNode(&root, v);\n    }\n    scanf(\"%d\", &Q);\n    int** previousRoutes = (int**) malloc(Q * sizeof(int*));\n    for (int i = 0; i < Q; i++) {\n        previousRoutes[i] = (int*) malloc(2 * sizeof(int));\n    }\n    int previousRoutesCount = 0;\n    for (int i = 0; i < Q; i++) {\n        int start, finish;\n        scanf(\"%d %d\", &start, &finish);\n        int* path = (int*) malloc(N * sizeof(int));\n        int pathLength = 0;\n        findPath(root, start, finish, path, &pathLength);\n        previousRoutes[previousRoutesCount][0] = path;\n        previousRoutes[previousRoutesCount][1] = pathLength;\n        previousRoutesCount++;\n        printf(\"%d\\n\", countIntersections(path, pathLength, previousRoutes, previousRoutesCount));\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\nusing namespace std;\n// Define the structure for a tree node\nstruct Node {\n    int value;\n    Node* left;\n    Node* right;\n};\n// Function to create a new node\nNode* createNode(int value) {\n    Node* newNode = new Node;\n    newNode->value = value;\n    newNode->left = newNode->right = NULL;\n    return newNode;\n}\n// Function to insert a node into the tree\nvoid insertNode(Node** root, int value) {\n    if (*root == NULL) {\n        *root = createNode(value);\n    } else if (value < (*root)->value) {\n        insertNode(&((*root)->left), value);\n    } else if (value > (*root)->value) {\n        insertNode(&((*root)->right), value);\n    }\n}\n// Function to find the path between two nodes\nvoid findPath(Node* root, int start, int finish, vector<int>& path) {\n    if (root == NULL) return;\n    if (root->value == start || root->value == finish) {\n        path.push_back(root->value);\n    }\n    findPath(root->left, start, finish, path);\n    findPath(root->right, start, finish, path);\n}\n// Function to count the number of intersections with previous routes\nint countIntersections(vector<int>& path, vector<vector<int>>& previousRoutes) {\n    int intersections = 0;\n    for (int i = 0; i < previousRoutes.size(); i++) {\n        for (int j = 0; j < path.size(); j++) {\n            for (int k = 0; k < previousRoutes[i].size(); k++) {\n                if (path[j] == previousRoutes[i][k]) {\n                    intersections++;\n                }\n            }\n        }\n    }\n    return intersections;\n}\nint main() {\n    int N, Q;\n    cin >> N;\n    Node* root = NULL;\n    for (int i = 0; i < N - 1; i++) {\n        int u, v;\n        cin >> u >> v;\n        insertNode(&root, u);\n        insertNode(&root, v);\n    }\n    cin >> Q;\n    vector<vector<int>> previousRoutes;\n    for (int i = 0; i < Q; i++) {\n        int start, finish;\n        cin >> start >> finish;\n        vector<int> path;\n        findPath(root, start, finish, path);\n        previousRoutes.push_back(path);\n        cout << countIntersections(path, previousRoutes) << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.ArrayList;\nimport java.util.Scanner;\npublic class Main {\n    // Define the structure for a tree node\n    static class Node {\n        int value;\n        Node left;\n        Node right;\n        Node(int value) {\n            this.value = value;\n            this.left = null;\n            this.right = null;\n        }\n    }\n    // Function to create a new node\n    static Node createNode(int value) {\n        return new Node(value);\n    }\n    // Function to insert a node into the tree\n    static void insertNode(Node root, int value) {\n        if (root == null) {\n            root = createNode(value);\n        } else if (value < root.value) {\n            if (root.left == null) {\n                root.left = createNode(value);\n            } else {\n                insertNode(root.left, value);\n            }\n        } else if (value > root.value) {\n            if (root.right == null) {\n                root.right = createNode(value);\n            } else {\n                insertNode(root.right, value);\n            }\n        }\n    }\n    // Function to find the path between two nodes\n    static void findPath(Node root, int start, int finish, ArrayList<Integer> path) {\n        if (root == null) return;\n        if (root.value == start || root.value == finish) {\n            path.add(root.value);\n        }\n        findPath(root.left, start, finish, path);\n        findPath(root.right, start, finish, path);\n    }\n    // Function to count the number of intersections with previous routes\n    static int countIntersections(ArrayList<Integer> path, ArrayList<ArrayList<Integer>> previousRoutes) {\n        int intersections = 0;\n        for (int i = 0; i < previousRoutes.size(); i++) {\n            for (int j = 0; j < path.size(); j++) {\n                for (int k = 0; k < previousRoutes.get(i).size(); k++) {\n                    if (path.get(j).equals(previousRoutes.get(i).get(k))) {\n                        intersections++;\n                    }\n                }\n            }\n        }\n        return intersections;\n    }\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int N = scanner.nextInt();\n        Node root = null;\n        for (int i = 0; i < N - 1; i++) {\n            int u = scanner.nextInt();\n            int v = scanner.nextInt();\n            insertNode(root, u);\n            insertNode(root, v);\n        }\n        int Q = scanner.nextInt();\n        ArrayList<ArrayList<Integer>> previousRoutes = new ArrayList<>();\n        for (int i = 0; i < Q; i++) {\n            int start = scanner.nextInt();\n            int finish = scanner.nextInt();\n            ArrayList<Integer> path = new ArrayList<>();\n            findPath(root, start, finish, path);\n            previousRoutes.add(path);\n            System.out.println(countIntersections(path, previousRoutes));\n        }\n    }\n}",
+      "Python3": "import sys\n# Define the structure for a tree node\nclass Node:\n    def __init__(self, value):\n        self.value = value\n        self.left = None\n        self.right = None\n# Function to create a new node\ndef create_node(value):\n    return Node(value)\n# Function to insert a node into the tree\ndef insert_node(root, value):\n    if root is None:\n        root = create_node(value)\n    elif value < root.value:\n        if root.left is None:\n            root.left = create_node(value)\n        else:\n            insert_node(root.left, value)\n    elif value > root.value:\n        if root.right is None:\n            root.right = create_node(value)\n        else:\n            insert_node(root.right, value)\n    return root\n# Function to find the path between two nodes\ndef find_path(root, start, finish, path):\n    if root is None:\n        return\n    if root.value == start or root.value == finish:\n        path.append(root.value)\n    find_path(root.left, start, finish, path)\n    find_path(root.right, start, finish, path)\n# Function to count the number of intersections with previous routes\ndef count_intersections(path, previous_routes):\n    intersections = 0\n    for route in previous_routes:\n        for node in path:\n            if node in route:\n                intersections += 1\n    return intersections\n# Read input\nN = int(sys.stdin.readline())\nroot = None\nfor _ in range(N - 1):\n    u, v = map(int, sys.stdin.readline().split())\n    root = insert_node(root, u)\n    root = insert_node(root, v)\nQ = int(sys.stdin.readline())\nprevious_routes = []\nfor _ in range(Q):\n    start, finish = map(int, sys.stdin.readline().split())\n    path = []\n    find_path(root, start, finish, path)\n    previous_routes.append(path)\n    print(count_intersections(path, previous_routes))",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\n// Define the structure for a tree node\nfunction Node(value) {\n    this.value = value;\n    this.left = null;\n    this.right = null;\n}\n// Function to create a new node\nfunction createNode(value) {\n    return new Node(value);\n}\n// Function to insert a node into the tree\nfunction insertNode(root, value) {\n    if (root === null) {\n        root = createNode(value);\n    } else if (value < root.value) {\n        if (root.left === null) {\n            root.left = createNode(value);\n        } else {\n            insertNode(root.left, value);\n        }\n    } else if (value > root.value) {\n        if (root.right === null) {\n            root.right = createNode(value);\n        } else {\n            insertNode(root.right, value);\n        }\n    }\n    return root;\n}\n// Function to find the path between two nodes\nfunction findPath(root, start, finish, path) {\n    if (root === null) return;\n    if (root.value === start || root.value === finish) {\n        path.push(root.value);\n    }\n    findPath(root.left, start, finish, path);\n    findPath(root.right, start, finish, path);\n}\n// Function to count the number of intersections with previous routes\nfunction countIntersections(path, previousRoutes) {\n    let intersections = 0;\n    for (let i = 0; i < previousRoutes.length; i++) {\n        for (let j = 0; j < path.length; j++) {\n            for (let k = 0; k < previousRoutes[i].length; k++) {\n                if (path[j] === previousRoutes[i][k]) {\n                    intersections++;\n                }\n            }\n        }\n    }\n    return intersections;\n}\n// Read input\nlet N = parseInt(input[idx++]);\nlet root = null;\nfor (let i = 0; i < N - 1; i++) {\n    let [u, v] = input[idx++].split(' ').map(Number);\n    root = insertNode(root, u);\n    root = insertNode(root, v);\n}\nlet Q = parseInt(input[idx++]);\nlet previousRoutes = [];\nfor (let i = 0; i < Q; i++) {\n    let [start, finish] = input[idx++].split(' ').map(Number);\n    let path = [];\n    findPath(root, start, finish, path);\n    previousRoutes.push(path);\n    console.log(countIntersections(path, previousRoutes));\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

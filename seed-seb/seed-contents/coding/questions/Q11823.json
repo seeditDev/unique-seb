@@ -1,0 +1,119 @@
+{
+  "questionId": "Q11823",
+  "title": "Disjoint Set ",
+  "slug": "disjointset",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Disjoint Set",
+      "Union Find"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "In this article, we will discuss the **Disjoint Set** data structure which is a very important topic in the entire graph series. Let’s first understand **why we need a Disjoint Set data structure using the below question:**\n\n\n\n\n\n**Question: **Given two components of an undirected graph\n\n\n\n\n\n\n\n\n\nThe question is whether node 1 and node 5 are in the same com",
+    "constraints": [
+      "1 <= T <= 100",
+      "1 <= N <= 10^5",
+      "1 <= M <= 10^5",
+      "1 <= u, v, x, y <= N"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Then for each test case, the first line contains two integers N and M, the number of nodes and edges in the graph. Then M lines follow, each containing two integers u and v, the nodes connected by an edge. The last line of each test case contains two integers x and y, the nodes to check if they are in the same connected component.",
+    "outputFormat": "For each test case, print 'Yes' if the nodes x and y are in the same connected component, otherwise print 'No'.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "1\n2 1\n1 2\n1 2",
+        "expectedOutput": "Yes",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "1\n10 9\n1 2\n2 3\n3 4\n4 5\n5 6\n6 7\n7 8\n8 9\n9 10\n1 10",
+        "expectedOutput": "Yes",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": "1\n5 4\n1 2\n2 3\n3 4\n4 5\n1 5",
+        "expectedOutput": "Yes",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case / empty-like / negative if allowed",
+        "input": "1\n5 0\n1 1",
+        "expectedOutput": "No",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": "1\n7 6\n1 2\n2 3\n3 4\n4 5\n5 6\n6 7\n3 7",
+        "expectedOutput": "Yes",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Use a disjoint set data structure to keep track of the connected components in the graph.",
+    "timeComplexity": "O(T * (M + Q) * alpha(N))",
+    "spaceComplexity": "O(N)",
+    "code": {
+      "C": "#include <stdio.h>\nint parent[100005];\nint rank[100005];\n\nint find(int x) {\n    if (parent[x] != x) {\n        parent[x] = find(parent[x]);\n    }\n    return parent[x];\n}\n\nvoid unionSet(int x, int y) {\n    int rootX = find(x);\n    int rootY = find(y);\n    if (rootX != rootY) {\n        if (rank[rootX] > rank[rootY]) {\n            parent[rootY] = rootX;\n        } else if (rank[rootX] < rank[rootY]) {\n            parent[rootX] = rootY;\n        } else {\n            parent[rootY] = rootX;\n            rank[rootX]++;\n        }\n    }\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int N, M;\n        scanf(\"%d %d\", &N, &M);\n        for (int i = 1; i <= N; i++) {\n            parent[i] = i;\n            rank[i] = 0;\n        }\n        for (int i = 0; i < M; i++) {\n            int u, v;\n            scanf(\"%d %d\", &u, &v);\n            unionSet(u, v);\n        }\n        int x, y;\n        scanf(\"%d %d\", &x, &y);\n        if (find(x) == find(y)) {\n            printf(\"Yes\\n\");\n        } else {\n            printf(\"No\\n\");\n        }\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nclass DisjointSet {\n    vector<int> rank, parent;\npublic:\n    DisjointSet(int n) {\n        rank.resize(n + 1, 0);\n        parent.resize(n + 1);\n        for (int i = 0; i <= n; i++) {\n            parent[i] = i;\n        }\n    }\n\n    int findUPar(int node) {\n        if (node == parent[node])\n            return node;\n        return parent[node] = findUPar(parent[node]);\n    }\n\n    void unionByRank(int u, int v) {\n        int ulp_u = findUPar(u);\n        int ulp_v = findUPar(v);\n        if (ulp_u == ulp_v) return;\n        if (rank[ulp_u] < rank[ulp_v]) {\n            parent[ulp_u] = ulp_v;\n        }\n        else if (rank[ulp_v] < rank[ulp_u]) {\n            parent[ulp_v] = ulp_u;\n        }\n        else {\n            parent[ulp_v] = ulp_u;\n            rank[ulp_u]++;\n        }\n    }\n};\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        int N, M;\n        cin >> N >> M;\n        DisjointSet ds(N);\n        for (int i = 0; i < M; i++) {\n            int u, v;\n            cin >> u >> v;\n            ds.unionByRank(u, v);\n        }\n        int x, y;\n        cin >> x >> y;\n        if (ds.findUPar(x) == ds.findUPar(y)) {\n            cout << \"Yes\" << endl;\n        } else {\n            cout << \"No\" << endl;\n        }\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\nclass DisjointSet {\n    List<Integer> rank = new ArrayList<>();\n    List<Integer> parent = new ArrayList<>();\n    public DisjointSet(int n) {\n        for (int i = 0; i <= n; i++) {\n            rank.add(0);\n            parent.add(i);\n        }\n    }\n\n    public int findUPar(int node) {\n        if (node == parent.get(node)) {\n            return node;\n        }\n        int ulp = findUPar(parent.get(node));\n        parent.set(node, ulp);\n        return parent.get(node);\n    }\n\n    public void unionByRank(int u, int v) {\n        int ulp_u = findUPar(u);\n        int ulp_v = findUPar(v);\n        if (ulp_u == ulp_v) return;\n        if (rank.get(ulp_u) < rank.get(ulp_v)) {\n            parent.set(ulp_u, ulp_v);\n        } else if (rank.get(ulp_v) < rank.get(ulp_u)) {\n            parent.set(ulp_v, ulp_u);\n        } else {\n            parent.set(ulp_v, ulp_u);\n            int rankU = rank.get(ulp_u);\n            rank.set(ulp_u, rankU + 1);\n        }\n    }\n}\n\nclass Main {\n    public static void main (String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n        while (T-- > 0) {\n            int N = sc.nextInt();\n            int M = sc.nextInt();\n            DisjointSet ds = new DisjointSet(N);\n            for (int i = 0; i < M; i++) {\n                int u = sc.nextInt();\n                int v = sc.nextInt();\n                ds.unionByRank(u, v);\n            }\n            int x = sc.nextInt();\n            int y = sc.nextInt();\n            if (ds.findUPar(x) == ds.findUPar(y)) {\n                System.out.println(\"Yes\");\n            } else {\n                System.out.println(\"No\");\n            }\n        }\n    }\n}",
+      "Python3": "class DisjointSet:\n    def __init__(self, n):\n        self.rank = [0] * (n + 1)\n        self.parent = list(range(n + 1))\n\n    def findUPar(self, node):\n        if node == self.parent[node]:\n            return node\n        ulp = self.findUPar(self.parent[node])\n        self.parent[node] = ulp\n        return self.parent[node]\n\n    def unionByRank(self, u, v):\n        ulp_u = self.findUPar(u)\n        ulp_v = self.findUPar(v)\n        if ulp_u == ulp_v:\n            return\n        if self.rank[ulp_u] < self.rank[ulp_v]:\n            self.parent[ulp_u] = ulp_v\n        elif self.rank[ulp_v] < self.rank[ulp_u]:\n            self.parent[ulp_v] = ulp_u\n        else:\n            self.parent[ulp_v] = ulp_u\n            self.rank[ulp_u] += 1\n\nT = int(input())\nfor _ in range(T):\n    N, M = map(int, input().split())\n    ds = DisjointSet(N)\n    for _ in range(M):\n        u, v = map(int, input().split())\n        ds.unionByRank(u, v)\n    x, y = map(int, input().split())\n    if ds.findUPar(x) == ds.findUPar(y):\n        print('Yes')\n    else:\n        print('No')",
+      "JavaScript": "class DisjointSet {\n    constructor(n) {\n        this.rank = new Array(n + 1).fill(0);\n        this.parent = new Array(n + 1);\n        for (let i = 0; i <= n; i++) {\n            this.parent[i] = i;\n        }\n    }\n\n    findUPar(node) {\n        if (node === this.parent[node]) {\n            return node;\n        }\n        let ulp = this.findUPar(this.parent[node]);\n        this.parent[node] = ulp;\n        return this.parent[node];\n    }\n\n    unionByRank(u, v) {\n        let ulp_u = this.findUPar(u);\n        let ulp_v = this.findUPar(v);\n        if (ulp_u === ulp_v) return;\n        if (this.rank[ulp_u] < this.rank[ulp_v]) {\n            this.parent[ulp_u] = ulp_v;\n        } else if (this.rank[ulp_v] < this.rank[ulp_u]) {\n            this.parent[ulp_v] = ulp_u;\n        } else {\n            this.parent[ulp_v] = ulp_u;\n            this.rank[ulp_u]++;\n        }\n    }\n}\n\nlet input = '';\nprocess.stdin.on('data', c => input += c);\nprocess.stdin.on('end', () => {\n    const {EOL} = require('os');\n    const lines = input.split(EOL);\n    let T = parseInt(lines[0]);\n    let i = 1;\n    while (T-- > 0) {\n        let [N, M] = lines[i++].split(' ').map(x => parseInt(x));\n        let ds = new DisjointSet(N);\n        for (let j = 0; j < M; j++) {\n            let [u, v] = lines[i++].split(' ').map(x => parseInt(x));\n            ds.unionByRank(u, v);\n        }\n        let [x, y] = lines[i++].split(' ').map(x => parseInt(x));\n        if (ds.findUPar(x) === ds.findUPar(y)) {\n            console.log('Yes');\n        } else {\n            console.log('No');\n        }\n    }\n});"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

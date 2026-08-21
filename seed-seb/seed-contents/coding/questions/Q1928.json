@@ -1,0 +1,132 @@
+{
+  "questionId": "Q1928",
+  "title": "JSON CSV Converter - Well Done",
+  "slug": "json-csv-converter-well-done",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Easy",
+    "isPremium": false,
+    "tags": [
+      "CSV",
+      "String Manipulation",
+      "JSON",
+      "Strings"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Control Flow"
+    ]
+  },
+  "content": {
+    "problemStatement": "**Awesome! You\u2019ve Successfully Built a JSON \u2194 CSV Converter Using Java**\n\nHere are some improvements you can try:\n\n\n\n**Dynamic Column Handling**\n\n\n\n\nAuto-detect nested JSON structures and flatten them into CSV columns.\n\n\n\n\nAllow users to customize CSV headers (e.g., rename id to Student_ID).\n\n\n\n\n\n\n**Advanced Error Handling**\n\n\n\n\nSkip malformed JSON records instead of failing the entire conversion.\n\n\n\n\nValidate CSV output against the original JSON data for integrity.\n\n\n\n\n\nTry implementing these enhancements to make your **JSON \u2194 CSV Converter** even better!",
+    "constraints": [
+      "1 \u2264 T \u2264 5",
+      "1 \u2264 N \u2264 100",
+      "Each JSON object contains at most 20 key-value pairs",
+      "Key length \u2264 20",
+      "Value length \u2264 100",
+      "All keys consist of alphanumeric characters and underscores only",
+      "Values consist of printable ASCII characters except commas and double quotes"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, the first line contains an integer N, the number of JSON records. The next N lines each contain a single JSON object.",
+    "outputFormat": "For each test case, output a CSV representation of the N JSON records. The first line is the header containing all distinct keys that appear in any of the N objects, ordered by their first appearance across the records.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n3\n{\"id\":\"1\",\"name\":\"Alice\",\"score\":\"85\"}\n{\"id\":\"2\",\"name\":\"Bob\"}\n{\"id\":\"3\",\"score\":\"92\",\"city\":\"NY\"}",
+        "output": "id,name,score,city\\n1,Alice,85,\\n2,Bob,,\\n3,,92,NY",
+        "explanation": "The union of keys across the three records is {id, name, score, city} in the order they first appear. Missing fields are left empty."
+      },
+      {
+        "id": "sample_2",
+        "input": "2\n2\n{\"product\":\"Pen\",\"price\":\"1.20\"}\n{\"product\":\"Notebook\",\"price\":\"2.50\",\"stock\":\"15\"}\n1\n{\"a\":\"x\",\"b\":\"y\",\"c\":\"z\"}",
+        "output": "product,price,stock\\nPen,1.20,\\nNotebook,2.50,15\\n\\na,b,c\\nx,y,z",
+        "explanation": "First test case header includes stock because it appears only in the second record. Second test case has a single record, so header equals its keys."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n0",
+        "output": "",
+        "explanation": "No records to process."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n{\"id\":\"1\"}",
+        "expectedOutput": "id\n1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n100\n",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The key insight is to parse each JSON object, extract its keys and values, and then construct the CSV representation. We use a set to keep track of unique keys and their order of appearance. We iterate over each JSON object, extract its keys and values, and add them to the set. Then, we construct the CSV header by joining the keys in the set. For each JSON object, we construct a row in the CSV by looking up the value for each key in the header.",
+    "timeComplexity": "O(T * N * M) where T is the number of test cases, N is the number of JSON records, and M is the maximum number of key-value pairs in a JSON object.",
+    "spaceComplexity": "O(T * N * M) for storing the JSON objects and the CSV representation.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n#include <stdlib.h>\n#include <stdbool.h>\n\n#define MAX_LINE 1024\n#define MAX_KEYS 200\n\ntypedef struct {\n    char *key;\n    char *value;\n} Pair;\n\ntypedef struct {\n    Pair *pairs;\n    int cnt;\n} Record;\n\n// Trim leading and trailing spaces\nstatic void trim(char *s) {\n    while(*s && (*s==' '||*s=='\\t' || *s=='\\n' || *s=='\\r')) s++;\n    char *end = s + strlen(s) - 1;\n    while(end> s && (*end==' '||*end=='\\t' || *end=='\\n' || *end=='\\r')) *end--='\\0';\n    memmove(s- (s - (char*)s), s, strlen(s)+1);\n}\n\nstatic char* strip_quotes(char *s) {\n    int len = strlen(s);\n    if(len>=2 && s[0]=='\\\"' && s[len-1]=='\\\"') {\n        s[len-1]='\\0';\n        return s+1;\n    }\n    return s;\n}\n\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    while(T--){\n        int N; scanf(\"%d\", &N);\n        getchar(); // consume newline\n        Record *records = (Record*)malloc(N * sizeof(Record));\n        char *header[MAX_KEYS];\n        int headerCnt = 0;\n        for(int i=0;i<N;i++){\n            char line[MAX_LINE];\n            fgets(line, sizeof(line), stdin);\n            // remove trailing newline\n            line[strcspn(line, \"\\n\")] = '\\0';\n            // strip outer braces\n            char *p = line;\n            while(*p && *p!='{') p++;\n            if(*p=='{') p++;\n            char *end = strrchr(p, '}');\n            if(end) *end='\\0';\n            // split by commas\n            Record rec; rec.cnt=0; rec.pairs=NULL;\n            char *token = strtok(p, \",\");\n            while(token){\n                char *colon = strchr(token, ':');\n                if(colon){\n                    *colon='\\0';\n                    char *key = strip_quotes(token);\n                    char *val = strip_quotes(colon+1);\n                    // store in record\n                    rec.pairs = (Pair*)realloc(rec.pairs, (rec.cnt+1)*sizeof(Pair));\n                    rec.pairs[rec.cnt].key = strdup(key);\n                    rec.pairs[rec.cnt].value = strdup(val);\n                    rec.cnt++;\n                    // header handling\n                    bool found=false;\n                    for(int h=0;h<headerCnt;h++) if(strcmp(header[h], key)==0){found=true;break;}\n                    if(!found){\n                        header[headerCnt++] = strdup(key);\n                    }\n                }\n                token = strtok(NULL, \",\");\n            }\n            records[i]=rec;\n        }\n        // output header\n        for(int h=0;h<headerCnt;h++){\n            if(h) printf(\",\");\n            printf(\"%s\", header[h]);\n        }\n        printf(\"\\n\");\n        // output rows\n        for(int i=0;i<N;i++){\n            for(int h=0;h<headerCnt;h++){\n                if(h) printf(\",\");\n                // find value for header[h]\n                const char *val=\"\";\n                for(int k=0;k<records[i].cnt;k++){\n                    if(strcmp(records[i].pairs[k].key, header[h])==0){\n                        val = records[i].pairs[k].value;\n                        break;\n                    }\n                }\n                printf(\"%s\", val);\n            }\n            printf(\"\\n\");\n        }\n        if(T) printf(\"\\n\");\n        // free memory\n        for(int i=0;i<N;i++){\n            for(int k=0;k<records[i].cnt;k++){\n                free(records[i].pairs[k].key);\n                free(records[i].pairs[k].value);\n            }\n            free(records[i].pairs);\n        }\n        free(records);\n        for(int h=0;h<headerCnt;h++) free(header[h]);\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(NULL);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N; cin>>N; string dummy; getline(cin,dummy); // consume endline\n        vector<unordered_map<string,string>> records(N);\n        vector<string> header;\n        unordered_set<string> seen;\n        for(int i=0;i<N;i++){\n            string line; getline(cin,line);\n            // remove outer braces\n            size_t l=line.find('{'); size_t r=line.rfind('}');\n            if(l!=string::npos && r!=string::npos && r>l) line=line.substr(l+1,r-l-1);\n            stringstream ss(line);\n            string token;\n            while(getline(ss, token, ',')){\n                size_t pos=token.find(':');\n                if(pos==string::npos) continue;\n                string key=token.substr(0,pos);\n                string val=token.substr(pos+1);\n                // strip quotes\n                auto strip=[](string &s){\n                    if(s.size()>=2 && s.front()=='\\\"' && s.back()=='\\\"') s=s.substr(1,s.size()-2);\n                };\n                strip(key); strip(val);\n                records[i][key]=val;\n                if(seen.insert(key).second) header.push_back(key);\n            }\n        }\n        // output header\n        for(size_t i=0;i<header.size();i++){\n            if(i) cout<<',';\n            cout<<header[i];\n        }\n        cout<<'\\n';\n        // output rows\n        for(const auto &rec: records){\n            for(size_t i=0;i<header.size();i++){\n                if(i) cout<<',';\n                auto it=rec.find(header[i]);\n                if(it!=rec.end()) cout<<it->second;\n            }\n            cout<<'\\n';\n        }\n        if(T) cout<<'\\n';\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder out = new StringBuilder();\n        for (int tc = 0; tc < T; tc++) {\n            int N = Integer.parseInt(br.readLine().trim());\n            List<Map<String, String>> records = new ArrayList<>();\n            List<String> header = new ArrayList<>();\n            Set<String> seen = new HashSet<>();\n            for (int i = 0; i < N; i++) {\n                String line = br.readLine();\n                int l = line.indexOf('{');\n                int r = line.lastIndexOf('}');\n                if (l != -1 && r != -1 && r > l) line = line.substring(l + 1, r);\n                Map<String, String> map = new HashMap<>();\n                String[] parts = line.split(\",\");\n                for (String part : parts) {\n                    if (part.isEmpty()) continue;\n                    int colon = part.indexOf(':');\n                    if (colon == -1) continue;\n                    String key = part.substring(0, colon).trim();\n                    String val = part.substring(colon + 1).trim();\n                    key = stripQuotes(key);\n                    val = stripQuotes(val);\n                    map.put(key, val);\n                    if (seen.add(key)) header.add(key);\n                }\n                records.add(map);\n            }\n            // header line\n            for (int i = 0; i < header.size(); i++) {\n                if (i > 0) out.append(',');\n                out.append(header.get(i));\n            }\n            out.append('\\n');\n            // rows\n            for (Map<String, String> rec : records) {\n                for (int i = 0; i < header.size(); i++) {\n                    if (i > 0) out.append(',');\n                    String v = rec.get(header.get(i));\n                    if (v != null) out.append(v);\n                }\n                out.append('\\n');\n            }\n            if (tc != T - 1) out.append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n\n    private static String stripQuotes(String s) {\n        if (s.length() >= 2 && s.charAt(0) == '\\\"' && s.charAt(s.length() - 1) == '\\\"') {\n            return s.substring(1, s.length() - 1);\n        }\n        return s;\n    }\n}\n",
+      "Python3": "#!/usr/bin/env python3\nimport sys, json\n\ndef parse_flat(line: str):\n    # json.loads works for flat objects with proper quoting\n    return json.loads(line)\n\ndef main():\n    data = sys.stdin.read().splitlines()\n    if not data:\n        return\n    idx = 0\n    T = int(data[idx].strip()); idx += 1\n    out_lines = []\n    for _ in range(T):\n        N = int(data[idx].strip()); idx += 1\n        records = []\n        header = []\n        seen = set()\n        for _ in range(N):\n            line = data[idx].strip(); idx += 1\n            obj = parse_flat(line)\n            records.append(obj)\n            for k in obj.keys():\n                if k not in seen:\n                    seen.add(k)\n                    header.append(k)\n        out_lines.append(','.join(header))\n        for rec in records:\n            row = [rec.get(col, '') for col in header]\n            out_lines.append(','.join(row))\n        if _ != T-1:\n            out_lines.append('')\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    main()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst T = parseInt(input[idx++], 10);\nlet output = [];\nfor (let tc = 0; tc < T; tc++) {\n  const N = parseInt(input[idx++], 10);\n  const records = [];\n  const header = [];\n  const seen = new Set();\n  for (let i = 0; i < N; i++) {\n    const line = input[idx++].trim();\n    const obj = JSON.parse(line);\n    records.push(obj);\n    for (const k of Object.keys(obj)) {\n      if (!seen.has(k)) {\n        seen.add(k);\n        header.push(k);\n      }\n    }\n  }\n  output.push(header.join(','));\n  for (const rec of records) {\n    const row = header.map(col => rec[col] !== undefined ? rec[col] : '');\n    output.push(row.join(','));\n  }\n  if (tc !== T - 1) output.push('');\n}\nconsole.log(output.join('\\n'));\n"
+    }
+  }
+}

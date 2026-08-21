@@ -1,0 +1,115 @@
+{
+  "questionId": "Q2173",
+  "title": "Bytelandian Robots",
+  "slug": "bytelandian-robots",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-03",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Robot Movement",
+      "Dynamic Programming"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ]
+  },
+  "content": {
+    "problemStatement": "The Bytelandian Robotic Deparment has just succesfully made a robot that can be programmed to   move. Our robot can perform two type of movements: moving one step to the left or one step to the   right.\n\nOur robot moves according to the instruction from its control sequence. A control sequence of the   robot is a string consisting of only two type of characters: '+' and '-' symbols, in which '+' means   a rightward step and '-' means a leftward step. For example, '+--' is a control sequence that instruct the robot to go one step to the right   followed by two steps to the left.\n\nOur robot also has a master control sequence (MCQ), which is a string of N characters '+' and   '-'. **Any valid control sequence of the robot must be a subsequence of the MCQ**. Recall that a   subsequence is a sequence obtained by removing some characters of the initial sequence. An empty   sequence is also a subsequence of the MCQ.\n\nOur robot is currently placed on a runway of length L, in which the leftmost point has coordinate 0   and the rightmost point has coordinate L. Intially our robot stands at the point at coordinate A. It   needs to move to the point at coordinate B. Of course, it cannot go outside the runway.\n\nHow many different control sequences are there that make the robot go from A to B?",
+    "constraints": [
+      "1 \u2264 T \u2264 50",
+      "1 \u2264 N \u2264 500",
+      "1 \u2264 L \u2264 10^9",
+      "0 \u2264 A, B \u2264 L"
+    ],
+    "inputFormat": "The first line contains t, the number of test cases. Then t test cases follow. Each test case has the following form: The first line contains four integers N, L, A, B (1 \u2264 N \u2264 500, 1 \u2264 L \u2264 10^9, 0 \u2264 A, B \u2264 L). The second line contains the MCQ which is a string of exactly N characters. The MCQ contains only symbols '+' and '-'.",
+    "outputFormat": "For each test case, print a single number that is the number of different control sequences that could make the robot to go from A to B. Since the result may be a very large number, you only need to print the remainder of the result when dividing by 7051954.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "5\n6 6 0 0\n+-+-+-\n6 6 3 3\n+-+-+-\n6 1 0 0 \n+-+-+-\n6 6 1 4\n+-+-+-\n6 6 2 6\n+-+-+-",
+        "output": "5 \n9\n4\n1\n0",
+        "explanation": "Explanation:\nCase 1: the different control sequences are +-, +-+-, ++--, +-+-+- and the empty sequence.\nCase 2: same as case 1 together with 4 additional sequences: -+, -+-+, -++-, +--+. These additional sequences no longer make the robot go outside the runway as in case 1.\nCase 3: same as case 1 but without the sequence ++-- since it will make the robot go outside the runway\nCase 4: there is only one possible control sequence: +++\nCase 5: there is no way for the robot to go to coordinate 6"
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1 0 0\n+",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "1\n1 1 0 0\n+",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "1\n1 1 0 0\n+",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "1\n1 1 0 0\n+",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "1\n1 1 0 0\n+",
+        "expectedOutput": "1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we use dynamic programming. We first initialize two arrays, next_plus and next_minus, to store the next index of '+' and '-' in the MCQ. We also initialize two arrays, plus_cnt and minus_cnt, to store the count of '+' and '-' in the MCQ from the current index to the end. Then, we calculate the farthest right and left positions the robot can reach. If the target position B is out of this range, we print 0. Otherwise, we use dynamic programming to calculate the number of different control sequences that can make the robot go from A to B.",
+    "timeComplexity": "O(T * N * L) \u2014 where T is the number of test cases, N is the length of the MCQ, and L is the length of the runway.",
+    "spaceComplexity": "O(N * L) \u2014 where N is the length of the MCQ, and L is the length of the runway.",
+    "code": {
+      "C": "#include <stdio.h>\n#define MOD 7051954\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int N, L, A, B;\n        scanf(\"%d %d %d %d\", &N, &L, &A, &B);\n        char mcq[N + 1];\n        scanf(\"%s\", mcq);\n        int next_plus[N], next_minus[N], plus_cnt[N], minus_cnt[N];\n        int np = -1, nm = -1, cp = 0, cm = 0;\n        for (int i = N - 1; i >= 0; --i) {\n            if (mcq[i] == '+') {\n                np = i;\n                cp++;\n            } else {\n                nm = i;\n                cm++;\n            }\n            next_plus[i] = np;\n            next_minus[i] = nm;\n            plus_cnt[i] = cp;\n            minus_cnt[i] = cm;\n        }\n        int farthest_right = (A + plus_cnt[0]) < L ? (A + plus_cnt[0]) : L;\n        int farthest_left = (A - minus_cnt[0]) > 0 ? (A - minus_cnt[0]) : 0;\n        if (B < farthest_left || B > farthest_right) {\n            printf(\"0\\n\");\n            continue;\n        }\n        int dp[farthest_right - farthest_left + 1][N + 1];\n        for (int i = 0; i <= farthest_right - farthest_left; i++) {\n            for (int j = 0; j <= N; j++) {\n                dp[i][j] = 0;\n            }\n        }\n        dp[B - farthest_left][N] = 1;\n        for (int command_start = N - 1; command_start >= 0; --command_start) {\n            for (int curposition = farthest_left; curposition <= farthest_right; ++curposition) {\n                int cur_ind = curposition - farthest_left;\n                int np = next_plus[command_start];\n                int nm = next_minus[command_start];\n                if (np != -1 && curposition + 1 <= farthest_right) {\n                    dp[cur_ind][command_start] += dp[cur_ind + 1][np + 1];\n                    dp[cur_ind][command_start] %= MOD;\n                }\n                if (nm != -1 && curposition - 1 >= farthest_left) {\n                    dp[cur_ind][command_start] += dp[cur_ind - 1][nm + 1];\n                    dp[cur_ind][command_start] %= MOD;\n                }\n                if (curposition == B) {\n                    dp[cur_ind][command_start]++;\n                    dp[cur_ind][command_start] %= MOD;\n                }\n            }\n        }\n        printf(\"%d\\n\", dp[A - farthest_left][0]);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#define MOD 7051954\nusing namespace std;\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        int N, L, A, B;\n        cin >> N >> L >> A >> B;\n        string mcq;\n        cin >> mcq;\n        int next_plus[N], next_minus[N], plus_cnt[N], minus_cnt[N];\n        int np = -1, nm = -1, cp = 0, cm = 0;\n        for (int i = N - 1; i >= 0; --i) {\n            if (mcq[i] == '+') {\n                np = i;\n                cp++;\n            } else {\n                nm = i;\n                cm++;\n            }\n            next_plus[i] = np;\n            next_minus[i] = nm;\n            plus_cnt[i] = cp;\n            minus_cnt[i] = cm;\n        }\n        int farthest_right = (A + plus_cnt[0]) < L ? (A + plus_cnt[0]) : L;\n        int farthest_left = (A - minus_cnt[0]) > 0 ? (A - minus_cnt[0]) : 0;\n        if (B < farthest_left || B > farthest_right) {\n            cout << 0 << endl;\n            continue;\n        }\n        int dp[farthest_right - farthest_left + 1][N + 1];\n        for (int i = 0; i <= farthest_right - farthest_left; i++) {\n            for (int j = 0; j <= N; j++) {\n                dp[i][j] = 0;\n            }\n        }\n        dp[B - farthest_left][N] = 1;\n        for (int command_start = N - 1; command_start >= 0; --command_start) {\n            for (int curposition = farthest_left; curposition <= farthest_right; ++curposition) {\n                int cur_ind = curposition - farthest_left;\n                int np = next_plus[command_start];\n                int nm = next_minus[command_start];\n                if (np != -1 && curposition + 1 <= farthest_right) {\n                    dp[cur_ind][command_start] += dp[cur_ind + 1][np + 1];\n                    dp[cur_ind][command_start] %= MOD;\n                }\n                if (nm != -1 && curposition - 1 >= farthest_left) {\n                    dp[cur_ind][command_start] += dp[cur_ind - 1][nm + 1];\n                    dp[cur_ind][command_start] %= MOD;\n                }\n                if (curposition == B) {\n                    dp[cur_ind][command_start]++;\n                    dp[cur_ind][command_start] %= MOD;\n                }\n            }\n        }\n        cout << dp[A - farthest_left][0] << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n        while (T-- > 0) {\n            int N = sc.nextInt();\n            int L = sc.nextInt();\n            int A = sc.nextInt();\n            int B = sc.nextInt();\n            String mcq = sc.next();\n            int[] next_plus = new int[N];\n            int[] next_minus = new int[N];\n            int[] plus_cnt = new int[N];\n            int[] minus_cnt = new int[N];\n            int np = -1, nm = -1, cp = 0, cm = 0;\n            for (int i = N - 1; i >= 0; --i) {\n                if (mcq.charAt(i) == '+') {\n                    np = i;\n                    cp++;\n                } else {\n                    nm = i;\n                    cm++;\n                }\n                next_plus[i] = np;\n                next_minus[i] = nm;\n                plus_cnt[i] = cp;\n                minus_cnt[i] = cm;\n            }\n            int farthest_right = (A + plus_cnt[0]) < L ? (A + plus_cnt[0]) : L;\n            int farthest_left = (A - minus_cnt[0]) > 0 ? (A - minus_cnt[0]) : 0;\n            if (B < farthest_left || B > farthest_right) {\n                System.out.println(0);\n                continue;\n            }\n            int[][] dp = new int[farthest_right - farthest_left + 1][N + 1];\n            for (int i = 0; i <= farthest_right - farthest_left; i++) {\n                for (int j = 0; j <= N; j++) {\n                    dp[i][j] = 0;\n                }\n            }\n            dp[B - farthest_left][N] = 1;\n            for (int command_start = N - 1; command_start >= 0; --command_start) {\n                for (int curposition = farthest_left; curposition <= farthest_right; ++curposition) {\n                    int cur_ind = curposition - farthest_left;\n                    int np = next_plus[command_start];\n                    int nm = next_minus[command_start];\n                    if (np != -1 && curposition + 1 <= farthest_right) {\n                        dp[cur_ind][command_start] += dp[cur_ind + 1][np + 1];\n                        dp[cur_ind][command_start] %= 7051954;\n                    }\n                    if (nm != -1 && curposition - 1 >= farthest_left) {\n                        dp[cur_ind][command_start] += dp[cur_ind - 1][nm + 1];\n                        dp[cur_ind][command_start] %= 7051954;\n                    }\n                    if (curposition == B) {\n                        dp[cur_ind][command_start]++;\n                        dp[cur_ind][command_start] %= 7051954;\n                    }\n                }\n            }\n            System.out.println(dp[A - farthest_left][0]);\n        }\n    }\n}",
+      "Python3": "MOD = 7051954\nfor _ in range(int(input())):\n    N, L, A, B = map(int, input().split())\n    mcq = input()\n    next_plus = [-1] * N\n    next_minus = [-1] * N\n    plus_cnt = [0] * N\n    minus_cnt = [0] * N\n    np, nm, cp, cm = -1, -1, 0, 0\n    for i in range(N - 1, -1, -1):\n        if mcq[i] == '+':\n            np = i\n            cp += 1\n        else:\n            nm = i\n            cm += 1\n        next_plus[i] = np\n        next_minus[i] = nm\n        plus_cnt[i] = cp\n        minus_cnt[i] = cm\n    farthest_right = min(A + plus_cnt[0], L)\n    farthest_left = max(A - minus_cnt[0], 0)\n    if B < farthest_left or B > farthest_right:\n        print(0)\n        continue\n    dp = [[0] * (N + 1) for _ in range(farthest_right - farthest_left + 1)]\n    dp[B - farthest_left][N] = 1\n    for command_start in range(N - 1, -1, -1):\n        for curposition in range(farthest_left, farthest_right + 1):\n            cur_ind = curposition - farthest_left\n            np = next_plus[command_start]\n            nm = next_minus[command_start]\n            if np != -1 and curposition + 1 <= farthest_right:\n                dp[cur_ind][command_start] += dp[cur_ind + 1][np + 1]\n                dp[cur_ind][command_start] %= MOD\n            if nm != -1 and curposition - 1 >= farthest_left:\n                dp[cur_ind][command_start] += dp[cur_ind - 1][nm + 1]\n                dp[cur_ind][command_start] %= MOD\n            if curposition == B:\n                dp[cur_ind][command_start] += 1\n                dp[cur_ind][command_start] %= MOD\n    print(dp[A - farthest_left][0])",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst MOD = 7051954;\nconst T = parseInt(lines[idx++]);\nfor (let i = 0; i < T; i++) {\n    const [N, L, A, B] = lines[idx++].split(' ').map(Number);\n    const mcq = lines[idx++];\n    const next_plus = new Array(N).fill(-1);\n    const next_minus = new Array(N).fill(-1);\n    const plus_cnt = new Array(N).fill(0);\n    const minus_cnt = new Array(N).fill(0);\n    let np = -1, nm = -1, cp = 0, cm = 0;\n    for (let j = N - 1; j >= 0; j--) {\n        if (mcq[j] === '+') {\n            np = j;\n            cp++;\n        } else {\n            nm = j;\n            cm++;\n        }\n        next_plus[j] = np;\n        next_minus[j] = nm;\n        plus_cnt[j] = cp;\n        minus_cnt[j] = cm;\n    }\n    const farthest_right = Math.min(A + plus_cnt[0], L);\n    const farthest_left = Math.max(A - minus_cnt[0], 0);\n    if (B < farthest_left || B > farthest_right) {\n        console.log(0);\n        continue;\n    }\n    const dp = new Array(farthest_right - farthest_left + 1).fill(0).map(() => new Array(N + 1).fill(0));\n    dp[B - farthest_left][N] = 1;\n    for (let command_start = N - 1; command_start >= 0; command_start--) {\n        for (let curposition = farthest_left; curposition <= farthest_right; curposition++) {\n            const cur_ind = curposition - farthest_left;\n            const np = next_plus[command_start];\n            const nm = next_minus[command_start];\n            if (np !== -1 && curposition + 1 <= farthest_right) {\n                dp[cur_ind][command_start] += dp[cur_ind + 1][np + 1];\n                dp[cur_ind][command_start] %= MOD;\n            }\n            if (nm !== -1 && curposition - 1 >= farthest_left) {\n                dp[cur_ind][command_start] += dp[cur_ind - 1][nm + 1];\n                dp[cur_ind][command_start] %= MOD;\n            }\n            if (curposition === B) {\n                dp[cur_ind][command_start]++;\n                dp[cur_ind][command_start] %= MOD;\n            }\n        }\n    }\n    console.log(dp[A - farthest_left][0]);\n}"
+    }
+  }
+}

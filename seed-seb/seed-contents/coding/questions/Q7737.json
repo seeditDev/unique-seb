@@ -1,0 +1,136 @@
+{
+  "questionId": "Q7737",
+  "title": "Another Birthday Present!",
+  "slug": "another-birthday-present",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Sorting",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Sorting",
+      "Greedy",
+      "Modulo",
+      "Permutation"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Sorting"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef got another sequence as a birthday present. He does not like this sequence very much because it is not sorted. Since you are a good programmer, Chef is asking for your help.\n\nYou are given a sequence A1,A2,…,ANA_1, A_2, \\ldots, A_NA1​,A2​,…,AN​ and an integer KKK. You may perform any number of operations of the following type (in any order): choose a valid integer iii and swap AiA_iAi​ with Ai+KA_{i+K}Ai+K​. Can you sort the sequence this way?",
+    "constraints": [
+      "1 <= T <= 100",
+      "1 <= K <= N <= 100000",
+      "Sum of N over all test cases <= 1000000",
+      "1 <= Ai <= 10^9"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, the first line contains two integers N and K. The second line contains N integers A1 … AN.",
+    "outputFormat": "For each test case output a single line containing \"yes\" if the array can be sorted using the allowed swaps, otherwise \"no\".",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\\n4 1\\n1 4 2 3\\n4 2\\n1 4 2 3",
+        "output": "yes\\nno",
+        "explanation": "With K=1 any adjacent swap is allowed, so the first array can be sorted. With K=2 positions 1 and 3 belong to one class and 2 and 4 to another; the required sorted order cannot be achieved."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\\n5 2\\n3 1 4 2 5",
+        "output": "no",
+        "explanation": "Residue class 0 (indices 1,3,5) contains {3,4,5} while the sorted array would need {1,3,5} at those positions, so sorting is impossible."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Elements can only move inside positions that have the same index modulo K because a swap always connects i with i+K. Therefore each residue class (i mod K) forms an independent multiset. The whole array can be sorted iff for every residue class the multiset of original elements equals the multiset of elements that should appear at those positions in the fully sorted array. Algorithm: copy the array, sort the copy, create K buckets for original and sorted arrays based on index%K, sort each bucket and compare. If all buckets match, answer is \"yes\" else \"no\".",
+    "timeComplexity": "O(N log N) per test case (dominated by sorting the whole array).",
+    "spaceComplexity": "O(N) for the copy of the array and the buckets.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\nint cmp(const void *a,const void *b){return (*(int*)a-*(int*)b);}int main(){int T; if(scanf(\"%d\",&T)!=1) return 0; while(T--){int N,K; scanf(\"%d %d\",&N,&K); int *a=malloc(N*sizeof(int)); int *b=malloc(N*sizeof(int)); for(int i=0;i<N;i++) scanf(\"%d\",&a[i]), b[i]=a[i]; qsort(b,N,sizeof(int),cmp);\n // create buckets\n int **orig=malloc(K*sizeof(int*)); int **sorted=malloc(K*sizeof(int*)); int *origCnt=calloc(K,sizeof(int)); int *sortedCnt=calloc(K,sizeof(int));\n for(int i=0;i<N;i++) origCnt[i%K]++; for(int i=0;i<N;i++) sortedCnt[i%K]++;\n for(int r=0;r<K;r++){\n   orig[r]=malloc(origCnt[r]*sizeof(int));\n   sorted[r]=malloc(sortedCnt[r]*sizeof(int));\n   origCnt[r]=0; sortedCnt[r]=0;\n }\n for(int i=0;i<N;i++) orig[i%K][origCnt[i%K]++]=a[i];\n for(int i=0;i<N;i++) sorted[i%K][sortedCnt[i%K]++]=b[i];\n int possible=1;\n for(int r=0;r<K && possible;r++){\n   qsort(orig[r],origCnt[r],sizeof(int),cmp);\n   qsort(sorted[r],sortedCnt[r],sizeof(int),cmp);\n   if(origCnt[r]!=sortedCnt[r]){possible=0;break;}\n   for(int i=0;i<origCnt[r];i++) if(orig[r][i]!=sorted[r][i]){possible=0;break;}\n }\n printf(possible?\"yes\\n\":\"no\\n\");\n for(int r=0;r<K;r++){free(orig[r]);free(sorted[r]);}\n free(orig);free(sorted);free(origCnt);free(sortedCnt);free(a);free(b);\n }\n return 0;}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){ios::sync_with_stdio(false);cin.tie(nullptr);\n int T; if(!(cin>>T)) return 0; while(T--){int N,K;cin>>N>>K; vector<int>a(N),b; for(int &x:a)cin>>x; b=a; sort(b.begin(),b.end()); vector<vector<int>> orig(K), sorted(K);\n for(int i=0;i<N;i++) orig[i%K].push_back(a[i]), sorted[i%K].push_back(b[i]);\n bool ok=true; for(int r=0;r<K && ok;r++){\n   sort(orig[r].begin(),orig[r].end());\n   sort(sorted[r].begin(),sorted[r].end());\n   if(orig[r]!=sorted[r]) ok=false;\n }\n cout<<(ok?\"yes\":\"no\")<<'\\n';\n }\n return 0; }",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main{\n    public static void main(String[] args) throws Exception{\n        FastScanner fs=new FastScanner(System.in);\n        int T=fs.nextInt();\n        StringBuilder sb=new StringBuilder();\n        while(T-- >0){\n            int N=fs.nextInt();\n            int K=fs.nextInt();\n            int[] a=new int[N];\n            for(int i=0;i<N;i++) a[i]=fs.nextInt();\n            int[] b=a.clone();\n            Arrays.sort(b);\n            @SuppressWarnings(\"unchecked\")\n            ArrayList<Integer>[] orig=new ArrayList[K];\n            @SuppressWarnings(\"unchecked\")\n            ArrayList<Integer>[] sorted=new ArrayList[K];\n            for(int i=0;i<K;i++){orig[i]=new ArrayList<>();sorted[i]=new ArrayList<>();}\n            for(int i=0;i<N;i++){\n                orig[i%K].add(a[i]);\n                sorted[i%K].add(b[i]);\n            }\n            boolean ok=true;\n            for(int r=0;r<K && ok;r++){\n                Collections.sort(orig[r]);\n                Collections.sort(sorted[r]);\n                if(!orig[r].equals(sorted[r])) ok=false;\n            }\n            sb.append(ok?\"yes\":\"no\").append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n    static class FastScanner{\n        private final BufferedInputStream in;\n        private final byte[] buffer=new byte[1<<16];\n        private int ptr=0, len=0;\n        FastScanner(InputStream is){in=new BufferedInputStream(is);}        \n        private int readByte() throws IOException{if(ptr>=len){len=in.read(buffer);ptr=0;if(len==-1) return -1;}return buffer[ptr++];}\n        int nextInt() throws IOException{int c,sign=1; do{c=readByte();}while(c<=32 && c!=-1); if(c=='-'){sign=-1;c=readByte();}\n            int val=0; while(c>32 && c!=-1){val=val*10+(c-'0');c=readByte();}\n            return val*sign;}\n    }\n}",
+      "Python3": "import sys\n\ndef solve():\n    data=list(map(int,sys.stdin.read().split()))\n    it=iter(data)\n    T=next(it)\n    out=[]\n    for _ in range(T):\n        N=next(it); K=next(it)\n        a=[next(it) for _ in range(N)]\n        b=sorted(a)\n        buckets_orig=[[] for _ in range(K)]\n        buckets_sorted=[[] for _ in range(K)]\n        for i,val in enumerate(a):\n            buckets_orig[i%K].append(val)\n        for i,val in enumerate(b):\n            buckets_sorted[i%K].append(val)\n        ok=True\n        for r in range(K):\n            if sorted(buckets_orig[r])!=sorted(buckets_sorted[r]):\n                ok=False\n                break\n        out.append('yes' if ok else 'no')\n    sys.stdout.write('\\n'.join(out))\n\nif __name__=='__main__':\n    solve()\n",
+      "JavaScript": "const fs=require('fs');\\nconst data=fs.readFileSync(0,'utf-8').trim().split(/\\\\s+/).map(Number);\\nlet idx=0;\\nconst T=data[idx++];\\nlet out=[];\\nfor(let t=0;t<T;t++){\\n  const N=data[idx++];\\n  const K=data[idx++];\\n  const a=data.slice(idx,idx+N); idx+=N;\\n  const b=[...a].sort((x,y)=>x-y);\\n  const bucketsOrig=Array.from({length:K},()=>[]);\\n  const bucketsSorted=Array.from({length:K},()=>[]);\\n  for(let i=0;i<N;i++) bucketsOrig[i%K].push(a[i]);\\n  for(let i=0;i<N;i++) bucketsSorted[i%K].push(b[i]);\\n  let ok=true;\\n  for(let r=0;r<K && ok;r++){\\n    bucketsOrig[r].sort((x,y)=>x-y);\\n    bucketsSorted[r].sort((x,y)=>x-y);\\n    if(bucketsOrig[r].length!==bucketsSorted[r].length){ok=false;break;}\\n    for(let i=0;i<bucketsOrig[r].length;i++) if(bucketsOrig[r][i]!==bucketsSorted[r][i]){ok=false;break;}\\n  }\\n  out.push(ok?'yes':'no');\\n}\\nconsole.log(out.join('\\\\n'));\\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

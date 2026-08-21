@@ -1,0 +1,115 @@
+{
+  "questionId": "Q3834",
+  "title": "Chef and Interval Painting",
+  "slug": "chef-and-interval-painting",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Combinatorics",
+      "Modular Arithmetic",
+      "Dynamic Programming"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ]
+  },
+  "content": {
+    "problemStatement": "Chef has **K** friends (numbered 1 through **K**) and an array of length **N** in which each element has a color; initially, each element has color 0. Chef agreed to let each of his friends (in the order from friend 1 to friend **K**) perform the following operation:\n\n\n\nchoose an arbitrary non-empty subarray\npaint all elements in this subarray with color **i**, where **i** is the number of this friend\n\n\nWhen an element is painted with some color, its original color is lost. This happens even if this element was already painted by some friend before.\n\nChef is now wondering: how many distinct colorings of the final array are possible?",
+    "constraints": [
+      "1 <= T <= 100",
+      "1 <= K <= N <= 10^6",
+      "1 <= sum of N over all test cases <= 5 * 10^6"
+    ],
+    "inputFormat": "The first line of the input contains a single integer T denoting the number of test cases. The description of T test cases follows. The first and only line of each test case contains two space-separated integers N and K.",
+    "outputFormat": "For each test case, print a single line containing one integer \u2014 the number of possible final arrays modulo 163577857.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n2 1\n2 2\n3 1",
+        "output": "3\n5\n6",
+        "explanation": "Explanation:\nExample case 1: the final array can be [0, 1], [1, 0] or [1, 1].\nExample case 2: the final array can be [0, 2], [1, 2], [2, 0], [2, 1] or [2, 2].\nExample case 3: the final array can be [0, 0, 1], [0, 1, 0], [0, 1, 1], [1, 0, 0], [1, 1, 0] or [1, 1, 1]."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n1000000 1000000",
+        "expectedOutput": "163577856",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n5 3",
+        "expectedOutput": "41",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n10 5",
+        "expectedOutput": "203",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n20 10",
+        "expectedOutput": "13796",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use combinatorial reasoning and modular arithmetic. For each test case, we need to calculate the number of distinct colorings of the final array. This can be done by considering the number of ways to choose the start and end indices of the subarray to be painted for each friend. We will use the formula for combinations to calculate this. We will also apply modular arithmetic to avoid overflow and ensure the result is within the given range.",
+    "timeComplexity": "O(T * N) \u2014 explain: per query is O(N), total is O(T * N)",
+    "spaceComplexity": "O(1) \u2014 explain: we only use a constant amount of space to store the input and output values",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdint.h>\n#define MOD 163577857\n\nint64_t powmod(int64_t base, int64_t exponent, int64_t mod) {\n    int64_t result = 1;\n    while (exponent > 0) {\n        if (exponent & 1) {\n            result = (result * base) % mod;\n        }\n        exponent >>= 1;\n        base = (base * base) % mod;\n    }\n    return result;\n}\n\nint64_t inverse(int64_t a, int64_t m) {\n    int64_t m0 = m;\n    int64_t y = 0, x = 1;\n    if (m == 1)\n        return 0;\n    while (a > 1) {\n        int64_t q = a / m;\n        int64_t t = m;\n        m = a % m;\n        a = t;\n        t = y;\n        y = x - q * y;\n        x = t;\n    }\n    if (x < 0)\n        x += m0;\n    return x;\n}\n\nint64_t combination(int64_t n, int64_t k, int64_t mod) {\n    int64_t numerator = 1;\n    for (int64_t i = 1; i <= k; i++) {\n        numerator = (numerator * (n - i + 1)) % mod;\n    }\n    int64_t denominator = 1;\n    for (int64_t i = 1; i <= k; i++) {\n        denominator = (denominator * i) % mod;\n    }\n    return (numerator * inverse(denominator, mod)) % mod;\n}\n\nint main() {\n    int t;\n    scanf(\"%d\", &t);\n    while (t--) {\n        int64_t n, k;\n        scanf(\"%lld %lld\", &n, &k);\n        int64_t result = 0;\n        for (int64_t i = 0; i <= k - 1; i++) {\n            result = (result + combination(n + i, i + 1, MOD)) % MOD;\n        }\n        printf(\"%lld\\n\", result);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <cstdint>\n#define MOD 163577857\n\nint64_t powmod(int64_t base, int64_t exponent, int64_t mod) {\n    int64_t result = 1;\n    while (exponent > 0) {\n        if (exponent & 1) {\n            result = (result * base) % mod;\n        }\n        exponent >>= 1;\n        base = (base * base) % mod;\n    }\n    return result;\n}\n\nint64_t inverse(int64_t a, int64_t m) {\n    int64_t m0 = m;\n    int64_t y = 0, x = 1;\n    if (m == 1)\n        return 0;\n    while (a > 1) {\n        int64_t q = a / m;\n        int64_t t = m;\n        m = a % m;\n        a = t;\n        t = y;\n        y = x - q * y;\n        x = t;\n    }\n    if (x < 0)\n        x += m0;\n    return x;\n}\n\nint64_t combination(int64_t n, int64_t k, int64_t mod) {\n    int64_t numerator = 1;\n    for (int64_t i = 1; i <= k; i++) {\n        numerator = (numerator * (n - i + 1)) % mod;\n    }\n    int64_t denominator = 1;\n    for (int64_t i = 1; i <= k; i++) {\n        denominator = (denominator * i) % mod;\n    }\n    return (numerator * inverse(denominator, mod)) % mod;\n}\n\nint main() {\n    int t;\n    std::cin >> t;\n    while (t--) {\n        int64_t n, k;\n        std::cin >> n >> k;\n        int64_t result = 0;\n        for (int64_t i = 0; i <= k - 1; i++) {\n            result = (result + combination(n + i, i + 1, MOD)) % MOD;\n        }\n        std::cout << result << std::endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    static final long MOD = 163577857;\n    public static long powmod(long base, long exponent, long mod) {\n        long result = 1;\n        while (exponent > 0) {\n            if (exponent % 2 == 1) {\n                result = (result * base) % mod;\n            }\n            exponent >>= 1;\n            base = (base * base) % mod;\n        }\n        return result;\n    }\n    public static long inverse(long a, long m) {\n        long m0 = m;\n        long y = 0, x = 1;\n        if (m == 1)\n            return 0;\n        while (a > 1) {\n            long q = a / m;\n            long t = m;\n            m = a % m;\n            a = t;\n            t = y;\n            y = x - q * y;\n            x = t;\n        }\n        if (x < 0)\n            x += m0;\n        return x;\n    }\n    public static long combination(long n, long k, long mod) {\n        long numerator = 1;\n        for (long i = 1; i <= k; i++) {\n            numerator = (numerator * (n - i + 1)) % mod;\n        }\n        long denominator = 1;\n        for (long i = 1; i <= k; i++) {\n            denominator = (denominator * i) % mod;\n        }\n        return (numerator * inverse(denominator, mod)) % mod;\n    }\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int t = scanner.nextInt();\n        while (t-- > 0) {\n            long n = scanner.nextLong();\n            long k = scanner.nextLong();\n            long result = 0;\n            for (long i = 0; i <= k - 1; i++) {\n                result = (result + combination(n + i, i + 1, MOD)) % MOD;\n            }\n            System.out.println(result);\n        }\n    }\n}",
+      "Python3": "import sys\nMOD = 163577857\ndef powmod(base, exponent, mod):\n    result = 1\n    while exponent > 0:\n        if exponent % 2 == 1:\n            result = (result * base) % mod\n        exponent >>= 1\n        base = (base * base) % mod\n    return result\ndef inverse(a, m):\n    m0 = m\n    y = 0\n    x = 1\n    if m == 1:\n        return 0\n    while a > 1:\n        q = a // m\n        t = m\n        m = a % m\n        a = t\n        t = y\n        y = x - q * y\n        x = t\n    if x < 0:\n        x += m0\n    return x\ndef combination(n, k, mod):\n    numerator = 1\n    for i in range(1, k + 1):\n        numerator = (numerator * (n - i + 1)) % mod\n    denominator = 1\n    for i in range(1, k + 1):\n        denominator = (denominator * i) % mod\n    return (numerator * inverse(denominator, mod)) % mod\n\nt = int(sys.stdin.readline())\nwhile t > 0:\n    n, k = map(int, sys.stdin.readline().split())\n    result = 0\n    for i in range(k):\n        result = (result + combination(n + i, i + 1, MOD)) % MOD\n    print(result)\n    t -= 1",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst MOD = 163577857;\nfunction powmod(base, exponent, mod) {\n    let result = 1;\n    while (exponent > 0) {\n        if (exponent % 2 === 1) {\n            result = (result * base) % mod;\n        }\n        exponent >>= 1;\n        base = (base * base) % mod;\n    }\n    return result;\n}\nfunction inverse(a, m) {\n    let m0 = m;\n    let y = 0;\n    let x = 1;\n    if (m === 1)\n        return 0;\n    while (a > 1) {\n        let q = Math.floor(a / m);\n        let t = m;\n        m = a % m;\n        a = t;\n        t = y;\n        y = x - q * y;\n        x = t;\n    }\n    if (x < 0)\n        x += m0;\n    return x;\n}\nfunction combination(n, k, mod) {\n    let numerator = 1;\n    for (let i = 1; i <= k; i++) {\n        numerator = (numerator * (n - i + 1)) % mod;\n    }\n    let denominator = 1;\n    for (let i = 1; i <= k; i++) {\n        denominator = (denominator * i) % mod;\n    }\n    return (numerator * inverse(denominator, mod)) % mod;\n}\nlet t = parseInt(input[idx++]);\nwhile (t-- > 0) {\n    let [n, k] = input[idx++].split(' ').map(Number);\n    let result = 0;\n    for (let i = 0; i <= k - 1; i++) {\n        result = (result + combination(n + i, i + 1, MOD)) % MOD;\n    }\n    console.log(result);\n}"
+    }
+  }
+}

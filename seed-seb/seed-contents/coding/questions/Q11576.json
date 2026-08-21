@@ -1,0 +1,119 @@
+{
+  "questionId": "Q11576",
+  "title": "A and B and Lecture Rooms",
+  "slug": "E",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Greedy",
+    "difficulty": "$undefined",
+    "isPremium": true,
+    "tags": [
+      "Sorting",
+      "Priority Queue"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Write a program for the coding challenge \"A and B and Lecture Rooms\". Refer to SEED-IT description: https://codeforces.com/contest/519/problem/E",
+    "constraints": [
+      "1 <= n <= 100",
+      "1 <= ai <= 1000",
+      "1 <= bi <= 1000",
+      "ai < bi"
+    ],
+    "inputFormat": "The first line contains an integer n, the number of lecture rooms. Then n lines follow, each containing two integers ai and bi, the start and end times of a lecture.",
+    "outputFormat": "The minimum number of rooms required.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "1\n1 2",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "5\n1 3\n2 4\n3 5\n4 6\n5 7",
+        "expectedOutput": "3",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": "3\n1 2\n1 2\n1 2",
+        "expectedOutput": "3",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case / empty-like / negative if allowed",
+        "input": "0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": "6\n1 3\n2 4\n5 7\n6 8\n1 2\n3 4",
+        "expectedOutput": "4",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Sort the lectures by start time and use a priority queue to keep track of the end times of the lectures.",
+    "timeComplexity": "O(n log n)",
+    "spaceComplexity": "O(n)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\nint compare(const void *a, const void *b) { return (*(int*)a - *(int*)b); }\nint main() {\n    int n;\n    scanf(\"%d\", &n);\n    int *start = (int*)malloc(n * sizeof(int));\n    int *end = (int*)malloc(n * sizeof(int));\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d %d\", &start[i], &end[i]);\n    }\n    qsort(start, n, sizeof(int), compare);\n    qsort(end, n, sizeof(int), compare);\n    int i = 0, j = 0, rooms = 0, max_rooms = 0;\n    while (i < n && j < n) {\n        if (start[i] < end[j]) {\n            rooms++;\n            i++;\n        } else {\n            rooms--;\n            j++;\n        }\n        max_rooms = (max_rooms > rooms) ? max_rooms : rooms;\n    }\n    printf(\"%d\\n\", max_rooms);\n    free(start);\n    free(end);\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main() {\n    int n;\n    cin >> n;\n    vector<pair<int, int>> lectures(n);\n    for (int i = 0; i < n; i++) {\n        cin >> lectures[i].first >> lectures[i].second;\n    }\n    sort(lectures.begin(), lectures.end());\n    priority_queue<int, vector<int>, greater<int>> end_times;\n    int max_rooms = 0;\n    for (int i = 0; i < n; i++) {\n        if (!end_times.empty() && end_times.top() <= lectures[i].first) {\n            end_times.pop();\n        }\n        end_times.push(lectures[i].second);\n        max_rooms = max(max_rooms, (int)end_times.size());\n    }\n    cout << max_rooms << endl;\n    return 0;\n}",
+      "Java": "import java.util.PriorityQueue;\nimport java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int n = scanner.nextInt();\n        int[][] lectures = new int[n][2];\n        for (int i = 0; i < n; i++) {\n            lectures[i][0] = scanner.nextInt();\n            lectures[i][1] = scanner.nextInt();\n        }\n        Arrays.sort(lectures, (a, b) -> a[0] - b[0]);\n        PriorityQueue<Integer> end_times = new PriorityQueue<>();\n        int max_rooms = 0;\n        for (int i = 0; i < n; i++) {\n            if (!end_times.isEmpty() && end_times.peek() <= lectures[i][0]) {\n                end_times.poll();\n            }\n            end_times.offer(lectures[i][1]);\n            max_rooms = Math.max(max_rooms, end_times.size());\n        }\n        System.out.println(max_rooms);\n    }\n}",
+      "Python3": "import sys\nimport heapq\nn = int(sys.stdin.readline())\nlectures = [list(map(int, sys.stdin.readline().split())) for _ in range(n)]\nlectures.sort(key=lambda x: x[0])\nend_times = []\nmax_rooms = 0\nfor start, end in lectures:\n    if end_times and end_times[0] <= start:\n        heapq.heappop(end_times)\n    heapq.heappush(end_times, end)\n    max_rooms = max(max_rooms, len(end_times))\nprint(max_rooms)",
+      "JavaScript": "const readline = require('readline');\nconst rl = readline.createInterface({\n    input: process.stdin,\n    output: process.stdout\n});\nlet n;\nlet lectures = [];\nlet i = 0;\nrl.on('line', (line) => {\n    if (i === 0) {\n        n = parseInt(line);\n    } else {\n        lectures.push(line.split(' ').map((x) => parseInt(x)));\n    }\n    i++;\n    if (i > n) {\n        lectures.sort((a, b) => a[0] - b[0]);\n        let end_times = [];\n        let max_rooms = 0;\n        for (let j = 0; j < n; j++) {\n            if (end_times.length > 0 && end_times[0] <= lectures[j][0]) {\n                end_times.shift();\n            }\n            end_times.push(lectures[j][1]);\n            end_times.sort((a, b) => a - b);\n            max_rooms = Math.max(max_rooms, end_times.length);\n        }\n        console.log(max_rooms);\n        rl.close();\n    }\n});"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

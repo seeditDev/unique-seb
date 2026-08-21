@@ -1,0 +1,142 @@
+{
+  "questionId": "Q9504",
+  "title": "Backtracking - Palindrome Partitioning",
+  "slug": "backtracking-palindrome-partitioning",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Backtracking | Strings | Recursion",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Palindrome",
+      "Partitioning",
+      "Backtracking",
+      "DFS",
+      "Recursion"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Recursion & Backtracking"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given a string SSS consisting of lowercase english characters. Partition SSS such that every substring of the partition is a palindrome. Find all possible **unique palindrome** partitioning of SSS.\n\nNote:\n\n\nA substring of a string is obtained by deleting some (possibly zero) characters from the beginning and some (possibly zero) characters from the end.\nA palindrome is a string that reads the same backward as forward.\n\nInput Format\n\nThe first line of input will contain a single integer TTT, denoting the number of test cases.\nThe first and only line of each test case consists of a string SSS.\n\n\nOutput Format\nFor each test case, output M+1M+1M+1 lines, where MMM is the number of unique palindrome partitioning:\n\n\n\nThe first line contains a single integer MMM.\nThe next MMM lines contains space-separated substring of SSS.\n\nNote:\n\n\n\nThe partitions must be printed in lexicographically increasing order.\n\nWe say that partition XXX is lexicographically smaller than YYY if either XXX is a prefix of YYY or there exists an index iii such that for all j&lt;ij\\lt ij&lt;i, Xj=YjX_j = Y_jXj​=Yj​ and Xi&lt;YiX_i\\lt Y_iXi​&lt;Yi​.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= |S| <= 15",
+      "S contains only lowercase English letters"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains a non‑empty string S consisting of lowercase English letters.",
+    "outputFormat": "For each test case output M+1 lines, where M is the number of unique palindrome partitions of S. The first line contains M. Each of the next M lines contains one partition: the substrings of S separated by a single space. Partitions must be printed in lexicographically increasing order.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\naab\na\naaa",
+        "output": "2\na a b\naa b\n1\na\n4\na a a\na aa\naa a\naaa",
+        "explanation": "Test case 1 (aab): possible palindrome partitions are [a,a,b] and [aa,b]; they are printed in lexicographic order. Test case 2 (a): only [a]. Test case 3 (aaa): partitions are [a,a,a], [a,aa], [aa,a], [aaa] ordered lexicographically."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\nababa",
+        "output": "4\na b a b a\na b aba\na bab a\nababa",
+        "explanation": "All palindrome partitions of \"ababa\" are listed and sorted lexicographically."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\nracecar",
+        "output": "4\nr a c e c a r\nr a c ecar\nr acecar\nracecar",
+        "explanation": "Each substring in a partition must be a palindrome. The four unique partitions are shown in increasing lexicographic order."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\na",
+        "expectedOutput": "1\na",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\nabcdefghijklmno",
+        "expectedOutput": "1\nabcdefghijklmno",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "1\na",
+        "expectedOutput": "1\na",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "1\na",
+        "expectedOutput": "1\na",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "1\na",
+        "expectedOutput": "1\na",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each test case pre‑compute a table isPal[i][j] indicating whether S[i..j] is a palindrome (O(N^2) time). Then run a depth‑first search from index 0. At position pos we try every end index end >= pos such that isPal[pos][end] is true, push the substring S[pos..end] to the current path and recurse from end+1. When pos reaches N we have a complete partition – store a copy of the path. After the search finishes, sort all partitions lexicographically (standard vector<string> comparison works because the vectors are compared element by element). Finally output the count and the sorted partitions. The algorithm explores each possible cut pattern once, so the time complexity is O(N·2^N) in the worst case (N ≤ 15) and the extra space is O(N^2) for the palindrome table plus O(N) recursion depth.",
+    "timeComplexity": "O(N^2 + N·2^N) per test case (palindrome table + backtracking). With N ≤ 15 this easily fits the limits.",
+    "spaceComplexity": "O(N^2) for the palindrome table plus O(N) for the recursion stack and current partition.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n#include <stdbool.h>\n\n#define MAXN 16\n\nint n;\nchar s[MAXN];\nbool pal[MAXN][MAXN];\nchar path[MAXN][MAXN];\nint pathLen;\nchar results[5000][MAXN*2]; // enough for all partitions\nint resCnt;\n\nvoid dfs(int pos) {\n    if (pos == n) {\n        // build one line\n        char line[256] = \"\";\n        for (int i = 0; i < pathLen; ++i) {\n            strcat(line, path[i]);\n            if (i + 1 < pathLen) strcat(line, \" \");\n        }\n        strcpy(results[resCnt++], line);\n        return;\n    }\n    for (int end = pos; end < n; ++end) {\n        if (pal[pos][end]) {\n            int len = end - pos + 1;\n            strncpy(path[pathLen], s + pos, len);\n            path[pathLen][len] = '\\0';\n            ++pathLen;\n            dfs(end + 1);\n            --pathLen;\n        }\n    }\n}\n\nint cmpStr(const void *a, const void *b) {\n    return strcmp((const char *)a, (const char *)b);\n}\n\nint main() {\n    int T; if (scanf(\"%d\", &T)!=1) return 0;\n    while (T--) {\n        scanf(\"%s\", s);\n        n = strlen(s);\n        // palindrome table\n        for (int i = 0; i < n; ++i) {\n            for (int j = i; j < n; ++j) {\n                bool ok = true;\n                for (int l = i, r = j; l < r; ++l, --r) {\n                    if (s[l] != s[r]) { ok = false; break; }\n                }\n                pal[i][j] = ok;\n            }\n        }\n        resCnt = 0; pathLen = 0;\n        dfs(0);\n        qsort(results, resCnt, sizeof(results[0]), cmpStr);\n        printf(\"%d\\n\", resCnt);\n        for (int i = 0; i < resCnt; ++i) {\n            printf(\"%s\\n\", results[i]);\n        }\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nvoid backtrack(int pos, const string &s, const vector<vector<bool>> &pal, vector<string> &cur, vector<vector<string>> &all) {\n    int n = s.size();\n    if (pos == n) {\n        all.push_back(cur);\n        return;\n    }\n    for (int end = pos; end < n; ++end) {\n        if (pal[pos][end]) {\n            cur.push_back(s.substr(pos, end - pos + 1));\n            backtrack(end + 1, s, pal, cur, all);\n            cur.pop_back();\n        }\n    }\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while (T--) {\n        string s; cin >> s;\n        int n = s.size();\n        vector<vector<bool>> pal(n, vector<bool>(n,false));\n        for (int i = 0; i < n; ++i) {\n            for (int j = i; j < n; ++j) {\n                bool ok = true;\n                for (int l=i, r=j; l<r; ++l, --r) if (s[l]!=s[r]) { ok=false; break; }\n                pal[i][j]=ok;\n            }\n        }\n        vector<vector<string>> all;\n        vector<string> cur;\n        backtrack(0,s,pal,cur,all);\n        sort(all.begin(), all.end());\n        cout << all.size() << '\\n';\n        for (auto &vec: all) {\n            for (size_t i=0;i<vec.size();++i) {\n                if (i) cout << ' ';\n                cout << vec[i];\n            }\n            cout << '\\n';\n        }\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    static List<List<String>> all;\n    static boolean[][] pal;\n    static String s;\n    static int n;\n\n    static void dfs(int pos, List<String> cur) {\n        if (pos == n) {\n            all.add(new ArrayList<>(cur));\n            return;\n        }\n        for (int end = pos; end < n; ++end) {\n            if (pal[pos][end]) {\n                cur.add(s.substring(pos, end + 1));\n                dfs(end + 1, cur);\n                cur.remove(cur.size() - 1);\n            }\n        }\n    }\n\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder out = new StringBuilder();\n        while (T-- > 0) {\n            s = br.readLine().trim();\n            n = s.length();\n            pal = new boolean[n][n];\n            for (int i = 0; i < n; ++i) {\n                for (int j = i; j < n; ++j) {\n                    boolean ok = true;\n                    for (int l = i, r = j; l < r; ++l, --r) {\n                        if (s.charAt(l) != s.charAt(r)) { ok = false; break; }\n                    }\n                    pal[i][j] = ok;\n                }\n            }\n            all = new ArrayList<>();\n            dfs(0, new ArrayList<>());\n            // sort lexicographically\n            all.sort((a, b) -> {\n                int m = Math.min(a.size(), b.size());\n                for (int i = 0; i < m; ++i) {\n                    int cmp = a.get(i).compareTo(b.get(i));\n                    if (cmp != 0) return cmp;\n                }\n                return Integer.compare(a.size(), b.size());\n            });\n            out.append(all.size()).append('\\n');\n            for (List<String> part : all) {\n                for (int i = 0; i < part.size(); ++i) {\n                    if (i > 0) out.append(' ');\n                    out.append(part.get(i));\n                }\n                out.append('\\n');\n            }\n        }\n        System.out.print(out.toString());\n    }\n}\n",
+      "Python3": "import sys\n\ndef build_pal(s):\n    n = len(s)\n    pal = [[False]*n for _ in range(n)]\n    for i in range(n):\n        for j in range(i, n):\n            ok = True\n            l, r = i, j\n            while l < r:\n                if s[l] != s[r]:\n                    ok = False\n                    break\n                l += 1\n                r -= 1\n            pal[i][j] = ok\n    return pal\n\ndef backtrack(pos, s, pal, cur, res):\n    n = len(s)\n    if pos == n:\n        res.append(cur.copy())\n        return\n    for end in range(pos, n):\n        if pal[pos][end]:\n            cur.append(s[pos:end+1])\n            backtrack(end+1, s, pal, cur, res)\n            cur.pop()\n\ndef solve():\n    data = sys.stdin.read().strip().splitlines()\n    if not data:\n        return\n    t = int(data[0])\n    out_lines = []\n    idx = 1\n    for _ in range(t):\n        s = data[idx].strip()\n        idx += 1\n        pal = build_pal(s)\n        partitions = []\n        backtrack(0, s, pal, [], partitions)\n        partitions.sort()\n        out_lines.append(str(len(partitions)))\n        for p in partitions:\n            out_lines.append(' '.join(p))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet t = Number(input[0] || 0);\nlet line = 1;\nlet output = [];\nfunction buildPal(s) {\n  const n = s.length;\n  const pal = Array.from({ length: n }, () => Array(n).fill(false));\n  for (let i = 0; i < n; ++i) {\n    for (let j = i; j < n; ++j) {\n      let ok = true;\n      for (let l = i, r = j; l < r; ++l, --r) {\n        if (s[l] !== s[r]) { ok = false; break; }\n      }\n      pal[i][j] = ok;\n    }\n  }\n  return pal;\n}\nfunction dfs(pos, s, pal, cur, res) {\n  const n = s.length;\n  if (pos === n) {\n    res.push(cur.slice());\n    return;\n  }\n  for (let end = pos; end < n; ++end) {\n    if (pal[pos][end]) {\n      cur.push(s.substring(pos, end + 1));\n      dfs(end + 1, s, pal, cur, res);\n      cur.pop();\n    }\n  }\n}\nfor (let caseIdx = 0; caseIdx < t; ++caseIdx) {\n  const s = (input[line++] || '').trim();\n  const pal = buildPal(s);\n  const parts = [];\n  dfs(0, s, pal, [], parts);\n  parts.sort((a, b) => {\n    const m = Math.min(a.length, b.length);\n    for (let i = 0; i < m; ++i) {\n      if (a[i] < b[i]) return -1;\n      if (a[i] > b[i]) return 1;\n    }\n    return a.length - b.length;\n  });\n  output.push(String(parts.length));\n  for (const p of parts) {\n    output.push(p.join(' '));\n  }\n}\nconsole.log(output.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

@@ -1,0 +1,126 @@
+{
+  "questionId": "Q3158",
+  "title": "Puppy and cats",
+  "slug": "puppy-and-cats",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Implementation",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Set",
+      "Diagonals",
+      "Hashing",
+      "Implementation",
+      "Binary Search"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Combinatorics & Probability"
+    ]
+  },
+  "content": {
+    "problemStatement": "Tuzik is a very brave puppy. But there is still one thing he is afraid of - big black cats. He always tries to avoid them.\n\n Tuzik's city can be represented as an **N x N** grid. Each cell of the city can either contain cats or not. Tuzik knows that **K** cells of the city are dumps. If a cell is a dump, then each diagonal that contains this cell is full of cats (all cells of this diagonal contain cats). Two cells with corresponding coordinates **(i, j)** and **(x, y)** are on one diagonal if either **x + y** equals **i + j** or **x - y** equals **i - j**.\n\nYou are given integers **N** and coordinates of **K** dumps. Please find the number of cells which are free of cats.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 10^6",
+      "0 <= K <= 10^5",
+      "1 <= xi, yi <= N"
+    ],
+    "inputFormat": "First line contains an integer T, the number of test cases. Each test case starts with a line containing two integers N and K. Then K lines follow, each containing two integers xi and yi \u2013 the 1\u2011based coordinates of a dump.",
+    "outputFormat": "For each test case output a single line with one integer \u2013 the number of cells that are free of cats.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n3 2 \n1 2\n3 2",
+        "output": "5",
+        "explanation": "The grid has 3 rows and 3 columns. The dumps are at positions (1, 2) and (3, 2). The cells that contain cats are (1, 2), (2, 1), (3, 2), (2, 3), and (1, 1). The cells that are free of cats are (1, 3), (2, 2), and (3, 1), (3, 3). So the output is 5."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n4 1 \n2 2",
+        "output": "12",
+        "explanation": "The grid has 4 rows and 4 columns. The dump is at position (2, 2). The cells that contain cats are (1, 1), (1, 3), (2, 2), (3, 1), and (3, 3). The cells that are free of cats are (1, 2), (1, 4), (2, 1), (2, 3), (2, 4), (3, 2), (3, 4), (4, 1), (4, 2), (4, 3), (4, 4). So the output is 12."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n5 0",
+        "output": "25",
+        "explanation": "The grid has 5 rows and 5 columns. There are no dumps. So all cells are free of cats. The output is 25."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each dump we store the identifiers of its two diagonals: the sum s = x + y and the difference d = x - y. A cell (i, j) contains cats iff its sum belongs to the set of dumped sums S or its difference belongs to the set of dumped differences D. The total number of cells is N^2. We subtract the cells covered by each sum\u2011diagonal and each diff\u2011diagonal and then add back the cells that were subtracted twice (the intersections).\n\ncntSum(s) = number of cells on the diagonal with sum s = (s <= N+1) ? (s-1) : (2*N - s + 1).\ncntDiff(d) = N - |d|.\n\nThe intersection of a sum\u2011diagonal s and a diff\u2011diagonal d is at most one cell, given by i = (s+d)/2, j = (s-d)/2. This cell is valid only if i and j are integers inside the grid, i.e. (s+d) is even and 1 \u2264 i \u2264 N, 1 \u2264 j \u2264 N. For a fixed s the allowed d lie in the interval [max(2\u2011s, s\u20112N), min(2N\u2011s, s\u20112)] and must have the same parity as s.\n\nWe store all distinct diffs in two sorted vectors according to parity (even/odd). For each sum s we binary\u2011search the appropriate parity vector to count how many diffs lie in the allowed interval. The overall complexity per test case is O(K log K).",
+    "timeComplexity": "O(K log K) per test case (building sets and binary searches).",
+    "spaceComplexity": "O(K) for storing distinct sums and diffs.",
+    "code": {
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nlong long cntSum(long long s, long long N){\n    if(s <= N+1) return s-1;\n    return 2*N - s + 1;\n}\n\nlong long cntDiff(long long d, long long N){\n    return N - llabs(d);\n}\n\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        long long N; int K; cin>>N>>K;\n        unordered_set<long long> sumSet; sumSet.reserve(K*2);\n        unordered_set<long long> diffSet; diffSet.reserve(K*2);\n        for(int i=0;i<K;++i){\n            long long x,y;cin>>x>>y;\n            sumSet.insert(x+y);\n            diffSet.insert(x-y);\n        }\n        vector<long long> sums(sumSet.begin(), sumSet.end());\n        vector<long long> diffs(diffSet.begin(), diffSet.end());\n        // sort diffs by parity\n        vector<long long> evenDiffs, oddDiffs;\n        evenDiffs.reserve(diffs.size()); oddDiffs.reserve(diffs.size());\n        for(long long d: diffs){\n            if((d&1LL)==0) evenDiffs.push_back(d);\n            else oddDiffs.push_back(d);\n        }\n        sort(evenDiffs.begin(), evenDiffs.end());\n        sort(oddDiffs.begin(), oddDiffs.end());\n        long long total = N * N;\n        long long subSum = 0, subDiff = 0;\n        for(long long s: sums) subSum += cntSum(s, N);\n        for(long long d: diffs) subDiff += cntDiff(d, N);\n        long long intersect = 0;\n        for(long long s: sums){\n            long long low = max(2 - s, s - 2*N);\n            long long high = min(2*N - s, s - 2);\n            if(low > high) continue;\n            const vector<long long> &vec = ((s&1LL)==0) ? evenDiffs : oddDiffs;\n            auto itL = lower_bound(vec.begin(), vec.end(), low);\n            auto itR = upper_bound(vec.begin(), vec.end(), high);\n            intersect += (itR - itL);\n        }\n        long long freeCells = total - subSum - subDiff + intersect;\n        cout<<freeCells<<\"\\n\";\n    }\n    return 0;\n}\n"
+    }
+  }
+}

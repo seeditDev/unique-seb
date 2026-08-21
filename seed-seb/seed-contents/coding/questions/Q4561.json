@@ -1,0 +1,139 @@
+{
+  "questionId": "Q4561",
+  "title": "Repeated String Match",
+  "slug": "repeated-string-match",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Substring",
+      "String Repetition"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Strings & Pattern Matching"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given two strings **AAA** and **BBB**, consisting of lowercase English letters.\n\nIn one operation, you may repeat string **AAA** any number of times and concatenate the results.\n\nYour task is to find the **minimum number of repetitions** required so that **BBB** appears as a **substring** of the repeated string.\n\nIf no such number of repetitions exists, return **−1-1−1**.\n\nFunction Declaration\n\n**Function Name:**\n\n\n\n**repeatedStringMatchrepeatedStringMatchrepeatedStringMatch**\n\n\n\n**Parameters:**\n\n\n\n**AAA** (`string`)\nThe base string that can be repeated any number of times.\n**BBB** (`string`)\nThe target string that must appear as a substring.\n\n\n\n**Return Value:**\n\n\n\nReturns an `int` representing the **minimum number of repetitions** of **AAA** needed so that **BBB** is a substring.\nReturns **−1-1−1** if it is impossible.\n\n\n\nInput Format\nThe first line contains a single integer **TTT** — the number of test cases.\n\n\nFor each test case:\n\n\n\nThe first line contains the string **AAA**.\nThe second line contains the string **BBB**.\n\n\n\nOutput Format\nFor each test case, print a single integer — the **minimum number of repetitions** of **AAA** needed so that **BBB** is a substring, or **−1-1−1** if it is impossible.",
+    "constraints": [
+      "1 <= T <= 100",
+      "1 <= |A|, |B| <= 10000",
+      "A and B consist only of lowercase English letters"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, the first line contains string A, the base string that can be repeated any number of times, and the second line contains string B, the target string that must appear as a substring.",
+    "outputFormat": "For each test case, print a single integer — the minimum number of repetitions of A needed so that B is a substring, or -1 if it is impossible.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\nabcd\ncdabcdab\na\naa",
+        "output": "3\n2",
+        "explanation": "First test: repeating 'abcd' three times gives 'abcdabcdabcd' which contains 'cdabcdab'. Second test: repeating 'a' twice gives 'aa' which contains 'aa'."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\nabc\nabc",
+        "output": "1",
+        "explanation": "One repetition of 'abc' already contains 'abc' as a substring."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\na\nb",
+        "output": "-1",
+        "explanation": "No amount of repeating 'a' can produce a 'b' substring."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\na\na",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\nabcdefghijklmnopqrstuvwxyz\nabcdefghijklmnopqrstuvwxyz",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\naaaa\naaaa",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\nabc\nbca",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "2\nabc\ndef\nabc\nabcdef",
+        "expectedOutput": "1\n2",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The key insight is to calculate the minimum number of repetitions required to cover the length of string B. We use the formula base = (lenB + lenA - 1) / lenA to calculate the minimum number of repetitions. We then check if string B is a substring of the repeated string A for base and base + 1 repetitions.",
+    "timeComplexity": "O(T * (|A| + |B|)) per test case, O(T * (|A| + |B|)) total.",
+    "spaceComplexity": "O(|A| * (base + 1)) — the dominant structure is the repeated string A.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n#include <stdlib.h>\n\nint repeatedStringMatch(const char *A, const char *B) {\n    int lenA = strlen(A);\n    int lenB = strlen(B);\n    int base = (lenB + lenA - 1) / lenA; // ceil\n    int maxCopies = base + 1;\n    int bufSize = lenA * maxCopies + 1;\n    char *rep = (char *)malloc(bufSize);\n    rep[0] = '\\0';\n    for (int i = 0; i < base; ++i) strcat(rep, A);\n    if (strstr(rep, B) != NULL) {\n        free(rep);\n        return base;\n    }\n    strcat(rep, A); // one more copy\n    if (strstr(rep, B) != NULL) {\n        free(rep);\n        return base + 1;\n    }\n    free(rep);\n    return -1;\n}\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        char A[10005];\n        char B[10005];\n        scanf(\"%s\", A);\n        scanf(\"%s\", B);\n        printf(\"%d\\n\", repeatedStringMatch(A, B));\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nint repeatedStringMatch(const string &A, const string &B) {\n    int lenA = A.size();\n    int lenB = B.size();\n    int base = (lenB + lenA - 1) / lenA; // ceil\n    string rep;\n    rep.reserve(lenA * (base + 1));\n    for (int i = 0; i < base; ++i) rep += A;\n    if (rep.find(B) != string::npos) return base;\n    rep += A;\n    if (rep.find(B) != string::npos) return base + 1;\n    return -1;\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; \n    if (!(cin >> T)) return 0;\n    while (T--) {\n        string A, B;\n        cin >> A >> B;\n        cout << repeatedStringMatch(A, B) << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    private static int repeatedStringMatch(String A, String B) {\n        int lenA = A.length();\n        int lenB = B.length();\n        int base = (lenB + lenA - 1) / lenA; // ceil\n        StringBuilder sb = new StringBuilder(lenA * (base + 1));\n        for (int i = 0; i < base; i++) sb.append(A);\n        if (sb.indexOf(B) != -1) return base;\n        sb.append(A);\n        if (sb.indexOf(B) != -1) return base + 1;\n        return -1;\n    }\n\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder out = new StringBuilder();\n        for (int t = 0; t < T; t++) {\n            String A = br.readLine();\n            String B = br.readLine();\n            out.append(repeatedStringMatch(A, B)).append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef repeatedStringMatch(A: str, B: str) -> int:\n    lenA, lenB = len(A), len(B)\n    base = (lenB + lenA - 1) // lenA  # ceil\n    rep = A * base\n    if B in rep:\n        return base\n    rep += A\n    if B in rep:\n        return base + 1\n    return -1\n\ndef main():\n    data = sys.stdin.read().splitlines()\n    if not data:\n        return\n    t = int(data[0])\n    idx = 1\n    out_lines = []\n    for _ in range(t):\n        A = data[idx].strip(); idx += 1\n        B = data[idx].strip(); idx += 1\n        out_lines.append(str(repeatedStringMatch(A, B)))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    main()",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nfunction repeatedStringMatch(A, B) {\n    const lenA = A.length;\n    const lenB = B.length;\n    const base = Math.floor((lenB + lenA - 1) / lenA); // ceil\n    let rep = A.repeat(base);\n    if (rep.includes(B)) return base;\n    rep += A;\n    if (rep.includes(B)) return base + 1;\n    return -1;\n}\nconst T = parseInt(lines[idx++]);\nlet outputs = [];\nfor (let t = 0; t < T; ++t) {\n    const A = lines[idx++];\n    const B = lines[idx++];\n    outputs.push(String(repeatedStringMatch(A, B)));\n}\nconsole.log(outputs.join('\\n'));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

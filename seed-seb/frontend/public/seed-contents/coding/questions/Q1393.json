@@ -1,0 +1,128 @@
+{
+  "questionId": "Q1393",
+  "title": "Aggressive Cows",
+  "slug": "aggressive-cows",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Greedy",
+    "difficulty": "Easy",
+    "isPremium": false,
+    "tags": [
+      "Sorting",
+      "Binary Search",
+      "Greedy"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Binary Search"
+    ]
+  },
+  "content": {
+    "problemStatement": "Farmer John has built a new long barn, with NNN stalls. The stalls are located along a straight line at positions x1...xNx_1 ... x_Nx1\u200b...xN\u200b.\n\nHis CCC cows don't like this barn layout and become aggressive towards each other once put into a stall. To prevent the cows from hurting each other, Farmer John wants to assign the cows to stalls, such that the minimum distance between any two of them is as large as possible. What is the largest minimum distance?\n\nTake some time to think about how you can use predicate binary search to solve this problem and then continue reading.\n\nThis problem can be broken into two parts.\n\n\nCheck if keeping a certain distance ddd he can assign a stall to each cow.\nFind the minimum ddd so that he can assign a stall to each cow.\nLet's first focus on the first part of the problem.\n\nTaskYou are given a function checkcheckcheck with the array of positions of stalls, the size of the array nnn, the number of cows ccc, and a distance ddd. You have to return a boolean value denoting if all the cows can be assigned a stall such that the minimum distance between them is ddd or not. The array passed in the checkcheckcheck function is **sorted**.",
+    "constraints": [
+      "1 <= T <= 10",
+      "2 <= N <= 100000",
+      "2 <= C <= N",
+      "0 <= xi <= 1000000000"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case consists of two lines. The first line contains two integers N and C \u2014 the number of stalls and the number of cows. The second line contains N integers x1 \u2026 xN, the positions of the stalls (they may be unsorted).",
+    "outputFormat": "For each test case output a single line containing the largest possible minimum distance between any two placed cows.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n5 3\n1 2 4 8 9",
+        "output": "3",
+        "explanation": "Place cows at positions 1, 4 and 9. The minimum distance among them is 3, which is the maximum possible."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n4 2\n1 3 5 7",
+        "output": "3",
+        "explanation": "Place cows at positions 1 and 4 (or 4 and 7). The largest minimum distance achievable is 3."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n6 3\n1 2 3 4 5 6",
+        "output": "1",
+        "explanation": "With three cows the best we can do is positions 1, 3 and 5 (or any equally spaced set). The minimum distance is 1."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n2 2\n0 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary (compact)",
+        "input": "1\n5 2\n0 1000000000 500000000 999999999 1",
+        "expectedOutput": "1000000000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform positions",
+        "input": "1\n5 3\n7 7 7 7 7",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "descending input, tricky distance",
+        "input": "1\n6 3\n10 8 6 4 2 0",
+        "expectedOutput": "4",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general multiple cases",
+        "input": "3\n7 4\n1 2 8 4 9 12 15\n4 3\n0 0 0 10\n5 5\n1 3 5 7 9",
+        "expectedOutput": "3\n0\n2",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Sort the stall positions. The answer can be found by binary searching the distance d. For a fixed d we greedily place the first cow at the leftmost stall and then each next cow at the first stall whose position is at least d away from the last placed cow. If we can place all C cows the distance d is feasible. Binary search the maximum feasible d. This works because feasibility is monotonic: if a distance d works, any smaller distance also works.",
+    "timeComplexity": "O(N log N + N log D) per test case, where D = max_position - min_position (\u2264 1e9). Sorting takes O(N log N) and the binary search takes O(N log D).",
+    "spaceComplexity": "O(N) for storing the positions.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\nint cmp(const void *a, const void *b) { return (*(int*)a) - (*(int*)b); }\nint canPlace(int *pos, int n, int c, int d) {\n    int placed = 1;\n    int last = pos[0];\n    for (int i = 1; i < n; ++i) {\n        if (pos[i] - last >= d) {\n            placed++;\n            last = pos[i];\n            if (placed == c) return 1;\n        }\n    }\n    return 0;\n}\nint main() {\n    int T; if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        int n, c; scanf(\"%d %d\", &n, &c);\n        int *arr = (int*)malloc(n * sizeof(int));\n        for (int i = 0; i < n; ++i) scanf(\"%d\", &arr[i]);\n        qsort(arr, n, sizeof(int), cmp);\n        int low = 0, high = arr[n-1] - arr[0], ans = 0;\n        while (low <= high) {\n            int mid = low + (high - low) / 2;\n            if (canPlace(arr, n, c, mid)) { ans = mid; low = mid + 1; }\n            else high = mid - 1;\n        }\n        printf(\"%d\\n\", ans);\n        free(arr);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nbool canPlace(const vector<long long>& pos, int c, long long d) {\n    int placed = 1;\n    long long last = pos[0];\n    for (size_t i = 1; i < pos.size(); ++i) {\n        if (pos[i] - last >= d) {\n            ++placed;\n            last = pos[i];\n            if (placed == c) return true;\n        }\n    }\n    return false;\n}\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while (T--) {\n        int n, c; cin >> n >> c;\n        vector<long long> pos(n);\n        for (int i = 0; i < n; ++i) cin >> pos[i];\n        sort(pos.begin(), pos.end());\n        long long low = 0, high = pos.back() - pos.front(), ans = 0;\n        while (low <= high) {\n            long long mid = low + (high - low) / 2;\n            if (canPlace(pos, c, mid)) { ans = mid; low = mid + 1; }\n            else high = mid - 1;\n        }\n        cout << ans << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    private static boolean canPlace(long[] pos, int c, long d) {\n        int placed = 1;\n        long last = pos[0];\n        for (int i = 1; i < pos.length; i++) {\n            if (pos[i] - last >= d) {\n                placed++;\n                last = pos[i];\n                if (placed == c) return true;\n            }\n        }\n        return false;\n    }\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st;\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder sb = new StringBuilder();\n        while (T-- > 0) {\n            st = new StringTokenizer(br.readLine());\n            int n = Integer.parseInt(st.nextToken());\n            int c = Integer.parseInt(st.nextToken());\n            long[] pos = new long[n];\n            st = new StringTokenizer(br.readLine());\n            for (int i = 0; i < n; i++) pos[i] = Long.parseLong(st.nextToken());\n            Arrays.sort(pos);\n            long low = 0, high = pos[n-1] - pos[0], ans = 0;\n            while (low <= high) {\n                long mid = low + (high - low) / 2;\n                if (canPlace(pos, c, mid)) { ans = mid; low = mid + 1; }\n                else high = mid - 1;\n            }\n            sb.append(ans).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef can_place(pos, c, d):\n    placed = 1\n    last = pos[0]\n    for x in pos[1:]:\n        if x - last >= d:\n            placed += 1\n            last = x\n            if placed == c:\n                return True\n    return False\n\ndef solve():\n    data = sys.stdin.buffer.read().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out = []\n    for _ in range(T):\n        n = int(next(it)); c = int(next(it))\n        pos = [int(next(it)) for _ in range(n)]\n        pos.sort()\n        low, high = 0, pos[-1] - pos[0]\n        ans = 0\n        while low <= high:\n            mid = (low + high) // 2\n            if can_place(pos, c, mid):\n                ans = mid\n                low = mid + 1\n            else:\n                high = mid - 1\n        out.append(str(ans))\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/).map(Number);\nlet idx = 0;\nconst T = input[idx++];\nlet results = [];\nfunction canPlace(pos, c, d) {\n  let placed = 1;\n  let last = pos[0];\n  for (let i = 1; i < pos.length; i++) {\n    if (pos[i] - last >= d) {\n      placed++;\n      last = pos[i];\n      if (placed === c) return true;\n    }\n  }\n  return false;\n}\nfor (let t = 0; t < T; t++) {\n  const n = input[idx++];\n  const c = input[idx++];\n  const pos = input.slice(idx, idx + n);\n  idx += n;\n  pos.sort((a, b) => a - b);\n  let low = 0, high = pos[pos.length - 1] - pos[0], ans = 0;\n  while (low <= high) {\n    const mid = Math.floor((low + high) / 2);\n    if (canPlace(pos, c, mid)) { ans = mid; low = mid + 1; }\n    else high = mid - 1;\n  }\n  results.push(String(ans));\n}\nconsole.log(results.join('\\n'));\n"
+    }
+  }
+}

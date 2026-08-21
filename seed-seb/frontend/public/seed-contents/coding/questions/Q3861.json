@@ -1,0 +1,116 @@
+{
+  "questionId": "Q3861",
+  "title": "Chef and Tuples",
+  "slug": "chef-and-tuples",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "Prime Factorization",
+      "Counting",
+      "Divisors",
+      "Math"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Mathematics"
+    ]
+  },
+  "content": {
+    "problemStatement": "Today, Chef was trying to solve a problem he found pretty hard: Given an integer **N** and a triple of integers (**a**, **b**, **c**), compute the number of triples of positive integers (**x**, **y**, **z**) such that **N** = **x** \u00b7 **y** \u00b7 **z**, **x** \u2264 **a**, **y** \u2264 **b** and **z** \u2264 **c**.\n\nCan you help Chef solve this problem?\n\nTwo triples (**x1**, **y1**, **z1**) and (**x2**, **y2**, **z2**) differ if **x1** is not equal to **x2** or **y1** is not equal to **y2** or **z1** is not equal to **z2**.",
+    "constraints": [
+      "1 <= T <= 20",
+      "1 <= N <= 10^9",
+      "1 <= a, b, c <= 10^6"
+    ],
+    "inputFormat": "The first line of the input contains a single integer T denoting the number of test cases. The description of T test cases follows. The first and only line of each test case contains four space-separated integers N, a, b and c.",
+    "outputFormat": "For each test case, print a single line containing one integer \u2014 the number of valid triples (x, y, z).",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n100 8 23 11\n497296800 1000000 1000000 1000000\n1 1 2 3",
+        "output": "10\n97800\n1",
+        "explanation": "Explanation:\nExample case 1: There are 10 valid triples (x, y, z): (1, 10, 10), (1, 20, 5), (2, 5, 10), (2, 10, 5), (4, 5, 5), (5, 2, 10), (5, 4, 5), (5, 5, 4), (5, 10, 2), (5, 20, 1)."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1 1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n1000000 1000000 1000000 1000000",
+        "expectedOutput": "97800",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n2 1 1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n12 6 6 6",
+        "expectedOutput": "8",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n24 8 8 8",
+        "expectedOutput": "21",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we first need to find all the prime factors of N. Then, we generate all possible combinations of these factors to form x, y, and z. We count the number of valid triples (x, y, z) such that x <= a, y <= b, and z <= c.",
+    "timeComplexity": "O(T * sqrt(N) * log(N)) \u2014 explain: per query is O(sqrt(N) * log(N)), total is O(T * sqrt(N) * log(N))",
+    "spaceComplexity": "O(sqrt(N) * log(N)) \u2014 explain what dominates: the space complexity is dominated by the storage of prime factors and the combinations of these factors",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <math.h>\n\n// Function to find prime factors\nvoid primeFactors(int n, int* factors, int* count) {\n    *count = 0;\n    for (int i = 2; i * i <= n; i++) {\n        while (n % i == 0) {\n            factors[*count] = i;\n            (*count)++;\n            n /= i;\n        }\n    }\n    if (n > 1) {\n        factors[*count] = n;\n        (*count)++;\n    }\n}\n\n// Function to generate all combinations of factors\nvoid generateCombinations(int* factors, int count, int a, int b, int c, int* result) {\n    int x, y, z;\n    for (x = 1; x <= a; x++) {\n        for (y = 1; y <= b; y++) {\n            for (z = 1; z <= c; z++) {\n                if (x * y * z == 1) {\n                    int tempCount = count;\n                    int tempX = x;\n                    int tempY = y;\n                    int tempZ = z;\n                    for (int i = 0; i < count; i++) {\n                        if (tempX % factors[i] == 0) {\n                            tempX /= factors[i];\n                            tempCount--;\n                        } else if (tempY % factors[i] == 0) {\n                            tempY /= factors[i];\n                            tempCount--;\n                        } else if (tempZ % factors[i] == 0) {\n                            tempZ /= factors[i];\n                            tempCount--;\n                        }\n                    }\n                    if (tempCount == 0 && tempX == 1 && tempY == 1 && tempZ == 1) {\n                        (*result)++;\n                    }\n                }\n            }\n        }\n    }\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int N, a, b, c;\n        scanf(\"%d %d %d %d\", &N, &a, &b, &c);\n        int factors[100];\n        int count;\n        primeFactors(N, factors, &count);\n        int result = 0;\n        generateCombinations(factors, count, a, b, c, &result);\n        printf(\"%d\\n\", result);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\nusing namespace std;\n\n// Function to find prime factors\nvector<int> primeFactors(int n) {\n    vector<int> factors;\n    for (int i = 2; i * i <= n; i++) {\n        while (n % i == 0) {\n            factors.push_back(i);\n            n /= i;\n        }\n    }\n    if (n > 1) {\n        factors.push_back(n);\n    }\n    return factors;\n}\n\n// Function to generate all combinations of factors\nint generateCombinations(vector<int> factors, int a, int b, int c) {\n    int result = 0;\n    for (int x = 1; x <= a; x++) {\n        for (int y = 1; y <= b; y++) {\n            for (int z = 1; z <= c; z++) {\n                if (x * y * z == 1) {\n                    int tempCount = factors.size();\n                    int tempX = x;\n                    int tempY = y;\n                    int tempZ = z;\n                    for (int i = 0; i < factors.size(); i++) {\n                        if (tempX % factors[i] == 0) {\n                            tempX /= factors[i];\n                            tempCount--;\n                        } else if (tempY % factors[i] == 0) {\n                            tempY /= factors[i];\n                            tempCount--;\n                        } else if (tempZ % factors[i] == 0) {\n                            tempZ /= factors[i];\n                            tempCount--;\n                        }\n                    }\n                    if (tempCount == 0 && tempX == 1 && tempY == 1 && tempZ == 1) {\n                        result++;\n                    }\n                }\n            }\n        }\n    }\n    return result;\n}\n\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        int N, a, b, c;\n        cin >> N >> a >> b >> c;\n        vector<int> factors = primeFactors(N);\n        int result = generateCombinations(factors, a, b, c);\n        cout << result << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int T = scanner.nextInt();\n        while (T-- > 0) {\n            int N = scanner.nextInt();\n            int a = scanner.nextInt();\n            int b = scanner.nextInt();\n            int c = scanner.nextInt();\n            int[] factors = primeFactors(N);\n            int result = generateCombinations(factors, a, b, c);\n            System.out.println(result);\n        }\n    }\n\n    public static int[] primeFactors(int n) {\n        int count = 0;\n        for (int i = 2; i * i <= n; i++) {\n            while (n % i == 0) {\n                n /= i;\n                count++;\n            }\n        }\n        if (n > 1) {\n            count++;\n        }\n        int[] factors = new int[count];\n        n = N;\n        count = 0;\n        for (int i = 2; i * i <= n; i++) {\n            while (n % i == 0) {\n                factors[count] = i;\n                n /= i;\n                count++;\n            }\n        }\n        if (n > 1) {\n            factors[count] = n;\n        }\n        return factors;\n    }\n\n    public static int generateCombinations(int[] factors, int a, int b, int c) {\n        int result = 0;\n        for (int x = 1; x <= a; x++) {\n            for (int y = 1; y <= b; y++) {\n                for (int z = 1; z <= c; z++) {\n                    if (x * y * z == 1) {\n                        int tempCount = factors.length;\n                        int tempX = x;\n                        int tempY = y;\n                        int tempZ = z;\n                        for (int i = 0; i < factors.length; i++) {\n                            if (tempX % factors[i] == 0) {\n                                tempX /= factors[i];\n                                tempCount--;\n                            } else if (tempY % factors[i] == 0) {\n                                tempY /= factors[i];\n                                tempCount--;\n                            } else if (tempZ % factors[i] == 0) {\n                                tempZ /= factors[i];\n                                tempCount--;\n                            }\n                        }\n                        if (tempCount == 0 && tempX == 1 && tempY == 1 && tempZ == 1) {\n                            result++;\n                        }\n                    }\n                }\n            }\n        }\n        return result;\n    }\n}",
+      "Python3": "# COMPLETE, RUNNABLE Python3 code\nimport sys\ninput = sys.stdin.readline\n\n# Function to find prime factors\ndef prime_factors(n):\n    factors = []\n    i = 2\n    while i * i <= n:\n        if n % i:\n            i += 1\n        else:\n            n //= i\n            factors.append(i)\n    if n > 1:\n        factors.append(n)\n    return factors\n\n# Function to generate all combinations of factors\ndef generate_combinations(factors, a, b, c):\n    result = 0\n    for x in range(1, a + 1):\n        for y in range(1, b + 1):\n            for z in range(1, c + 1):\n                if x * y * z == 1:\n                    temp_count = len(factors)\n                    temp_x = x\n                    temp_y = y\n                    temp_z = z\n                    for i in range(len(factors)):\n                        if temp_x % factors[i] == 0:\n                            temp_x //= factors[i]\n                            temp_count -= 1\n                        elif temp_y % factors[i] == 0:\n                            temp_y //= factors[i]\n                            temp_count -= 1\n                        elif temp_z % factors[i] == 0:\n                            temp_z //= factors[i]\n                            temp_count -= 1\n                    if temp_count == 0 and temp_x == 1 and temp_y == 1 and temp_z == 1:\n                        result += 1\n    return result\n\nT = int(input())\nwhile T > 0:\n    N, a, b, c = map(int, input().split())\n    factors = prime_factors(N)\n    result = generate_combinations(factors, a, b, c)\n    print(result)\n    T -= 1",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\n\n// Function to find prime factors\nfunction primeFactors(n) {\n    let factors = [];\n    let i = 2;\n    while (i * i <= n) {\n        if (n % i !== 0) {\n            i++;\n        } else {\n            n = Math.floor(n / i);\n            factors.push(i);\n        }\n    }\n    if (n > 1) {\n        factors.push(n);\n    }\n    return factors;\n}\n\n// Function to generate all combinations of factors\nfunction generateCombinations(factors, a, b, c) {\n    let result = 0;\n    for (let x = 1; x <= a; x++) {\n        for (let y = 1; y <= b; y++) {\n            for (let z = 1; z <= c; z++) {\n                if (x * y * z === 1) {\n                    let tempCount = factors.length;\n                    let tempX = x;\n                    let tempY = y;\n                    let tempZ = z;\n                    for (let i = 0; i < factors.length; i++) {\n                        if (tempX % factors[i] === 0) {\n                            tempX = Math.floor(tempX / factors[i]);\n                            tempCount--;\n                        } else if (tempY % factors[i] === 0) {\n                            tempY = Math.floor(tempY / factors[i]);\n                            tempCount--;\n                        } else if (tempZ % factors[i] === 0) {\n                            tempZ = Math.floor(tempZ / factors[i]);\n                            tempCount--;\n                        }\n                    }\n                    if (tempCount === 0 && tempX === 1 && tempY === 1 && tempZ === 1) {\n                        result++;\n                    }\n                }\n            }\n        }\n    }\n    return result;\n}\n\nlet T = parseInt(lines[idx++]);\nwhile (T-- > 0) {\n    let [N, a, b, c] = lines[idx++].trim().split(' ').map(Number);\n    let factors = primeFactors(N);\n    let result = generateCombinations(factors, a, b, c);\n    console.log(result);\n}"
+    }
+  }
+}

@@ -1,0 +1,130 @@
+{
+  "questionId": "Q8186",
+  "title": "Cricket Match",
+  "slug": "cricket-match",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Bipartite Graph",
+      "DFS",
+      "BFS",
+      "Two‑Coloring"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Graphs"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "There are NNN people numbered from 111 to NNN and they want to play a cricket match between them by forming two teams that may not be of the same size. There are MMM pairs of peoples and for each pair of peoples, they can not be in the same team. Now Chef wants to know if there is any way to split them into two teams such that Chef can organize the cricket match between two teams. If possible then print `\"YES\"` (without quotes), otherwise print `\"NO\"` (without quotes).",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 2000",
+      "0 <= M <= 10000",
+      "1 <= u < v <= N"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, the first line contains two integers N and M — the number of people and the number of forbidden pairs. The next M lines each contain two integers u and v (1 ≤ u < v ≤ N) indicating that u and v cannot be placed in the same team.",
+    "outputFormat": "For each test case output a single line containing \"YES\" if it is possible to split the N people into two (possibly unequal) teams respecting all restrictions, otherwise output \"NO\".",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n3 3\n1 2\n1 3\n2 3\n4 2\n1 4\n2 3",
+        "output": "NO\nYES",
+        "explanation": "Test case 1 forms a triangle (odd cycle) so it is not bipartite → NO. Test case 2 can be split as {1,2} and {3,4} respecting the two forbidden pairs → YES."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 0",
+        "expectedOutput": "YES",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "even cycle (bipartite)",
+        "input": "1\n4 4\n1 2\n2 3\n3 4\n4 1",
+        "expectedOutput": "YES",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "odd cycle in a component",
+        "input": "1\n5 5\n1 2\n2 3\n3 1\n4 5\n1 4",
+        "expectedOutput": "NO",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "multiple bipartite components",
+        "input": "1\n6 3\n1 2\n3 4\n5 6",
+        "expectedOutput": "YES",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "long path (bipartite)",
+        "input": "1\n7 6\n1 2\n2 3\n3 4\n4 5\n5 6\n6 7",
+        "expectedOutput": "YES",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The restriction \"u and v cannot be in the same team\" creates an undirected edge between u and v. The whole set can be divided into two teams iff the graph is bipartite, i.e., its vertices can be colored with two colors such that no edge connects vertices of the same color. We run a BFS/DFS from every unvisited vertex, assigning alternating colors (0/1). While traversing, if we encounter an already colored neighbor with the same color, an odd‑length cycle exists and the graph is not bipartite. If the whole graph is processed without conflict, the answer is YES.",
+    "timeComplexity": "O(N + M) per test case, because each vertex and edge is visited at most once.",
+    "spaceComplexity": "O(N + M) for the adjacency list and the color array.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\ntypedef struct Node {int v; struct Node* next;} Node;\n\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    while(T--){\n        int N,M; scanf(\"%d %d\", &N, &M);\n        Node** adj = (Node**)calloc(N+1, sizeof(Node*));\n        for(int i=0;i<M;i++){\n            int u,v; scanf(\"%d %d\", &u, &v);\n            Node* a = (Node*)malloc(sizeof(Node)); a->v=v; a->next=adj[u]; adj[u]=a;\n            Node* b = (Node*)malloc(sizeof(Node)); b->v=u; b->next=adj[v]; adj[v]=b;\n        }\n        int* color = (int*)malloc((N+1)*sizeof(int));\n        for(int i=1;i<=N;i++) color[i] = -1;\n        int ok = 1;\n        int* queue = (int*)malloc((N+5)*sizeof(int));\n        for(int start=1; start<=N && ok; ++start){\n            if(color[start]!=-1) continue;\n            int head=0, tail=0;\n            queue[tail++] = start; color[start]=0;\n            while(head<tail && ok){\n                int u = queue[head++];\n                for(Node* p=adj[u]; p; p=p->next){\n                    int v = p->v;\n                    if(color[v]==-1){\n                        color[v]=color[u]^1;\n                        queue[tail++] = v;\n                    }else if(color[v]==color[u]){\n                        ok=0; break;\n                    }\n                }\n            }\n        }\n        printf(ok?\"YES\\n\":\"NO\\n\");\n        // free memory\n        for(int i=1;i<=N;i++){\n            Node* p=adj[i];\n            while(p){ Node* tmp=p; p=p->next; free(tmp);} }\n        free(adj); free(color); free(queue);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N,M; cin>>N>>M;\n        vector<vector<int>> adj(N+1);\n        for(int i=0;i<M;++i){int u,v;cin>>u>>v;adj[u].push_back(v);adj[v].push_back(u);}        \n        vector<int> color(N+1,-1);\n        bool ok=true;\n        queue<int> q;\n        for(int s=1;s<=N && ok;++s){\n            if(color[s]!=-1) continue;\n            color[s]=0; q.push(s);\n            while(!q.empty() && ok){\n                int u=q.front(); q.pop();\n                for(int v:adj[u]){\n                    if(color[v]==-1){color[v]=color[u]^1; q.push(v);} \n                    else if(color[v]==color[u]){ok=false;break;}\n                }\n            }\n        }\n        cout<<(ok?\"YES\":\"NO\")<<'\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner(System.in);\n        int T = fs.nextInt();\n        StringBuilder sb = new StringBuilder();\n        while (T-- > 0) {\n            int N = fs.nextInt();\n            int M = fs.nextInt();\n            List<Integer>[] adj = new ArrayList[N + 1];\n            for (int i = 1; i <= N; i++) adj[i] = new ArrayList<>();\n            for (int i = 0; i < M; i++) {\n                int u = fs.nextInt();\n                int v = fs.nextInt();\n                adj[u].add(v);\n                adj[v].add(u);\n            }\n            int[] color = new int[N + 1];\n            Arrays.fill(color, -1);\n            boolean ok = true;\n            ArrayDeque<Integer> q = new ArrayDeque<>();\n            for (int s = 1; s <= N && ok; s++) {\n                if (color[s] != -1) continue;\n                color[s] = 0;\n                q.add(s);\n                while (!q.isEmpty() && ok) {\n                    int u = q.poll();\n                    for (int v : adj[u]) {\n                        if (color[v] == -1) {\n                            color[v] = color[u] ^ 1;\n                            q.add(v);\n                        } else if (color[v] == color[u]) {\n                            ok = false;\n                            break;\n                        }\n                    }\n                }\n            }\n            sb.append(ok ? \"YES\" : \"NO\").append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n    // Fast scanner for competitive programming\n    static class FastScanner {\n        private final InputStream in;\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        FastScanner(InputStream in) { this.in = in; }\n        private int readByte() throws IOException {\n            if (ptr >= len) {\n                len = in.read(buffer);\n                ptr = 0;\n                if (len <= 0) return -1;\n            }\n            return buffer[ptr++];\n        }\n        int nextInt() throws IOException {\n            int c, sign = 1, val = 0;\n            do { c = readByte(); } while (c <= ' ');\n            if (c == '-') { sign = -1; c = readByte(); }\n            while (c > ' ') {\n                val = val * 10 + (c - '0');\n                c = readByte();\n            }\n            return val * sign;\n        }\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys\nfrom collections import deque\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it)); M = int(next(it))\n        adj = [[] for _ in range(N+1)]\n        for __ in range(M):\n            u = int(next(it)); v = int(next(it))\n            adj[u].append(v); adj[v].append(u)\n        color = [-1]*(N+1)\n        ok = True\n        for s in range(1, N+1):\n            if color[s] != -1:\n                continue\n            color[s] = 0\n            q = deque([s])\n            while q and ok:\n                u = q.popleft()\n                for v in adj[u]:\n                    if color[v] == -1:\n                        color[v] = color[u]^1\n                        q.append(v)\n                    elif color[v] == color[u]:\n                        ok = False\n                        break\n        out_lines.append('YES' if ok else 'NO')\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/).map(Number);\nlet idx = 0;\nconst T = input[idx++];\nlet outputs = [];\nfor (let t = 0; t < T; t++) {\n  const N = input[idx++];\n  const M = input[idx++];\n  const adj = Array.from({ length: N + 1 }, () => []);\n  for (let i = 0; i < M; i++) {\n    const u = input[idx++];\n    const v = input[idx++];\n    adj[u].push(v);\n    adj[v].push(u);\n  }\n  const color = new Int8Array(N + 1).fill(-1);\n  let ok = true;\n  const queue = [];\n  for (let s = 1; s <= N && ok; s++) {\n    if (color[s] !== -1) continue;\n    color[s] = 0;\n    queue.length = 0;\n    queue.push(s);\n    let head = 0;\n    while (head < queue.length && ok) {\n      const u = queue[head++];\n      for (const v of adj[u]) {\n        if (color[v] === -1) {\n          color[v] = color[u] ^ 1;\n          queue.push(v);\n        } else if (color[v] === color[u]) {\n          ok = false;\n          break;\n        }\n      }\n    }\n  }\n  outputs.push(ok ? 'YES' : 'NO');\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

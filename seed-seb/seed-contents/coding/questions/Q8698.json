@@ -1,0 +1,92 @@
+{
+  "questionId": "Q8698",
+  "title": "Selected Digits",
+  "slug": "selected-digits",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-02",
+  "metadata": {
+    "category": "Greedy",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "greedy algorithms",
+      "competitive programming"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Greedy Algorithms"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef gave you a set of digits DDD. You have to find the NNN-th non-negative number which can be formed using the set of digits.\n\n**Note:** All the digit in the input are pairwise distinct and provided in sorted order.\n\n\nInput Format\n\nFirst-line will contain TTT, the number of test cases. Then the test cases follow.\nThe first line of each test case contains two integers DDD and NNN - the number of digits and the number\nThe second line of each test case contains DDD integers.\n\n\nOutput Format\nFor each testcase, output in a single line answer to the iii-th test case without leading zeros.",
+    "constraints": [
+      "1≤T≤50001 \\leq T \\leq 50001≤T≤5000",
+      "1≤∣D∣≤101\\leq |D| \\leq 101≤∣D∣≤10",
+      "1≤N≤1091 \\leq N \\leq 10^91≤N≤109",
+      "It is guarenteed that sum of digits in the output does not exceed 5⋅1055\\cdot10^55⋅105",
+      "Subtasks",
+      "30 points : 1≤N≤1001 \\leq N \\leq 1001≤N≤100",
+      "70 points : 1≤N≤1091 \\leq N \\leq 10^91≤N≤109"
+    ],
+    "inputFormat": "",
+    "outputFormat": "",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4\n3 6\n0 1 2 \n1 2\n2 \n3 17\n0 2 3 \n5 6\n1 2 3 5 9",
+        "output": "12\n22\n232\n11",
+        "explanation": "Explanation:\nTest Case 1: The numbers possible with the given digits are - 0,1,2,10,11,120,1,2,10,11,120,1,2,10,11,12 So 121212 is the answer.\nTest Case 2: The numbers possible with the given digits are - 2,222,222,22 So 222222 is the answer."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "input": "4\n3 6\n0 1 2 \n1 2\n2 \n3 17\n0 2 3 \n5 6\n1 2 3 5 9",
+        "expectedOutput": "12\n22\n232\n11",
+        "weight": 100
+      }
+    ],
+    "totalTestCases": 1,
+    "totalWeight": 100
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      100
+    ],
+    "maxScore": 100
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "**Efficiency:** We directly compute the needed block counts using powers of ∣D∣|D|∣D∣ and subtract counts until we pinpoint the correct length.\n**Simplicity:** The approach converts the “rank” NNN into a digit-by-digit representation in a numeral system with base ∣D∣|D|∣D∣ (with a minor adjustment for the first digit if 000 is included).\nBelow is the complete C++ solution using the iterative construction method:\n\n`#include &lt;iostream&gt;\n#include &lt;vector&gt;\n#include &lt;string&gt;\nusing namespace std;\n\ntypedef long long ll;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    \n    int t;\n    cin &gt;&gt; t;\n    while (t--) {\n        int d;\n        ll N;\n        cin &gt;&gt; d &gt;&gt; N;\n        vector&lt;int&gt; digits(d);\n        for (int i = 0; i &lt; d; i++){\n            cin &gt;&gt; digits[i];\n        }\n        \n        // If only one digit is available, the answer is that digit repeated N times.\n        if (d == 1) {\n            cout &lt;&lt; string(N, char(digits[0] + '0')) &lt;&lt; \"\\n\";\n            continue;\n        }\n        \n        // For one-digit numbers, output directly if N &lt;= d.\n        if (N &lt;= d) {\n            cout &lt;&lt; char(digits[N - 1] + '0') &lt;&lt; \"\\n\";\n            continue;\n        }\n        \n        bool hasZero = (digits[0] == 0);\n        \n        // Subtract one-digit numbers.\n        N -= d;\n        int len = 2;\n        long long countL;\n        \n        // Find the digit-length where the N-th number exists.\n        while (true) {\n            // Calculate valid count for numbers with current length.\n            countL = (hasZero ? (d - 1) : d);\n            for (int i = 1; i &lt; len; i++) {\n                countL *= d;\n            }\n            if (N &lt;= countL) break;\n            N -= countL;\n            len++;\n        }\n        \n        // Construct the number digit by digit.\n        string ans = \"\";\n        for (int pos = 0; pos &lt; len; pos++) {\n            long long blockSize = 1;\n            int rem = len - pos - 1;\n            for (int i = 0; i &lt; rem; i++) {\n                blockSize *= d;\n            }\n            int startIndex = (pos == 0 &amp;&amp; hasZero) ? 1 : 0;\n            for (int j = startIndex; j &lt; d; j++) {\n                if (N &lt;= blockSize) {\n                    ans.push_back(char(digits[j] + '0'));\n                    break;\n                } else {\n                    N -= blockSize;\n                }\n            }\n        }\n        \n        cout &lt;&lt; ans &lt;&lt; \"\\n\";\n    }\n    return 0;\n}\n`Below is the corresponding Python solution using the same iterative method:\n\n`def solve():\n    import sys\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    t = int(data[0])\n    index = 1\n    results = []\n    \n    for _ in range(t):\n        d = int(data[index]); index += 1\n        N = int(data[index]); index += 1\n        digits = list(map(int, data[index:index + d])); index += d\n        \n        # If only one digit, return that digit repeated N times.\n        if d == 1:\n            results.append(str(digits[0]) * N)\n            continue\n        \n        # If N is within the one-digit numbers.\n        if N &lt;= d:\n            results.append(str(digits[N - 1]))\n            continue\n        \n        hasZero = (digits[0] == 0)\n        \n        # Subtract one-digit numbers.\n        N -= d\n        length = 2\n        \n        # Find the proper length for the N-th number.\n        while True:\n            countL = (d - 1 if hasZero else d)\n            for _ in range(length - 1):\n                countL *= d\n            if N &lt;= countL:\n                break\n            N -= countL\n            length += 1\n            \n        ans = \"\"\n        for pos in range(length):\n            block_size = 1\n            for _ in range(length - pos - 1):\n                block_size *= d\n            start_index = 1 if (pos == 0 and hasZero) else 0\n            for j in range(start_index, d):\n                if N &lt;= block_size:\n                    ans += str(digits[j])\n                    break\n                else:\n                    N -= block_size\n        results.append(ans)\n    \n    sys.stdout.write(\"\\n\".join(results))\n\nif __name__ == '__main__':\n    solve()\n`\n**Clarity:** The recursive separation makes it conceptually clear how each digit is chosen.\n**Modularity:** The recursion cleanly separates the logic for selecting a digit and proceeding to the remainder, making the method easier to understand step by step.\nBelow is the C++ solution using recursion to build the answer:\n\n`#include &lt;iostream&gt;\n#include &lt;vector&gt;\n#include &lt;string&gt;\nusing namespace std;\n\ntypedef long long ll;\n\n// Helper function to compute power.\nll power(int base, int exp) {\n    ll res = 1;\n    for (int i = 0; i &lt; exp; i++)\n        res *= base;\n    return res;\n}\n\n// Recursive function to construct the number.\nstring constructNumber(int pos, int len, ll &amp;N, const vector&lt;int&gt;&amp; digits, int d, bool hasZero) {\n    if (pos == len) return \"\";\n    ll block = power(d, len - pos - 1);\n    int start = (pos == 0 &amp;&amp; hasZero) ? 1 : 0;\n    for (int i = start; i &lt; d; i++) {\n        if (N &lt;= block) {\n            return string(1, char(digits[i] + '0')) + constructNumber(pos + 1, len, N, digits, d, hasZero);\n        } else {\n            N -= block;\n        }\n    }\n    return \"\";\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    \n    int t;\n    cin &gt;&gt; t;\n    while (t--) {\n        int d;\n        ll N;\n        cin &gt;&gt; d &gt;&gt; N;\n        vector&lt;int&gt; digits(d);\n        for (int i = 0; i &lt; d; i++) {\n            cin &gt;&gt; digits[i];\n        }\n        \n        // Single digit case.\n        if (d == 1) {\n            cout &lt;&lt; string(N, char(digits[0] + '0')) &lt;&lt; \"\\n\";\n            continue;\n        }\n        \n        // If N is within one-digit numbers.\n        if (N &lt;= d) {\n            cout &lt;&lt; char(digits[N - 1] + '0') &lt;&lt; \"\\n\";\n            continue;\n        }\n        \n        bool hasZero = (digits[0] == 0);\n        \n        // Subtract one-digit numbers.\n        N -= d;\n        int len = 2;\n        ll countL;\n        while (true) {\n            countL = (hasZero ? (d - 1) : d);\n            for (int i = 1; i &lt; len; i++) {\n                countL *= d;\n            }\n            if (N &lt;= countL)\n                break;\n            N -= countL;\n            len++;\n        }\n        \n        string ans = constructNumber(0, len, N, digits, d, hasZero);\n        cout &lt;&lt; ans &lt;&lt; \"\\n\";\n    }\n    return 0;\n}\n`Below is the Python version of the recursive approach:\n\n`def power(base, exp):\n    result = 1\n    for _ in range(exp):\n        result *= base\n    return result\n\ndef construct_number(pos, length, N, digits, d, hasZero):\n    if pos == length:\n        return \"\"\n    block = power(d, length - pos - 1)\n    start = 1 if (pos == 0 and hasZero) else 0\n    for i in range(start, d):\n        if N &lt;= block:\n            return str(digits[i]) + construct_number(pos + 1, length, N, digits, d, hasZero)\n        else:\n            N -= block\n    return \"\"\n \ndef solve():\n    import sys\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    t = int(data[0])\n    index = 1\n    results = []\n    \n    for _ in range(t):\n        d = int(data[index]); index += 1\n        N = int(data[index]); index += 1\n        digits = list(map(int, data[index:index + d])); index += d\n        \n        if d == 1:\n            results.append(str(digits[0]) * N)\n            continue\n        \n        if N &lt;= d:\n            results.append(str(digits[N - 1]))\n            continue\n        \n        hasZero = (digits[0] == 0)\n        N -= d  # Subtract one-digit numbers.\n        length = 2\n        \n        while True:\n            countL = (d - 1 if hasZero else d)\n            for _ in range(length - 1):\n                countL *= d\n            if N &lt;= countL:\n                break\n            N -= countL\n            length += 1\n        \n        ans = construct_number(0, length, N, digits, d, hasZero)\n        results.append(ans)\n    \n    sys.stdout.write(\"\\n\".join(results))\n \nif __name__ == '__main__':\n    solve()\n`",
+    "timeComplexity": "O(N)",
+    "spaceComplexity": "O(1)",
+    "code": {}
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "questionId": "Q2226",
+  "title": "Summing Slopes",
+  "slug": "summing-slopes",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-01",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "competitive programming",
+      "dynamic programming",
+      "Dynamic Programming"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ]
+  },
+  "content": {
+    "problemStatement": "A digit in a number N is a minima if it is lesser than both the digits adjacent to it. Similarly, a digit is a maxima if it is greater than both the digits adjacent to it. The slope of N is the number of digits in N (leaving out the first and the last digit) which are either a minima or a maxima. Given A and B, count the sum of the slopes of all numbers between A and B.\n\n\n\nInput :\n\n\n\nThe first line contains the number of test cases T. Each of the next T lines contains two integers A and B.\n\n\n\nOutput :\n\n\n\nOutput T lines one for each test case, containing the required sum for the corresponding test case.\n\n\nConstraints :\n1 &lt;= T &lt;= 50000\n1 &lt;= A &lt;= B &lt;= 1000000000000000 (10^15)",
+    "constraints": [],
+    "inputFormat": "",
+    "outputFormat": "",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n101 101\n1 100\n100 150",
+        "output": "1\n0\n19",
+        "explanation": ""
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "input": "3\n101 101\n1 100\n100 150",
+        "expectedOutput": "1\n0\n19",
+        "weight": 100
+      }
+    ],
+    "totalTestCases": 1,
+    "totalWeight": 100
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      100
+    ],
+    "maxScore": 100
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "",
+    "timeComplexity": "O(N)",
+    "spaceComplexity": "O(1)",
+    "code": {
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nlong long a, b, s[18], g[18], f[18][11][11], ff[18][11][11];\nint t, n, i, j, k, p, z, c[18];\n\nlong long solve(long long x) {\n    if (x < 100) return 0;\n\n    long long r = 0;\n    for (i = 0; x > 0; i++) {\n        c[i] = x % 10;\n        x /= 10;\n    }\n\n    n = i - 1;\n\n    for (i = 0; i <= n; i++) r += g[i];\n\n    for (i = 1; i < c[n]; i++) r += ff[n + 1][i][9];\n\n    if (c[n - 1] > 0) r += ff[n + 1][c[n]][c[n - 1] - 1];\n\n    for (i = n - 1, k = 0; i > 0; i--) {\n        z = c[i - 1];\n        p = 0;\n\n        if (c[i] < c[i + 1] && z > c[i]) p = z - c[i] - 1;\n\n        if (c[i] > c[i + 1]) {\n            if (z < c[i]) p = z;\n            else p = c[i];\n        }\n\n        r += (long long)(k * z + p) * s[i - 1];\n\n        if (z > 0) r += ff[i + 1][c[i]][z - 1];\n\n        if ((c[i] < c[i + 1] && c[i] < c[i - 1]) ||\n            (c[i] > c[i - 1] && c[i] > c[i + 1])) k++;\n    }\n\n    return r + k;\n}\n\nint main() {\n\n    s[0] = 1;\n    for (i = 1; i < 18; i++) s[i] = s[i - 1] * 10;\n\n    for (n = 3; n < 17; n++) {\n        for (i = 0; i < 10; i++) {\n            for (j = 0; j < 10; j++) {\n\n                for (k = 0; k < 10; k++) {\n                    f[n][i][j] += f[n - 1][j][k] +\n                        (((i < j && k < j) || (i > j && k > j)) ? s[n - 3] : 0);\n                }\n\n                if (i > 0) g[n] += f[n][i][j];\n\n                if (j == 0) ff[n][i][j] = f[n][i][j];\n                else ff[n][i][j] = ff[n][i][j - 1] + f[n][i][j];\n            }\n        }\n    }\n\n    cin >> t;\n\n    while (t--) {\n        cin >> a >> b;\n        cout << solve(b) - solve(a - 1) << \"\\n\";\n    }\n\n    return 0;\n}",
+      "Python3": "import sys\n\ns = [0]*18\ng = [0]*18\nf = [[[0]*11 for _ in range(11)] for __ in range(18)]\nff = [[[0]*11 for _ in range(11)] for __ in range(18)]\nc = [0]*18\n\ndef solve(x):\n    if x < 100:\n        return 0\n    \n    r = 0\n    i = 0\n    while x > 0:\n        c[i] = x % 10\n        x //= 10\n        i += 1\n    \n    n = i - 1\n    \n    for i in range(n+1):\n        r += g[i]\n    \n    for i in range(1, c[n]):\n        r += ff[n+1][i][9]\n    \n    if c[n-1] > 0:\n        r += ff[n+1][c[n]][c[n-1]-1]\n    \n    k = 0\n    for i in range(n-1, 0, -1):\n        z = c[i-1]\n        p = 0\n        \n        if c[i] < c[i+1] and z > c[i]:\n            p = z - c[i] - 1\n        \n        if c[i] > c[i+1]:\n            if z < c[i]:\n                p = z\n            else:\n                p = c[i]\n        \n        r += (k*z + p) * s[i-1]\n        \n        if z > 0:\n            r += ff[i+1][c[i]][z-1]\n        \n        if (c[i] < c[i+1] and c[i] < c[i-1]) or (c[i] > c[i-1] and c[i] > c[i+1]):\n            k += 1\n    \n    return r + k\n\n\n# precompute\ns[0] = 1\nfor i in range(1, 18):\n    s[i] = s[i-1] * 10\n\nfor n in range(3, 17):\n    for i in range(10):\n        for j in range(10):\n            for k in range(10):\n                f[n][i][j] += f[n-1][j][k] + ((i < j and k < j) or (i > j and k > j)) * s[n-3]\n            if i > 0:\n                g[n] += f[n][i][j]\n            if j == 0:\n                ff[n][i][j] = f[n][i][j]\n            else:\n                ff[n][i][j] = ff[n][i][j-1] + f[n][i][j]\n\n\ninput = sys.stdin.readline\nt = int(input())\n\nfor _ in range(t):\n    a, b = map(int, input().split())\n    print(solve(b) - solve(a-1))",
+      "C": "#include <stdio.h>\n\nlong long a,b,s[18],g[18],f[18][11][11],ff[18][11][11];\nint t,n,i,j,k,p,z,c[18];\n\nlong long solve(long long x) {\n    if (x < 100) return 0;\n\n    long long r = 0;\n    for (i = 0; x > 0; i++) {\n        c[i] = x % 10;\n        x /= 10;\n    }\n\n    n = i - 1;\n\n    for (i = 0; i <= n; i++) r += g[i];\n\n    for (i = 1; i < c[n]; i++) r += ff[n+1][i][9];\n\n    if (c[n-1] > 0) r += ff[n+1][c[n]][c[n-1]-1];\n\n    for (i = n-1, k = 0; i > 0; i--) {\n\n        z = c[i-1];\n        p = 0;\n\n        if (c[i] < c[i+1] && z > c[i]) p = z - c[i] - 1;\n\n        if (c[i] > c[i+1]) {\n            if (z < c[i]) p = z;\n            else p = c[i];\n        }\n\n        r += (long long)(k*z + p) * s[i-1];\n\n        if (z > 0) r += ff[i+1][c[i]][z-1];\n\n        if ((c[i] < c[i+1] && c[i] < c[i-1]) ||\n            (c[i] > c[i-1] && c[i] > c[i+1])) k++;\n    }\n\n    return r + k;\n}\n\nint main() {\n\n    s[0] = 1;\n    for (i = 1; i < 18; i++) s[i] = s[i-1] * 10;\n\n    for (n = 3; n < 17; n++) {\n        for (i = 0; i < 10; i++) {\n            for (j = 0; j < 10; j++) {\n\n                for (k = 0; k < 10; k++) {\n                    f[n][i][j] += f[n-1][j][k] +\n                        (((i < j && k < j) || (i > j && k > j)) ? s[n-3] : 0);\n                }\n\n                if (i > 0) g[n] += f[n][i][j];\n\n                if (j == 0) ff[n][i][j] = f[n][i][j];\n                else ff[n][i][j] = ff[n][i][j-1] + f[n][i][j];\n            }\n        }\n    }\n\n    scanf(\"%d\", &t);\n\n    while (t--) {\n        scanf(\"%lld %lld\", &a, &b);\n        printf(\"%lld\\n\", solve(b) - solve(a-1));\n    }\n\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n\n    static long a, b;\n    static long[] s = new long[18];\n    static long[] g = new long[18];\n    static long[][][] f = new long[18][11][11];\n    static long[][][] ff = new long[18][11][11];\n    static int[] c = new int[18];\n\n    static long solve(long x) {\n        if (x < 100) return 0;\n\n        long r = 0;\n        int i = 0;\n\n        while (x > 0) {\n            c[i] = (int)(x % 10);\n            x /= 10;\n            i++;\n        }\n\n        int n = i - 1;\n\n        for (i = 0; i <= n; i++) r += g[i];\n\n        for (i = 1; i < c[n]; i++) r += ff[n + 1][i][9];\n\n        if (c[n - 1] > 0) r += ff[n + 1][c[n]][c[n - 1] - 1];\n\n        int k = 0;\n\n        for (i = n - 1; i > 0; i--) {\n\n            int z = c[i - 1];\n            int p = 0;\n\n            if (c[i] < c[i + 1] && z > c[i]) p = z - c[i] - 1;\n\n            if (c[i] > c[i + 1]) {\n                if (z < c[i]) p = z;\n                else p = c[i];\n            }\n\n            r += (long)(k * z + p) * s[i - 1];\n\n            if (z > 0) r += ff[i + 1][c[i]][z - 1];\n\n            if ((c[i] < c[i + 1] && c[i] < c[i - 1]) ||\n                (c[i] > c[i - 1] && c[i] > c[i + 1])) k++;\n        }\n\n        return r + k;\n    }\n\n    public static void main(String[] args) throws Exception {\n\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st;\n\n        s[0] = 1;\n        for (int i = 1; i < 18; i++) s[i] = s[i - 1] * 10;\n\n        for (int n = 3; n < 17; n++) {\n            for (int i = 0; i < 10; i++) {\n                for (int j = 0; j < 10; j++) {\n\n                    for (int k = 0; k < 10; k++) {\n                        f[n][i][j] += f[n - 1][j][k]\n                                + (((i < j && k < j) || (i > j && k > j)) ? s[n - 3] : 0);\n                    }\n\n                    if (i > 0) g[n] += f[n][i][j];\n\n                    if (j == 0) ff[n][i][j] = f[n][i][j];\n                    else ff[n][i][j] = ff[n][i][j - 1] + f[n][i][j];\n                }\n            }\n        }\n\n        int t = Integer.parseInt(br.readLine());\n\n        while (t-- > 0) {\n            st = new StringTokenizer(br.readLine());\n            a = Long.parseLong(st.nextToken());\n            b = Long.parseLong(st.nextToken());\n\n            System.out.println(solve(b) - solve(a - 1));\n        }\n    }\n}"
+    }
+  }
+}

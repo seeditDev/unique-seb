@@ -1,0 +1,128 @@
+{
+  "questionId": "Q7750",
+  "title": "Roads in Chefland",
+  "slug": "roads-in-chefland",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graph | Greedy | Bit Manipulation",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Minimum Spanning Tree",
+      "Bitwise AND",
+      "Lowest Set Bit",
+      "Power of Two"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Bit Manipulation"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "In Chefland, there are NNN cities (numbered 111 through NNN). Initially, there are no roads between them. The Mayor of Chefland has ordered engineers to build roads across Chefland in such a way that each city is reachable from all other cities.\n\nFor each pair of distinct cities iii and jjj, the cost of building a road between these cities is equal to (i∧ji \\wedge ji∧j), where ∧\\wedge∧ denotes the bitwise AND operation. However, leaders of the cities have a weird condition ― they only allow roads with positive costs to be built from their cities.\n\nHelp the Mayor find the minimum cost of building roads in the required way or determine that it is impossible.",
+    "constraints": [
+      "1 <= T <= 2*10^5",
+      "2 <= N <= 10^9"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains a single integer N (2 ≤ N ≤ 10^9).",
+    "outputFormat": "For each test case output a single line containing the minimum possible total cost to make all cities mutually reachable using only roads with positive cost, or -1 if it is impossible.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\\n3\\n5",
+        "output": "3\\n8",
+        "explanation": "For N=3 the cities are {1,2,3}. The cheapest edges are 1‑3 (cost 1) and 2‑3 (cost 2); total = 3.\\nFor N=5 the sum of lowest set bits from 2 to 5 is 2+1+4+1 = 8."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\\n2",
+        "expectedOutput": "-1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\\n1000000000",
+        "expectedOutput": "1499999999",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "1\\n2",
+        "expectedOutput": "-1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "1\\n2",
+        "expectedOutput": "-1",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "1\\n2",
+        "expectedOutput": "-1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For a road between cities i and j the cost is i & j. A road can be built only if i & j > 0, i.e., i and j share at least one common set bit. The graph formed by connecting all pairs that share a bit is connected unless N is a power of two (the highest power‑of‑two city has a unique most‑significant bit and cannot connect to any other city). Hence, if N is a power of two the answer is -1.\n\nIf the graph is connected we can build a spanning tree. For each city i (i ≥ 2) the smallest possible positive cost of an incident edge equals the value of its lowest set bit (lsb(i) = i & -i). This value can always be achieved by connecting i to another city that also contains this bit (such a city always exists because N is not a power of two). Using Kruskal’s algorithm, picking for every vertex the cheapest edge that connects it to the already built component yields a minimum spanning tree whose total weight is Σ_{i=2..N} lsb(i).\n\nThus the problem reduces to computing S(N) = Σ_{i=2..N} lsb(i). The count of numbers whose lsb equals 2^k is floor(N/2^k) - floor(N/2^{k+1}). Therefore:\n    S(N) = ( Σ_{k≥0} 2^k * (⌊N/2^k⌋ - ⌊N/2^{k+1}⌋) ) - 1   (subtract lsb(1)=1).\nWe iterate over k while 2^k ≤ N (at most 30 iterations for N ≤ 10^9) and accumulate the sum. The overall complexity per test case is O(log N) time and O(1) extra space.",
+    "timeComplexity": "O(T * log N) – at most about 30 operations per test case.",
+    "spaceComplexity": "O(1) additional memory.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdint.h>\n\nstatic uint64_t sum_lsb(uint64_t N) {\n    uint64_t total = 0;\n    for (uint64_t pow = 1; pow <= N; pow <<= 1) {\n        uint64_t cnt = N / pow - N / (pow << 1);\n        total += pow * cnt;\n    }\n    return total - 1; // remove lsb(1)\n}\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        uint64_t N;\n        scanf(\"%llu\", &N);\n        if ((N & (N - 1)) == 0) {\n            printf(\"-1\\n\");\n        } else {\n            printf(\"%llu\\n\", sum_lsb(N));\n        }\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nusing int64 = long long;\n\nint64 sum_lsb(int64 N) {\n    int64 total = 0;\n    for (int64 pow = 1; pow <= N; pow <<= 1) {\n        int64 cnt = N / pow - N / (pow << 1);\n        total += pow * cnt;\n    }\n    return total - 1; // exclude lsb(1)\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; cin >> T;\n    while (T--) {\n        int64 N; cin >> N;\n        if ((N & (N - 1)) == 0) {\n            cout << -1 << '\\n';\n        } else {\n            cout << sum_lsb(N) << '\\n';\n        }\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    private static long sumLsb(long N) {\n        long total = 0;\n        for (long pow = 1; pow <= N; pow <<= 1) {\n            long cnt = N / pow - N / (pow << 1);\n            total += pow * cnt;\n        }\n        return total - 1; // exclude lsb(1)\n    }\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder sb = new StringBuilder();\n        int T = Integer.parseInt(br.readLine().trim());\n        for (int t = 0; t < T; t++) {\n            long N = Long.parseLong(br.readLine().trim());\n            if ((N & (N - 1)) == 0) {\n                sb.append(-1).append('\\n');\n            } else {\n                sb.append(sumLsb(N)).append('\\n');\n            }\n        }\n        System.out.print(sb.toString());\n    }\n}\n",
+      "Python3": "import sys\n\ndef sum_lsb(N: int) -> int:\n    total = 0\n    pow = 1\n    while pow <= N:\n        cnt = N // pow - N // (pow << 1)\n        total += pow * cnt\n        pow <<= 1\n    return total - 1  # exclude lsb(1)\n\ndef main():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    t = int(data[0])\n    out = []\n    idx = 1\n    for _ in range(t):\n        N = int(data[idx]); idx += 1\n        if N & (N - 1) == 0:\n            out.append('-1')\n        else:\n            out.append(str(sum_lsb(N)))\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    main()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet out = [];\nfunction sumLsb(N) {\n  let total = 0n;\n  let pow = 1n;\n  const bigN = BigInt(N);\n  while (pow <= bigN) {\n    const cnt = bigN / pow - bigN / (pow << 1n);\n    total += pow * cnt;\n    pow <<= 1n;\n  }\n  return total - 1n; // exclude lsb(1)\n}\nfor (let tc = 0; tc < T; ++tc) {\n  const N = Number(input[idx++]);\n  if ((N & (N - 1)) === 0) {\n    out.push('-1');\n  } else {\n    out.push(sumLsb(N).toString());\n  }\n}\nconsole.log(out.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

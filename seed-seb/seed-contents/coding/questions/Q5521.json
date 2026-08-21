@@ -1,0 +1,139 @@
+{
+  "questionId": "Q5521",
+  "title": "Machine Gun",
+  "slug": "machine-gun",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Greedy",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Grid",
+      "Greedy"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Flow & Matching"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Country X has a military zone framed as a grid of size MxN.\nEach point of the grid could be free, occupied by a machine gun or by a protector.\n\n\n\nA machine gun at point (x, y) could automatically attack other guns at points (x-2, y-2), (x-2, y+2), (x+2, y-2) and (x+2, y+2).\nSo we could not put two guns at points which make them destroy each others,\nunless there is a protector exactly in the middle.\nEg.: We could put two guns at point (x, y) and (x+2, y+2) if and only if there is a protector at point (x+1, y+1).\n\n\nGiven a map with some points which has been occupied by guns or protectors,\nyour task is to find out the greatest number of guns to add to this map satisfying rules above.\nNote that we can put a machine gun at a free point, but we cannot remove any machine gun and protector, and we cannot add protectors.",
+    "constraints": [
+      "1 ≤ M, N ≤ 700",
+      "The sum of MxN does not exceed 490000 in one judge file",
+      "Any two machine guns in the given map do not attack each other"
+    ],
+    "inputFormat": "The first line contains two positive integers M and N, representing the dimensions of the grid. The next M lines contain N characters each, representing the state of each cell in the grid: 'F' for free, 'G' for a machine gun, and 'P' for a protector. The input is ended with M = N = 0.",
+    "outputFormat": "The greatest number of guns that can be added to the grid without violating the rules.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3 4\nFPFP\nPFPP\nGFGF\n",
+        "output": "3",
+        "explanation": "For the first test case, we can add guns at positions (0,0), (1,2), and (2,1)."
+      },
+      {
+        "id": "sample_2",
+        "input": "5 3\nFPF\nFFF\nFGG\nPFP\nFPF\n",
+        "output": "6",
+        "explanation": "For the second test case, we can add guns at positions (0,1), (1,0), (1,2), (2,0), (3,1), and (4,1)."
+      },
+      {
+        "id": "sample_3",
+        "input": "0 0\n",
+        "output": "",
+        "explanation": "No input is provided."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1 1\nF\n",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "700 700\n",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "5 5\nGGGGG\nGGGGG\nGGGGG\nGGGGG\nGGGGG\n",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "5 5\nPPPPP\nPPPPP\nPPPPP\nPPPPP\nPPPPP\n",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "10 10\nFPFPFPFP\nFPFPFPFP\nFPFPFPFP\nFPFPFPFP\nFPFPFPFP\nFPFPFPFP\nFPFPFPFP\nFPFPFPFP\nFPFPFPFP\nFPFPFPFP\n",
+        "expectedOutput": "20",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The key insight is to identify the cells that are under attack by existing guns and then try to add guns to free cells not under attack. We use a boolean array to mark cells under attack and update it as we add guns.",
+    "timeComplexity": "O(M*N) per test case, O(T*M*N) total. No precomputation is done.",
+    "spaceComplexity": "O(M*N) — the dominant structure is the underAttack array.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdbool.h>\n#define MAX 705\n\nint main() {\n    int M, N;\n    while (scanf(\"%d %d\", &M, &N) == 2 && (M != 0 || N != 0)) {\n        char grid[MAX][MAX];\n        for (int i = 0; i < M; i++) {\n            scanf(\"%s\", grid[i]);\n        }\n        int count = 0;\n        bool underAttack[MAX][MAX];\n        for (int i = 0; i < M; i++) {\n            for (int j = 0; j < N; j++) {\n                underAttack[i][j] = false;\n            }\n        }\n        // Mark cells under attack by existing guns\n        for (int i = 0; i < M; i++) {\n            for (int j = 0; j < N; j++) {\n                if (grid[i][j] == 'G') {\n                    for (int x = -2; x <= 2; x += 4) {\n                        for (int y = -2; y <= 2; y += 4) {\n                            int nx = i + x, ny = j + y;\n                            if (nx >= 0 && nx < M && ny >= 0 && ny < N && grid[nx][ny] != 'P') {\n                                underAttack[nx][ny] = true;\n                            }\n                        }\n                    }\n                }\n            }\n        }\n        // Try to add guns to free cells not under attack\n        for (int i = 0; i < M; i++) {\n            for (int j = 0; j < N; j++) {\n                if (grid[i][j] == 'F' && !underAttack[i][j]) {\n                    grid[i][j] = 'G';\n                    count++;\n                    // Update underAttack\n                    for (int x = -2; x <= 2; x += 4) {\n                        for (int y = -2; y <= 2; y += 4) {\n                            int nx = i + x, ny = j + y;\n                            if (nx >= 0 && nx < M && ny >= 0 && ny < N && grid[nx][ny] != 'P') {\n                                underAttack[nx][ny] = true;\n                            }\n                        }\n                    }\n                }\n            }\n        }\n        printf(\"%d\\n\", count);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\nusing namespace std;\n#define MAX 705\n\nint main() {\n    int M, N;\n    while (cin >> M >> N && (M != 0 || N != 0)) {\n        vector<vector<char>> grid(M, vector<char>(N));\n        for (int i = 0; i < M; i++) {\n            for (int j = 0; j < N; j++) {\n                cin >> grid[i][j];\n            }\n        }\n        int count = 0;\n        vector<vector<bool>> underAttack(M, vector<bool>(N, false));\n        // Mark cells under attack by existing guns\n        for (int i = 0; i < M; i++) {\n            for (int j = 0; j < N; j++) {\n                if (grid[i][j] == 'G') {\n                    for (int x = -2; x <= 2; x += 4) {\n                        for (int y = -2; y <= 2; y += 4) {\n                            int nx = i + x, ny = j + y;\n                            if (nx >= 0 && nx < M && ny >= 0 && ny < N && grid[nx][ny] != 'P') {\n                                underAttack[nx][ny] = true;\n                            }\n                        }\n                    }\n                }\n            }\n        }\n        // Try to add guns to free cells not under attack\n        for (int i = 0; i < M; i++) {\n            for (int j = 0; j < N; j++) {\n                if (grid[i][j] == 'F' && !underAttack[i][j]) {\n                    grid[i][j] = 'G';\n                    count++;\n                    // Update underAttack\n                    for (int x = -2; x <= 2; x += 4) {\n                        for (int y = -2; y <= 2; y += 4) {\n                            int nx = i + x, ny = j + y;\n                            if (nx >= 0 && nx < M && ny >= 0 && ny < N && grid[nx][ny] != 'P') {\n                                underAttack[nx][ny] = true;\n                            }\n                        }\n                    }\n                }\n            }\n        }\n        cout << count << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        while (scanner.hasNextInt()) {\n            int M = scanner.nextInt();\n            int N = scanner.nextInt();\n            if (M == 0 && N == 0) break;\n            char[][] grid = new char[M][N];\n            for (int i = 0; i < M; i++) {\n                String line = scanner.next();\n                for (int j = 0; j < N; j++) {\n                    grid[i][j] = line.charAt(j);\n                }\n            }\n            int count = 0;\n            boolean[][] underAttack = new boolean[M][N];\n            // Mark cells under attack by existing guns\n            for (int i = 0; i < M; i++) {\n                for (int j = 0; j < N; j++) {\n                    if (grid[i][j] == 'G') {\n                        for (int x = -2; x <= 2; x += 4) {\n                            for (int y = -2; y <= 2; y += 4) {\n                                int nx = i + x, ny = j + y;\n                                if (nx >= 0 && nx < M && ny >= 0 && ny < N && grid[nx][ny] != 'P') {\n                                    underAttack[nx][ny] = true;\n                                }\n                            }\n                        }\n                    }\n                }\n            }\n            // Try to add guns to free cells not under attack\n            for (int i = 0; i < M; i++) {\n                for (int j = 0; j < N; j++) {\n                    if (grid[i][j] == 'F' && !underAttack[i][j]) {\n                        grid[i][j] = 'G';\n                        count++;\n                        // Update underAttack\n                        for (int x = -2; x <= 2; x += 4) {\n                            for (int y = -2; y <= 2; y += 4) {\n                                int nx = i + x, ny = j + y;\n                                if (nx >= 0 && nx < M && ny >= 0 && ny < N && grid[nx][ny] != 'P') {\n                                    underAttack[nx][ny] = true;\n                                }\n                            }\n                        }\n                    }\n                }\n            }\n            System.out.println(count);\n        }\n    }\n}",
+      "Python3": "import sys\ninput = sys.stdin.readline\n\nwhile True:\n    M, N = map(int, input().split())\n    if M == 0 and N == 0:\n        break\n    grid = [list(input().rstrip()) for _ in range(M)]\n    count = 0\n    underAttack = [[False]*N for _ in range(M)]\n    # Mark cells under attack by existing guns\n    for i in range(M):\n        for j in range(N):\n            if grid[i][j] == 'G':\n                for x in [-2, 2]:\n                    for y in [-2, 2]:\n                        nx, ny = i + x, j + y\n                        if 0 <= nx < M and 0 <= ny < N and grid[nx][ny] != 'P':\n                            underAttack[nx][ny] = True\n    # Try to add guns to free cells not under attack\n    for i in range(M):\n        for j in range(N):\n            if grid[i][j] == 'F' and not underAttack[i][j]:\n                grid[i][j] = 'G'\n                count += 1\n                # Update underAttack\n                for x in [-2, 2]:\n                    for y in [-2, 2]:\n                        nx, ny = i + x, j + y\n                        if 0 <= nx < M and 0 <= ny < N and grid[nx][ny] != 'P':\n                            underAttack[nx][ny] = True\n    print(count)",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\n\nwhile (true) {\n    let [M, N] = input[idx++].split(' ').map(Number);\n    if (M === 0 && N === 0) break;\n    let grid = [];\n    for (let i = 0; i < M; i++) {\n        grid.push(input[idx++].split(''));\n    }\n    let count = 0;\n    let underAttack = Array(M).fill(false).map(() => Array(N).fill(false));\n    // Mark cells under attack by existing guns\n    for (let i = 0; i < M; i++) {\n        for (let j = 0; j < N; j++) {\n            if (grid[i][j] === 'G') {\n                for (let x of [-2, 2]) {\n                    for (let y of [-2, 2]) {\n                        let nx = i + x, ny = j + y;\n                        if (nx >= 0 && nx < M && ny >= 0 && ny < N && grid[nx][ny] !== 'P') {\n                            underAttack[nx][ny] = true;\n                        }\n                    }\n                }\n            }\n        }\n    }\n    // Try to add guns to free cells not under attack\n    for (let i = 0; i < M; i++) {\n        for (let j = 0; j < N; j++) {\n            if (grid[i][j] === 'F' && !underAttack[i][j]) {\n                grid[i][j] = 'G';\n                count++;\n                // Update underAttack\n                for (let x of [-2, 2]) {\n                    for (let y of [-2, 2]) {\n                        let nx = i + x, ny = j + y;\n                        if (nx >= 0 && nx < M && ny >= 0 && ny < N && grid[nx][ny] !== 'P') {\n                            underAttack[nx][ny] = true;\n                        }\n                    }\n                }\n            }\n        }\n    }\n    console.log(count);\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

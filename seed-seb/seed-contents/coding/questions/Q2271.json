@@ -1,0 +1,116 @@
+{
+  "questionId": "Q2271",
+  "title": "Choosing Cook Off Problems",
+  "slug": "choosing-cook-off-problems",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Greedy Feasibility Check",
+      "DP with Bitset",
+      "Sorting",
+      "Binary Search on Answer",
+      "Dynamic Programming"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Binary Search"
+    ]
+  },
+  "content": {
+    "problemStatement": "Dave is having trouble choosing problems for the upcoming cook-off.\nThe admins will be mad at him if he doesn't select problems with a gradually increasing level of difficulty.\nTo make his task easier, Dave has assigned a difficulty rating to each problem he has written.\nA difficulty gap is defined as the absolute difference in difficulty rating between 2 problems,\nwhere there is no other problem with a difficulty rating between them.\nFor example, if problems are chosen with difficulty ratings of 4, 7, 13, and 19, then the difficulty\ngaps are 3, 6, and 6.\nDave has already chosen 2 problems for the cook-off,\nand wants to choose the remaining problems in a way that minimizes the largest difficulty gap.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 1000",
+      "0 <= M <= N",
+      "1 <= C1, C2 <= 1_000_000",
+      "1 <= difficulty rating of each remaining problem <= 1_000_000"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case consists of two lines. The first line contains four integers N, M, C1, C2 \u2014 the number of available problems, the number of additional problems that must be chosen, and the difficulty ratings of the two already chosen problems. The second line contains N integers, the difficulty ratings of the remaining problems.",
+    "outputFormat": "For each test case output a single line containing the minimum possible value of the largest difficulty gap after choosing exactly M additional problems.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n3 1 0 100\n16 45 61\n\n5 0 50 80\n20 40 60 80 100\n\n6 3 0 100\n21 64 34 55 64 89",
+        "output": "55\n30\n34",
+        "explanation": "The first test case has 3 problems to choose from with difficulty ratings 16, 45, and 61. The two already chosen problems have difficulty ratings 0 and 100. The minimum possible value of the largest difficulty gap is 55. The second test case has 5 problems to choose from with difficulty ratings 20, 40, 60, 80, and 100. The two already chosen problems have difficulty ratings 50 and 80. The minimum possible value of the largest difficulty gap is 30. The third test case has 6 problems to choose from with difficulty ratings 21, 64, 34, 55, 64, and 89. The two already chosen problems have difficulty ratings 0 and 100. The minimum possible value of the largest difficulty gap is 34."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "1. Sort all candidate difficulties together with C1 and C2. Let the sorted array be P[0..K-1] where K = N+2. Locate the indices s and e of C1 and C2 in this array (s < e after sorting). 2. The answer is the smallest D such that we can travel from P[s] to P[e] using exactly M+1 edges (M intermediate problems) and every edge length is <= D. 3. Feasibility for a fixed D is checked with DP using a bitset: dp[i] is a bitset where bit k is set if we can reach P[i] using exactly k edges. Initialise dp[s][0] = 1. For each i > s, for every j < i with P[i] - P[j] <= D, we can extend any path that reaches j by one edge, i.e. dp[i] |= dp[j] << 1. After processing all points, D is feasible iff dp[e][M+1] is true. 4. Binary\u2011search D between 0 and the maximum possible gap (max(P)\u2011min(P)). The minimal feasible D is the required answer. 5. Edge case M = 0 is automatically handled because we only need the direct gap |C1\u2011C2|.",
+    "timeComplexity": "Sorting: O(K log K). For each binary\u2011search step (log\u202fmaxDiff \u2264 20) we run the DP which is O(K^2 / wordSize). With K \u2264 1002 and a 64\u2011bit word, this easily fits within the limits.",
+    "spaceComplexity": "O(K * (M+2) / wordSize) for the bitsets, at most about 1000 * 16 bytes \u2248 16\u202fKB.",
+    "code": {
+      "C": "// Complete C solution (uses stdio and manual bitset handling)\n#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#define MAXK 1005\n#define WORDS ((MAXK+63)/64)\n\nint compare_int(const void *a, const void *b) {\n    int x = *(int*)a, y = *(int*)b;\n    return (x > y) - (x < y);\n}\n\n// bitset of size MAXK (up to 1002)\ntypedef struct { unsigned long long w[WORDS]; } Bitset;\n\nstatic inline void bitset_set(Bitset *b, int pos) { b->w[pos>>6] |= 1ULL << (pos & 63); }\nstatic inline int bitset_test(const Bitset *b, int pos) { return (b->w[pos>>6] >> (pos & 63)) & 1ULL; }\nstatic inline void bitset_or_shift(Bitset *dest, const Bitset *src) {\n    // dest |= src << 1\n    unsigned long long carry = 0;\n    for (int i = 0; i < WORDS; ++i) {\n        unsigned long long cur = src->w[i];\n        unsigned long long shifted = (cur << 1) | carry;\n        carry = cur >> 63;\n        dest->w[i] |= shifted;\n    }\n}\n\nint feasible(int D, int K, int s, int e, int *P, int steps) {\n    Bitset dp[MAXK];\n    for (int i = 0; i < K; ++i) memset(dp[i].w, 0, sizeof(dp[i].w));\n    bitset_set(&dp[s], 0);\n    for (int i = s + 1; i < K; ++i) {\n        for (int j = s; j < i; ++j) {\n            if (P[i] - P[j] <= D) {\n                bitset_or_shift(&dp[i], &dp[j]);\n            }\n        }\n    }\n    return bitset_test(&dp[e], steps);\n}\n\nint main() {\n    int T; if (scanf(\"%d\", &T)!=1) return 0;\n    while (T--) {\n        int N, M, C1, C2; scanf(\"%d %d %d %d\", &N, &M, &C1, &C2);\n        int total = N + 2;\n        int arr[MAXK];\n        arr[0] = C1; arr[1] = C2;\n        for (int i = 0; i < N; ++i) scanf(\"%d\", &arr[2+i]);\n        qsort(arr, total, sizeof(int), compare_int);\n        int s = -1, e = -1;\n        for (int i = 0; i < total; ++i) {\n            if (arr[i] == C1 && s==-1) s = i;\n            if (arr[i] == C2 && e==-1) e = i;\n        }\n        if (s > e) { int tmp = s; s = e; e = tmp; }\n        int low = 0, high = arr[total-1] - arr[0];\n        while (low < high) {\n            int mid = (low + high) / 2;\n            if (feasible(mid, total, s, e, arr, M+1)) high = mid; else low = mid + 1;\n        }\n        printf(\"%d\\n\", low);\n    }\n    return 0;\n}\n",
+      "C++": ""
+    }
+  }
+}

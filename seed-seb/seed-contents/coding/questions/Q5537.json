@@ -1,0 +1,137 @@
+{
+  "questionId": "Q5537",
+  "title": "Asmany Number Verification",
+  "slug": "asmany-number-verification",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math | Dynamic Programming | Strings",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Binary strings",
+      "Substring counting",
+      "Dynamic programming",
+      "Big integer",
+      "Precomputation"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Combinatorics & Probability"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Asmany strings are strings of '0's and '1's that have as many 00 as 11. A string such as 00110001 consists of 3 \"00\" and\n1 \"11\". Of course this is not an Asmany string. 0011, 1100, 000111000111 are Asmany strings. An L'th Asmany number is the number of\nAsmany strings of length L for all positive integers L.\n\n\n\nFor esoteric purposes Chef had an oracle (a device) that was capable of answering whether a number that he entered was an Asmany number.\nThe problem is that his oracle takes too long for large numbers. Him being Chef, he wants to ask the oracle very\nlarge numbers! You tell him that you can give him a better oracle (a program) that will tell him what he wants to know in the blink of\nan eye.",
+    "constraints": [
+      "1 ≤ T ≤ 100",
+      "1 ≤ number of decimal digits of N ≤ 1000"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains a positive integer N (given without leading zeros) whose length does not exceed 1000 decimal digits.",
+    "outputFormat": "For each test case output a single line containing \"YES\" if N equals the number of Asmany strings of some length L (L ≥ 1), otherwise output \"NO\".",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n3\n4",
+        "output": "NO\nYES",
+        "explanation": "For the first test case, there are no Asmany numbers of length 3. For the second test case, there is one Asmany number of length 4: 0011."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n5",
+        "output": "YES",
+        "explanation": "For the test case, there is one Asmany number of length 5: 00110."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n6",
+        "output": "NO",
+        "explanation": "For the test case, there are no Asmany numbers of length 6."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For a binary string we only need to know the last character and the difference d = (#00) - (#11) seen so far.  When we append a new bit b to a prefix that ends with prev, the pair (prev,b) changes d by +1 if prev=0 and b=0, by -1 if prev=1 and b=1, otherwise d stays unchanged.  Therefore we can build a DP:\n    dp[i][prev][d] = number of strings of length i ending with bit prev having difference d.\n    Initialise for i = 1: dp[1][0][0] = dp[1][1][0] = 1.\n    Transition for i → i+1:\n        for each prev in {0,1}, for each possible d,\n            for each next in {0,1}:\n                nd = d + (prev==0 && next==0 ? 1 : 0) - (prev==1 && next==1 ? 1 : 0);\n                dp[i+1][next][nd] += dp[i][prev][d].\n    The number of Asmany strings of length L is total[L] = dp[L][0][0] + dp[L][1][0].\nBecause N can be up to 1000 decimal digits, we pre‑compute total[L] for increasing L until the decimal representation exceeds 1000 digits (≈ L = 3500).  All totals are stored as decimal strings in a hash‑set.\nFor each query we simply check whether the given N (as a string) is present in the set.\nBig integers are required only during the pre‑computation; each language uses its native arbitrary‑precision type (Python int, C++ boost::multiprecision::cpp_int, Java BigInteger, JavaScript BigInt, and a simple base‑10⁹ vector implementation for C).",
+    "timeComplexity": "Pre‑computation: O(L_max²) arithmetic operations, where L_max ≈ 3500.  Each addition of two big integers costs O(D) where D is the number of decimal digits (≤ 1000).  Overall well below one second.  Answering each test case is O(1) lookup.",
+    "spaceComplexity": "O(L_max²) big‑integer states ≈ 2 * L_max * (2*L_max+1) ≈ 2·3500·7001 ≈ 5·10⁷ integers, but we keep only two layers (i and i+1), so O(L_max·D) ≈ 3500·1000 ≈ 3.5 MB of digit storage plus the set of at most L_max strings.",
+    "code": {
+      "C": ""
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

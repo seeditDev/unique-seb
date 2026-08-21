@@ -1,0 +1,126 @@
+{
+  "questionId": "Q3010",
+  "title": "Candidate walk",
+  "slug": "candidate-walk",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Dynamic Programming",
+      "Path Finding"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ]
+  },
+  "content": {
+    "problemStatement": "Elections in Bytetown are coming soon!&nbsp;\n\n Candidate Boris is going to have a small walk. Bytetown can be represented as **N**-dimensional cube with edge size **D**. Initially Boris stands in cell with coordinates **(0, 0, ... 0)** and his destination is cell **(D-1, D-1,... D-1)**. His route consists of chain of the cells, where each pair of consecutive cells differs in exactly one coordinate by 1 and sum of coordinates strictly increases during his walk. Note that Boris walks through the **cells** not points.\n\nBut not all the people in Bytetown are going to vote for Boris. Some of them are sure that Boris is a liar and bribetaker and they will tell it to Boris if they meet him. Boris doesn't like such people and avoids them. He knows that at cell with coordinares **(i0, i1,..., iN-1)** he will meet **(i0^ i1^...^iN-1)x(i0+ i1+...+ iN-1)** such people (in other words XOR-sum of coordinates times arithmetic sum of coordinates). Try to help him to find minimal number of unfriendly people he will have to meet.",
+    "constraints": [
+      "1 \u2264 T \u2264 20",
+      "1 \u2264 N \u2264 10",
+      "Total number of cells in one cube doesn't exceed 216"
+    ],
+    "inputFormat": "First line contains T, the number of test cases. Each test case contains two integers N and D.",
+    "outputFormat": "For each test case, print the minimum number of unfriendly people Boris will have to meet.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4\n1 2\n1 3\n2 2\n2 3",
+        "output": "1\n5\n1\n10",
+        "explanation": "For the first test case, the minimum number of unfriendly people Boris will have to meet is 1. For the second test case, the minimum number of unfriendly people Boris will have to meet is 5. For the third test case, the minimum number of unfriendly people Boris will have to meet is 1. For the fourth test case, the minimum number of unfriendly people Boris will have to meet is 10."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n1 1",
+        "output": "0",
+        "explanation": "For the first test case, the minimum number of unfriendly people Boris will have to meet is 0."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n2 2",
+        "output": "1",
+        "explanation": "For the first test case, the minimum number of unfriendly people Boris will have to meet is 1."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n10 10",
+        "expectedOutput": "945",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n5 5",
+        "expectedOutput": "120",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n3 3",
+        "expectedOutput": "10",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "5\n1 2\n1 3\n2 2\n2 3\n3 3",
+        "expectedOutput": "1\n5\n1\n10\n45",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved using dynamic programming. We create a DP array dp where dp[i][j][k] represents the minimum number of unfriendly people Boris will have to meet to reach cell (i, j, k). We fill up the DP array by iterating over all cells and for each cell, we calculate the minimum number of unfriendly people by considering all possible previous cells.",
+    "timeComplexity": "O(T * N * D^N) per test case, O(T * N * D^N) total.",
+    "spaceComplexity": "O(N * D^N) \u2014 the dominant structure is the DP array.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <limits.h>\n\nint min(int a, int b) { return a < b ? a : b; }\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int N, D;\n        scanf(\"%d %d\", &N, &D);\n        int ***dp = (int ***)malloc(N * sizeof(int **));\n        for (int i = 0; i < N; i++) {\n            dp[i] = (int **)malloc(D * sizeof(int *));\n            for (int j = 0; j < D; j++) {\n                dp[i][j] = (int *)malloc(D * sizeof(int));\n                for (int k = 0; k < D; k++) {\n                    dp[i][j][k] = INT_MAX;\n                }\n            }\n        }\n        dp[0][0][0] = 0;\n        for (int i = 0; i < D; i++) {\n            for (int j = 0; j < D; j++) {\n                for (int k = 0; k < D; k++) {\n                    if (i + j + k > 0) {\n                        int val = (i ^ j ^ k) * (i + j + k);\n                        if (i > 0) dp[i][j][k] = min(dp[i][j][k], dp[i-1][j][k] + val);\n                        if (j > 0) dp[i][j][k] = min(dp[i][j][k], dp[i][j-1][k] + val);\n                        if (k > 0) dp[i][j][k] = min(dp[i][j][k], dp[i][j][k-1] + val);\n                    }\n                }\n            }\n        }\n        printf(\"%d\\n\", dp[D-1][D-1][D-1]);\n        for (int i = 0; i < N; i++) {\n            for (int j = 0; j < D; j++) {\n                free(dp[i][j]);\n            }\n            free(dp[i]);\n        }\n        free(dp);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <climits>\nusing namespace std;\n\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        int N, D;\n        cin >> N >> D;\n        int ***dp = new int **[N];\n        for (int i = 0; i < N; i++) {\n            dp[i] = new int *[D];\n            for (int j = 0; j < D; j++) {\n                dp[i][j] = new int[D];\n                for (int k = 0; k < D; k++) {\n                    dp[i][j][k] = INT_MAX;\n                }\n            }\n        }\n        dp[0][0][0] = 0;\n        for (int i = 0; i < D; i++) {\n            for (int j = 0; j < D; j++) {\n                for (int k = 0; k < D; k++) {\n                    if (i + j + k > 0) {\n                        int val = (i ^ j ^ k) * (i + j + k);\n                        if (i > 0) dp[i][j][k] = min(dp[i][j][k], dp[i-1][j][k] + val);\n                        if (j > 0) dp[i][j][k] = min(dp[i][j][k], dp[i][j-1][k] + val);\n                        if (k > 0) dp[i][j][k] = min(dp[i][j][k], dp[i][j][k-1] + val);\n                    }\n                }\n            }\n        }\n        cout << dp[D-1][D-1][D-1] << endl;\n        for (int i = 0; i < N; i++) {\n            for (int j = 0; j < D; j++) {\n                delete[] dp[i][j];\n            }\n            delete[] dp[i];\n        }\n        delete[] dp;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n        while (T-- > 0) {\n            int N = sc.nextInt();\n            int D = sc.nextInt();\n            int [][][] dp = new int[N][D][D];\n            for (int i = 0; i < N; i++) {\n                for (int j = 0; j < D; j++) {\n                    for (int k = 0; k < D; k++) {\n                        dp[i][j][k] = Integer.MAX_VALUE;\n                    }\n                }\n            }\n            dp[0][0][0] = 0;\n            for (int i = 0; i < D; i++) {\n                for (int j = 0; j < D; j++) {\n                    for (int k = 0; k < D; k++) {\n                        if (i + j + k > 0) {\n                            int val = (i ^ j ^ k) * (i + j + k);\n                            if (i > 0) dp[0][j][k] = Math.min(dp[0][j][k], dp[0][j][k] + val);\n                            if (j > 0) dp[0][j][k] = Math.min(dp[0][j][k], dp[0][j-1][k] + val);\n                            if (k > 0) dp[0][j][k] = Math.min(dp[0][j][k], dp[0][j][k-1] + val);\n                        }\n                    }\n                }\n            }\n            System.out.println(dp[0][D-1][D-1]);\n        }\n    }\n}",
+      "Python3": "import sys\ninput = sys.stdin.readline\nT = int(input())\nfor _ in range(T):\n    N, D = map(int, input().split())\n    dp = [[[float('inf')] * D for _ in range(D)] for _ in range(N)]\n    dp[0][0][0] = 0\n    for i in range(D):\n        for j in range(D):\n            for k in range(D):\n                if i + j + k > 0:\n                    val = (i ^ j ^ k) * (i + j + k)\n                    if i > 0: dp[0][j][k] = min(dp[0][j][k], dp[0][j][k] + val)\n                    if j > 0: dp[0][j][k] = min(dp[0][j][k], dp[0][j-1][k] + val)\n                    if k > 0: dp[0][j][k] = min(dp[0][j][k], dp[0][j][k-1] + val)\n    print(dp[0][D-1][D-1])",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst input = () => lines[idx++];\nconst T = parseInt(input());\nfor (let i = 0; i < T; i++) {\n    const [N, D] = input().split(' ').map(Number);\n    const dp = Array(N).fill().map(() => Array(D).fill().map(() => Array(D).fill(Infinity)));\n    dp[0][0][0] = 0;\n    for (let i = 0; i < D; i++) {\n        for (let j = 0; j < D; j++) {\n            for (let k = 0; k < D; k++) {\n                if (i + j + k > 0) {\n                    const val = (i ^ j ^ k) * (i + j + k);\n                    if (i > 0) dp[0][j][k] = Math.min(dp[0][j][k], dp[0][j][k] + val);\n                    if (j > 0) dp[0][j][k] = Math.min(dp[0][j][k], dp[0][j-1][k] + val);\n                    if (k > 0) dp[0][j][k] = Math.min(dp[0][j][k], dp[0][j][k-1] + val);\n                }\n            }\n        }\n    }\n    console.log(dp[0][D-1][D-1]);\n}"
+    }
+  }
+}

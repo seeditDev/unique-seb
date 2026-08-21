@@ -1,0 +1,123 @@
+{
+  "questionId": "Q2501",
+  "title": "Music & Lyrics",
+  "slug": "music-lyrics",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Substring Search",
+      "Trie",
+      "Strings",
+      "Multiple Pattern Matching",
+      "Aho-Corasick"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Strings"
+    ]
+  },
+  "content": {
+    "problemStatement": "Chef Sridhar listenes to music while cooking. He realized that the lyrics of many songs contain the same words. He thought of a task to do in his leisure; pick a set of words and find the frequency of the words in the lyrics of various songs.\n\nA word A from the lyrics is said to match a given word W if W is a substring of A.\n\n**Note** Some words from the lyrics can match multiple given words. For e.g, **shawty**, matches both **shawty** as well as **hawt**. The word **shawty** in the lyrics must be counted in the frquency of **shawty** as well as **hawt**.\n\nYou may assume that all the comparisons must be case sensitive. Also, there are no whitespaces within a word in the given list, or in the lyrics. Words in the lyrics are separated by **\"-\"** characters (of course without the quotes).",
+    "constraints": [
+      "1 \u2264 T \u2264 10",
+      "1 \u2264 W \u2264 500",
+      "1 \u2264 length of each word \u2264 5000",
+      "1 \u2264 N \u2264 100",
+      "1 \u2264 length of each lyric \u2264 50000",
+      "All characters are uppercase letters, lowercase letters, digits or '-'"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case:\n- A line with integer W, the number of words to query.\n- W lines follow, each containing a word (no spaces).\n- A line with integer N, the number of lyric strings.\n- N lines follow, each containing a lyric string. Words inside a lyric are separated by the character '-'.\nAll comparisons are case\u2011sensitive.",
+    "outputFormat": "For each test case, output W lines. The i\u2011th line contains a single integer \u2013 the total number of occurrences of the i\u2011th query word as a substring in all lyric strings of that test case. Test cases are processed sequentially, so the outputs of the first test case appear first, followed by those of the second, and so on.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "5\nhe\nshe\nsher\nhis\nhers\n2\nushers\nshe-said-he-said-she-said-he-said-his",
+        "output": "5\n3\n1\n1\n1",
+        "explanation": "The word 'he' appears 5 times, 'she' appears 3 times, 'sher' appears 1 time, 'his' appears 1 time, and 'hers' appears 1 time."
+      },
+      {
+        "id": "sample_2",
+        "input": "3\nwho\nshawty\nhawt\n2\nGet-it-shawty-Get-it-shawty\nWhoa-W-W-Whoa-Shawtyyyyy",
+        "output": "0\n2\n3",
+        "explanation": "The word 'who' does not appear, 'shawty' appears 2 times, and 'hawt' appears 3 times."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The naive solution scans every lyric for every word, leading to O(W\u00b7totalLyricLength) which is too slow for the maximal limits. A classic way to count occurrences of many patterns simultaneously is the Aho\u2011Corasick automaton.\n1. Build a trie of all W query words. Each node stores a list of pattern indices that end at that node.\n2. Compute failure links with a BFS. The failure link of a node points to the longest proper suffix of the current path that is also present in the trie.\n3. While processing a lyric, walk the automaton character by character. Whenever we arrive at a node, all patterns stored in that node (and in nodes reachable through failure links) are matched at the current position. Increment the corresponding counters.\n4. Repeat the walk for every lyric of the current test case.\nThe automaton is built once per test case, then each lyric is processed in linear time with respect to its length. This yields overall time O(total length of all patterns + total length of all lyrics + number of matches). Memory consumption is O(total length of patterns) for the trie plus O(W) for the counters.\nEdge cases handled automatically: overlapping matches, matches that cross hyphens (they are treated as ordinary characters, so a pattern can only match if the hyphen is part of it), case\u2011sensitivity, and patterns longer than a lyric (they simply never match).",
+    "timeComplexity": "O( \u03a3|word_i| + \u03a3|lyric_j| + totalMatches ) per test case, which is linear in the input size.",
+    "spaceComplexity": "O( \u03a3|word_i| + W ) \u2013 the trie plus the array of counters.",
+    "code": {
+      "C": "// Aho\u2011Corasick implementation in C (handles multiple test cases)\n#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#define ALPH 128   // full ASCII range needed for letters, digits and '-'\n\ntypedef struct Node {\n    int next[ALPH];\n    int link;               // failure link\n    int out;                // head of linked list of pattern indices ending here\n    struct Node *out_next; // next node in output chain (via failure links)\n} Node;\n\ntypedef struct OutNode {\n    int idx;                // pattern index\n    struct OutNode *next;   // next pattern ending at the same trie node\n} OutNode;\n\nNode *nodes;\nint node_cnt;\nOutNode *out_nodes;\nint out_cnt;\nint *freq; // frequency array for current test case\n\nint new_node() {\n    Node *n = &nodes[node_cnt];\n    for (int i = 0; i < ALPH; ++i) n->next[i] = -1;\n    n->link = -1;\n    n->out = -1;\n    n->out_next = NULL;\n    return node_cnt++;\n}\n\nint new_out(int idx) {\n    OutNode *o = &out_nodes[out_cnt];\n    o->idx = idx;\n    o->next = NULL;\n    return out_cnt++;\n}\n\nvoid add_pattern(const char *s, int idx) {\n    int v = 0;\n    for (int i = 0; s[i]; ++i) {\n        unsigned char c = s[i];\n        if (nodes[v].next[c] == -1) {\n            nodes[v].next[c] = new_node();\n        }\n        v = nodes[v].next[c];\n    }\n    // store pattern index in output list of node v\n    int out_id = new_out(idx);\n    out_nodes[out_id].next = (nodes[v].out == -1) ? NULL : &out_nodes[nodes[v].out];\n    nodes[v].out = out_id;\n}\n\nvoid build_automaton() {\n    int q[500000]; // enough for all nodes (max total pattern length)\n    int head = 0, tail = 0;\n    nodes[0].link = 0;\n    // initialize children of root\n    for (int c = 0; c < ALPH; ++c) {\n        if (nodes[0].next[c] != -1) {\n            nodes[nodes[0].next[c]].link = 0;\n            q[tail++] = nodes[0].next[c];\n        } else {\n            nodes[0].next[c] = 0; // go to root\n        }\n    }\n    while (head < tail) {\n        int v = q[head++];\n        // propagate output links\n        int link = nodes[v].link;\n        if (nodes[link].out != -1) {\n            nodes[v].out_next = &nodes[link];\n        }\n        for (int c = 0; c < ALPH; ++c) {\n            if (nodes[v].next[c] != -1) {\n                nodes[nodes[v].next[c]].link = nodes[ nodes[v].link ].next[c];\n                q[tail++] = nodes[v].next[c];\n            } else {\n                nodes[v].next[c] = nodes[ nodes[v].link ].next[c];\n            }\n        }\n    }\n}\n\nvoid process_lyric(const char *s) {\n    int v = 0;\n    for (int i = 0; s[i]; ++i) {\n        unsigned char c = s[i];\n        v = nodes[v].next[c];\n        // report matches at node v and via output links\n        int cur = v;\n        while (cur != -1) {\n            if (nodes[cur].out != -1) {\n                for (OutNode *o = &out_nodes[nodes[cur].out]; o != NULL; o = o->next) {\n                    freq[o->idx]++;\n                }\n            }\n            if (nodes[cur].out_next) cur = nodes[cur].out_next - nodes; // pointer arithmetic to get index\n            else break;\n        }\n    }\n}\n\nint main() {\n    int T; if (scanf(\"%d\", &T)!=1) return 0;\n    while (T--) {\n        int W; scanf(\"%d\", &W);\n        char **patterns = (char**)malloc(W * sizeof(char*));\n        for (int i = 0; i < W; ++i) {\n            patterns[i] = (char*)malloc(5005);\n            scanf(\"%s\", patterns[i]);\n        }\n        int N; scanf(\"%d\", &N);\n        char **lyrics = (char**)malloc(N * sizeof(char*));\n        for (int i = 0; i < N; ++i) {\n            lyrics[i] = (char*)malloc(50005);\n            scanf(\"%s\", lyrics[i]);\n        }\n        // allocate structures (worst case total nodes = sum lengths of patterns + 1)\n        int max_nodes = 1;\n        for (int i = 0; i < W; ++i) max_nodes += strlen(patterns[i]);\n        nodes = (Node*)calloc(max_nodes, sizeof(Node));\n        out_nodes = (OutNode*)calloc(W, sizeof(OutNode)); // at most one out per pattern\n        node_cnt = 0; out_cnt = 0;\n        new_node(); // root\n        for (int i = 0; i < W; ++i) add_pattern(patterns[i], i);\n        build_automaton();\n        freq = (int*)calloc(W, sizeof(int));\n        for (int i = 0; i < N; ++i) process_lyric(lyrics[i]);\n        for (int i = 0; i < W; ++i) printf(\"%d\\n\", freq[i]);\n        // free memory for this test case\n        for (int i = 0; i < W; ++i) free(patterns[i]);\n        free(patterns);\n        for (int i = 0; i < N; ++i) free(lyrics[i]);\n        free(lyrics);\n        free(nodes);\n        free(out_nodes);\n        free(freq);\n    }\n    return 0;\n}",
+      "C++": ""
+    }
+  }
+}

@@ -1,0 +1,119 @@
+{
+  "questionId": "Q11861",
+  "title": "Combination Sum II",
+  "slug": "combination-sum-ii",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Backtracking",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Array",
+      "Backtracking",
+      "Combination Sum"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Given a collection of candidate numbers (candidates) and a target number\n    (target), find all unique combinations in candidates where the candidate numbers sum to target. Each number in\n    candidates may only be used once in the combination..",
+    "constraints": [
+      "1 <= candidates.length <= 100",
+      "1 <= candidates[i] <= 100",
+      "1 <= target <= 1000"
+    ],
+    "inputFormat": "The input consists of two parameters: candidates and target. The candidates parameter is an array of integers, and the target parameter is an integer.",
+    "outputFormat": "The output is a 2D array of integers, where each sub-array represents a unique combination of numbers that sum up to the target.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "[[1], 1]",
+        "expectedOutput": "[[1]]",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "[[100, 100, 100], 300]",
+        "expectedOutput": "[[100, 100, 100]]",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": "[[5, 5, 5], 15]",
+        "expectedOutput": "[[5, 5, 5]]",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case/empty-like",
+        "input": "[[], 10]",
+        "expectedOutput": "[]",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": "[[10, 1, 2, 7, 6, 1, 5], 8]",
+        "expectedOutput": "[[1, 1, 6], [1, 2, 5], [1, 7], [2, 6]]",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Use backtracking to find all unique combinations of numbers that sum up to the target.",
+    "timeComplexity": "O(2^n)",
+    "spaceComplexity": "O(n)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nvoid findCombination(int ind, int target, int* arr, int** ans, int* ansSize, int** ds, int* dsSize) {\n    if (target == 0) {\n        ans[*ansSize] = (int*)malloc((*dsSize) * sizeof(int));\n        for (int i = 0; i < *dsSize; i++) {\n            ans[*ansSize][i] = ds[0][i];\n        }\n        (*ansSize)++;\n        return;\n    }\n\n    for (int i = ind; i < 100; i++) {\n        if (i > ind && arr[i] == arr[i - 1]) continue;\n        if (arr[i] > target) break;\n        ds[0][*dsSize] = arr[i];\n        (*dsSize)++;\n        findCombination(i + 1, target - arr[i], arr, ans, ansSize, ds, dsSize);\n        (*dsSize)--;\n    }\n}\n\nint** combinationSum2(int* candidates, int candidatesSize, int target, int* returnSize) {\n    int** ans = (int**)malloc(100 * sizeof(int*));\n    int* ds = (int*)malloc(100 * sizeof(int));\n    int ansSize = 0;\n    int dsSize = 0;\n    findCombination(0, target, candidates, ans, &ansSize, &ds, &dsSize);\n    *returnSize = ansSize;\n    return ans;\n}",
+      "C++": "#include<bits/stdc++.h>\nusing namespace std;\n\n// Function to find all combinations of numbers that sum up to the target\nvoid findCombination(int ind, int target, vector<int>& arr, vector<vector<int>>& ans, vector<int>& ds) {\n    // Base case: If the target becomes 0, we found a valid combination\n    if (target == 0) {\n        ans.push_back(ds);  // Add the current combination to the result\n        return;\n    }\n\n    // Loop through the elements starting from index 'ind'\n    for (int i = ind; i < arr.size(); i++) {\n        // Skip duplicates to avoid repeating combinations\n        if (i > ind && arr[i] == arr[i - 1]) continue;\n\n        // If the current element is greater than the remaining target, break the loop\n        if (arr[i] > target) break;\n\n        // Include the current element in the combination\n        ds.push_back(arr[i]);\n\n        // Recur with the updated target and next index (i + 1 to avoid repetition)\n        findCombination(i + 1, target - arr[i], arr, ans, ds);\n\n        // Backtrack by removing the last added element\n        ds.pop_back();\n    }\n}\n\n// Function to calculate all unique combinations that sum up to the target\nvector<vector<int>> combinationSum2(vector<int>& candidates, int target) {\n    sort(candidates.begin(), candidates.end());  // Sort the candidates to handle duplicates\n    vector<vector<int>> ans;  // To store the final answer\n    vector<int> ds;  // To store the current combination\n    findCombination(0, target, candidates, ans, ds);  // Call the helper function\n    return ans;  // Return all valid combinations\n}\n",
+      "Java": "// Solution class for managing combinations\nimport java.util.*;\n\nclass Solution {\n\n    // Function to find all combinations of numbers that sum up to the target\n    public void findCombination(int ind, int target, int[] arr, List<List<Integer>> ans, List<Integer> ds) {\n        // Base case: If the target becomes 0, we found a valid combination\n        if (target == 0) {\n            ans.add(new ArrayList<>(ds));  // Add the current combination to the result\n            return;\n        }\n\n        // Loop through the elements starting from index 'ind'\n        for (int i = ind; i < arr.length; i++) {\n            // Skip duplicates to avoid repeating combinations\n            if (i > ind && arr[i] == arr[i - 1]) continue;\n\n            // If the current element is greater than the remaining target, break the loop\n            if (arr[i] > target) break;\n\n            // Include the current element in the combination\n            ds.add(arr[i]);\n\n            // Recur with the updated target and next index (i + 1 to avoid repetition)\n            findCombination(i + 1, target - arr[i], arr, ans, ds);\n\n            // Backtrack by removing the last added element\n            ds.remove(ds.size() - 1);\n        }\n    }\n\n    // Function to calculate all unique combinations that sum up to the target\n    public List<List<Integer>> combinationSum2(int[] candidates, int target) {\n        Arrays.sort(candidates);  // Sort the candidates to handle duplicates\n        List<List<Integer>> ans = new ArrayList<>();  // To store the final answer\n        List<Integer> ds = new ArrayList<>();  // To store the current combination\n        findCombination(0, target, candidates, ans, ds);  // Call the helper function\n        return ans;  // Return all valid combinations\n    }\n\n    public static void main(String[] args) {\n        Solution obj = new Solution();\n        int[] v = {10, 1, 2, 7, 6, 1, 5};  // Example input\n        int target = 8;  // Target sum\n\n        // Get all combinations that sum up to 8\n        List<List<Integer>> comb = obj.combinationSum2(v, target);\n\n        // Output the combinations\n        System.out.print(\"[ \");\n        for (List<Integer> combination : comb) {\n            System.out.print(\"[ \");\n            for (int num : combination) {\n                System.out.print(num + \" \");\n            }\n            System.out.print(\"]\");\n        }\n        System.out.println(\" ]\");\n    }\n}",
+      "Python3": "class Solution:\n\n    # Function to find all combinations of numbers that sum up to the target\n    def findCombination(self, ind, target, arr, ans, ds):\n        # Base case: If the target becomes 0, we found a valid combination\n        if target == 0:\n            ans.append(list(ds))  # Add the current combination to the result\n            return\n\n        # Loop through the elements starting from index 'ind'\n        for i in range(ind, len(arr)):\n            # Skip duplicates to avoid repeating combinations\n            if i > ind and arr[i] == arr[i - 1]:\n                continue\n\n            # If the current element is greater than the remaining target, break the loop\n            if arr[i] > target:\n                break\n\n            # Include the current element in the combination\n            ds.append(arr[i])\n\n            # Recur with the updated target and next index (i + 1 to avoid repetition)\n            self.findCombination(i + 1, target - arr[i], arr, ans, ds)\n\n            # Backtrack by removing the last added element\n            ds.pop()\n\n    # Function to calculate all unique combinations that sum up to the target\n    def combinationSum2(self, candidates, target):\n        candidates.sort()  # Sort the candidates to handle duplicates\n        ans = []  # To store the result\n        ds = []  # To store a current combination\n        self.findCombination(0, target, candidates, ans, ds)  # Start the recursive search\n        return ans  # Return all valid combinations\n\n# Driver code\nif __name__ == \"__main__\":\n    obj = Solution()\n    v = [10, 1, 2, 7, 6, 1, 5]  # Example input\n    target = 8  # Target sum\n\n    # Get all combinations that sum up to 8\n    comb = obj.combinationSum2(v, target)\n\n    # Output the combinations\n    print(\"[\", end=\" \")\n    for combination in comb:\n        print(\"[\", end=\" \")\n        print(\" \".join(map(str, combination)), end=\" \")\n        print(\"]\", end=\" \")\n    print(\"]\")",
+      "JavaScript": "class Solution {\n\n    // Function to find all combinations of numbers that sum up to the target\n    findCombination(ind, target, arr, ans, ds) {\n        // Base case: If the target becomes 0, we found a valid combination\n        if (target === 0) {\n            ans.push([...ds]);  // Add the current combination to the result\n            return;\n        }\n\n        // Loop through the elements starting from index 'ind'\n        for (let i = ind; i < arr.length; i++) {\n            // Skip duplicates to avoid repeating combinations\n            if (i > ind && arr[i] === arr[i - 1]) continue;\n\n            // If the current element is greater than the remaining target, break the loop\n            if (arr[i] > target) break;\n\n            // Include the current element in the combination\n            ds.push(arr[i]);\n\n            // Recur with the updated target and next index (i + 1 to avoid repetition)\n            this.findCombination(i + 1, target - arr[i], arr, ans, ds);\n\n            // Backtrack by removing the last added element\n            ds.pop();\n        }\n    }\n\n    // Function to calculate all unique combinations that sum up to the target\n    combinationSum2(candidates, target) {\n        candidates.sort();  // Sort the candidates to handle duplicates\n        const ans = [];  // To store the result\n        const ds = [];  // To store a current combination\n        this.findCombination(0, target, candidates, ans, ds);  // Start the recursive search\n        return ans;  // Return all valid combinations\n    }\n}\n\n// Driver code\nconst obj = new Solution();\nconst v = [10, 1, 2, 7, 6, 1, 5];  // Example input\nconst target = 8;  // Target sum\n\n// Get all combinations that sum up to 8\nconst comb = obj.combinationSum2(v, target);\n\n// Output the combinations\nconsole.log(\"[\", end=\" \");\ncomb.forEach(combination => {\n    process.stdout.write(\"[ \");\n    console.log(combination.join(\" \"), end=\" \");\n    console.log(\"]\", end=\" \");\n});\nconsole.log(\"]\");"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

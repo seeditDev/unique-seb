@@ -1,0 +1,129 @@
+{
+  "questionId": "Q7954",
+  "title": "Chef and Patients",
+  "slug": "chef-and-patients",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Sorting | Greedy",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Sorting",
+      "Greedy",
+      "Stable Sort",
+      "Ranking"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Sorting"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Dr. Chef is treating COVID-19 patients. There is a queue of NNN patients (numbered from patient 111 at the front of the queue to patient NNN at the back) outside his clinic. You, his assistant, found out that for each valid iii, the iii-th patient has an illness level AiA_iAi​.\n\nChef treats patients based on their health, i.e. a patient with a higher illness level is always treated before any patients with a lower illness level. Chef is also fair, so he treats patients with an equal illness level based on their position in the queue, i.e. a patient ahead in the queue is always treated before a patient with the same illness level that is further behind in the queue.\n\nThe first patient to be treated has to wait an hour for Chef to set up his equipment. Treating each patient also takes an hour, and Chef always starts treating the next patient as soon as he is done with the current one.\n\nThe patients are a bit impatient. As Chef's assistant, for each patient, find out how long (in hours) this patient needs to wait before Chef starts treating this patient.",
+    "constraints": [
+      "1 <= T <= 5",
+      "1 <= N <= 100000",
+      "1 <= Ai <= 1000"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case: the first line contains an integer N, the number of patients. The second line contains N space‑separated integers A1 … AN, the illness levels of the patients in queue order (patient 1 is at the front).",
+    "outputFormat": "For each test case output a single line with N space‑separated integers. The i‑th integer is the number of hours patient i has to wait before Chef starts treating them.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4\n5\n2 3 5 3 4\n3\n2 2 2\n6\n2 10 3 3 2 10\n4\n8 9 8 9",
+        "output": "5 3 1 4 2\n1 2 3\n5 1 3 4 6 2\n3 1 4 2",
+        "explanation": "Patients are ordered by decreasing illness level, ties broken by original position. The waiting time equals the 1‑based position in this order."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n5",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary (15 elements)",
+        "input": "1\n15\n1000 1 500 500 1000 2 999 999 3 4 5 6 7 8 9",
+        "expectedOutput": "1 15 5 6 2 14 3 4 13 12 11 10 9 8 7",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case – all equal",
+        "input": "1\n10\n7 7 7 7 7 7 7 7 7 7",
+        "expectedOutput": "1 2 3 4 5 6 7 8 9 10",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "1\n1\n5",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "1\n1\n5",
+        "expectedOutput": "1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Create a list of pairs (illness level, original index). Sort the list by decreasing illness level; for equal levels keep the smaller original index first (stable ordering). The position of a pair in this sorted list (1‑based) is exactly the waiting time for that patient, because the first treated patient waits 1 hour (setup) and each subsequent patient waits one more hour than the previous one. After sorting, fill an answer array where answer[original_index] = position_in_sorted_list. Finally print the answer array in the original order.",
+    "timeComplexity": "O(N log N) per test case due to sorting.",
+    "spaceComplexity": "O(N) for storing pairs and the answer array.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\ntypedef struct {int val; int idx;} Pair;\nint cmp(const void *a, const void *b) {\n    Pair *p = (Pair *)a, *q = (Pair *)b;\n    if (p->val != q->val) return q->val - p->val; // descending value\n    return p->idx - q->idx; // ascending index\n}\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    while(T--){\n        int N; scanf(\"%d\", &N);\n        Pair *arr = (Pair*)malloc(N * sizeof(Pair));\n        for(int i=0;i<N;i++){\n            scanf(\"%d\", &arr[i].val);\n            arr[i].idx = i;\n        }\n        qsort(arr, N, sizeof(Pair), cmp);\n        int *ans = (int*)malloc(N * sizeof(int));\n        for(int i=0;i<N;i++) ans[arr[i].idx] = i+1;\n        for(int i=0;i<N;i++){\n            if(i) printf(\" \");\n            printf(\"%d\", ans[i]);\n        }\n        printf(\"\\n\");\n        free(arr); free(ans);\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N; cin>>N;\n        vector<pair<int,int>> v(N);\n        for(int i=0;i<N;i++){\n            cin>>v[i].first; // illness level\n            v[i].second = i; // original index\n        }\n        sort(v.begin(), v.end(), [](const auto &a, const auto &b){\n            if(a.first!=b.first) return a.first>b.first; // higher first\n            return a.second<b.second; // lower index first\n        });\n        vector<int> ans(N);\n        for(int i=0;i<N;i++) ans[v[i].second]=i+1;\n        for(int i=0;i<N;i++){\n            if(i) cout<<' ';\n            cout<<ans[i];\n        }\n        cout<<'\\n';\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    static class Pair {\n        int val;\n        int idx;\n        Pair(int v, int i){val=v; idx=i;}\n    }\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st;\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder out = new StringBuilder();\n        while (T-- > 0) {\n            int N = Integer.parseInt(br.readLine().trim());\n            st = new StringTokenizer(br.readLine());\n            Pair[] arr = new Pair[N];\n            for (int i = 0; i < N; i++) {\n                int val = Integer.parseInt(st.nextToken());\n                arr[i] = new Pair(val, i);\n            }\n            Arrays.sort(arr, (a, b) -> {\n                if (a.val != b.val) return b.val - a.val; // descending\n                return a.idx - b.idx; // ascending index\n            });\n            int[] ans = new int[N];\n            for (int i = 0; i < N; i++) ans[arr[i].idx] = i + 1;\n            for (int i = 0; i < N; i++) {\n                if (i > 0) out.append(' ');\n                out.append(ans[i]);\n            }\n            out.append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}\n",
+      "Python3": "import sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it))\n        arr = []\n        for i in range(N):\n            val = int(next(it))\n            arr.append(( -val, i ))  # negative for descending\n        arr.sort()  # sorts by -val asc (i.e., val desc), then i asc\n        ans = [0]*N\n        for pos, (_, idx) in enumerate(arr, start=1):\n            ans[idx] = pos\n        out_lines.append(' '.join(map(str, ans)))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet outputs = [];\nfor (let t = 0; t < T; t++) {\n  const N = Number(input[idx++]);\n  let pairs = new Array(N);\n  for (let i = 0; i < N; i++) {\n    const val = Number(input[idx++]);\n    pairs[i] = {val: val, idx: i};\n  }\n  pairs.sort((a, b) => {\n    if (a.val !== b.val) return b.val - a.val; // descending value\n    return a.idx - b.idx; // ascending index\n  });\n  const ans = new Array(N);\n  for (let i = 0; i < N; i++) {\n    ans[pairs[i].idx] = i + 1;\n  }\n  outputs.push(ans.join(' '));\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

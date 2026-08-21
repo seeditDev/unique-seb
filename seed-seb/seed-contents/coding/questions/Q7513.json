@@ -1,0 +1,84 @@
+{
+  "questionId": "Q7513",
+  "title": "Word Hopping",
+  "slug": "word-hopping",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-02",
+  "metadata": {
+    "category": "Graphs",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "graphs",
+      "competitive programming"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Graphs"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "In this problem we are concerned with words constructed using the lowercase letters of the English alphabet - that is, a,b,c,...,z. These words need not necessarily be meaningful: any sequence of letters forms a word. For example, abbca is a word.\n\nWe say that we can \"hop\" from the word w1w_1w1​ to the word w2w_2w2​ if they are \"sufficiently close\". We define w2w_2w2​ to be sufficiently close to w1w_1w1​ if one of the following holds:\n\n\nw2w_2w2​ is obtained from w1w_1w1​ by deleting one letter.\nw2w_2w2​ is obtained from w1w_1w1​ by replacing one of the letters in w1w_1w1​ by some letter that appears to its right in w1w_1w1​ and which is also to its right in alphabetical order.\nFor example, we can hop from abbca to abca by deleting the second (or third letter). We can hop from aabca to abbca by replacing the a in the second position by the letter b that appears to the right of the a in aabca and which is also to its right in alphabetical order. On the other hand we cannot hop from abbca to aabca since we would need to replace the b in the second position by a, but a is to the left of b in alphabetical order.\n\nYou will be given a collection of words WWW. Your task is to find the length of the longest sequence w1,w2,…w_1, w_2, \\ldots w1​,w2​,… of distinct words from WWW such that we may hop from w1w_1w1​ to w2w_2w2​, w2w_2w2​ to w3w_3w3​ and so on. We call this the hopping number for this set.\n\nFor example, if\n\nWWW = {abacd, bcdada, dd, abcd,bcdd, adcd, addd, aa, ccd, add, ad}\n\nthen, the hopping number is 7 corresponding to the sequence\n\nabacd, abcd, adcd, addd, add, ad, dd",
+    "constraints": [],
+    "inputFormat": "The first line of the input contains one integer NNN indicating the number of words in the input.\nThis is followed by NNN lines of input, lines 2, 3,..., NNN+1, each containing one word over the letters {a,b,..., z}.",
+    "outputFormat": "The output should be a single integer, indicating the hopping number of the given set of words.\n\nTest Data:\nN≤100N \\leq 100N≤100\nYou may assume that each word has at most 10 letters.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "11\nabacd\nbcdada\ndd\nabcd\nbcdd\nadcd\naddd\naa\nccd\nadd\nad",
+        "output": "7",
+        "explanation": ""
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "input": "11\nabacd\nbcdada\ndd\nabcd\nbcdd\nadcd\naddd\naa\nccd\nadd\nad",
+        "expectedOutput": "7",
+        "weight": 100
+      }
+    ],
+    "totalTestCases": 1,
+    "totalWeight": 100
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      100
+    ],
+    "maxScore": 100
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "`#include &lt;iostream&gt;\n#include &lt;vector&gt;\n#include &lt;string&gt;\n#include &lt;algorithm&gt;\n#include &lt;functional&gt;\nusing namespace std;\n\nbool canHop(const string &amp;s, const string &amp;t) {\n    // Check deletion move: t should be s with one letter removed.\n    if(t.size() + 1 == s.size()){\n        for (int i = 0; i &lt; s.size(); i++){\n            string temp = s.substr(0, i) + s.substr(i+1);\n            if(temp == t)\n                return true;\n        }\n    }\n    // Check replacement move: same length with exactly one differing letter.\n    if(t.size() == s.size()){\n        int diffCount = 0, diffIndex = -1;\n        for (int i = 0; i &lt; s.size(); i++){\n            if(s[i] != t[i]){\n                diffCount++;\n                diffIndex = i;\n            }\n        }\n        if(diffCount == 1){\n            // Replacement allowed if t[diffIndex] is alphabetically greater\n            // than s[diffIndex] and exists later in s.\n            if(t[diffIndex] &lt;= s[diffIndex])\n                return false;\n            for (int j = diffIndex + 1; j &lt; s.size(); j++){\n                if(s[j] == t[diffIndex])\n                    return true;\n            }\n        }\n    }\n    return false;\n}\n\nint main(){\n    int N;\n    cin &gt;&gt; N;\n    vector&lt;string&gt; words(N);\n    for (int i = 0; i &lt; N; i++){\n        cin &gt;&gt; words[i];\n    }\n    vector&lt;vector&lt;int&gt;&gt; graph(N);\n    // Build graph: directed edge from i to j if hop is possible from words[i] to words[j]\n    for (int i = 0; i &lt; N; i++){\n        for (int j = 0; j &lt; N; j++){\n            if(i != j &amp;&amp; canHop(words[i], words[j])){\n                graph[i].push_back(j);\n            }\n        }\n    }\n    \n    // DFS with memoization:\n    vector&lt;int&gt; dp(N, -1);\n    function&lt;int(int)&gt; dfs = [&amp;](int u) -&gt; int {\n        if(dp[u] != -1)\n            return dp[u];\n        int best = 1;\n        for (int v : graph[u]){\n            best = max(best, 1 + dfs(v));\n        }\n        dp[u] = best;\n        return best;\n    };\n    \n    int ans = 0;\n    for (int i = 0; i &lt; N; i++){\n        ans = max(ans, dfs(i));\n    }\n    \n    cout &lt;&lt; ans &lt;&lt; endl;\n    return 0;\n}\n``def can_hop(s, t):\n    # Check deletion move\n    if len(t) + 1 == len(s):\n        for i in range(len(s)):\n            if s[:i] + s[i+1:] == t:\n                return True\n    # Check replacement move: same length with exactly one differing letter.\n    if len(s) == len(t):\n        diff_count = 0\n        diff_index = -1\n        for i in range(len(s)):\n            if s[i] != t[i]:\n                diff_count += 1\n                diff_index = i\n        if diff_count == 1:\n            if t[diff_index] &lt;= s[diff_index]:\n                return False\n            for j in range(diff_index + 1, len(s)):\n                if s[j] == t[diff_index]:\n                    return True\n    return False\n\ndef main():\n    import sys\n    sys.setrecursionlimit(10000)\n    N = int(sys.stdin.readline())\n    words = [sys.stdin.readline().strip() for _ in range(N)]\n    \n    graph = [[] for _ in range(N)]\n    for i in range(N):\n        for j in range(N):\n            if i != j and can_hop(words[i], words[j]):\n                graph[i].append(j)\n    \n    dp = [-1] * N\n    def dfs(u):\n        if dp[u] != -1:\n            return dp[u]\n        best = 1\n        for v in graph[u]:\n            best = max(best, 1 + dfs(v))\n        dp[u] = best\n        return best\n    \n    ans = 0\n    for i in range(N):\n        ans = max(ans, dfs(i))\n    print(ans)\n\nif __name__ == \"__main__\":\n    main()\n`Approach 2: Topological Sort and Dynamic Programming`#include &lt;iostream&gt;\n#include &lt;vector&gt;\n#include &lt;string&gt;\n#include &lt;queue&gt;\n#include &lt;algorithm&gt;\nusing namespace std;\n\nbool canHop(const string &amp;s, const string &amp;t) {\n    if(t.size() + 1 == s.size()){\n        for (int i = 0; i &lt; s.size(); i++){\n            string temp = s.substr(0, i) + s.substr(i+1);\n            if(temp == t)\n                return true;\n        }\n    }\n    if(t.size() == s.size()){\n        int diffCount = 0, diffIndex = -1;\n        for (int i = 0; i &lt; s.size(); i++){\n            if(s[i] != t[i]){\n                diffCount++;\n                diffIndex = i;\n            }\n        }\n        if(diffCount == 1){\n            if(t[diffIndex] &lt;= s[diffIndex])\n                return false;\n            for (int j = diffIndex+1; j &lt; s.size(); j++){\n                if(s[j] == t[diffIndex])\n                    return true;\n            }\n        }\n    }\n    return false;\n}\n\nint main(){\n    int N;\n    cin &gt;&gt; N;\n    vector&lt;string&gt; words(N);\n    for(int i = 0; i &lt; N; i++){\n        cin &gt;&gt; words[i];\n    }\n    vector&lt;vector&lt;int&gt;&gt; graph(N);\n    vector&lt;int&gt; indegree(N, 0);\n    for(int i = 0; i &lt; N; i++){\n        for(int j = 0; j &lt; N; j++){\n            if(i != j &amp;&amp; canHop(words[i], words[j])){\n                graph[i].push_back(j);\n                indegree[j]++;\n            }\n        }\n    }\n    \n    // Topological sort using Kahn's algorithm\n    vector&lt;int&gt; topo;\n    queue&lt;int&gt; q;\n    for(int i = 0; i &lt; N; i++){\n        if(indegree[i] == 0)\n            q.push(i);\n    }\n    while(!q.empty()){\n        int u = q.front();\n        q.pop();\n        topo.push_back(u);\n        for (int v : graph[u]){\n            indegree[v]--;\n            if(indegree[v] == 0)\n                q.push(v);\n        }\n    }\n    \n    // Compute longest path using DP on the topologically sorted order\n    vector&lt;int&gt; dp(N, 1);\n    for(int i = topo.size()-1; i &gt;= 0; i--){\n        int u = topo[i];\n        for (int v : graph[u]){\n            dp[u] = max(dp[u], 1 + dp[v]);\n        }\n    }\n    \n    int ans = 0;\n    for (int i = 0; i &lt; N; i++){\n        ans = max(ans, dp[i]);\n    }\n    cout &lt;&lt; ans &lt;&lt; endl;\n    return 0;\n}\n``from collections import deque\n\ndef can_hop(s, t):\n    if len(t) + 1 == len(s):\n        for i in range(len(s)):\n            if s[:i] + s[i+1:] == t:\n                return True\n    if len(s) == len(t):\n        diff_count = 0\n        diff_index = -1\n        for i in range(len(s)):\n            if s[i] != t[i]:\n                diff_count += 1\n                diff_index = i\n        if diff_count == 1:\n            if t[diff_index] &lt;= s[diff_index]:\n                return False\n            for j in range(diff_index+1, len(s)):\n                if s[j] == t[diff_index]:\n                    return True\n    return False\n\ndef main():\n    import sys\n    input_data = sys.stdin.read().split()\n    N = int(input_data[0])\n    words = input_data[1:]\n    \n    graph = [[] for _ in range(N)]\n    indegree = [0] * N\n    for i in range(N):\n        for j in range(N):\n            if i != j and can_hop(words[i], words[j]):\n                graph[i].append(j)\n                indegree[j] += 1\n\n    # Topological sort using Kahn's algorithm\n    topo = []\n    q = deque([i for i in range(N) if indegree[i] == 0])\n    while q:\n        u = q.popleft()\n        topo.append(u)\n        for v in graph[u]:\n            indegree[v] -= 1\n            if indegree[v] == 0:\n                q.append(v)\n                \n    dp = [1] * N\n    for u in reversed(topo):\n        for v in graph[u]:\n            dp[u] = max(dp[u], 1 + dp[v])\n            \n    print(max(dp))\n\nif __name__ == \"__main__\":\n    main()\n`Approach 3: On-the-fly DFS without Preconstructing the Graph`#include &lt;iostream&gt;\n#include &lt;vector&gt;\n#include &lt;string&gt;\n#include &lt;functional&gt;\n#include &lt;algorithm&gt;\nusing namespace std;\n\nbool canHop(const string &amp;s, const string &amp;t) {\n    if(t.size() + 1 == s.size()){\n        for (int i = 0; i &lt; s.size(); i++){\n            string temp = s.substr(0, i) + s.substr(i+1);\n            if(temp == t)\n                return true;\n        }\n    }\n    if(t.size() == s.size()){\n        int diffCount = 0, diffIndex = -1;\n        for (int i = 0; i &lt; s.size(); i++){\n            if(s[i] != t[i]){\n                diffCount++;\n                diffIndex = i;\n            }\n        }\n        if(diffCount == 1){\n            if(t[diffIndex] &lt;= s[diffIndex])\n                return false;\n            for (int j = diffIndex+1; j &lt; s.size(); j++){\n                if(s[j] == t[diffIndex])\n                    return true;\n            }\n        }\n    }\n    return false;\n}\n\nint main(){\n    int N;\n    cin &gt;&gt; N;\n    vector&lt;string&gt; words(N);\n    for(int i = 0; i &lt; N; i++){\n        cin &gt;&gt; words[i];\n    }\n    \n    vector&lt;int&gt; dp(N, -1);\n    function&lt;int(int)&gt; dfs = [&amp;](int i) -&gt; int {\n        if(dp[i] != -1)\n            return dp[i];\n        int best = 1;\n        for (int j = 0; j &lt; N; j++){\n            if(i != j &amp;&amp; canHop(words[i], words[j])){\n                best = max(best, 1 + dfs(j));\n            }\n        }\n        dp[i] = best;\n        return best;\n    };\n    \n    int ans = 0;\n    for (int i = 0; i &lt; N; i++){\n        ans = max(ans, dfs(i));\n    }\n    cout &lt;&lt; ans &lt;&lt; endl;\n    return 0;\n}\n``def can_hop(s, t):\n    if len(t) + 1 == len(s):\n        for i in range(len(s)):\n            if s[:i] + s[i+1:] == t:\n                return True\n    if len(s) == len(t):\n        diff_count = 0\n        diff_index = -1\n        for i in range(len(s)):\n            if s[i] != t[i]:\n                diff_count += 1\n                diff_index = i\n        if diff_count == 1:\n            if t[diff_index] &lt;= s[diff_index]:\n                return False\n            for j in range(diff_index+1, len(s)):\n                if s[j] == t[diff_index]:\n                    return True\n    return False\n\ndef main():\n    import sys\n    sys.setrecursionlimit(10000)\n    input_data = sys.stdin.read().split()\n    N = int(input_data[0])\n    words = input_data[1:]\n    \n    dp = [-1] * N\n    def dfs(i):\n        if dp[i] != -1:\n            return dp[i]\n        best = 1\n        for j in range(N):\n            if i != j and can_hop(words[i], words[j]):\n                best = max(best, 1 + dfs(j))\n        dp[i] = best\n        return best\n    \n    ans = 0\n    for i in range(N):\n        ans = max(ans, dfs(i))\n    print(ans)\n\nif __name__ == \"__main__\":\n    main()\n`ConclusionAll three approaches capitalize on understanding the constrained operations (deletion and increasing letter replacement) that ensure the transformation graph has no cycles. Whether you choose to preconstruct the graph and then use DFS with memoization, utilize topological sort with dynamic programming, or perform an on‐the‐fly DFS, you will efficiently solve the problem given the small input size.\n\nHappy Coding!",
+    "timeComplexity": "O(N)",
+    "spaceComplexity": "O(1)",
+    "code": {}
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

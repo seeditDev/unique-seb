@@ -1,0 +1,142 @@
+{
+  "questionId": "Q9164",
+  "title": "Yet Another Palindrome Making Problem",
+  "slug": "yet-another-palindrome-making-problem",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Easy",
+    "isPremium": true,
+    "tags": [
+      "Parity",
+      "Counting",
+      "Greedy",
+      "String Manipulation"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Constructive Algorithms"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef has a string AAA (containing lowercase Latin letters only) of length NNN where NNN is **even**. He can perform the following operation any number of times:\n\n\nSwap AiA_iAi​ and Ai+2A_{i + 2}Ai+2​ for any 1≤i≤(N−2)1 \\le i \\le (N - 2)1≤i≤(N−2)\nDetermine if Chef can convert string AAA to a palindromic string.\n\n**Note**: A string is called a palindrome if it reads the same backwards and forwards. For example, noon\\texttt{noon}noon and level\\texttt{level}level are palindromic strings but ebb\\texttt{ebb}ebb is not.\n\n\nInput Format\n\nThe first line contains a single integer TTT — the number of test cases. Then the test cases follow.\nThe first line of each test case contains an integer NNN — the length of the string AAA.\nThe second line of each test case contains a string AAA of length NNN containing lowercase Latin letters only.\n\n\nOutput Format\nFor each test case, output `YES` if Chef can convert the string AAA to a palindromic string. Otherwise, output `NO`.\n\n\nYou may print each character of `YES` and `NO` in either uppercase or lowercase (for example, `yes`, `yEs`, `Yes` will be considered identical).",
+    "constraints": [
+      "1 <= T <= 200",
+      "2 <= N <= 1000",
+      "N is even",
+      "S contains only lowercase English letters"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, the first line contains an integer N (even), the length of the string. The second line contains a string S of length N consisting of lowercase Latin letters.",
+    "outputFormat": "For each test case output a single line containing \"YES\" if Chef can transform the string into a palindrome using the allowed swaps, otherwise output \"NO\".",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n6\naabbaa\n4\nabcd\n6\nzzxyyx",
+        "output": "YES\nNO\nYES",
+        "explanation": "Test case 1: odd positions a,b,a and even positions a,b,a match, so YES.\\nTest case 2: odd positions a,c vs even b,d differ, so NO.\\nTest case 3: odd positions z,x,y and even positions z,y,x have the same multiset, so YES."
+      },
+      {
+        "id": "sample_2",
+        "input": "2\n2\naa\n4\nabca",
+        "output": "YES\nNO",
+        "explanation": "First case: both positions contain 'a', counts equal → YES.\\nSecond case: odd positions a,c, even positions b,a – character 'b' appears only on even side, mismatch → NO."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\\n8\\nabcdabcd",
+        "output": "YES",
+        "explanation": "Odd indices: a,c,b,d (a,c,b,d) each appears once; even indices: b,d,a,c each appears once – all counts equal, so YES."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n2\naa",
+        "expectedOutput": "YES",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary (all same letter)",
+        "input": "1\n1000\na\".repeat(1000)",
+        "expectedOutput": "YES",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case with mismatch",
+        "input": "1\n4\nabca",
+        "expectedOutput": "NO",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n6\nabcabc",
+        "expectedOutput": "YES",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\\n8\\naabbccdd",
+        "expectedOutput": "YES",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The operation swaps characters that are two positions apart, i.e., it only swaps characters within the same parity class (odd indices with odd indices, even with even). Therefore, any permutation of characters inside the odd positions and any permutation inside the even positions is achievable. In a palindrome of even length, each position i (1‑based) is paired with position N‑i+1, which always has opposite parity. Consequently, for each character its occurrences on odd positions must equal its occurrences on even positions. The algorithm counts, for every letter, how many times it appears on odd indices and on even indices. If all counts match, the answer is YES; otherwise NO.",
+    "timeComplexity": "O(N) per test case, where N is the length of the string.",
+    "spaceComplexity": "O(1) – only a fixed 26×2 integer array is used.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n\nint main() {\n    int T; if (scanf(\"%d\", &T)!=1) return 0;\n    while (T--) {\n        int N; scanf(\"%d\", &N);\n        char s[1005]; scanf(\"%s\", s);\n        int cnt[26][2] = {0}; // [letter][parity]\n        for (int i = 0; i < N; ++i) {\n            int p = i % 2; // 0 -> odd position (1‑based), 1 -> even position\n            cnt[s[i]-'a'][p]++;\n        }\n        int ok = 1;\n        for (int c = 0; c < 26; ++c) {\n            if (cnt[c][0] != cnt[c][1]) { ok = 0; break; }\n        }\n        puts(ok ? \"YES\" : \"NO\");\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--) {\n        int N; cin>>N; string s; cin>>s;\n        int cnt[26][2] = {};\n        for(int i=0;i<N;++i){\n            int p = i%2; // 0 -> odd position (1‑based)\n            cnt[s[i]-'a'][p]++;\n        }\n        bool ok=true;\n        for(int c=0;c<26;++c) if(cnt[c][0]!=cnt[c][1]){ok=false;break;}\n        cout<<(ok?\"YES\":\"NO\")<<\"\\n\";\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder out = new StringBuilder();\n        int T = Integer.parseInt(br.readLine().trim());\n        while (T-- > 0) {\n            int N = Integer.parseInt(br.readLine().trim());\n            String s = br.readLine().trim();\n            int[][] cnt = new int[26][2];\n            for (int i = 0; i < N; i++) {\n                int p = i % 2; // 0 -> odd position (1‑based)\n                cnt[s.charAt(i) - 'a'][p]++;\n            }\n            boolean ok = true;\n            for (int c = 0; c < 26; c++) {\n                if (cnt[c][0] != cnt[c][1]) { ok = false; break; }\n            }\n            out.append(ok ? \"YES\" : \"NO\").append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it))\n        s = next(it)\n        cnt = [[0,0] for _ in range(26)]\n        for i,ch in enumerate(s):\n            p = i % 2  # 0 -> odd position (1‑based)\n            cnt[ord(ch)-97][p] += 1\n        ok = all(cnt[c][0] == cnt[c][1] for c in range(26))\n        out_lines.append('YES' if ok else 'NO')\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet out = [];\nfor (let t = 0; t < T; ++t) {\n  const N = Number(input[idx++]);\n  const s = input[idx++];\n  const cnt = Array.from({length:26},()=>[0,0]);\n  for (let i = 0; i < N; ++i) {\n    const p = i % 2; // 0 -> odd position (1‑based)\n    const c = s.charCodeAt(i) - 97;\n    cnt[c][p]++;\n  }\n  let ok = true;\n  for (let c = 0; c < 26; ++c) {\n    if (cnt[c][0] !== cnt[c][1]) { ok = false; break; }\n  }\n  out.push(ok ? 'YES' : 'NO');\n}\nconsole.log(out.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

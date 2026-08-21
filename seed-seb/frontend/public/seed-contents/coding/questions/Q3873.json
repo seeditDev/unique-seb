@@ -1,0 +1,119 @@
+{
+  "questionId": "Q3873",
+  "title": "Prefix borders",
+  "slug": "prefix-borders",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Border Substrings",
+      "String Manipulation",
+      "Strings",
+      "Prefix and Suffix"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Strings"
+    ]
+  },
+  "content": {
+    "problemStatement": "Let's define a border substring of a string as a non-empty substring that's both a suffix and a prefix of this string.\n\nYou are given a string **S** with length **N** and **Q** queries. In each query, you are given the **p**-th prefix of **S** (let's denote it by **S1..p**) and an integer **k**. Consider the **k**-th shortest border of **S1..p** (if it exists). Compute the length of this border substring or determine that it doesn't exist.",
+    "constraints": [
+      "1 \u2264 T \u2264 100",
+      "1 \u2264 N, Q \u2264 200,000",
+      "1 \u2264 sum of N over all test cases \u2264 200,000",
+      "1 \u2264 sum of Q over all test cases \u2264 200,000",
+      "1 \u2264 p, k \u2264 N",
+      "S contains only lowercase English letters"
+    ],
+    "inputFormat": "The first line contains a single integer T denoting the number of test cases. The description of T test cases follows. The first line of each test case contains two space-separated integers N and Q. The second line contains a single string S. Each of the following Q lines contains two space-separated integers p and k describing one query.",
+    "outputFormat": "For each test case, print Q lines. For each i (1 \u2264 i \u2264 Q), the i-th of these lines should contain a single integer \u2014 the answer to the i-th query (the length of the k-th shortest border or -1 if it doesn't exist).",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n5 4\nabcab\n2 1\n5 1\n5 2\n5 3",
+        "output": "2\n2\n5\n-1",
+        "explanation": "For the first query, the prefix is 'ab' and the only border substring is 'ab' itself. For the second query, the prefix is 'abcab' and the border substrings are 'a', 'ab', 'abc', 'abca', and 'abcab'. The first border substring is 'a' with length 1, but since k is 1, the answer is 2. For the third query, the prefix is 'abcab' and the border substrings are 'a', 'ab', 'abc', 'abca', and 'abcab'. The second border substring is 'ab' with length 2. For the fourth query, the prefix is 'abcab' and the border substrings are 'a', 'ab', 'abc', 'abca', and 'abcab'. Since k is 3, but there are only 2 border substrings with length less than 5, the answer is -1."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1\na\n1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n200000 1\nabcdefghijklmnopqrstuvwxyz\n200000 1",
+        "expectedOutput": "200000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n5 1\nabcab\n5 3",
+        "expectedOutput": "-1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n10 2\nabcdefghij\n5 1\n10 2",
+        "expectedOutput": "1\n2",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n15 3\nabcdefghijklmno\n10 1\n15 2\n15 3",
+        "expectedOutput": "1\n5\n-1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can iterate over all prefixes of the given string S and for each prefix, we can find all its border substrings. A border substring is a non-empty substring that is both a suffix and a prefix of the string. We can use a hashmap or a set to store the lengths of the border substrings for each prefix. Then, for each query, we can find the k-th shortest border substring of the given prefix of S.",
+    "timeComplexity": "O(T * (N + Q * logN)) \u2014 where T is the number of test cases, N is the length of the string S, and Q is the number of queries. The time complexity is dominated by the iteration over all prefixes of S and the sorting of the border substrings for each prefix.",
+    "spaceComplexity": "O(N) \u2014 where N is the length of the string S. The space complexity is dominated by the storage of the border substrings for each prefix of S.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n#include <stdlib.h>\n\nint compare(const void *a, const void *b) {\n    return (*(int*)a - *(int*)b);\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int N, Q;\n        scanf(\"%d %d\", &N, &Q);\n        char S[N + 1];\n        scanf(\"%s\", S);\n        while (Q--) {\n            int p, k;\n            scanf(\"%d %d\", &p, &k);\n            int borders[p + 1];\n            int count = 0;\n            for (int i = 1; i <= p; i++) {\n                if (strncmp(S, S + p - i, i) == 0) {\n                    borders[count++] = i;\n                }\n            }\n            qsort(borders, count, sizeof(int), compare);\n            if (k > count) {\n                printf(\"-1\\n\");\n            } else {\n                printf(\"%d\\n\", borders[k - 1]);\n            }\n        }\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <string>\n#include <set>\n#include <algorithm>\nusing namespace std;\n\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        int N, Q;\n        cin >> N >> Q;\n        string S;\n        cin >> S;\n        while (Q--) {\n            int p, k;\n            cin >> p >> k;\n            string prefix = S.substr(0, p);\n            set<int> borders;\n            for (int i = 1; i <= p; i++) {\n                if (prefix.substr(0, i) == prefix.substr(p - i, i)) {\n                    borders.insert(i);\n                }\n            }\n            if (k > borders.size()) {\n                cout << -1 << endl;\n            } else {\n                auto it = borders.begin();\n                for (int i = 0; i < k - 1; i++) {\n                    it++;\n                }\n                cout << *it << endl;\n            }\n        }\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\nimport java.util.Arrays;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n        while (T-- > 0) {\n            int N = sc.nextInt();\n            int Q = sc.nextInt();\n            String S = sc.next();\n            while (Q-- > 0) {\n                int p = sc.nextInt();\n                int k = sc.nextInt();\n                String prefix = S.substring(0, p);\n                int[] borders = new int[p + 1];\n                int count = 0;\n                for (int i = 1; i <= p; i++) {\n                    if (prefix.substring(0, i).equals(prefix.substring(p - i, p))) {\n                        borders[count++] = i;\n                    }\n                }\n                Arrays.sort(borders, 0, count);\n                if (k > count) {\n                    System.out.println(-1);\n                } else {\n                    System.out.println(borders[k - 1]);\n                }\n            }\n        }\n    }\n}",
+      "Python3": "import sys\nfor _ in range(int(input())):\n    N, Q = map(int, input().split())\n    S = input()\n    for _ in range(Q):\n        p, k = map(int, input().split())\n        prefix = S[:p]\n        borders = [i for i in range(1, p + 1) if prefix[:i] == prefix[-i:]]\n        borders.sort()\n        if k > len(borders):\n            print(-1)\n        else:\n            print(borders[k - 1])",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst readline = () => lines[idx++];\nconst T = parseInt(readline());\nfor (let i = 0; i < T; i++) {\n    const [N, Q] = readline().split(' ').map(Number);\n    const S = readline();\n    for (let j = 0; j < Q; j++) {\n        const [p, k] = readline().split(' ').map(Number);\n        const prefix = S.substring(0, p);\n        const borders = [];\n        for (let l = 1; l <= p; l++) {\n            if (prefix.substring(0, l) === prefix.substring(p - l, p)) {\n                borders.push(l);\n            }\n        }\n        borders.sort((a, b) => a - b);\n        if (k > borders.length) {\n            console.log(-1);\n        } else {\n            console.log(borders[k - 1]);\n        }\n    }\n}"
+    }
+  }
+}

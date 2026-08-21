@@ -1,0 +1,141 @@
+{
+  "questionId": "Q5451",
+  "title": "Stacking Pancakes",
+  "slug": "stacking-pancakes",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Bell Numbers",
+      "Stirling Numbers of the Second Kind"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef is good at making pancakes. Generally he gets requests to serve **N **pancakes at once.\nHe serves them in the form of a stack.\nA pancake can be treated as a circular disk with some radius.\n\nChef needs to take care that when he places a pancake on the top of the stack the radius of the pancake should not exceed the radius of the largest pancake in the stack by more than **1**. \nAdditionally all radii should be positive integers, and the bottom most pancake should have its radius as&nbsp;**1**.\nChef wants you to find out in how many ways can he create a stack containing **N** pancakes.\n\n**Input**\n\nFirst line of the input contains **T (T &lt;= 1000) **denoting the number of test cases.\n\n**T **lines follow each containing a single integer **N (1 &lt;= N &lt;= 1000) **denoting the size of the required stack.\n\n**Output**\n\nFor each case the output should be a single integer representing the number of ways a stack of size **N** can be created. As the answer can be large print it modulo **1000000007**.",
+    "constraints": [
+      "1 <= T <= 1000",
+      "1 <= N <= 1000",
+      "All radii are positive integers",
+      "Bottom pancake radius = 1",
+      "For every pancake placed on top its radius may not exceed the current maximum radius in the stack by more than 1"
+    ],
+    "inputFormat": "First line contains T, the number of test cases. Each test case contains a single integer N.",
+    "outputFormat": "For each test case, print the number of possible stacks of size N modulo 1000000007.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4\n1\n2\n3\n5",
+        "output": "1\n2\n5\n52",
+        "explanation": "The numbers of stacks for N=1,2,3,5 are the Bell numbers B1=1, B2=2, B3=5 and B5=52."
+      },
+      {
+        "id": "sample_2",
+        "input": "2\n10\n20",
+        "output": "9496\n210498",
+        "explanation": "The numbers of stacks for N=10 and N=20 are the Bell numbers B10=9496 and B20=210498."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n1000",
+        "output": "475020477",
+        "explanation": "The number of stacks for N=1000 is the Bell number B1000=475020477 (modulo 1000000007)."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n1000",
+        "expectedOutput": "475020477",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n10",
+        "expectedOutput": "9496",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n50",
+        "expectedOutput": "852451998",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "5\n1\n2\n3\n10\n50",
+        "expectedOutput": "1\n2\n5\n9496\n852451998",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved using Bell numbers, which count the number of ways to partition a set of n elements. In this case, we can think of each pancake as an element in the set, and the partitions represent the different stacks that can be formed. The key insight is that the radius of each pancake can be at most one more than the radius of the largest pancake in the stack, which corresponds to the recursive formula for Bell numbers. We can use dynamic programming to compute the Bell numbers efficiently.",
+    "timeComplexity": "O(T * N) per test case, O(T * N) total. Precomputation is done once for the Bell numbers.",
+    "spaceComplexity": "O(N) — the dominant structure is the array to store the Bell numbers.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#define MOD 1000000007LL\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    int *queries = (int*)malloc(T*sizeof(int));\n    int maxN = 0;\n    for(int i=0;i<T;i++){\n        scanf(\"%d\", &queries[i]);\n        if(queries[i]>maxN) maxN = queries[i];\n    }\n    long long *bell = (long long*)calloc(maxN+1, sizeof(long long));\n    long long *prev = (long long*)calloc(maxN+2, sizeof(long long));\n    long long *cur  = (long long*)calloc(maxN+2, sizeof(long long));\n    prev[0] = 1; // S(0,0)\n    bell[0] = 1;\n    for(int n=1;n<=maxN;n++){\n        cur[0] = 0;\n        for(int k=1;k<=n;k++){\n            cur[k] = ( (k * prev[k]) % MOD + prev[k-1] ) % MOD; // S(n,k)\n        }\n        long long sum = 0;\n        for(int k=1;k<=n;k++) sum = (sum + cur[k]) % MOD;\n        bell[n] = sum;\n        // swap rows\n        long long *tmp = prev; prev = cur; cur = tmp;\n    }\n    for(int i=0;i<T;i++){\n        printf(\"%lld\\n\", bell[queries[i]]);\n    }\n    free(queries); free(bell); free(prev); free(cur);\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nconst long long MOD = 1000000007LL;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    vector<int> q(T);\n    int maxN=0;\n    for(int i=0;i<T;i++){\n        cin>>q[i];\n        maxN = max(maxN, q[i]);\n    }\n    vector<long long> bell(maxN+1,0);\n    vector<long long> prev(maxN+2,0), cur(maxN+2,0);\n    prev[0]=1; // S(0,0)\n    bell[0]=1;\n    for(int n=1;n<=maxN;n++){\n        cur[0]=0;\n        for(int k=1;k<=n;k++){\n            cur[k] = ( (k * prev[k]) % MOD + prev[k-1] ) % MOD; // S(n,k)\n        }\n        long long sum=0;\n        for(int k=1;k<=n;k++) sum = (sum + cur[k]) % MOD;\n        bell[n]=sum;\n        swap(prev,cur);\n    }\n    for(int x: q) cout<<bell[x]<<\"\\n\";\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    static final long MOD = 1_000_000_007L;\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        int T = Integer.parseInt(br.readLine().trim());\n        int[] queries = new int[T];\n        int maxN = 0;\n        for (int i = 0; i < T; i++) {\n            queries[i] = Integer.parseInt(br.readLine().trim());\n            if (queries[i] > maxN) maxN = queries[i];\n        }\n        long[] bell = new long[maxN + 1];\n        long[] prev = new long[maxN + 2];\n        long[] cur = new long[maxN + 2];\n        prev[0] = 1; // S(0,0)\n        bell[0] = 1;\n        for (int n = 1; n <= maxN; n++) {\n            cur[0] = 0;\n            for (int k = 1; k <= n; k++) {\n                cur[k] = ( (k * prev[k]) % MOD + prev[k - 1] ) % MOD; // S(n,k)\n            }\n            long sum = 0;\n            for (int k = 1; k <= n; k++) sum = (sum + cur[k]) % MOD;\n            bell[n] = sum;\n            long[] tmp = prev; prev = cur; cur = tmp;\n        }\n        StringBuilder sb = new StringBuilder();\n        for (int n : queries) sb.append(bell[n]).append('\\n');\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys\nMOD = 1000000007\n\ndef main():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    queries = [int(next(it)) for _ in range(T)]\n    maxN = max(queries)\n    bell = [0] * (maxN + 1)\n    prev = [0] * (maxN + 2)  # Stirling numbers of previous row\n    cur = [0] * (maxN + 2)\n    prev[0] = 1  # S(0,0)\n    bell[0] = 1\n    for n in range(1, maxN + 1):\n        cur[0] = 0\n        for k in range(1, n + 1):\n            cur[k] = (k * prev[k] + prev[k - 1]) % MOD\n        bell[n] = sum(cur[1:n+1]) % MOD\n        prev, cur = cur, prev  # reuse lists\n    out = '\\n'.join(str(bell[n]) for n in queries)\n    sys.stdout.write(out)\n\nif __name__ == \"__main__\":\n    main()",
+      "JavaScript": "const fs = require('fs');\nconst MOD = 1000000007n;\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nif (input.length===0) process.exit(0);\nlet idx = 0;\nconst T = Number(input[idx++]);\nconst queries = new Array(T);\nlet maxN = 0;\nfor(let i=0;i<T;i++){\n  const val = Number(input[idx++]);\n  queries[i]=val;\n  if(val>maxN) maxN=val;\n}\nconst bell = new Array(maxN+1).fill(0n);\nconst prev = new Array(maxN+2).fill(0n);\nconst cur = new Array(maxN+2).fill(0n);\nprev[0]=1n; // S(0,0)\nbell[0]=1n;\nfor(let n=1;n<=maxN;n++){\n  cur[0]=0n;\n  for(let k=1;k<=n;k++){\n    cur[k] = (BigInt(k) * prev[k] + prev[k-1]) % MOD; // S(n,k)\n  }\n  let sum = 0n;\n  for(let k=1;k<=n;k++) sum = (sum + cur[k]) % MOD;\n  bell[n]=sum;\n  // swap references\n  const tmp = prev.slice(); // copy not needed, just swap arrays\n  for(let i=0;i<=n;i++) prev[i]=cur[i];\n  for(let i=0;i<=n;i++) cur[i]=tmp[i];\n}\nlet out = '';\nfor(let i=0;i<T;i++){\n  out += bell[queries[i]].toString();\n  if(i+1<T) out+='\\n';\n}\nconsole.log(out);"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "questionId": "Q7255",
+  "title": "Find Best Path",
+  "slug": "find-best-path",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Bellman-Ford Algorithm",
+      "Negative Cycle Detection",
+      "Shortest Path"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Graphs"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given a directed graph with NNN vertices (numbered 111 through NNN) and MMM weighted edges. For each vertex of the graph, find the minimum cost of a walk that passes through this vertex, or determine that the minimum does not exist, i.e. for any integer mmm, there is a walk with cost smaller than mmm.\n\n**Notes:**\n\n\nA walk in a directed graph is a sequence of vertices v1,v2,…,vKv_1, v_2, \\ldots, v_Kv1​,v2​,…,vK​ for some positive integer KKK, and an associated (possibly empty) sequence of edges e1,e2,…,eK−1e_1, e_2, \\ldots, e_{K-1}e1​,e2​,…,eK−1​ such that for each valid iii, edge eie_iei​ goes from vertex viv_ivi​ to vertex vi+1v_{i+1}vi+1​.\nThe cost of a walk is the sum of weights of edges e1,e2,…,eK−1e_1, e_2, \\ldots, e_{K-1}e1​,e2​,…,eK−1​; if K=1K = 1K=1, the cost is 000.\nA walk passes through vertex uuu if uuu belongs to the sequence v1,v2,…,vKv_1, v_2, \\ldots, v_Kv1​,v2​,…,vK​.",
+    "constraints": [
+      "1 ≤ T ≤ 50",
+      "1 ≤ N, M ≤ 1000",
+      "|w| ≤ 10^6"
+    ],
+    "inputFormat": "The first line of the input contains a single integer T denoting the number of test cases. The description of T test cases follows. The first line of each test case contains two space-separated integers N and M. Each of the next M lines contains three space-separated integers u, v, and w describing an edge from vertex u to vertex v with weight w.",
+    "outputFormat": "For each test case, print N lines. For each valid i, if the minimum cost of a walk through vertex i does not exist, the i-th of these lines should contain the string \"INF\". Otherwise, it should contain a single integer — the minimum cost.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n7 7\n1 3 2\n5 1 -4\n2 5 3\n2 6 2\n3 5 1\n4 6 -3\n7 4 -3",
+        "output": "INF\nINF\nINF\n-6\nINF\n-6\n-6",
+        "explanation": "The graph is depicted below."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n1000 1000\n1 2 1\n2 3 1\n3 4 1\n4 5 1\n5 6 1\n6 7 1\n7 8 1\n8 9 1\n9 10 1",
+        "expectedOutput": "INF",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n5 4\n1 2 1\n2 3 1\n3 4 1\n4 5 1",
+        "expectedOutput": "INF",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n5 5\n1 2 1\n2 3 1\n3 4 1\n4 5 1\n5 1 -10",
+        "expectedOutput": "-9",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n5 5\n1 2 1\n2 3 1\n3 4 1\n4 5 1\n5 1 10",
+        "expectedOutput": "INF",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use the Bellman-Ford algorithm to find the shortest path from each vertex to all other vertices. We will maintain two arrays, st and en, to store the minimum cost of reaching each vertex from the start and end of the walk, respectively. We will then use these arrays to calculate the minimum cost of a walk through each vertex. If a negative cycle is detected, we will mark the minimum cost as -INF to indicate that it does not exist.",
+    "timeComplexity": "O(T * (N + M) * N) — where T is the number of test cases, N is the number of vertices, and M is the number of edges.",
+    "spaceComplexity": "O(N + M) — where N is the number of vertices and M is the number of edges.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <limits.h>\n#define INF (1LL << 60)\n#define MAXN 1100\n#define MAXM 1100\n\nint n, m;\nlong long st[MAXN], en[MAXN], ans[MAXN];\n\nstruct Edge {\n    int u, v;\n    long long w;\n};\n\nEdge edges[MAXM];\n\nvoid relax(bool detectNegativeCycle) {\n    for (int i = 0; i < m; i++) {\n        int u = edges[i].u;\n        int v = edges[i].v;\n        long long w = edges[i].w;\n\n        if (detectNegativeCycle) {\n            if (st[u] > w + st[v])\n                st[u] = -INF;\n\n            if (en[v] > w + en[u])\n                en[v] = -INF;\n        } else {\n            if (st[u] > w + st[v])\n                st[u] = w + st[v];\n\n            if (en[v] > w + en[u])\n                en[v] = w + en[u];\n        }\n    }\n}\n\nint main() {\n    int t;\n    scanf(\"%d\", &t);\n\n    while (t--) {\n        scanf(\"%d %d\", &n, &m);\n\n        for (int i = 0; i < n; i++) {\n            st[i] = 0;\n            en[i] = 0;\n        }\n\n        for (int i = 0; i < m; i++) {\n            scanf(\"%d %d %lld\", &edges[i].u, &edges[i].v, &edges[i].w);\n            edges[i].u--;  // convert to 0-based\n            edges[i].v--;\n        }\n\n        for (int i = 0; i < 2 * n; i++) {\n            relax(false);\n        }\n\n        for (int i = 0; i < n; i++) {\n            ans[i] = st[i] + en[i];\n        }\n\n        for (int i = 0; i < 2 * n; i++) {\n            relax(true);\n        }\n\n        for (int i = 0; i < n; i++) {\n            if (ans[i] == st[i] + en[i]) {\n                printf(\"%lld\\n\", ans[i]);\n            } else {\n                printf(\"INF\\n\");\n            }\n        }\n    }\n\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <limits>\nusing namespace std;\n\nconst long long INF = 1e15;\nconst int MAXN = 1100;\nconst int MAXM = 1100;\n\nint n, m;\nlong long st[MAXN], en[MAXN], ans[MAXN];\n\nstruct Edge {\n    int u, v;\n    long long w;\n};\n\nEdge edges[MAXM];\n\nvoid relax(bool detectNegativeCycle) {\n    for (int i = 0; i < m; i++) {\n        int u = edges[i].u;\n        int v = edges[i].v;\n        long long w = edges[i].w;\n\n        if (detectNegativeCycle) {\n            if (st[u] > w + st[v])\n                st[u] = -INF;\n\n            if (en[v] > w + en[u])\n                en[v] = -INF;\n        } else {\n            st[u] = min(st[u], w + st[v]);\n            en[v] = min(en[v], w + en[u]);\n        }\n    }\n}\n\nint main() {\n    int t;\n    cin >> t;\n\n    while (t--) {\n        cin >> n >> m;\n\n        for (int i = 0; i < n; i++) {\n            st[i] = 0;\n            en[i] = 0;\n        }\n\n        for (int i = 0; i < m; i++) {\n            cin >> edges[i].u >> edges[i].v >> edges[i].w;\n            edges[i].u--;  // convert to 0-based\n            edges[i].v--;\n        }\n\n        for (int i = 0; i < 2 * n; i++) {\n            relax(false);\n        }\n\n        for (int i = 0; i < n; i++) {\n            ans[i] = st[i] + en[i];\n        }\n\n        for (int i = 0; i < 2 * n; i++) {\n            relax(true);\n        }\n\n        for (int i = 0; i < n; i++) {\n            if (ans[i] == st[i] + en[i]) {\n                cout << ans[i] << '\\n';\n            } else {\n                cout << \"INF\\n\";\n            }\n        }\n    }\n\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n\n    static final long INF = (long)1e15;\n\n    static class Edge {\n        int u, v;\n        long w;\n\n        Edge(int u, int v, long w) {\n            this.u = u;\n            this.v = v;\n            this.w = w;\n        }\n    }\n\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder output = new StringBuilder();\n\n        int t = Integer.parseInt(br.readLine().trim());\n\n        while (t-- > 0) {\n            String[] nm = br.readLine().split(\" \");\n            int n = Integer.parseInt(nm[0]);\n            int m = Integer.parseInt(nm[1]);\n\n            long[] st = new long[n];\n            long[] en = new long[n];\n\n            Edge[] edges = new Edge[m];\n\n            for (int i = 0; i < m; i++) {\n                String[] line = br.readLine().split(\" \");\n                int u = Integer.parseInt(line[0]) - 1;\n                int v = Integer.parseInt(line[1]) - 1;\n                long w = Long.parseLong(line[2]);\n                edges[i] = new Edge(u, v, w);\n            }\n\n            for (int i = 0; i < 2 * n; i++) {\n                for (Edge e : edges) {\n                    int u = e.u, v = e.v;\n                    long w = e.w;\n\n                    if (st[u] > w + st[v])\n                        st[u] = w + st[v];\n\n                    if (en[v] > w + en[u])\n                        en[v] = w + en[u];\n                }\n            }\n\n            long[] ans = new long[n];\n            for (int i = 0; i < n; i++) {\n                ans[i] = st[i] + en[i];\n            }\n\n            for (int i = 0; i < 2 * n; i++) {\n                for (Edge e : edges) {\n                    int u = e.u, v = e.v;\n                    long w = e.w;\n\n                    if (st[u] > w + st[v]) {\n                        if (st[u] != -INF)\n                            st[u] = -INF;\n                    }\n\n                    if (en[v] > w + en[u]) {\n                        if (en[v] != -INF)\n                            en[v] = -INF;\n                    }\n                }\n            }\n\n            for (int i = 0; i < n; i++) {\n                if (ans[i] == st[i] + en[i]) {\n                    output.append(ans[i]).append('\\n');\n                } else {\n                    output.append(\"INF\\n\");\n                }\n            }\n        }\n\n        System.out.print(output);\n    }\n}",
+      "Python3": "import sys\ninput = sys.stdin.readline\n\nINF = 10**15\n\ndef solve():\n    t = int(input())\n\n    for _ in range(t):\n        n, m = map(int, input().split())\n\n        st = [0] * n\n        en = [0] * n\n\n        edges = []\n        for _ in range(m):\n            u, v, w = map(int, input().split())\n            edges.append((u - 1, v - 1, w))\n\n        for _ in range(2 * n):\n            updated = False\n            for u, v, w in edges:\n                if st[u] > w + st[v]:\n                    st[u] = w + st[v]\n                    updated = True\n                if en[v] > w + en[u]:\n                    en[v] = w + en[u]\n                    updated = True\n            if not updated:\n                break\n\n        ans = [st[i] + en[i] for i in range(n)]\n\n        for _ in range(2 * n):\n            updated = False\n            for u, v, w in edges:\n                if st[u] > w + st[v]:\n                    if st[u] != -INF:\n                        st[u] = -INF\n                        updated = True\n                if en[v] > w + en[u]:\n                    if en[v] != -INF:\n                        en[v] = -INF\n                        updated = True\n            if not updated:\n                break\n\n        for i in range(n):\n            if ans[i] == st[i] + en[i]:\n                print(ans[i])\n            else:\n                print(\"INF\")\n\n\nif __name__ == \"__main__\":\n    solve()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/).map(Number);\nlet idx = 0;\nconst INF = 1e15;\n\nfunction solve() {\n    let t = input[idx++];\n\n    let output = [];\n\n    while (t--) {\n        let n = input[idx++];\n        let m = input[idx++];\n\n        let st = new Array(n).fill(0);\n        let en = new Array(n).fill(0);\n\n        let edges = [];\n        for (let i = 0; i < m; i++) {\n            let u = input[idx++] - 1;\n            let v = input[idx++] - 1;\n            let w = input[idx++];\n            edges.push([u, v, w]);\n        }\n\n        for (let iter = 0; iter < 2 * n; iter++) {\n            let updated = false;\n\n            for (let i = 0; i < m; i++) {\n                let [u, v, w] = edges[i];\n\n                if (st[u] > w + st[v]) {\n                    st[u] = w + st[v];\n                    updated = true;\n                }\n                if (en[v] > w + en[u]) {\n                    en[v] = w + en[u];\n                    updated = true;\n                }\n            }\n\n            if (!updated) break;\n        }\n\n        let ans = new Array(n);\n        for (let i = 0; i < n; i++) {\n            ans[i] = st[i] + en[i];\n        }\n\n        for (let iter = 0; iter < 2 * n; iter++) {\n            let updated = false;\n\n            for (let i = 0; i < m; i++) {\n                let [u, v, w] = edges[i];\n\n                if (st[u] > w + st[v]) {\n                    if (st[u] !== -INF) {\n                        st[u] = -INF;\n                        updated = true;\n                    }\n                }\n\n                if (en[v] > w + en[u]) {\n                    if (en[v] !== -INF) {\n                        en[v] = -INF;\n                        updated = true;\n                    }\n                }\n            }\n\n            if (!updated) break;\n        }\n\n        for (let i = 0; i < n; i++) {\n            if (ans[i] === st[i] + en[i]) {\n                output.push(String(ans[i]));\n            } else {\n                output.push(\"INF\");\n            }\n        }\n    }\n\n    console.log(output.join('\\n'));\n}\n\nsolve();"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

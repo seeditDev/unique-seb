@@ -1,0 +1,127 @@
+{
+  "questionId": "Q5277",
+  "title": "Ski Resort",
+  "slug": "ski-resort",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Max Flow",
+      "Min Cut",
+      "Node Splitting",
+      "Grid",
+      "Shortest Path"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Flow & Matching"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Ski season is in full swing and the Chef decided it's time to expand his business. He invested into a restaurant at the bottom of a ski slope. Things were going great until one of his employees got injured while skiing home from work. Chef would like to make sure this doesn't happen again. He wants to alter the surrounding landscape to prevent his employees from skiing to their homes in the nearby town. Flattening a large area is obviously out of the question and that's where you come in.\n\n\nChef was kind enough to model the surronding area as a grid with H rows and W columns. Area outside this grid is not suitable for skiing. You are given the elevation of each cell in this grid and the location of his restaurant (Rr,Cr) and the town (Rt,Ct). As long as there exists a non-increasing path from the restaurant to the town, the employees will not hesitate to ski home. A sequence of cells is called a path if every consecutive pair of cells shares a common edge. You are allowed to **increase** the elevation of any cell (except for the restaurant and town cell) by an integer amount. Find the minimum total number of units of elevation increase\nwhich allows Chef to prevent his employees from skiing home.",
+    "constraints": [
+      "1 ≤ T ≤ 10",
+      "1 ≤ H, W ≤ 50",
+      "0 ≤ Ei,j ≤ 200000",
+      "Restaurant and town cells are distinct"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases.\nFor each test case:\n- The first line contains two integers H and W (1 ≤ H, W ≤ 50).\n- The second line contains four integers Rr, Cr, Rt, Ct (1‑based coordinates of the restaurant and the town).\n- Then H lines follow, each containing W integers Ei,j (0 ≤ Ei,j ≤ 200000) – the elevation of cell (i, j).\nAll coordinates are inside the grid and the restaurant cell is different from the town cell. The restaurant and the town cells cannot be modified.",
+    "outputFormat": "For each test case output a single integer – the minimum total number of elevation units that have to be added so that no non‑increasing path exists from the restaurant to the town. If it is impossible, output -1.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "",
+        "output": "Input:\n2\n\n4 2\n1 1 3 2\n10 11\n6 6\n4 4\n3 4\n\n1 5\n1 2 1 3\n3 4 2 5 5\n\nOutput:\n4\n-1",
+        "explanation": ""
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For every cell we consider the directed edge u → v if the original elevation of u is **≥** the elevation of v – this is exactly the condition for a ski‑able step (non‑increasing).  Raising the elevation of a cell v by Δ makes its new height e'_v = e_v + Δ.  After the raise, an incoming edge u → v exists only if e_u ≥ e'_v.  Therefore, if we raise v high enough to become strictly larger than **all** its four neighbours, no edge can ever enter v and v becomes a dead‑end for any ski path.\n\nFor a cell v (different from the restaurant s and the town t) let\n    need(v) = max(0, (max elevation among the four neighbours of v) + 1 – e_v).\nRaising v by exactly need(v) is the cheapest way to block **all** incoming edges to v.  Raising it more would only increase the cost without any additional benefit.\n\nConsequently the problem reduces to: choose a set of intermediate cells to “block” (paying need(v) for each) such that after removing all incoming edges to those cells there is no directed path from s to t.  This is a classic minimum s‑t cut problem on a node‑weighted directed graph.\n\nWe transform the node‑weighted graph into an edge‑weighted one by splitting every cell v into two vertices v_in and v_out and adding an edge v_in → v_out with capacity = need(v).  For the restaurant and the town we set this capacity to INF (they cannot be cut).  For every original ski‑able edge u → v we add an edge u_out → v_in with capacity = INF.  Any s‑t cut now consists of a set of v_in → v_out edges, i.e. a set of cells we raise, and its total capacity equals the total added elevation.\n\nThe minimum s‑t cut value can be obtained with any max‑flow algorithm (Dinic).  If the cut value is at least INF, it means that no finite amount of raising can separate s from t – the only existing path uses only s and t – and the answer is -1.  Otherwise the cut value is the required minimum total increase.\n\nComplexities: the grid has at most 2500 cells, thus at most 5000 vertices after splitting and ≤ 4·2500 ≈ 10⁴ directed edges.  Dinic runs in O(E·√V) which is far below the limits.\n\nEdge Cases Handled:\n- No ski‑able path initially → answer 0 (cut of capacity 0).\n- Direct edge s → t and no other cell can be cut → answer -1.\n- Cells on the border have fewer neighbours; the formula still works.\n- need(v) can be zero (already higher than all neighbours) – such cells can be cut for free.\n- All capacities fit in 64‑bit signed integers (max possible sum ≤ 2500·200001 < 5·10⁸).",
+    "timeComplexity": "O(T · (V·E)^{0.5}) ≈ O(T·10⁴·√5·10³) which is well under 1 ms per test case.",
+    "spaceComplexity": "O(V + E) ≈ O(10⁴) per test case.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <limits.h>\n\ntypedef long long ll;\nconst ll INF = (ll)4e14;"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

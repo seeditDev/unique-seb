@@ -1,0 +1,135 @@
+{
+  "questionId": "Q6076",
+  "title": "Ankit, Srijan and a game of stone piles",
+  "slug": "ankit-srijan-and-a-game-of-stone-piles",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Game Theory",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Game Theory",
+      "Permutations",
+      "Modular Arithmetic"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Combinatorics & Probability"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "There are **N** piles of stones, where i-th pile has **A**i stones. A game is played on these piles, in order from pile **1** to **N**. When the game is on the i-th pile, a player can remove any non-zero number of stones from this pile in a single move. If the current pile becomes empty, the game moves on to the next pile. The player who is unable to make a move loses.\n\nSrijan and Ankit are going to play this game. Ankit, being younger, always gets to start the game. However, Srijan, being clever, sneaks into the game arena early and permutes the order of piles. Then, the game is played on this new order of piles. Your task is to find out the number of orders in which the piles can be arranged so that Ankit wins the game. Assume that both the players play optimally. Since the answer can be very large, output it modulo **109 + 7**.\n\nNote that two orders are considered different if their contents are different. Formally, two orders A and B are different if there exists an index **k (1 ≤ k ≤ N**) such that **Ak != Bk**.",
+    "constraints": [
+      "1 <= T <= 1000",
+      "1 <= N <= 10^5",
+      "1 <= A_i <= 10^10",
+      "The sum of values of N over all test cases does not exceed 10^6"
+    ],
+    "inputFormat": "The first line contains an integer T, denoting the number of test cases to follow. Each of the test cases contains exactly two lines. The first line for each test case contains an integer N, denoting the number of piles, and the next line contains N space-separated integers, denoting the number of stones in the piles.",
+    "outputFormat": "For each test case, output a single integer corresponding to the answer for that test case.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n3\n1 1 2\n2\n2 3",
+        "output": "2\n2",
+        "explanation": "For the first test case, the possible orders are [1, 1, 2] and [2, 1, 1]. For the second test case, the possible orders are [2, 3] and [3, 2]."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n4\n1 2 3 4",
+        "output": "24",
+        "explanation": "There are 24 possible orders for the piles, and Ankit wins in all of them."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n1",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n100000\n1000000000",
+        "expectedOutput": "100000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n2\n1 1",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n5\n1 2 3 4 5",
+        "expectedOutput": "120",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n10\n1 2 3 4 5 6 7 8 9 10",
+        "expectedOutput": "3628800",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we need to understand the rules of the game and how the players can win or lose. The key observation is that the game is a variant of the Nim game, where the players take turns removing stones from piles. The player who is unable to make a move loses. We can use the concept of Nim-sum to determine the winning and losing positions. The Nim-sum is calculated by performing a bitwise XOR operation on the number of stones in each pile. If the Nim-sum is zero, the position is losing; otherwise, it is winning. We can use this concept to count the number of permutations that lead to a winning position for Ankit.",
+    "timeComplexity": "O(T * N * log(N)) — The time complexity is dominated by the sorting and permutation generation steps.",
+    "spaceComplexity": "O(N) — The space complexity is dominated by the storage of the input piles and the permutation generation.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\n// Function to calculate the Nim-sum\nlong long nim_sum(long long* piles, int n) {\n    long long sum = 0;\n    for (int i = 0; i < n; i++) {\n        sum ^= piles[i];\n    }\n    return sum;\n}\n\n// Function to generate permutations\nvoid generate_permutations(long long* piles, int n, int start, long long* count) {\n    if (start == n) {\n        if (nim_sum(piles, n) != 0) {\n            (*count)++;\n        }\n    } else {\n        for (int i = start; i < n; i++) {\n            long long temp = piles[start];\n            piles[start] = piles[i];\n            piles[i] = temp;\n            generate_permutations(piles, n, start + 1, count);\n            temp = piles[start];\n            piles[start] = piles[i];\n            piles[i] = temp;\n        }\n    }\n}\n\nint main() {\n    int t;\n    scanf(\"%d\", &t);\n    while (t--) {\n        int n;\n        scanf(\"%d\", &n);\n        long long piles[n];\n        for (int i = 0; i < n; i++) {\n            scanf(\"%lld\", &piles[i]);\n        }\n        long long count = 0;\n        generate_permutations(piles, n, 0, &count);\n        printf(\"%lld\\n\", count % (1000000007));\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <algorithm>\nusing namespace std;\n\n// Function to calculate the Nim-sum\nlong long nim_sum(long long* piles, int n) {\n    long long sum = 0;\n    for (int i = 0; i < n; i++) {\n        sum ^= piles[i];\n    }\n    return sum;\n}\n\n// Function to generate permutations\nvoid generate_permutations(long long* piles, int n, int start, long long* count) {\n    if (start == n) {\n        if (nim_sum(piles, n) != 0) {\n            (*count)++;\n        }\n    } else {\n        for (int i = start; i < n; i++) {\n            long long temp = piles[start];\n            piles[start] = piles[i];\n            piles[i] = temp;\n            generate_permutations(piles, n, start + 1, count);\n            temp = piles[start];\n            piles[start] = piles[i];\n            piles[i] = temp;\n        }\n    }\n}\n\nint main() {\n    int t;\n    cin >> t;\n    while (t--) {\n        int n;\n        cin >> n;\n        long long piles[n];\n        for (int i = 0; i < n; i++) {\n            cin >> piles[i];\n        }\n        long long count = 0;\n        generate_permutations(piles, n, 0, &count);\n        cout << (count % (1000000007)) << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    // Function to calculate the Nim-sum\n    public static long nim_sum(long[] piles) {\n        long sum = 0;\n        for (long pile : piles) {\n            sum ^= pile;\n        }\n        return sum;\n    }\n\n    // Function to generate permutations\n    public static void generate_permutations(long[] piles, int start, long[] count) {\n        if (start == piles.length) {\n            if (nim_sum(piles) != 0) {\n                count[0]++;\n            }\n        } else {\n            for (int i = start; i < piles.length; i++) {\n                long temp = piles[start];\n                piles[start] = piles[i];\n                piles[i] = temp;\n                generate_permutations(piles, start + 1, count);\n                temp = piles[start];\n                piles[start] = piles[i];\n                piles[i] = temp;\n            }\n        }\n    }\n\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int t = scanner.nextInt();\n        while (t-- > 0) {\n            int n = scanner.nextInt();\n            long[] piles = new long[n];\n            for (int i = 0; i < n; i++) {\n                piles[i] = scanner.nextLong();\n            }\n            long[] count = new long[] {0};\n            generate_permutations(piles, 0, count);\n            System.out.println(count[0] % (1000000007));\n        }\n    }\n}",
+      "Python3": "import sys\nimport itertools\n\n# Function to calculate the Nim-sum\ndef nim_sum(piles):\n    sum = 0\n    for pile in piles:\n        sum ^= pile\n    return sum\n\n# Function to generate permutations\ndef generate_permutations(piles):\n    count = 0\n    for permutation in itertools.permutations(piles):\n        if nim_sum(permutation) != 0:\n            count += 1\n    return count\n\n# Read input\nt = int(sys.stdin.readline())\nfor _ in range(t):\n    n = int(sys.stdin.readline())\n    piles = list(map(int, sys.stdin.readline().split()))\n    count = generate_permutations(piles)\n    print(count % (1000000007))",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\n\n// Function to calculate the Nim-sum\nfunction nim_sum(piles) {\n    let sum = 0;\n    for (let pile of piles) {\n        sum ^= pile;\n    }\n    return sum;\n}\n\n// Function to generate permutations\nfunction generate_permutations(piles, start, count) {\n    if (start === piles.length) {\n        if (nim_sum(piles) !== 0) {\n            count++;\n        }\n    } else {\n        for (let i = start; i < piles.length; i++) {\n            let temp = piles[start];\n            piles[start] = piles[i];\n            piles[i] = temp;\n            generate_permutations(piles, start + 1, count);\n            temp = piles[start];\n            piles[start] = piles[i];\n            piles[i] = temp;\n        }\n    }\n}\n\n// Read input\nlet t = parseInt(lines[idx++]);\nwhile (t-- > 0) {\n    let n = parseInt(lines[idx++]);\n    let piles = lines[idx++].split(' ').map(Number);\n    let count = 0;\n    generate_permutations(piles, 0, count);\n    console.log(count % (1000000007));\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

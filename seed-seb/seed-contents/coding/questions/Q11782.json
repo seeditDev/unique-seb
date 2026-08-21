@@ -1,0 +1,118 @@
+{
+  "questionId": "Q11782",
+  "title": "Different Ways to Evaluate a Boolean Expression",
+  "slug": "parsing-a-boolean-expression",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Boolean Expression",
+      "Parenthesization",
+      "Dynamic Programming"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Given an expression, A, with operands and operators (OR, AND, XOR), in how many\n    ways can you evaluate the expression to be true, by grouping it in different ways?.",
+    "constraints": [
+      "1 <= length of expression <= 100",
+      "Expression contains only T, F, &, |, ^"
+    ],
+    "inputFormat": "A string representing a boolean expression with operands (T or F) and operators (&, |, ^)",
+    "outputFormat": "The number of ways to evaluate the expression to be true",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "T",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "T&T&T&T&T&T&T&T&T&T",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": "F|F|F|F|F",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "T^F",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": "T|F&T^F",
+        "expectedOutput": "4",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Divide the expression into subexpressions and calculate the number of ways to make each subexpression true or false",
+    "timeComplexity": "O(2^n)",
+    "spaceComplexity": "O(n)",
+    "code": {
+      "C": "#include <stdio.h>\n\nint f(int i, int j, int isTrue, char exp[]) {\n    if (i > j) return 0;\n    if (i == j) return isTrue == (exp[i] == 'T') ? 1 : 0;\n    long long ways = 0;\n    for (int ind = i + 1; ind <= j - 1; ind += 2) {\n        long long lT = f(i, ind - 1, 1, exp);\n        long long lF = f(i, ind - 1, 0, exp);\n        long long rT = f(ind + 1, j, 1, exp);\n        long long rF = f(ind + 1, j, 0, exp);\n        if (exp[ind] == '&') {\n            if (isTrue) ways += lT * rT;\n            else ways += lF * rT + lT * rF + lF * rF;\n        } else if (exp[ind] == '|') {\n            if (isTrue) ways += lF * rT + lT * rF + lT * rT;\n            else ways += lF * rF;\n        } else {\n            if (isTrue) ways += lF * rT + lT * rF;\n            else ways += lF * rF + lT * rT;\n        }\n    }\n    return ways;\n}\n\nint evaluateExp(char exp[]) {\n    return f(0, strlen(exp) - 1, 1, exp);\n}\n\nint main() {\n    char exp[] = \"T|F&T^F\";\n    printf(\"%d\\n\", evaluateExp(exp));\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\n#define ll long long\nconst int mod = 1000000007;\n\n// Function to evaluate the number of ways to parenthesize the expression to get True or False\nint f(int i, int j, int isTrue, string &exp) {\n    // Base case 1: If i > j, it's an invalid expression, return 0.\n    if (i > j) return 0;\n    \n    // Base case 2: If i and j are the same, evaluate the single character.\n    if (i == j) {\n        if (isTrue == 1) return exp[i] == 'T' ? 1 : 0;\n        else return exp[i] == 'F' ? 1 : 0;\n    }\n    \n    ll ways = 0;\n    \n    // Iterate through the expression to divide it into left and right subexpressions\n    for (int ind = i + 1; ind <= j - 1; ind += 2) {\n        // Recursively calculate the number of ways to make the left and right subexpressions true or false\n        ll lT = f(i, ind - 1, 1, exp);  // Number of ways to make the left expression true.\n        ll lF = f(i, ind - 1, 0, exp);  // Number of ways to make the left expression false.\n        ll rT = f(ind + 1, j, 1, exp);  // Number of ways to make the right expression true.\n        ll rF = f(ind + 1, j, 0, exp);  // Number of ways to make the right expression false.\n\n        // Check the operator at the current index and update ways accordingly.\n        if (exp[ind] == '&') {  // AND operator\n            if (isTrue) ways = (ways + (lT * rT) % mod) % mod;\n            else ways = (ways + (lF * rT) % mod + (lT * rF) % mod + (lF * rF) % mod) % mod;\n        }\n        else if (exp[ind] == '|') {  // OR operator\n            if (isTrue) ways = (ways + (lF * rT) % mod + (lT * rF) % mod + (lT * rT) % mod) % mod;\n            else ways = (ways + (lF * rF) % mod) % mod;\n        }\n        else {  // XOR operator\n            if (isTrue) ways = (ways + (lF * rT) % mod + (lT * rF) % mod) % mod;\n            else ways = (ways + (lF * rF) % mod + (lT * rT) % mod) % mod;\n        }\n    }\n    return ways;  // Return the total number of ways to evaluate the expression\n}\n\n// Function to start evaluating the expression\nint evaluateExp(string &exp) {\n    int n = exp.size();\n    return f(0, n - 1, 1, exp);  // Start evaluation with isTrue set to true.\n}\n\nint main() {\n    // Example expression\n    string exp = \"F|T^F\";\n    \n    // Evaluate the expression and find the number of ways to get the result as True\n    int ways = evaluateExp(exp);\n    \n    // Output the result\n    cout << \"The total number of ways: \" << ways << \"\\n\";\n\n    return 0;\n}",
+      "Java": "// Solution class to evaluate the number of ways to parenthesize an expression\nclass Solution {\n    \n    // Function to evaluate the number of ways to parenthesize the expression to get True or False\n    public static int f(int i, int j, int isTrue, String exp) {\n        // Base case 1: If i > j, it's an invalid expression, return 0.\n        if (i > j) return 0;\n        \n        // Base case 2: If i and j are the same, evaluate the single character.\n        if (i == j) {\n            if (isTrue == 1) return exp.charAt(i) == 'T' ? 1 : 0;\n            else return exp.charAt(i) == 'F' ? 1 : 0;\n        }\n\n        long ways = 0;\n        \n        // Iterate through the expression to divide it into left and right subexpressions\n        for (int ind = i + 1; ind <= j - 1; ind += 2) {\n            // Recursively calculate the number of ways to make the left and right subexpressions true or false\n            long lT = f(i, ind - 1, 1, exp);  // Number of ways to make the left expression true.\n            long lF = f(i, ind - 1, 0, exp);  // Number of ways to make the left expression false.\n            long rT = f(ind + 1, j, 1, exp);  // Number of ways to make the right expression true.\n            long rF = f(ind + 1, j, 0, exp);  // Number of ways to make the right expression false.\n\n            // Check the operator at the current index and update ways accordingly.\n            if (exp.charAt(ind) == '&') {  // AND operator\n                if (isTrue == 1) ways = (ways + (lT * rT)) % 1000000007;\n                else ways = (ways + (lF * rT) + (lT * rF) + (lF * rF)) % 1000000007;\n            }\n            else if (exp.charAt(ind) == '|') {  // OR operator\n                if (isTrue == 1) ways = (ways + (lF * rT) + (lT * rF) + (lT * rT)) % 1000000007;\n                else ways = (ways + (lF * rF)) % 1000000007;\n            }\n            else {  // XOR operator\n                if (isTrue == 1) ways = (ways + (lF * rT) + (lT * rF)) % 1000000007;\n                else ways = (ways + (lF * rF) + (lT * rT)) % 1000000007;\n            }\n        }\n        return (int) ways;  // Return the total number of ways to evaluate the expression\n    }\n\n    // Function to start evaluating the expression\n    public static int evaluateExp(String exp) {\n        return f(0, exp.length() - 1, 1, exp);  // Start evaluation with isTrue set to true.\n    }\n\n    public static void main(String[] args) {\n        String exp = \"F|T^F\";  // Example expression\n        \n        // Evaluate the expression and find the number of ways to get the result as True\n        int ways = evaluateExp(exp);\n        \n        // Output the result\n        System.out.println(\"The total number of ways: \" + ways);\n    }\n}",
+      "Python3": "# Function to evaluate the number of ways to parenthesize the expression\ndef f(i, j, isTrue, exp):\n    # Base case 1: If i > j, it's an invalid expression, return 0\n    if i > j:\n        return 0\n    \n    # Base case 2: If i and j are the same, evaluate the single character\n    if i == j:\n        if isTrue == 1:\n            return 1 if exp[i] == 'T' else 0\n        else:\n            return 1 if exp[i] == 'F' else 0\n    \n    ways = 0\n    \n    # Iterate through the expression to divide it into left and right subexpressions\n    for ind in range(i + 1, j, 2):\n        # Recursively calculate the number of ways to make the left and right subexpressions true or false\n        lT = f(i, ind - 1, 1, exp)  # Number of ways to make the left expression true\n        lF = f(i, ind - 1, 0, exp)  # Number of ways to make the left expression false\n        rT = f(ind + 1, j, 1, exp)  # Number of ways to make the right expression true\n        rF = f(ind + 1, j, 0, exp)  # Number of ways to make the right expression false\n\n        # Check the operator at the current index and update ways accordingly\n        if exp[ind] == '&':  # AND operator\n            if isTrue == 1:\n                ways += lT * rT\n            else:\n                ways += lF * rT + lT * rF + lF * rF\n        elif exp[ind] == '|':  # OR operator\n            if isTrue == 1:\n                ways += lF * rT + lT * rF + lT * rT\n            else:\n                ways += lF * rF\n        else:  # XOR operator\n            if isTrue == 1:\n                ways += lF * rT + lT * rF\n            else:\n                ways += lF * rF + lT * rT\n    \n    return ways % 1000000007  # Return the total number of ways modulo mod\n\n# Function to start evaluating the expression\ndef evaluateExp(exp):\n    return f(0, len(exp) - 1, 1, exp)  # Start evaluation with isTrue set to true\n\n# Driver code\nif __name__ == \"__main__\":\n    exp = \"F|T^F\"  # Example expression\n    \n    # Evaluate the expression and find the number of ways to get the result as True\n    ways = evaluateExp(exp)\n    \n    # Output the result\n    print(\"The total number of ways:\", ways)",
+      "JavaScript": "// Function to evaluate the number of ways to parenthesize the expression\nfunction f(i, j, isTrue, exp) {\n    // Base case 1: If i > j, it's an invalid expression, return 0\n    if (i > j) return 0;\n\n    // Base case 2: If i and j are the same, evaluate the single character\n    if (i === j) {\n        if (isTrue === 1) {\n            return exp[i] === 'T' ? 1 : 0;\n        } else {\n            return exp[i] === 'F' ? 1 : 0;\n        }\n    }\n\n    let ways = 0;\n\n    // Iterate through the expression to divide it into left and right subexpressions\n    for (let ind = i + 1; ind <= j - 1; ind += 2) {\n        // Recursively calculate the number of ways to make the left and right subexpressions true or false\n        let lT = f(i, ind - 1, 1, exp);  // Number of ways to make the left expression true\n        let lF = f(i, ind - 1, 0, exp);  // Number of ways to make the left expression false\n        let rT = f(ind + 1, j, 1, exp);  // Number of ways to make the right expression true\n        let rF = f(ind + 1, j, 0, exp);  // Number of ways to make the right expression false\n\n        // Check the operator at the current index and update ways accordingly\n        if (exp[ind] === '&') {  // AND operator\n            if (isTrue === 1) ways += lT * rT;\n            else ways += lF * rT + lT * rF + lF * rF;\n        } else if (exp[ind] === '|') {  // OR operator\n            if (isTrue === 1) ways += lF * rT + lT * rF + lT * rT;\n            else ways += lF * rF;\n        } else {  // XOR operator\n            if (isTrue === 1) ways += lF * rT + lT * rF;\n            else ways += lF * rF + lT * rT;\n        }\n    }\n\n    return ways % 1000000007;  // Return the total number of ways modulo mod\n}\n\n// Function to start evaluating the expression\nfunction evaluateExp(exp) {\n    return f(0, exp.length - 1, 1, exp);  // Start evaluation with isTrue set to true\n}\n\n// Driver code\nconst exp = \"F|T^F\";  // Example expression\n\n// Evaluate the expression and find the number of ways to get the result as True\nconst ways = evaluateExp(exp);\n\n// Output the result\nconsole.log(\"The total number of ways:\", ways);"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

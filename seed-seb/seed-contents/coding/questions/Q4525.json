@@ -1,0 +1,128 @@
+{
+  "questionId": "Q4525",
+  "title": "Maximum Path Sum in a Binary Tree",
+  "slug": "maximum-path-sum-in-a-binary-tree",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Recursion",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Binary Tree",
+      "Depth‑First Search",
+      "Dynamic Programming on Trees"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Trees"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "A **path** in a binary tree is a sequence of nodes where each pair of consecutive nodes is directly connected by an edge. A node can appear in the path **only once**. The path does not necessarily have to go through the root.\n\nThe **path sum** is the sum of all node values in the path.\n\nGiven the `root` of a binary tree, return the **maximum path sum** among all possible **non-empty** paths.\n\nFunction Declaration\n\n**Function Name**\n\n\n\nmaxPathSummaxPathSummaxPathSum\n\n\n\n**Parameters**\n\n\n\nrootrootroot: The root node of the binary tree.\n\n\n\n**Return Value**\n\n\n\nReturns an integer representing the maximum path sum among all possible non-empty paths in the binary tree.",
+    "constraints": [
+      "1 <= T <= 1000",
+      "1 <= N <= 30000",
+      "-1000 <= node value <= 1000"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case:\n- The first line contains an integer N, the number of entries in the level‑order traversal of the binary tree.\n- The second line contains N space‑separated tokens. Each token is either an integer (the node value) or the word NULL indicating the absence of a node at that position.\nThe tree is constructed exactly as a level‑order (breadth‑first) insertion would place the nodes, skipping NULL positions.\nAll test cases are independent.",
+    "outputFormat": "For each test case output a single line containing the maximum path sum among all non‑empty paths in the given binary tree.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n5\n5 4 8 11 13\n3\n2 NULL NULL",
+        "output": "30\n2",
+        "explanation": "Explanation: First test case: The maximum path sum is 30, obtained by choosing the path 8 -> 5 -> 4 -> 13. This path gives the highest possible sum among all valid paths in the tree. Second test case: The maximum path sum is 2, achieved by selecting the single node [2]. Including NULL would decrease the total sum, so it is excluded."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each node we compute two quantities using a post‑order DFS:\n1. **maxGain(node)** – the maximum sum of a path that starts at *node* and goes down to exactly one of its children (or stops at the node). Negative contributions are discarded by taking max(0, childGain).\n2. While returning from the recursion we update a global answer with the best path that uses the current node as the highest point: node.val + leftGain + rightGain.\nThe answer is the maximum of these values over all nodes. The algorithm visits each node once, giving O(N) time and O(H) recursion stack space (H = tree height).",
+    "timeComplexity": "O(N) per test case, where N is the number of nodes in the tree.",
+    "spaceComplexity": "O(H) recursion stack, at most O(N) in the worst case of a degenerate tree.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <limits.h>\n\ntypedef struct TreeNode {\n    int val;\n    struct TreeNode *left;\n    struct TreeNode *right;\n} TreeNode;\n\nTreeNode* newNode(int val) {\n    TreeNode* node = (TreeNode*)malloc(sizeof(TreeNode));\n    node->val = val;\n    node->left = node->right = NULL;\n    return node;\n}\n\nint max(int a, int b) { return a > b ? a : b; }\n\nint dfs(TreeNode* root, int* best) {\n    if (!root) return 0;\n    int left = max(0, dfs(root->left, best));\n    int right = max(0, dfs(root->right, best));\n    *best = max(*best, root->val + left + right);\n    return root->val + max(left, right);\n}\n\nint main() {\n    int T; if (scanf(\"%d\", &T)!=1) return 0;\n    while (T--) {\n        int N; scanf(\"%d\", &N);\n        char **tokens = (char**)malloc(N * sizeof(char*));\n        for (int i = 0; i < N; ++i) {\n            tokens[i] = (char*)malloc(6);\n            scanf(\"%s\", tokens[i]);\n        }\n        // Build tree\n        TreeNode **nodes = (TreeNode**)malloc(N * sizeof(TreeNode*));\n        for (int i = 0; i < N; ++i) nodes[i] = NULL;\n        for (int i = 0; i < N; ++i) {\n            if (strcmp(tokens[i], \"NULL\") != 0) {\n                int val = atoi(tokens[i]);\n                nodes[i] = newNode(val);\n            }\n        }\n        for (int i = 0; i < N; ++i) {\n            if (!nodes[i]) continue;\n            int leftIdx = 2*i + 1;\n            int rightIdx = 2*i + 2;\n            if (leftIdx < N) nodes[i]->left = nodes[leftIdx];\n            if (rightIdx < N) nodes[i]->right = nodes[rightIdx];\n        }\n        TreeNode* root = nodes[0];\n        int best = INT_MIN;\n        dfs(root, &best);\n        printf(\"%d\\n\", best);\n        // free memory (omitted for brevity)\n        for (int i = 0; i < N; ++i) free(tokens[i]);\n        free(tokens);\n        free(nodes);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nstruct TreeNode {\n    int val;\n    TreeNode *left, *right;\n    TreeNode(int v): val(v), left(nullptr), right(nullptr) {}\n};\n\nint dfs(TreeNode* node, int &ans) {\n    if (!node) return 0;\n    int left = max(0, dfs(node->left, ans));\n    int right = max(0, dfs(node->right, ans));\n    ans = max(ans, node->val + left + right);\n    return node->val + max(left, right);\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--) {\n        int N; cin>>N;\n        vector<string> tok(N);\n        for(int i=0;i<N;++i) cin>>tok[i];\n        vector<TreeNode*> nodes(N,nullptr);\n        for(int i=0;i<N;++i) if(tok[i]!=\"NULL\") nodes[i]=new TreeNode(stoi(tok[i]));\n        for(int i=0;i<N;++i) if(nodes[i]) {\n            int l=2*i+1, r=2*i+2;\n            if(l<N) nodes[i]->left = nodes[l];\n            if(r<N) nodes[i]->right = nodes[r];\n        }\n        TreeNode* root = nodes.empty()?nullptr:nodes[0];\n        int ans = INT_MIN;\n        dfs(root, ans);\n        cout<<ans<<\"\\n\";\n        // memory cleanup omitted for brevity\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\nclass Main {\n    static class TreeNode {\n        int val;\n        TreeNode left, right;\n        TreeNode(int v) { val = v; }\n    }\n\n    static int maxSum;\n\n    static int dfs(TreeNode node) {\n        if (node == null) return 0;\n        int left = Math.max(0, dfs(node.left));\n        int right = Math.max(0, dfs(node.right));\n        maxSum = Math.max(maxSum, node.val + left + right);\n        return node.val + Math.max(left, right);\n    }\n\n    static TreeNode buildTree(String[] tokens) {\n        int n = tokens.length;\n        TreeNode[] nodes = new TreeNode[n];\n        for (int i = 0; i < n; i++) {\n            if (!tokens[i].equals(\"NULL\")) {\n                nodes[i] = new TreeNode(Integer.parseInt(tokens[i]));\n            }\n        }\n        for (int i = 0; i < n; i++) {\n            if (nodes[i] == null) continue;\n            int l = 2 * i + 1, r = 2 * i + 2;\n            if (l < n) nodes[i].left = nodes[l];\n            if (r < n) nodes[i].right = nodes[r];\n        }\n        return n == 0 ? null : nodes[0];\n    }\n\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder sb = new StringBuilder();\n        while (T-- > 0) {\n            int N = Integer.parseInt(br.readLine().trim());\n            String[] tokens = br.readLine().trim().split(\" \");\n            TreeNode root = buildTree(tokens);\n            maxSum = Integer.MIN_VALUE;\n            dfs(root);\n            sb.append(maxSum).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "import sys\nfrom collections import deque\n\ndef build_tree(tokens):\n    n = len(tokens)\n    nodes = [None] * n\n    for i, t in enumerate(tokens):\n        if t != 'NULL':\n            nodes[i] = {'val': int(t), 'left': None, 'right': None}\n    for i in range(n):\n        if nodes[i] is None:\n            continue\n        l = 2 * i + 1\n        r = 2 * i + 2\n        if l < n:\n            nodes[i]['left'] = nodes[l]\n        if r < n:\n            nodes[i]['right'] = nodes[r]\n    return nodes[0] if n else None\n\nsys.setrecursionlimit(10**6)\n\ndef dfs(node):\n    if node is None:\n        return 0\n    left = max(0, dfs(node['left']))\n    right = max(0, dfs(node['right']))\n    dfs.max_sum = max(dfs.max_sum, node['val'] + left + right)\n    return node['val'] + max(left, right)\n\n\ndef solve():\n    data = sys.stdin.read().strip().splitlines()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out = []\n    for _ in range(T):\n        N = int(next(it))\n        tokens = next(it).split()\n        root = build_tree(tokens)\n        dfs.max_sum = -10**9\n        dfs(root)\n        out.append(str(dfs.max_sum))\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    solve()",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nfunction nextLine() { return lines[idx++]; }\nfunction buildTree(tokens) {\n  const n = tokens.length;\n  const nodes = new Array(n).fill(null);\n  for (let i = 0; i < n; i++) {\n    if (tokens[i] !== 'NULL') {\n      nodes[i] = { val: parseInt(tokens[i], 10), left: null, right: null };\n    }\n  }\n  for (let i = 0; i < n; i++) {\n    if (!nodes[i]) continue;\n    const l = 2 * i + 1, r = 2 * i + 2;\n    if (l < n) nodes[i].left = nodes[l];\n    if (r < n) nodes[i].right = nodes[r];\n  }\n  return n === 0 ? null : nodes[0];\n}\nfunction dfs(node) {\n  if (!node) return 0;\n  const left = Math.max(0, dfs(node.left));\n  const right = Math.max(0, dfs(node.right));\n  dfs.max = Math.max(dfs.max, node.val + left + right);\n  return node.val + Math.max(left, right);\n}\nconst T = parseInt(nextLine(), 10);\nlet outputs = [];\nfor (let t = 0; t < T; t++) {\n  const N = parseInt(nextLine(), 10);\n  const tokens = nextLine().trim().split(/\\s+/);\n  const root = buildTree(tokens);\n  dfs.max = -Infinity;\n  dfs(root);\n  outputs.push(String(dfs.max));\n}\nconsole.log(outputs.join('\\n'));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

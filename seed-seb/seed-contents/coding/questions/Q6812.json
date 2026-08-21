@@ -1,0 +1,127 @@
+{
+  "questionId": "Q6812",
+  "title": "Optimize The Slow Code",
+  "slug": "optimize-the-slow-code",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Arrays | Sorting",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Sorting",
+      "Three Pointers"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Combinatorics & Probability"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef hates unoptimized codes and people who write such codes. One fine day he decided to look through the kitchen's codebase and found a function whose pseudo-code is given here:\n\n`input: integer N, list X[1, 2, ..., N], list Y[1, 2, ..., N]\n\noutput: integer res\n\nfunction:\n\nset res = 0;\nfor i := 1 to N do\n   for j := 1 to N do\n      for k := 1 to N do\n         if (X[i] = X[j]) OR (X[j] = X[k]) OR (X[k] = X[i])\n            continue\n         else\n            set res = max(res, Y[i] + Y[j] + Y[k])\nreturn res\n`Luckily enough this code gets triggered only if the Head Chef makes a submission. But still there is a possibility that this can crash the judge. So help Chef by writing a new function which does the same thing but is faster.\n\n\nInput Format\n\nThe first line of the input contains an integer **T** denoting the number of test cases. The description of **T** test cases follows.\nThe first line of each test case contains an integer **N** denoting the number of elements in the two lists.\nThe i-th of the next **N** lines contains a pair of space-separated integers denoting the values of **X[i]** and **Y[i]** respectively.\n\n\nOutput Format\nFor each test case, output an integer corresponding to the return value of the function.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 10^5",
+      "1 <= X[i], Y[i] <= 10^8"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case starts with an integer N, the number of elements in the lists X and Y. The next N lines contain a pair of space-separated integers, the values of X[i] and Y[i] respectively.",
+    "outputFormat": "For each test case, output the maximum sum of Y[i] + Y[j] + Y[k] such that X[i] is not equal to X[j], X[j] is not equal to X[k], and X[k] is not equal to X[i].",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n3\n1 3\n3 1\n1 2\n5\n1 3\n2 4\n1 2\n3 2\n3 4",
+        "output": "0\n11",
+        "explanation": "Explanation: Testcase 2: The maximum is attained when i = 1, j = 2 and k = 5. This leads to res being 3 + 4 + 4 = 11. This value is attained in other iterations as well, but it never exceeds this, and hence this is the answer."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n1 1",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n100000\n100000000 100000000\n100000000 100000000\n100000000 100000000\n100000000 100000000\n100000000 100000000",
+        "expectedOutput": "300000000000000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n3\n1 1\n1 1\n1 1",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n5\n1 3\n2 4\n3 2\n4 1\n5 5",
+        "expectedOutput": "12",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n10\n1 10\n2 9\n3 8\n4 7\n5 6\n6 5\n7 4\n8 3\n9 2\n10 1",
+        "expectedOutput": "27",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem efficiently, we can sort the list of pairs (X, Y) based on X. Then, for each pair, we try to find two other pairs with different X values and maximum Y values. We can use three pointers to achieve this. The time complexity of this approach is O(N^2) due to the nested loops, and the space complexity is O(N) for sorting.",
+    "timeComplexity": "O(N^2) — we have two nested loops over the list of pairs",
+    "spaceComplexity": "O(N) — for sorting the list of pairs",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\n// Structure to represent a pair of X and Y values\ntypedef struct {\n    int x;\n    int y;\n} Pair;\n\n// Comparison function for sorting pairs based on X values\nint compare(const void *a, const void *b) {\n    Pair *p1 = (Pair *)a;\n    Pair *p2 = (Pair *)b;\n    return p1->x - p2->x;\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int N;\n        scanf(\"%d\", &N);\n        Pair pairs[N];\n        for (int i = 0; i < N; i++) {\n            scanf(\"%d %d\", &pairs[i].x, &pairs[i].y);\n        }\n        qsort(pairs, N, sizeof(Pair), compare);\n        int maxSum = 0;\n        for (int i = 0; i < N; i++) {\n            for (int j = 0; j < N; j++) {\n                if (pairs[i].x == pairs[j].x) continue;\n                for (int k = 0; k < N; k++) {\n                    if (pairs[i].x == pairs[k].x || pairs[j].x == pairs[k].x) continue;\n                    maxSum = (maxSum > pairs[i].y + pairs[j].y + pairs[k].y) ? maxSum : pairs[i].y + pairs[j].y + pairs[k].y;\n                }\n            }\n        }\n        printf(\"%d\\n\", maxSum);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <algorithm>\nusing namespace std;\n\nstruct Pair {\n    int x;\n    int y;\n};\n\nbool compare(const Pair &a, const Pair &b) {\n    return a.x < b.x;\n}\n\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        int N;\n        cin >> N;\n        Pair pairs[N];\n        for (int i = 0; i < N; i++) {\n            cin >> pairs[i].x >> pairs[i].y;\n        }\n        sort(pairs, pairs + N, compare);\n        int maxSum = 0;\n        for (int i = 0; i < N; i++) {\n            for (int j = 0; j < N; j++) {\n                if (pairs[i].x == pairs[j].x) continue;\n                for (int k = 0; k < N; k++) {\n                    if (pairs[i].x == pairs[k].x || pairs[j].x == pairs[k].x) continue;\n                    maxSum = max(maxSum, pairs[i].y + pairs[j].y + pairs[k].y);\n                }\n            }\n        }\n        cout << maxSum << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Arrays;\nimport java.util.Scanner;\n\npublic class Main {\n    static class Pair implements Comparable<Pair> {\n        int x;\n        int y;\n        Pair(int x, int y) {\n            this.x = x;\n            this.y = y;\n        }\n        @Override\n        public int compareTo(Pair o) {\n            return this.x - o.x;\n        }\n    }\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int T = scanner.nextInt();\n        while (T-- > 0) {\n            int N = scanner.nextInt();\n            Pair[] pairs = new Pair[N];\n            for (int i = 0; i < N; i++) {\n                pairs[i] = new Pair(scanner.nextInt(), scanner.nextInt());\n            }\n            Arrays.sort(pairs);\n            int maxSum = 0;\n            for (int i = 0; i < N; i++) {\n                for (int j = 0; j < N; j++) {\n                    if (pairs[i].x == pairs[j].x) continue;\n                    for (int k = 0; k < N; k++) {\n                        if (pairs[i].x == pairs[k].x || pairs[j].x == pairs[k].x) continue;\n                        maxSum = Math.max(maxSum, pairs[i].y + pairs[j].y + pairs[k].y);\n                    }\n                }\n            }\n            System.out.println(maxSum);\n        }\n    }\n}",
+      "Python3": "import sys\n\n# Read input from stdin\nT = int(sys.stdin.readline())\n\nfor _ in range(T):\n    N = int(sys.stdin.readline())\n    pairs = []\n    for _ in range(N):\n        x, y = map(int, sys.stdin.readline().split())\n        pairs.append((x, y))\n    pairs.sort(key=lambda x: x[0])\n    max_sum = 0\n    for i in range(N):\n        for j in range(N):\n            if pairs[i][0] == pairs[j][0]:\n                continue\n            for k in range(N):\n                if pairs[i][0] == pairs[k][0] or pairs[j][0] == pairs[k][0]:\n                    continue\n                max_sum = max(max_sum, pairs[i][1] + pairs[j][1] + pairs[k][1])\n    print(max_sum)",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\n\nfunction readline() {\n    return input[idx++];\n}\n\nlet T = parseInt(readline());\nwhile (T--) {\n    let N = parseInt(readline());\n    let pairs = [];\n    for (let i = 0; i < N; i++) {\n        let [x, y] = readline().split(' ').map(Number);\n        pairs.push([x, y]);\n    }\n    pairs.sort((a, b) => a[0] - b[0]);\n    let maxSum = 0;\n    for (let i = 0; i < N; i++) {\n        for (let j = 0; j < N; j++) {\n            if (pairs[i][0] == pairs[j][0]) continue;\n            for (let k = 0; k < N; k++) {\n                if (pairs[i][0] == pairs[k][0] || pairs[j][0] == pairs[k][0]) continue;\n                maxSum = Math.max(maxSum, pairs[i][1] + pairs[j][1] + pairs[k][1]);\n            }\n        }\n    }\n    console.log(maxSum);\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

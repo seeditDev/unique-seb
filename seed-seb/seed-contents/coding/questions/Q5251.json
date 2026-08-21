@@ -1,0 +1,125 @@
+{
+  "questionId": "Q5251",
+  "title": "Bogosort",
+  "slug": "bogosort",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math | Probability | Expected Value | Dynamic Programming",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Expected value",
+      "Probability",
+      "Dynamic programming",
+      "Permutations",
+      "Fractions"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Combinatorics & Probability"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Recently Johnny have learned bogosort sorting algorithm. He thought that it is too ineffective. So he decided to improve it. As you may know this algorithm shuffles the sequence randomly until it is sorted. Johnny decided that we don't need to shuffle the whole sequence every time. If after the last shuffle several first elements end up in the right places we will fix them and don't shuffle those elements furthermore. We will do the same for the last elements if they are in the right places. For example, if the initial sequence is (3, 5, 1, 6, 4, 2) and after one shuffle Johnny gets (1, 2, 5, 4, 3, 6) he will fix 1, 2 and 6 and proceed with sorting (5, 4, 3) using the same algorithm. Johnny hopes that this optimization will significantly improve the algorithm. Help him calculate the expected amount of shuffles for the improved algorithm to sort the sequence of the first n natural numbers given that no elements are in the right places initially.",
+    "constraints": [
+      "1 ≤ t ≤ 150",
+      "2 ≤ n ≤ 150"
+    ],
+    "inputFormat": "The first line contains an integer t (1 ≤ t ≤ 150) – the number of test cases. Each of the next t lines contains a single integer n (2 ≤ n ≤ 150) – the size of the permutation. Initially the permutation of 1…n has no element in its correct position.",
+    "outputFormat": "For each test case output the expected number of shuffles required by Johnny's improved bogosort as an irreducible fraction. If the denominator equals 1 output only the numerator.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n2\n6\n10",
+        "output": "2\n1826/189\n877318/35343",
+        "explanation": ""
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Let E[L] be the expected number of shuffles needed when the current unsorted segment has length L (0‑based, E[0]=E[1]=0). After one random permutation of the L elements we look at the longest correct prefix of length a (a≥0) and the longest correct suffix of length b (b≥0). The remaining segment length becomes L‑a‑b. The process repeats, therefore\nE[L] = 1 + Σ_{a,b, a+b<L} P_L(a,b)·E[L‑a‑b]\nwhere P_L(a,b) is the probability that a random permutation of L elements has exactly a correct elements at the beginning, exactly b correct elements at the end, and the next element on each side is incorrect (so the prefix/suffix are maximal). For a+b = L the permutation is already sorted and contributes 0 because E[0]=0; for a+b = L‑1 the probability is 0 (the single remaining element would be forced to be correct).\nCounting permutations:\nLet M = L‑a‑b (size of the middle part). If M ≥ 2 the number of permutations with the required property is\ncnt = M! – 2·(M‑1)! + (M‑2)!\nIf M = 0 (a+b = L) cnt = 1. If M = 1 cnt = 0.\nThus\nP_L(a,b) = cnt / L!.\nWe pre‑compute factorials up to 150 as big integers, then fill E[0…150] using the recurrence. All arithmetic is performed with exact rational numbers (numerator/denominator reduced by gcd). The final answer for each n is E[n] printed as \"num/den\" or just \"num\" when den=1.\nComplexity: O(n³) time (n≤150 → ~3·10⁶ operations) and O(n) extra space for the DP table and factorials. The limits are easily satisfied.\nImplementation notes for each language:\n* Python 3 – use fractions.Fraction for exact rationals.\n* C++ – store numerator and denominator as boost::multiprecision::cpp_int, reduce with std::gcd on built‑in long long after converting to cpp_int (or implement binary gcd for cpp_int).\n* C – use GNU MP (gmp) library (mpz_t) for big integers and keep fractions as two mpz_t values.\n* Java – use java.math.BigInteger for numerator/denominator and reduce with gcd.\n* JavaScript (Node.js) – use the built‑in BigInt type, keep numerator and denominator as BigInt and reduce with Euclidean algorithm.\nAll five programs read t, then loop over the test cases, output the pre‑computed value E[n].",
+    "timeComplexity": "O(n³) per pre‑computation (n = 150) → negligible, O(1) per query.",
+    "spaceComplexity": "O(n) for DP and factorial tables (big integers).",
+    "code": {
+      "C": "#include <stdio.h>\n#include <gmp.h>\n#include <stdlib.h>\n\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

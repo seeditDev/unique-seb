@@ -1,0 +1,116 @@
+{
+  "questionId": "Q2280",
+  "title": "Rush Hour",
+  "slug": "rush-hour",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graphs",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Graphs",
+      "Game Solver",
+      "State Compression",
+      "BFS",
+      "Sliding Puzzle"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Recursion & Backtracking"
+    ]
+  },
+  "content": {
+    "problemStatement": "Rush Hour is a popular puzzle game which is now available on many mobile devices.\n\n\nThere is a board of size M x N. The board is full of cars and trucks. Each car has size 1x2 and each truck has size 1x3. Cars and trucks can be either horizontal or vertical.\n\n\nAt each step, we can move a horizontal car or truck along its row if there is no other objects in its way. Similarly we can move a vertical car or truck along its column.\n\n\nAmong the cars, one belongs to the president. It is always horizontal. The object of the game is to get the president's car to the exit gate at the rightmost column in its row.\n\n\nYou need to write a solver for Rush Hour, which takes a map of the game and returns the minimum number of steps to solve it.\n\n\nAs an example, look at the figures below. The president's car is painted in yellow. It takes 5 steps to solve this game instance.",
+    "constraints": [
+      "1 \u2264 T \u2264 10",
+      "6 \u2264 M, N \u2264 12",
+      "3 \u2264 K \u2264 26",
+      "Each vehicle occupies exactly 2 or 3 consecutive cells in a straight line.",
+      "The president\u2019s car is always horizontal, size 2, and does not start at the exit.",
+      "A solution always exists and the optimal number of steps never exceeds 10."
+    ],
+    "inputFormat": "The first line contains an integer T (1 \u2264 T \u2264 10), the number of test cases. For each test case:\n- A line with three integers M N K (6 \u2264 M, N \u2264 12, 3 \u2264 K \u2264 26) \u2013 board rows, columns and number of distinct vehicles.\n- M lines follow, each containing N characters. '.' denotes an empty cell, letters \u2018a\u2019\u2011\u2018z\u2019 denote a vehicle occupying that cell. Vehicle \u2018a\u2019 is the president\u2019s horizontal car (size 1\u00d72). All other vehicles are either size 1\u00d72 (car) or 1\u00d73 (truck) and are either horizontal or vertical.\nA blank line may appear after each test case and should be ignored.",
+    "outputFormat": "For each test case output a single line containing the minimum number of steps required to move the president\u2019s car so that its rightmost cell reaches column N\u20111.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "",
+        "output": "Input\n2\n6 6 13\r\nb.c..e\r\nb.cdde\r\nfghaal\r\nfghjjl\r\n.giikk\r\nmmm...\n6 6 10\r\n......\r\n.bb.cc\r\naad.hi\r\nfed.hi\r\nfeg..j\r\nf.g..j\nOutput\r\n5\r\n6",
+        "explanation": ""
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The board configuration is a state of a graph. From a state we can generate all reachable states by sliding any vehicle any positive distance along its orientation until it hits another vehicle or the board border \u2013 each such slide counts as one step. Because the optimal solution never exceeds 10 moves, a simple breadth\u2011first search (BFS) over the state space is sufficient.\n\n**State representation**\n- Vehicles are identified by their letters (a \u2026). For each vehicle we store the coordinate of its leading cell: the topmost cell for a vertical vehicle, the leftmost cell for a horizontal vehicle. The order of vehicles is fixed (a, b, c, \u2026) so a state can be encoded as a string of bytes, each byte = row*16 + col (12 fits into 4 bits, 16 is safe).\n- The president\u2019s car \u2018a\u2019 is horizontal length\u202f2. The goal is reached when its leftmost column equals N\u20112 (rightmost cell at N\u20111).\n\n**BFS**\n1. Parse the board, determine for every letter its orientation and length.\n2. Build the initial state string.\n3. Push the initial state into a queue with distance\u202f0 and mark it visited.\n4. While the queue is not empty, pop a state. If the goal condition holds, output its distance.\n5. For each vehicle, try to move forward and backward:\n   - Repeatedly step one cell in the chosen direction while the next cell is empty.\n   - For every reachable new position (any distance \u22651) create a new state, enqueue it with distance+1 if not visited.\n6. Because the search depth is bounded by 10, the number of explored states is tiny (well below 10\u2076), easily fitting into time and memory limits.\n\n**Correctness proof sketch**\n- *Lemma 1*: Every legal move of the game corresponds to exactly one edge in the BFS graph, and vice\u2011versa. The generation step slides a vehicle any distance until an obstacle, which matches the definition of a single step.\n- *Lemma 2*: BFS explores states in non\u2011decreasing order of the number of steps from the start. Therefore, the first time the goal state is dequeued its distance equals the optimal number of steps.\n- *Theorem*: The algorithm returns the minimum possible number of steps. By Lemma\u202f1 the BFS graph contains all reachable configurations; by Lemma\u202f2 the distance found for the goal is minimal.\n\n**Complexity analysis**\n- Let S be the number of distinct reachable states (S is tiny because depth \u2264\u202f10). Each state generation scans at most K vehicles and at most M+N cells per vehicle, so O(K\u00b7(M+N)).\n- Time: O(S\u00b7K\u00b7(M+N)) \u2013 well under a millisecond for the given limits.\n- Space: O(S\u00b7K) for the visited set and the queue, also negligible (\u2264\u202ffew MB).",
+    "timeComplexity": "O(S \u00b7 K \u00b7 (M+N)), where S is the number of states explored (S \u2264 a few hundred thousand for the given depth limit).",
+    "spaceComplexity": "O(S \u00b7 K) for storing visited states and the BFS queue.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdbool.h>\n#include <stdint.h>\n\n#define MAXM 12\n#define MAXN 12\n#define MAXK 26\n#define MAXSTATE 30"
+    }
+  }
+}

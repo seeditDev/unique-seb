@@ -1,0 +1,140 @@
+{
+  "questionId": "Q4652",
+  "title": "Array Intersection",
+  "slug": "array-intersection",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Arrays | Sorting | Two Pointers",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Two Pointer",
+      "Sorting",
+      "Set Intersection"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Arrays"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Given two one-dimensional arrays, find the intersection of the sets represented by them. The intersection should contain only unique elements in ascending order.\n\n\nInput Format\n\nThe first line contains two integers, NNN and MMM, representing the sizes of the first and second arrays, respectively.\nThe second line contains NNN integers, representing the elements of the first array.\nThe third line contains MMM integers, representing the elements of the second array.\n\n\nOutput Format\n\nPrint the elements of the intersection, separated by spaces. If the intersection is empty, print nothing.",
+    "constraints": [
+      "1 ≤ T ≤ 10",
+      "1 ≤ N, M ≤ 500",
+      "1 ≤ array elements ≤ 1000"
+    ],
+    "inputFormat": "The first line contains an integer T (1 ≤ T ≤ 10), the number of test cases. For each test case:\n- The first line contains two integers N and M (1 ≤ N, M ≤ 500), the sizes of the two arrays.\n- The second line contains N integers, the elements of the first array.\n- The third line contains M integers, the elements of the second array.",
+    "outputFormat": "For each test case, print the unique elements that appear in both arrays, sorted in ascending order and separated by a single space. Print an empty line if there is no common element.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\\n5 5\\n1 2 3 4 5\\n3 5 6 7 8",
+        "output": "3 5",
+        "explanation": "Both arrays share the numbers 3 and 5. After removing duplicates and sorting, the intersection is \"3 5\"."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\\n3 3\\n1 2 3\\n4 5 6",
+        "output": "",
+        "explanation": "There is no common element, so the output line is empty."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\\n5 5\\n1 1 1 1 1\\n1 1 1 1 1",
+        "output": "1",
+        "explanation": "All elements are 1, but the intersection must contain each value only once, resulting in \"1\"."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\\n1 1\\n1\\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\\n15 15\\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15\\n5 6 7 8 9 10 11 12 13 14 15 16 17 18 19",
+        "expectedOutput": "5 6 7 8 9 10 11 12 13 14 15",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case with duplicates",
+        "input": "1\\n6 5\\n2 2 2 3 3 4\\n2 2 5 3 3",
+        "expectedOutput": "2 3",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case no intersection",
+        "input": "1\\n3 4\\n1 2 3\\n4 5 6 7",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case mixed duplicates",
+        "input": "1\\n8 6\\n10 20 20 30 40 50 60 70\\n5 20 20 30 80 90",
+        "expectedOutput": "20 30",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each test case sort both arrays (O(N log N + M log M)). Then use two pointers to walk through the sorted arrays. When the values are equal, output the value if it is different from the previously output value (to keep uniqueness). Advance both pointers; otherwise advance the pointer with the smaller value. This yields the intersection in ascending order with O(N+M) extra work after sorting.",
+    "timeComplexity": "O(N log N + M log M) per test case due to sorting; the two‑pointer scan is O(N+M).",
+    "spaceComplexity": "O(1) extra besides the input arrays (ignoring the space used by sorting algorithms).",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nint cmp(const void *a, const void *b) {\n    return (*(int*)a - *(int*)b);\n}\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        int n, m;\n        scanf(\"%d %d\", &n, &m);\n        int *a = (int*)malloc(n * sizeof(int));\n        int *b = (int*)malloc(m * sizeof(int));\n        for (int i = 0; i < n; ++i) scanf(\"%d\", &a[i]);\n        for (int i = 0; i < m; ++i) scanf(\"%d\", &b[i]);\n        qsort(a, n, sizeof(int), cmp);\n        qsort(b, m, sizeof(int), cmp);\n        int i = 0, j = 0;\n        int first = 1;\n        while (i < n && j < m) {\n            if (a[i] < b[j]) ++i;\n            else if (a[i] > b[j]) ++j;\n            else {\n                if (first || (i > 0 && a[i] != a[i-1])) {\n                    if (!first) printf(\" \");\n                    printf(\"%d\", a[i]);\n                    first = 0;\n                }\n                ++i; ++j;\n            }\n        }\n        printf(\"\\n\");\n        free(a);\n        free(b);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T;\n    if (!(cin >> T)) return 0;\n    while (T--) {\n        int n, m;\n        cin >> n >> m;\n        vector<int> a(n), b(m);\n        for (int &x : a) cin >> x;\n        for (int &x : b) cin >> x;\n        sort(a.begin(), a.end());\n        sort(b.begin(), b.end());\n        int i = 0, j = 0;\n        bool first = true;\n        while (i < n && j < m) {\n            if (a[i] < b[j]) ++i;\n            else if (a[i] > b[j]) ++j;\n            else {\n                if (first || (i > 0 && a[i] != a[i-1])) {\n                    if (!first) cout << ' ';\n                    cout << a[i];\n                    first = false;\n                }\n                ++i; ++j;\n            }\n        }\n        cout << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st = new StringTokenizer(br.readLine());\n        int T = Integer.parseInt(st.nextToken());\n        StringBuilder out = new StringBuilder();\n        while (T-- > 0) {\n            st = new StringTokenizer(br.readLine());\n            int n = Integer.parseInt(st.nextToken());\n            int m = Integer.parseInt(st.nextToken());\n            int[] a = new int[n];\n            int[] b = new int[m];\n            st = new StringTokenizer(br.readLine());\n            for (int i = 0; i < n; i++) a[i] = Integer.parseInt(st.nextToken());\n            st = new StringTokenizer(br.readLine());\n            for (int i = 0; i < m; i++) b[i] = Integer.parseInt(st.nextToken());\n            Arrays.sort(a);\n            Arrays.sort(b);\n            int i = 0, j = 0;\n            boolean first = true;\n            while (i < n && j < m) {\n                if (a[i] < b[j]) i++;\n                else if (a[i] > b[j]) j++;\n                else {\n                    if (first || (i > 0 && a[i] != a[i-1])) {\n                        if (!first) out.append(' ');\n                        out.append(a[i]);\n                        first = false;\n                    }\n                    i++; j++;\n                }\n            }\n            out.append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        n = int(next(it))\n        m = int(next(it))\n        a = [int(next(it)) for _ in range(n)]\n        b = [int(next(it)) for _ in range(m)]\n        a.sort()\n        b.sort()\n        i = j = 0\n        res = []\n        while i < n and j < m:\n            if a[i] < b[j]:\n                i += 1\n            elif a[i] > b[j]:\n                j += 1\n            else:\n                if not res or res[-1] != a[i]:\n                    res.append(a[i])\n                i += 1\n                j += 1\n        out_lines.append(' '.join(map(str, res)))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet outputs = [];\nfor (let t = 0; t < T; t++) {\n  const n = Number(input[idx++]);\n  const m = Number(input[idx++]);\n  const a = [];\n  const b = [];\n  for (let i = 0; i < n; i++) a.push(Number(input[idx++]));\n  for (let i = 0; i < m; i++) b.push(Number(input[idx++]));\n  a.sort((x, y) => x - y);\n  b.sort((x, y) => x - y);\n  let i = 0, j = 0;\n  const res = [];\n  while (i < n && j < m) {\n    if (a[i] < b[j]) i++;\n    else if (a[i] > b[j]) j++;\n    else {\n      if (res.length === 0 || res[res.length - 1] !== a[i]) res.push(a[i]);\n      i++; j++;\n    }\n  }\n  outputs.push(res.join(' '));\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

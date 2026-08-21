@@ -1,0 +1,130 @@
+{
+  "questionId": "Q8166",
+  "title": "Increasing Decreasing",
+  "slug": "increasing-decreasing",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Greedy | Sorting",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Sorting",
+      "Greedy",
+      "Frequency Counting",
+      "Permutation"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Constructive Algorithms"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef received a new sequence A1,A2,…,ANA_1, A_2, \\ldots, A_NA1​,A2​,…,AN​. He does not like arbitrarily ordered sequences, so he wants to permute the elements of AAA in such a way that it would satisfy the following condition: there is an integer ppp (1≤p≤N1 \\le p \\le N1≤p≤N) such that the first ppp elements of the new (permuted) sequence are strictly increasing and the last N−p+1N-p+1N−p+1 elements are strictly decreasing.\n\nHelp Chef and find a permutation of the given sequence which satisfies this condition or determine that no such permutation exists. If there are multiple solutions, you may find any one.",
+    "constraints": [
+      "1 <= T <= 100",
+      "1 <= N <= 100000",
+      "1 <= Ai <= 200000",
+      "Sum of N over all test cases does not exceed 1000000"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, the first line contains an integer N, the length of the sequence. The second line contains N space‑separated integers A1,…,AN.",
+    "outputFormat": "For each test case, output either a single line \"NO\" if no required permutation exists, or two lines: the first line \"YES\" and the second line the N integers of any valid permutation.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n5\n1 2 3 4 5\n5\n5 4 3 2 1\n6\n1 2 2 3 3 4",
+        "output": "YES\n1 2 3 4 5\nYES\n1 2 3 4 5\nYES\n1 2 3 4 3 2",
+        "explanation": "First two cases have all distinct numbers, so the increasing order itself satisfies the condition. In the third case numbers 2 and 3 appear twice; they are placed after the peak (4) in decreasing order, giving a valid mountain sequence."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For a sequence to be rearranged into a strictly increasing prefix followed by a strictly decreasing suffix (the peak element belongs to both parts), each value can appear at most twice: once in the increasing part and once in the decreasing part. The maximum value can appear only once because it must be the peak. Algorithm: 1) Count frequencies of all numbers. 2) If any frequency > 2 → impossible. 3) If the maximum value appears twice → impossible. 4) Otherwise, build the answer:   • increasing part – all distinct values in ascending order.   • decreasing part – all values whose frequency is 2, taken in descending order (the maximum value is never in this part). 5) Concatenate increasing part followed by decreasing part. This sequence is strictly increasing up to the peak and strictly decreasing afterwards.",
+    "timeComplexity": "O(N log N) per test case because of sorting the distinct values (the total number of elements across all test cases is ≤ 10^6).",
+    "spaceComplexity": "O(N) for storing the array and frequency map.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\ntypedef struct {int val; int cnt;} Pair;\nint cmp_int(const void *a, const void *b){return *(int*)a-*(int*)b;}\nint cmp_pair(const void *a, const void *b){return ((Pair*)a)->val-((Pair*)b)->val;}\nint main(){int T; if(scanf(\"%d\",&T)!=1) return 0; while(T--){int N; scanf(\"%d\",&N); int *arr=malloc(N*sizeof(int)); for(int i=0;i<N;i++) scanf(\"%d\",&arr[i]); qsort(arr,N,sizeof(int),cmp_int);\n // frequency counting on sorted array\n int distinct=0; Pair *p=malloc(N*sizeof(Pair));\n for(int i=0;i<N;i++){\n   if(i==0||arr[i]!=arr[i-1]){p[distinct].val=arr[i]; p[distinct].cnt=1; distinct++;}\n   else p[distinct-1].cnt++;\n }\n int ok=1; int maxVal=p[distinct-1].val; if(p[distinct-1].cnt==2) ok=0; for(int i=0;i<distinct;i++) if(p[i].cnt>2) ok=0;\n if(!ok){printf(\"NO\\n\"); free(arr); free(p); continue;}\n // build answer\n int *ans=malloc(N*sizeof(int)); int idx=0;\n for(int i=0;i<distinct;i++) ans[idx++]=p[i].val; // increasing part\n for(int i=distinct-2;i>=0;i--){ // decreasing part from second largest to smallest\n   if(p[i].cnt==2) ans[idx++]=p[i].val;\n }\n printf(\"YES\\n\"); for(int i=0;i<N;i++) printf(\"%d%s\",ans[i], i+1==N?\"\\n\":\" \");\n free(arr); free(p); free(ans);\n }\n return 0; }",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){ios::sync_with_stdio(false);cin.tie(nullptr);\n int T; if(!(cin>>T)) return 0; while(T--){int N;cin>>N;vector<int>a(N);for(int &x:a)cin>>x;sort(a.begin(),a.end());\n unordered_map<int,int>freq;for(int x:a)freq[x]++;\n bool ok=true;int mx=a.back();if(freq[mx]==2) ok=false;for(auto &kv:freq) if(kv.second>2) ok=false;\n if(!ok){cout<<\"NO\\n\";continue;}\n vector<int>inc,dec;inc.reserve(freq.size());dec.reserve(freq.size());\n for(auto &kv:freq) inc.push_back(kv.first);\n sort(inc.begin(),inc.end());\n for(int i=inc.size()-1;i>=0;--i){int v=inc[i];if(freq[v]==2) dec.push_back(v);} // descending automatically\n cout<<\"YES\\n\";bool first=true;for(int v:inc){if(!first) cout<<' ';cout<<v;first=false;}\n for(int v:dec){cout<<' '<<v;}\n cout<<'\\n';\n }\n return 0; }",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner(System.in);\n        int T = fs.nextInt();\n        StringBuilder out = new StringBuilder();\n        while (T-- > 0) {\n            int N = fs.nextInt();\n            int[] a = new int[N];\n            for (int i = 0; i < N; i++) a[i] = fs.nextInt();\n            Arrays.sort(a);\n            HashMap<Integer,Integer> freq = new HashMap<>();\n            for (int x : a) freq.put(x, freq.getOrDefault(x,0)+1);\n            boolean ok = true;\n            int max = a[N-1];\n            if (freq.get(max) == 2) ok = false;\n            for (int cnt : freq.values()) if (cnt > 2) {ok = false; break;}\n            if (!ok) {out.append(\"NO\\n\"); continue;}\n            ArrayList<Integer> inc = new ArrayList<>(freq.keySet());\n            Collections.sort(inc);\n            ArrayList<Integer> dec = new ArrayList<>();\n            for (int i = inc.size()-1; i >=0; i--) {\n                int v = inc.get(i);\n                if (freq.get(v) == 2) dec.add(v);\n            }\n            out.append(\"YES\\n\");\n            for (int i = 0; i < inc.size(); i++) {\n                if (i>0) out.append(' ');\n                out.append(inc.get(i));\n            }\n            for (int v : dec) out.append(' ').append(v);\n            out.append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n    static class FastScanner {\n        private final InputStream in;\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        FastScanner(InputStream in){this.in=in;}\n        private int readByte() throws IOException {\n            if (ptr >= len) {len = in.read(buffer); ptr = 0; if (len <= 0) return -1;}\n            return buffer[ptr++];\n        }\n        int nextInt() throws IOException {\n            int c, sign = 1, val = 0;\n            do {c = readByte();} while (c <= ' ');\n            if (c == '-') {sign = -1; c = readByte();}\n            while (c > ' ') {val = val*10 + c - '0'; c = readByte();}\n            return val*sign;\n        }\n    }\n}",
+      "Python3": "import sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it))\n        arr = [int(next(it)) for _ in range(N)]\n        arr.sort()\n        from collections import Counter\n        freq = Counter(arr)\n        ok = True\n        if freq[arr[-1]] == 2:\n            ok = False\n        for cnt in freq.values():\n            if cnt > 2:\n                ok = False\n                break\n        if not ok:\n            out_lines.append('NO')\n            continue\n        inc = sorted(freq.keys())\n        dec = [v for v in reversed(inc) if freq[v] == 2]\n        ans = inc + dec\n        out_lines.append('YES')\n        out_lines.append(' '.join(map(str, ans)))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0,'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet out = [];\nfor(let t=0;t<T;t++){\n  const N = Number(input[idx++]);\n  let arr = new Array(N);\n  for(let i=0;i<N;i++) arr[i] = Number(input[idx++]);\n  arr.sort((a,b)=>a-b);\n  const freq = new Map();\n  for(const x of arr){freq.set(x,(freq.get(x)||0)+1);}\n  let ok = true;\n  const maxVal = arr[N-1];\n  if(freq.get(maxVal)===2) ok = false;\n  for(const cnt of freq.values()) if(cnt>2){ok=false;break;}\n  if(!ok){out.push('NO');continue;}\n  const inc = Array.from(freq.keys()).sort((a,b)=>a-b);\n  const dec = [];\n  for(let i=inc.length-1;i>=0;i--){const v=inc[i];if(freq.get(v)===2) dec.push(v);}\n  out.push('YES');\n  out.push(inc.concat(dec).join(' '));\n}\nconsole.log(out.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

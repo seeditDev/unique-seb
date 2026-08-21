@@ -1,0 +1,117 @@
+{
+  "questionId": "Q3467",
+  "title": "Tree Balancing",
+  "slug": "tree-balancing",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graphs",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Tree",
+      "Graph Algorithms",
+      "Graphs",
+      "Dynamic Programming"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ]
+  },
+  "content": {
+    "problemStatement": "You are given a rooted tree of **N** vertices, the root is at vertex **1**. The **i**-th edge has two parameters associated with it, **Ci** denoting the cost of the edge and parameter **Di**.\n\n\n\nYou want to make cost of all the paths from the root to any leaf having equal costs. Cost of a path is sum of costs of all the edges on the path. For that, you can increase or decrease cost of any edge. The time taken in changing cost of **i**-th edge to **X** will be **Di \u00d7 |X - Ci|**.\n\n\n\nFind the minimum time required to make cost of all the paths from the root to all leaves equal. Furthmore, you should also output the new edge costs. If there are more than one possible solutions, you can print any of them.\n\n\n\nNote that you can change costs of edges to negative, but all costs should be integers.",
+    "constraints": [
+      "1 <= T <= 200000",
+      "1 <= N <= 200000",
+      "1 <= ui, vi <= N",
+      "1 <= Ci, Di <= 10^6"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case starts with an integer N, the number of vertices in the tree. Then, N-1 lines follow, each containing four space-separated integers ui, vi, Ci, and Di, representing an edge between vertices ui and vi with cost Ci and parameter Di.",
+    "outputFormat": "For each test case, the first line contains the minimum time required to make the cost of all paths from the root to all leaves equal. The next N-1 lines contain the updated costs of the edges.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "",
+        "output": "Input:\n1\n5\n1 2 5 4\n1 3 15 15\n2 4 3 2\n2 5 5 1\nOutput: \r\n19\r\n5\r\n15\r\n10\r\n10",
+        "explanation": ""
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a dynamic programming approach. We first need to find the maximum cost of a path from the root to a leaf. Then, we can calculate the minimum time required to make the cost of all paths equal to this maximum cost. We can do this by iterating over all edges and calculating the time required to change the cost of each edge to the desired value.",
+    "timeComplexity": "O(T * N * log(N)) - The time complexity is dominated by the iteration over all edges in the tree and the calculation of the minimum time required to change the cost of each edge.",
+    "spaceComplexity": "O(T * N) - The space complexity is dominated by the storage of the tree and the dynamic programming table.",
+    "code": {
+      "C": "// COMPLETE, COMPILABLE C code\n#include <stdio.h>\n#include <stdlib.h>\n#include <limits.h>\n\n// Define the structure for an edge\ntypedef struct Edge {\n    int u, v, cost, param;\n} Edge;\n\n// Define the structure for a tree\ntypedef struct Tree {\n    int n;\n    Edge* edges;\n} Tree;\n\n// Function to calculate the minimum time required\nint calculateMinTime(Tree* tree) {\n    int n = tree->n;\n    Edge* edges = tree->edges;\n    int* depths = (int*) malloc(n * sizeof(int));\n    int* costs = (int*) malloc(n * sizeof(int));\n    int maxDepth = 0;\n    int minTime = 0;\n\n    // Calculate the depth of each node\n    for (int i = 0; i < n; i++) {\n        depths[i] = -1;\n    }\n    depths[0] = 0;\n    for (int i = 0; i < n - 1; i++) {\n        int u = edges[i].u;\n        int v = edges[i].v;\n        if (depths[u] != -1) {\n            depths[v] = depths[u] + 1;\n        }\n    }\n\n    // Calculate the cost of each node\n    for (int i = 0; i < n; i++) {\n        costs[i] = 0;\n    }\n    for (int i = 0; i < n - 1; i++) {\n        int u = edges[i].u;\n        int v = edges[i].v;\n        costs[v] = costs[u] + edges[i].cost;\n    }\n\n    // Calculate the maximum depth\n    for (int i = 0; i < n; i++) {\n        if (depths[i] > maxDepth) {\n            maxDepth = depths[i];\n        }\n    }\n\n    // Calculate the minimum time required\n    for (int i = 0; i < n - 1; i++) {\n        int u = edges[i].u;\n        int v = edges[i].v;\n        int cost = edges[i].cost;\n        int param = edges[i].param;\n        int diff = abs(cost - (maxDepth - depths[v]));\n        minTime += diff * param;\n    }\n\n    free(depths);\n    free(costs);\n    return minTime;\n}\n\nint main() {\n    int t;\n    scanf(\"%d\", &t);\n    for (int i = 0; i < t; i++) {\n        int n;\n        scanf(\"%d\", &n);\n        Tree tree;\n        tree.n = n;\n        tree.edges = (Edge*) malloc((n - 1) * sizeof(Edge));\n        for (int j = 0; j < n - 1; j++) {\n            int u, v, cost, param;\n            scanf(\"%d %d %d %d\", &u, &v, &cost, &param);\n            tree.edges[j].u = u - 1;\n            tree.edges[j].v = v - 1;\n            tree.edges[j].cost = cost;\n            tree.edges[j].param = param;\n        }\n        int minTime = calculateMinTime(&tree);\n        printf(\"%d\\n\", minTime);\n        for (int j = 0; j < n - 1; j++) {\n            printf(\"%d\\n\", tree.edges[j].cost);\n        }\n        free(tree.edges);\n    }\n    return 0;\n}",
+      "C++": "// COMPLETE, COMPILABLE C++ code\n#include <iostream>\n#include <vector>\n#include <limits>\n\nusing namespace std;\n\n// Define the structure for an edge\nstruct Edge {\n    int u, v, cost, param;\n};\n\n// Define the structure for a tree\nstruct Tree {\n    int n;\n    vector<Edge> edges;\n};\n\n// Function to calculate the minimum time required\nint calculateMinTime(Tree& tree) {\n    int n = tree.n;\n    vector<int> depths(n, -1);\n    vector<int> costs(n, 0);\n    int maxDepth = 0;\n    int minTime = 0;\n\n    // Calculate the depth of each node\n    depths[0] = 0;\n    for (int i = 0; i < n - 1; i++) {\n        int u = tree.edges[i].u;\n        int v = tree.edges[i].v;\n        if (depths[u] != -1) {\n            depths[v] = depths[u] + 1;\n        }\n    }\n\n    // Calculate the cost of each node\n    for (int i = 0; i < n - 1; i++) {\n        int u = tree.edges[i].u;\n        int v = tree.edges[i].v;\n        costs[v] = costs[u] + tree.edges[i].cost;\n    }\n\n    // Calculate the maximum depth\n    for (int i = 0; i < n; i++) {\n        if (depths[i] > maxDepth) {\n            maxDepth = depths[i];\n        }\n    }\n\n    // Calculate the minimum time required\n    for (int i = 0; i < n - 1; i++) {\n        int u = tree.edges[i].u;\n        int v = tree.edges[i].v;\n        int cost = tree.edges[i].cost;\n        int param = tree.edges[i].param;\n        int diff = abs(cost - (maxDepth - depths[v]));\n        minTime += diff * param;\n    }\n\n    return minTime;\n}\n\nint main() {\n    int t;\n    cin >> t;\n    for (int i = 0; i < t; i++) {\n        int n;\n        cin >> n;\n        Tree tree;\n        tree.n = n;\n        tree.edges.resize(n - 1);\n        for (int j = 0; j < n - 1; j++) {\n            int u, v, cost, param;\n            cin >> u >> v >> cost >> param;\n            tree.edges[j].u = u - 1;\n            tree.edges[j].v = v - 1;\n            tree.edges[j].cost = cost;\n            tree.edges[j].param = param;\n        }\n        int minTime = calculateMinTime(tree);\n        cout << minTime << endl;\n        for (int j = 0; j < n - 1; j++) {\n            cout << tree.edges[j].cost << endl;\n        }\n    }\n    return 0;\n}",
+      "Java": "// COMPLETE, COMPILABLE Java code\nimport java.util.Scanner;\n\npublic class Main {\n    // Define the structure for an edge\n    static class Edge {\n        int u, v, cost, param;\n\n        public Edge(int u, int v, int cost, int param) {\n            this.u = u;\n            this.v = v;\n            this.cost = cost;\n            this.param = param;\n        }\n    }\n\n    // Define the structure for a tree\n    static class Tree {\n        int n;\n        Edge[] edges;\n\n        public Tree(int n) {\n            this.n = n;\n            this.edges = new Edge[n - 1];\n        }\n    }\n\n    // Function to calculate the minimum time required\n    public static int calculateMinTime(Tree tree) {\n        int n = tree.n;\n        int[] depths = new int[n];\n        int[] costs = new int[n];\n        int maxDepth = 0;\n        int minTime = 0;\n\n        // Calculate the depth of each node\n        depths[0] = 0;\n        for (int i = 0; i < n - 1; i++) {\n            int u = tree.edges[i].u;\n            int v = tree.edges[i].v;\n            if (depths[u] != -1) {\n                depths[v] = depths[u] + 1;\n            }\n        }\n\n        // Calculate the cost of each node\n        for (int i = 0; i < n - 1; i++) {\n            int u = tree.edges[i].u;\n            int v = tree.edges[i].v;\n            costs[v] = costs[u] + tree.edges[i].cost;\n        }\n\n        // Calculate the maximum depth\n        for (int i = 0; i < n; i++) {\n            if (depths[i] > maxDepth) {\n                maxDepth = depths[i];\n            }\n        }\n\n        // Calculate the minimum time required\n        for (int i = 0; i < n - 1; i++) {\n            int u = tree.edges[i].u;\n            int v = tree.edges[i].v;\n            int cost = tree.edges[i].cost;\n            int param = tree.edges[i].param;\n            int diff = Math.abs(cost - (maxDepth - depths[v]));\n            minTime += diff * param;\n        }\n\n        return minTime;\n    }\n\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int t = scanner.nextInt();\n        for (int i = 0; i < t; i++) {\n            int n = scanner.nextInt();\n            Tree tree = new Tree(n);\n            for (int j = 0; j < n - 1; j++) {\n                int u = scanner.nextInt();\n                int v = scanner.nextInt();\n                int cost = scanner.nextInt();\n                int param = scanner.nextInt();\n                tree.edges[j] = new Edge(u - 1, v - 1, cost, param);\n            }\n            int minTime = calculateMinTime(tree);\n            System.out.println(minTime);\n            for (int j = 0; j < n - 1; j++) {\n                System.out.println(tree.edges[j].cost);\n            }\n        }\n    }\n}",
+      "Python3": "# COMPLETE, RUNNABLE Python3 code\nimport sys\n\n# Define the structure for an edge\nclass Edge:\n    def __init__(self, u, v, cost, param):\n        self.u = u\n        self.v = v\n        self.cost = cost\n        self.param = param\n\n# Define the structure for a tree\nclass Tree:\n    def __init__(self, n):\n        self.n = n\n        self.edges = [None] * (n - 1)\n\n# Function to calculate the minimum time required\ndef calculateMinTime(tree):\n    n = tree.n\n    depths = [-1] * n\n    costs = [0] * n\n    maxDepth = 0\n    minTime = 0\n\n    # Calculate the depth of each node\n    depths[0] = 0\n    for i in range(n - 1):\n        u = tree.edges[i].u\n        v = tree.edges[i].v\n        if depths[u] != -1:\n            depths[v] = depths[u] + 1\n\n    # Calculate the cost of each node\n    for i in range(n - 1):\n        u = tree.edges[i].u\n        v = tree.edges[i].v\n        costs[v] = costs[u] + tree.edges[i].cost\n\n    # Calculate the maximum depth\n    for i in range(n):\n        if depths[i] > maxDepth:\n            maxDepth = depths[i]\n\n    # Calculate the minimum time required\n    for i in range(n - 1):\n        u = tree.edges[i].u\n        v = tree.edges[i].v\n        cost = tree.edges[i].cost\n        param = tree.edges[i].param\n        diff = abs(cost - (maxDepth - depths[v]))\n        minTime += diff * param\n\n    return minTime\n\n# Read input from stdin\ninput = sys.stdin.readline\n\n# Read the number of test cases\nt = int(input())\n\nfor _ in range(t):\n    # Read the number of nodes\n    n = int(input())\n\n    # Create a tree\n    tree = Tree(n)\n\n    # Read the edges\n    for i in range(n - 1):\n        u, v, cost, param = map(int, input().split())\n        tree.edges[i] = Edge(u - 1, v - 1, cost, param)\n\n    # Calculate the minimum time required\n    minTime = calculateMinTime(tree)\n\n    # Print the result\n    print(minTime)\n    for i in range(n - 1):\n        print(tree.edges[i].cost)\n",
+      "JavaScript": "// COMPLETE, RUNNABLE JavaScript code\nconst fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\n\n// Define the structure for an edge\nclass Edge {\n    constructor(u, v, cost, param) {\n        this.u = u;\n        this.v = v;\n        this.cost = cost;\n        this.param = param;\n    }\n}\n\n// Define the structure for a tree\nclass Tree {\n    constructor(n) {\n        this.n = n;\n        this.edges = new Array(n - 1);\n    }\n}\n\n// Function to calculate the minimum time required\nfunction calculateMinTime(tree) {\n    const n = tree.n;\n    const depths = new Array(n).fill(-1);\n    const costs = new Array(n).fill(0);\n    let maxDepth = 0;\n    let minTime = 0;\n\n    // Calculate the depth of each node\n    depths[0] = 0;\n    for (let i = 0; i < n - 1; i++) {\n        const u = tree.edges[i].u;\n        const v = tree.edges[i].v;\n        if (depths[u] !== -1) {\n            depths[v] = depths[u] + 1;\n        }\n    }\n\n    // Calculate the cost of each node\n    for (let i = 0; i < n - 1; i++) {\n        const u = tree.edges[i].u;\n        const v = tree.edges[i].v;\n        costs[v] = costs[u] + tree.edges[i].cost;\n    }\n\n    // Calculate the maximum depth\n    for (let i = 0; i < n; i++) {\n        if (depths[i] > maxDepth) {\n            maxDepth = depths[i];\n        }\n    }\n\n    // Calculate the minimum time required\n    for (let i = 0; i < n - 1; i++) {\n        const u = tree.edges[i].u;\n        const v = tree.edges[i].v;\n        const cost = tree.edges[i].cost;\n        const param = tree.edges[i].param;\n        const diff = Math.abs(cost - (maxDepth - depths[v]));\n        minTime += diff * param;\n    }\n\n    return minTime;\n}\n\n// Read the number of test cases\nconst t = parseInt(input[idx++]);\n\nfor (let i = 0; i < t; i++) {\n    // Read the number of nodes\n    const n = parseInt(input[idx++]);\n\n    // Create a tree\n    const tree = new Tree(n);\n\n    // Read the edges\n    for (let j = 0; j < n - 1; j++) {\n        const [u, v, cost, param] = input[idx++].split(' ').map(Number);\n        tree.edges[j] = new Edge(u - 1, v - 1, cost, param);\n    }\n\n    // Calculate the minimum time required\n    const minTime = calculateMinTime(tree);\n\n    // Print the result\n    console.log(minTime);\n    for (let j = 0; j < n - 1; j++) {\n        console.log(tree.edges[j].cost);\n    }\n}\n"
+    }
+  }
+}

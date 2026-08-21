@@ -1,0 +1,138 @@
+{
+  "questionId": "Q6113",
+  "title": "Nikitosh and xor",
+  "slug": "nikitosh-and-xor",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Bit Manipulation",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Bitwise XOR",
+      "Dynamic Programming"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Data Structures"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Nikitosh the painter has a 1-indexed array **A** of **N** elements. He wants to find the **maximum** value of expression \n\n\n(**A[l1]** ⊕ **A[l1 + 1]** ⊕ **...** ⊕ **A[r1]**) + (**A[l2]** ⊕ **A[l2 + 1]** ⊕ **...** ⊕ **A[r2]**) where **1** ≤ **l1** ≤ **r1** &lt; **l2** ≤ **r2** ≤ **N**.\n\n\nHere, **x** ⊕ **y** means the bitwise XOR of **x** and **y**.\n\nBecause Nikitosh is a painter and not a mathematician, you need to help him in this task.",
+    "constraints": [
+      "2 <= N <= 4*10^5",
+      "0 <= Ai <= 10^9"
+    ],
+    "inputFormat": "The first line contains one integer N, denoting the number of elements in the array. The second line contains N space-separated integers, denoting A1, A2, ..., AN.",
+    "outputFormat": "Output a single integer denoting the maximum possible value of the given expression.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "5\n1 2 3 1 2",
+        "output": "6",
+        "explanation": "Choose (l1, r1, l2, r2) = (1, 2, 3, 3) or (1, 2, 4, 5) or (3, 3, 4, 5)."
+      },
+      {
+        "id": "sample_2",
+        "input": "4\n1 1 1 1",
+        "output": "2",
+        "explanation": "Choose (l1, r1, l2, r2) = (1, 1, 2, 2) or (1, 1, 3, 3) or (1, 1, 4, 4)."
+      },
+      {
+        "id": "sample_3",
+        "input": "3\n0 0 0",
+        "output": "0",
+        "explanation": "Choose (l1, r1, l2, r2) = (1, 1, 2, 2) or (1, 1, 3, 3)."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "2\n0 0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "400000\n1073741823 1073741823 1073741823 1073741823 1073741823",
+        "expectedOutput": "4294967294",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "3\n1 1 1",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "10\n1 2 3 4 5 6 7 8 9 10",
+        "expectedOutput": "15",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "15\n1 1 1 1 1 1 1 1 1 1 1 1 1 1 1",
+        "expectedOutput": "2",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a dynamic programming approach. We first calculate the prefix XOR array for the given array A. Then, for each possible pair of subarrays (l1, r1) and (l2, r2) where 1 <= l1 <= r1 < l2 <= r2 <= N, we calculate the XOR of the elements in the subarrays and add them together. We keep track of the maximum sum obtained so far.",
+    "timeComplexity": "O(N^3) — we have three nested loops to consider all possible pairs of subarrays",
+    "spaceComplexity": "O(N) — we need to store the prefix XOR array",
+    "code": {
+      "C": "// COMPLETE, COMPILABLE C code\n#include <stdio.h>\n#include <limits.h>\nint max(int a, int b) { return (a > b) ? a : b; }\nint main() {\n    int N;\n    scanf(\"%d\", &N);\n    int A[N];\n    for (int i = 0; i < N; i++) {\n        scanf(\"%d\", &A[i]);\n    }\n    int prefixXOR[N + 1] = {0};\n    for (int i = 0; i < N; i++) {\n        prefixXOR[i + 1] = prefixXOR[i] ^ A[i];\n    }\n    int maxSum = INT_MIN;\n    for (int l1 = 0; l1 < N; l1++) {\n        for (int r1 = l1; r1 < N; r1++) {\n            for (int l2 = r1 + 1; l2 < N; l2++) {\n                for (int r2 = l2; r2 < N; r2++) {\n                    int sum = (prefixXOR[r1 + 1] ^ prefixXOR[l1]) + (prefixXOR[r2 + 1] ^ prefixXOR[l2]);\n                    maxSum = max(maxSum, sum);\n                }\n            }\n        }\n    }\n    printf(\"%d\\n\", maxSum);\n    return 0;\n}",
+      "C++": "// COMPLETE, COMPILABLE C++ code\n#include <iostream>\n#include <climits>\nusing namespace std;\nint main() {\n    int N;\n    cin >> N;\n    int A[N];\n    for (int i = 0; i < N; i++) {\n        cin >> A[i];\n    }\n    int prefixXOR[N + 1] = {0};\n    for (int i = 0; i < N; i++) {\n        prefixXOR[i + 1] = prefixXOR[i] ^ A[i];\n    }\n    int maxSum = INT_MIN;\n    for (int l1 = 0; l1 < N; l1++) {\n        for (int r1 = l1; r1 < N; r1++) {\n            for (int l2 = r1 + 1; l2 < N; l2++) {\n                for (int r2 = l2; r2 < N; r2++) {\n                    int sum = (prefixXOR[r1 + 1] ^ prefixXOR[l1]) + (prefixXOR[r2 + 1] ^ prefixXOR[l2]);\n                    maxSum = max(maxSum, sum);\n                }\n            }\n        }\n    }\n    cout << maxSum << endl;\n    return 0;\n}",
+      "Java": "// COMPLETE, COMPILABLE Java code\nimport java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int N = sc.nextInt();\n        int[] A = new int[N];\n        for (int i = 0; i < N; i++) {\n            A[i] = sc.nextInt();\n        }\n        int[] prefixXOR = new int[N + 1];\n        for (int i = 0; i < N; i++) {\n            prefixXOR[i + 1] = prefixXOR[i] ^ A[i];\n        }\n        int maxSum = Integer.MIN_VALUE;\n        for (int l1 = 0; l1 < N; l1++) {\n            for (int r1 = l1; r1 < N; r1++) {\n                for (int l2 = r1 + 1; l2 < N; l2++) {\n                    for (int r2 = l2; r2 < N; r2++) {\n                        int sum = (prefixXOR[r1 + 1] ^ prefixXOR[l1]) + (prefixXOR[r2 + 1] ^ prefixXOR[l2]);\n                        maxSum = Math.max(maxSum, sum);\n                    }\n                }\n            }\n        }\n        System.out.println(maxSum);\n    }\n}",
+      "Python3": "# COMPLETE, RUNNABLE Python3 code\nimport sys\ninput = sys.stdin.readline\nN = int(input())\nA = list(map(int, input().split()))\nprefixXOR = [0] * (N + 1)\nfor i in range(N):\n    prefixXOR[i + 1] = prefixXOR[i] ^ A[i]\nmaxSum = float('-inf')\nfor l1 in range(N):\n    for r1 in range(l1, N):\n        for l2 in range(r1 + 1, N):\n            for r2 in range(l2, N):\n                sum = (prefixXOR[r1 + 1] ^ prefixXOR[l1]) + (prefixXOR[r2 + 1] ^ prefixXOR[l2])\n                maxSum = max(maxSum, sum)\nprint(maxSum)",
+      "JavaScript": "// COMPLETE, RUNNABLE JavaScript code\nconst fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nfunction nextInt() {\n    return parseInt(lines[idx++]);\n}\nfunction nextIntArray() {\n    return lines[idx++].split(' ').map(x => parseInt(x));\n}\nlet N = nextInt();\nlet A = nextIntArray();\nlet prefixXOR = new Array(N + 1).fill(0);\nfor (let i = 0; i < N; i++) {\n    prefixXOR[i + 1] = prefixXOR[i] ^ A[i];\n}\nlet maxSum = -Infinity;\nfor (let l1 = 0; l1 < N; l1++) {\n    for (let r1 = l1; r1 < N; r1++) {\n        for (let l2 = r1 + 1; l2 < N; l2++) {\n            for (let r2 = l2; r2 < N; r2++) {\n                let sum = (prefixXOR[r1 + 1] ^ prefixXOR[l1]) + (prefixXOR[r2 + 1] ^ prefixXOR[l2]);\n                maxSum = Math.max(maxSum, sum);\n            }\n        }\n    }\n}\nconsole.log(maxSum);"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

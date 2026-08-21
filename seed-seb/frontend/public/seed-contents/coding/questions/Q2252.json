@@ -1,0 +1,115 @@
+{
+  "questionId": "Q2252",
+  "title": "Fetching Cooking Tools",
+  "slug": "fetching-cooking-tools",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "Bit Manipulation",
+      "Dynamic Programming",
+      "State Transition"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ]
+  },
+  "content": {
+    "problemStatement": "Like any good boss, the Chef has delegated all cooking jobs to his employees so he can take care of other tasks. Occasionally, one of the cooks needs a tool that is out of reach. In some of these cases, the cook cannot leave their workstation to get the tool because they have to closely watch their food. In such cases, the Chef simply fetches the tool for the cook.\n\n\n\nUnfortunately, many different cooks have simultaneously requested a tool they cannot reach. Thankfully, no two cooks requested the same tool. Nobody else is available to help the Chef so he has to deliver all of the tools himself. He has to plan a trip around the kitchen in such a way that he picks up each tool and delivers it to the requesting cook. Since the Chef has two hands, he may carry up to two tools at once.\n\n\n\nOnce the last item has been delivered, the Chef also has to return to his starting position. This must be done as fast as possible so the Chef wants to do this while traveling the minimum possible distance.",
+    "constraints": [
+      "1 \u2264 T \u2264 20",
+      "1 \u2264 n \u2264 8",
+      "0 \u2264 cx, cy, tx, ty \u2264 1000"
+    ],
+    "inputFormat": "The first line contains a single integer T, the number of test cases. Each test case begins with a single integer n, between 1 and 8, indicating the number of requests being made. The following n lines describe the locations of cooks and the tools they request. The i'th such line begins with two integers cx,cy describing the location of the cook and ends with two more integers tx,ty describing the location of the corresponding requested tool.",
+    "outputFormat": "For each test case, print a single integer indicating the minimum distance the Chef must travel to deliver the tools to the cooks and return to his start location 0,0.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n2\n1 0 0 1\n0 0 1 1\n3\n0 3 0 1\n0 4 0 2\n0 5 0 3\n3\n0 1 0 2\n0 1 0 2\n0 1 0 2",
+        "output": "4\n10\n6",
+        "explanation": "Explanation:\nIn the second case, the Chef dropped of the first tool to the first cook and then picked up the tool for the third cook.\n\nIn the last test case, there are three different cooks requesting three different tools. It just so happens that all three tools are at the same location. Still, the Chef can only carry two of the tools from this location at once."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n0 0 0 0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n8\n1000 1000 0 0\n0 0 1000 1000\n1000 0 0 1000\n0 1000 1000 0\n1000 1000 0 0\n0 0 1000 1000\n1000 0 0 1000\n0 1000 1000 0",
+        "expectedOutput": "16000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n8\n0 0 0 0\n0 0 0 0\n0 0 0 0\n0 0 0 0\n0 0 0 0\n0 0 0 0\n0 0 0 0\n0 0 0 0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "1\n1\n0 0 0 0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "1\n1\n0 0 0 0",
+        "expectedOutput": "0",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "This problem can be solved using dynamic programming with bit manipulation. The idea is to maintain a state that represents which tools have been picked up and which have not. We use a bitmask to represent this state, where the i-th bit corresponds to the i-th tool. We then iterate over all possible states and for each state, we calculate the minimum distance to reach that state from the previous state. Finally, we return the minimum distance to reach the final state, which is the state where all tools have been delivered.",
+    "timeComplexity": "O(T * 2^(2n) * n) per test case, O(T * 2^(2n) * n) total.",
+    "spaceComplexity": "O(2^(2n) * n) \u2014 the dominant structure is the dp array.",
+    "code": {
+      "C": "// COMPLETE, COMPILABLE C code\n// Uses correct I/O\n// Handles all T test cases\n#include <stdio.h>\n#include <limits.h>\n#include <math.h>\n\nint min(int a, int b) {\n    return a < b ? a : b;\n}\n\nint dist(int a[], int b[]) {\n    return abs(a[0] - b[0]) + abs(a[1] - b[1]);\n}\n\nvoid solve() {\n    int n;\n    scanf(\"%d\", &n);\n    int points[2 * n + 1][2];\n    for (int i = 0; i < 2 * n; i++) {\n        scanf(\"%d %d\", &points[i][0], &points[i][1]);\n    }\n    points[2 * n][0] = 0;\n    points[2 * n][1] = 0;\n\n    int dis[2 * n + 1][2 * n + 1];\n    for (int i = 0; i <= 2 * n; i++) {\n        for (int j = i + 1; j <= 2 * n; j++) {\n            dis[i][j] = dis[j][i] = dist(points[i], points[j]);\n        }\n    }\n\n    int dp[1 << (2 * n)][2 * n + 1];\n    for (int mask = 0; mask < (1 << (2 * n)); mask++) {\n        for (int i = 0; i <= 2 * n; i++) {\n            dp[mask][i] = INT_MAX;\n        }\n    }\n\n    dp[0][2 * n] = 0;\n    for (int mask = 0; mask < (1 << (2 * n)); mask++) {\n        for (int i = 0; i <= 2 * n; i++) {\n            if (dp[mask][i] == INT_MAX) continue;\n            for (int j = 0; j < 2 * n; j++) {\n                if ((mask & (1 << j)) != 0) continue;\n                int new_mask = mask | (1 << j);\n                dp[new_mask][j] = min(dp[new_mask][j], dp[mask][i] + dis[i][j]);\n            }\n        }\n    }\n\n    int ans = INT_MAX;\n    for (int i = 0; i <= 2 * n; i++) {\n        ans = min(ans, dp[(1 << (2 * n)) - 1][i] + dis[i][2 * n]);\n    }\n    printf(\"%d\\n\", ans);\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) solve();\n    return 0;\n}",
+      "C++": "// COMPLETE, COMPILABLE C++ code\n// Uses correct I/O\n// Handles all T test cases\n#include <iostream>\n#include <limits>\n#include <cmath>\nusing namespace std;\n\nint min(int a, int b) {\n    return a < b ? a : b;\n}\n\nint dist(int a[], int b[]) {\n    return abs(a[0] - b[0]) + abs(a[1] - b[1]);\n}\n\nvoid solve() {\n    int n;\n    cin >> n;\n    int points[2 * n + 1][2];\n    for (int i = 0; i < 2 * n; i++) {\n        cin >> points[i][0] >> points[i][1];\n    }\n    points[2 * n][0] = 0;\n    points[2 * n][1] = 0;\n\n    int dis[2 * n + 1][2 * n + 1];\n    for (int i = 0; i <= 2 * n; i++) {\n        for (int j = i + 1; j <= 2 * n; j++) {\n            dis[i][j] = dis[j][i] = dist(points[i], points[j]);\n        }\n    }\n\n    int dp[1 << (2 * n)][2 * n + 1];\n    for (int mask = 0; mask < (1 << (2 * n)); mask++) {\n        for (int i = 0; i <= 2 * n; i++) {\n            dp[mask][i] = numeric_limits<int>::max();\n        }\n    }\n\n    dp[0][2 * n] = 0;\n    for (int mask = 0; mask < (1 << (2 * n)); mask++) {\n        for (int i = 0; i <= 2 * n; i++) {\n            if (dp[mask][i] == numeric_limits<int>::max()) continue;\n            for (int j = 0; j < 2 * n; j++) {\n                if ((mask & (1 << j)) != 0) continue;\n                int new_mask = mask | (1 << j);\n                dp[new_mask][j] = min(dp[new_mask][j], dp[mask][i] + dis[i][j]);\n            }\n        }\n    }\n\n    int ans = numeric_limits<int>::max();\n    for (int i = 0; i <= 2 * n; i++) {\n        ans = min(ans, dp[(1 << (2 * n)) - 1][i] + dis[i][2 * n]);\n    }\n    cout << ans << endl;\n}\n\nint main() {\n    int T;\n    cin >> T;\n    while (T--) solve();\n    return 0;\n}",
+      "Java": "// COMPLETE, COMPILABLE Java code\n// Class MUST be named Main\n// Uses correct I/O\n// Handles all T test cases\nimport java.io.*;\nimport java.util.*;\npublic class Main {\n    static final int INF = (int)1e8;\n    public static void solve() throws Exception {\n        int N = sc.nextInt();\n        int NN = 2 * N;\n        int[][] points = new int[NN + 1][2];\n        for (int i = 0; i < NN; i++) {\n            points[i][0] = sc.nextInt();\n            points[i][1] = sc.nextInt();\n        }\n        points[NN][0] = 0;\n        points[NN][1] = 0;\n\n        int[][] dis = new int[NN + 1][NN + 1];\n        for (int i = 0; i <= NN; i++) {\n            for (int j = i + 1; j <= NN; j++) {\n                dis[i][j] = dis[j][i] = Math.abs(points[i][0] - points[j][0]) + Math.abs(points[i][1] - points[j][1]);\n            }\n        }\n\n        int[][] dp = new int[1 << (NN)][NN + 1];\n        for (int mask = 0; mask < (1 << (NN)); mask++) {\n            for (int i = 0; i <= NN; i++) {\n                dp[mask][i] = INF;\n            }\n        }\n\n        dp[0][NN] = 0;\n        for (int mask = 0; mask < (1 << (NN)); mask++) {\n            for (int i = 0; i <= NN; i++) {\n                if (dp[mask][i] == INF) continue;\n                for (int j = 0; j < NN; j++) {\n                    if ((mask & (1 << j)) != 0) continue;\n                    int new_mask = mask | (1 << j);\n                    dp[new_mask][j] = Math.min(dp[new_mask][j], dp[mask][i] + dis[i][j]);\n                }\n            }\n        }\n\n        int ans = INF;\n        for (int i = 0; i <= NN; i++) {\n            ans = Math.min(ans, dp[(1 << (NN)) - 1][i] + dis[i][NN]);\n        }\n        pw.println(ans);\n    }\n    static FastScanner sc = new FastScanner(System.in);\n    static PrintWriter pw = new PrintWriter(System.out);\n    public static void main(String[] args) throws Exception {\n        int t = sc.nextInt();\n        while (t-- > 0) {\n            solve();\n        }\n        pw.close();\n    }\n    static class FastScanner {\n        BufferedReader br;\n        StringTokenizer st;\n        public FastScanner(InputStream is) {\n            br = new BufferedReader(new InputStreamReader(is));\n        }\n        String next() throws IOException {\n            while (st == null || !st.hasMoreTokens()) {\n                st = new StringTokenizer(br.readLine());\n            }\n            return st.nextToken();\n        }\n        int nextInt() throws IOException {\n            return Integer.parseInt(next());\n        }\n    }\n}",
+      "Python3": "# COMPLETE, RUNNABLE Python3 code\n# Uses input() for lines\n# Handles all T test cases\nimport sys\ninput = sys.stdin.readline\n\ndef min(a, b):\n    return a if a < b else b\n\ndef dist(a, b):\n    return abs(a[0] - b[0]) + abs(a[1] - b[1])\n\ndef solve():\n    n = int(input())\n    points = [[0, 0]]\n    for _ in range(2 * n):\n        points.append(list(map(int, input().split())))\n\n    dis = [[0] * (2 * n + 1) for _ in range(2 * n + 1)]\n    for i in range(2 * n + 1):\n        for j in range(i + 1, 2 * n + 1):\n            dis[i][j] = dis[j][i] = dist(points[i], points[j])\n\n    dp = [[float('inf')] * (2 * n + 1) for _ in range(1 << (2 * n))]\n    dp[0][2 * n] = 0\n    for mask in range(1 << (2 * n)):\n        for i in range(2 * n + 1):\n            if dp[mask][i] == float('inf'):\n                continue\n            for j in range(2 * n):\n                if (mask & (1 << j)):\n                    continue\n                new_mask = mask | (1 << j)\n                dp[new_mask][j] = min(dp[new_mask][j], dp[mask][i] + dis[i][j])\n\n    ans = float('inf')\n    for i in range(2 * n + 1):\n        ans = min(ans, dp[(1 << (2 * n)) - 1][i] + dis[i][2 * n])\n    print(ans)\n\nfor _ in range(int(input())):\n    solve()",
+      "JavaScript": "// COMPLETE, RUNNABLE JavaScript code\n// Uses fs.readFileSync(0,'utf-8')\n// Handles all T test cases\nconst fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst input = () => lines[idx++];\n\nfunction min(a, b) {\n    return a < b ? a : b;\n}\n\nfunction dist(a, b) {\n    return Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]);\n}\n\nfunction solve() {\n    const n = parseInt(input());\n    const points = [[0, 0]];\n    for (let i = 0; i < 2 * n; i++) {\n        const [x, y] = input().split(' ').map(Number);\n        points.push([x, y]);\n    }\n\n    const dis = Array(2 * n + 1).fill(0).map(() => Array(2 * n + 1).fill(0));\n    for (let i = 0; i <= 2 * n; i++) {\n        for (let j = i + 1; j <= 2 * n; j++) {\n            dis[i][j] = dis[j][i] = dist(points[i], points[j]);\n        }\n    }\n\n    const dp = Array(1 << (2 * n)).fill(0).map(() => Array(2 * n + 1).fill(Infinity));\n    dp[0][2 * n] = 0;\n    for (let mask = 0; mask < (1 << (2 * n)); mask++) {\n        for (let i = 0; i <= 2 * n; i++) {\n            if (dp[mask][i] === Infinity) continue;\n            for (let j = 0; j < 2 * n; j++) {\n                if (mask & (1 << j)) continue;\n                const new_mask = mask | (1 << j);\n                dp[new_mask][j] = min(dp[new_mask][j], dp[mask][i] + dis[i][j]);\n            }\n        }\n    }\n\n    let ans = Infinity;\n    for (let i = 0; i <= 2 * n; i++) {\n        ans = min(ans, dp[(1 << (2 * n)) - 1][i] + dis[i][2 * n]);\n    }\n    console.log(ans);\n}\n\nfor (let i = 0; i < parseInt(input()); i++) {\n    solve();\n}"
+    }
+  }
+}

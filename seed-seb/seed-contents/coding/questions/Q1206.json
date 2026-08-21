@@ -1,0 +1,130 @@
+{
+  "questionId": "Q1206",
+  "title": "Greed Island Bomber",
+  "slug": "greed-island-bomber",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Graphs",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Graphs",
+      "Bridges",
+      "Tarjan's algorithm",
+      "Connectivity",
+      "DFS"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Graphs"
+    ]
+  },
+  "content": {
+    "problemStatement": "Genthru has observed that all the NNN cities on greed island have good trade relations with each other. He deduces that the reason for this is that there exists a route between any pair of cities on greed island. Being a villain he wants to sever the trade relation between at least one pair of cities, so he decides to destroy exactly 1 road among the existing MMM roads. You have to determine the exact number of roads that Genthru could destroy such that it results in there being no route between at least 1 pair of cities.\n\nInput:\nFirst line will contain TTT, number of testcases. Then the testcases follow.\nNext line contains the number of cities NNN and the number of roads MMM.\nNext MMM lines contain 2 integers aia_iai\u200b and bib_ibi\u200b indicating that there exists a road between aia_iai\u200b and bib_ibi\u200b. (1\u2264i\u2264M1 \\leq i \\leq M1\u2264i\u2264M,  1\u2264ai\u2264N1 \\leq a_i \\leq N1\u2264ai\u200b\u2264N, 1\u2264bi\u2264N1 \\leq b_i \\leq N1\u2264bi\u200b\u2264N)\nOutput:For each testcase, output in a single line the number of roads that Genthru could destroy.",
+    "constraints": [
+      "1 \u2264 T \u2264 100",
+      "1 \u2264 N \u2264 1000",
+      "N\u20111 \u2264 M \u2264 N\u00b7(N\u20111)/2",
+      "1 \u2264 a, b \u2264 N"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Then T test cases follow. Each test case starts with two integers N and M \u2014 the number of cities and the number of roads. Then M lines follow, each containing two integers a and b (1\u2011based) denoting an undirected road between cities a and b.",
+    "outputFormat": "For each test case, output a single integer \u2014 the number of roads whose removal disconnects the graph (i.e., the number of bridges). If the given graph is not connected, output 0.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n6 6\n1 2\n1 3\n2 3\n1 4\n4 5\n4 6\n3 3\n1 2\n1 3\n2 3",
+        "output": "3\n0",
+        "explanation": "First graph is connected; its bridges are edges (1,4), (4,5) and (4,6) \u2192 3. Second graph is a triangle, no bridges \u2192 0."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n3 3\n1 2\n2 3\n1 3",
+        "output": "0",
+        "explanation": "Complete graph of three vertices has no bridge."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n2 1\n1 2",
+        "output": "1",
+        "explanation": "The only edge connects the two cities; removing it disconnects the graph, so the answer is 1."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "1\n1 0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "1\n1 0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "1\n1 0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "1\n1 0",
+        "expectedOutput": "0",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The graph is undirected. An edge is a bridge if its removal increases the number of connected components. Using a single depth\u2011first search we compute discovery times (tin) and low\u2011link values (low). For an edge (v, to) where v is the DFS parent of to, the edge is a bridge iff low[to] > tin[v]. The algorithm runs in O(N+M) per test case. If the original graph has more than one connected component we output 0 because the condition is already satisfied without removing any edge.",
+    "timeComplexity": "O(N + M) per test case, O(total N + total M) for the whole input.",
+    "spaceComplexity": "O(N + M) for adjacency lists and auxiliary arrays.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\n#define MAXN 1005\n#define MAXM 1000000  // enough for 2 * N*(N-1)/2 when N=1000\n\ntypedef struct Edge {int to; struct Edge* next;} Edge;\nEdge edges[MAXM];\nEdge* head[MAXN];\nint edgeCnt;\n\nvoid addEdge(int u, int v) {\n    edges[edgeCnt].to = v;\n    edges[edgeCnt].next = head[u];\n    head[u] = &edges[edgeCnt++];\n    edges[edgeCnt].to = u;\n    edges[edgeCnt].next = head[v];\n    head[v] = &edges[edgeCnt++];\n}\n\nint timer;\nint tin[MAXN];\nint low[MAXN];\nint visited[MAXN];\nint bridges;\n\nvoid dfs(int v, int p) {\n    visited[v] = 1;\n    tin[v] = low[v] = ++timer;\n    for (Edge* e = head[v]; e; e = e->next) {\n        int to = e->to;\n        if (to == p) continue;\n        if (visited[to]) {\n            if (tin[to] < low[v]) low[v] = tin[to];\n        } else {\n            dfs(to, v);\n            if (low[to] < low[v]) low[v] = low[to];\n            if (low[to] > tin[v]) bridges++;\n        }\n    }\n}\n\nint main() {\n    int T; scanf(\"%d\", &T);\n    while (T--) {\n        int N, M; scanf(\"%d %d\", &N, &M);\n        for (int i = 1; i <= N; ++i) head[i] = NULL;\n        edgeCnt = 0;\n        for (int i = 0; i < M; ++i) {\n            int a, b; scanf(\"%d %d\", &a, &b);\n            addEdge(a, b);\n        }\n        for (int i = 1; i <= N; ++i) visited[i] = 0;\n        timer = 0; bridges = 0;\n        int components = 0;\n        for (int i = 1; i <= N; ++i) {\n            if (!visited[i]) {\n                components++;\n                dfs(i, -1);\n            }\n        }\n        if (components == 1) printf(\"%d\\n\", bridges);\n        else printf(\"0\\n\");\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T;cin>>T;\n    while(T--){\n        int N,M;cin>>N>>M;\n        vector<vector<int>> g(N+1);\n        for(int i=0;i<M;++i){int a,b;cin>>a>>b;g[a].push_back(b);g[b].push_back(a);}        \n        vector<int> tin(N+1,0), low(N+1,0), visited(N+1,0);\n        int timer=0, bridges=0, components=0;\n        function<void(int,int)> dfs=[&](int v,int p){\n            visited[v]=1; tin[v]=low[v]=++timer;\n            for(int to:g[v]){\n                if(to==p) continue;\n                if(visited[to]) low[v]=min(low[v],tin[to]);\n                else{\n                    dfs(to,v);\n                    low[v]=min(low[v],low[to]);\n                    if(low[to]>tin[v]) ++bridges;\n                }\n            }\n        };\n        for(int i=1;i<=N;++i) if(!visited[i]){components++; dfs(i,-1);}        \n        if(components==1) cout<<bridges<<\"\\n\"; else cout<<0<<\"\\n\";\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    static class FastScanner {\n        private final BufferedInputStream in = new BufferedInputStream(System.in);\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        private int readByte() throws IOException {\n            if (ptr >= len) {\n                len = in.read(buffer);\n                ptr = 0;\n                if (len <= 0) return -1;\n            }\n            return buffer[ptr++];\n        }\n        int nextInt() throws IOException {\n            int c, sign = 1, val = 0;\n            do { c = readByte(); } while (c <= ' ');\n            if (c == '-') { sign = -1; c = readByte(); }\n            while (c > ' ') { val = val * 10 + (c - '0'); c = readByte(); }\n            return val * sign;\n        }\n    }\n    static int timer, bridges;\n    static int[] tin, low, visited;\n    static List<Integer>[] g;\n    static void dfs(int v, int p){\n        visited[v]=1; tin[v]=low[v]=++timer;\n        for(int to: g[v]){\n            if(to==p) continue;\n            if(visited[to]==1){\n                low[v]=Math.min(low[v], tin[to]);\n            }else{\n                dfs(to, v);\n                low[v]=Math.min(low[v], low[to]);\n                if(low[to]>tin[v]) bridges++;\n            }\n        }\n    }\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner();\n        int T = fs.nextInt();\n        StringBuilder sb = new StringBuilder();\n        while(T-- > 0){\n            int N = fs.nextInt();\n            int M = fs.nextInt();\n            g = new ArrayList[N+1];\n            for(int i=1;i<=N;i++) g[i]=new ArrayList<>();\n            for(int i=0;i<M;i++){\n                int a = fs.nextInt();\n                int b = fs.nextInt();\n                g[a].add(b);\n                g[b].add(a);\n            }\n            tin = new int[N+1];\n            low = new int[N+1];\n            visited = new int[N+1];\n            timer = 0; bridges = 0; int components = 0;\n            for(int i=1;i<=N;i++) if(visited[i]==0){\n                components++;\n                dfs(i, -1);\n            }\n            if(components==1) sb.append(bridges).append('\\n');\n            else sb.append(0).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "import sys\nsys.setrecursionlimit(1000000)\n\ndef solve():\n    data = sys.stdin.buffer.read().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it)); M = int(next(it))\n        g = [[] for _ in range(N+1)]\n        for _ in range(M):\n            a = int(next(it)); b = int(next(it))\n            g[a].append(b); g[b].append(a)\n        tin = [0]*(N+1)\n        low = [0]*(N+1)\n        visited = [0]*(N+1)\n        timer = 0\n        bridges = 0\n        def dfs(v, p):\n            nonlocal timer, bridges\n            visited[v] = 1\n            timer += 1\n            tin[v] = low[v] = timer\n            for to in g[v]:\n                if to == p:\n                    continue\n                if visited[to]:\n                    low[v] = min(low[v], tin[to])\n                else:\n                    dfs(to, v)\n                    low[v] = min(low[v], low[to])\n                    if low[to] > tin[v]:\n                        bridges += 1\n        components = 0\n        for i in range(1, N+1):\n            if not visited[i]:\n                components += 1\n                dfs(i, -1)\n        out_lines.append(str(bridges if components == 1 else 0))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nfunction nextInt(){return Number(input[idx++]);}\nconst T = nextInt();\nlet results = [];\nfor(let tc=0; tc<T; ++tc){\n  const N = nextInt();\n  const M = nextInt();\n  const g = Array.from({length:N+1},()=>[]);\n  for(let i=0;i<M;++i){\n    const a = nextInt();\n    const b = nextInt();\n    g[a].push(b);\n    g[b].push(a);\n  }\n  const tin = new Array(N+1).fill(0);\n  const low = new Array(N+1).fill(0);\n  const visited = new Array(N+1).fill(false);\n  let timer = 0, bridges = 0, components = 0;\n  function dfs(v, p){\n    visited[v] = true;\n    tin[v] = low[v] = ++timer;\n    for(const to of g[v]){\n      if(to===p) continue;\n      if(visited[to]){\n        low[v] = Math.min(low[v], tin[to]);\n      }else{\n        dfs(to, v);\n        low[v] = Math.min(low[v], low[to]);\n        if(low[to] > tin[v]) bridges++;\n      }\n    }\n  }\n  for(let i=1;i<=N;++i){\n    if(!visited[i]){components++; dfs(i, -1);}\n  }\n  results.push(components===1 ? bridges : 0);\n}\nconsole.log(results.join('\\n'));\n"
+    }
+  }
+}

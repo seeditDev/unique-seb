@@ -1,0 +1,202 @@
+{
+  "questionId": "Q882",
+  "title": "Reachable Nodes In Subdivided Graph",
+  "slug": "reachable-nodes-in-subdivided-graph",
+  "version": 1,
+  "createdAt": "2026-07-10",
+  "updatedAt": "2026-07-10",
+  "QBCategory": "LCD",
+  "metadata": {
+    "category": "Graphs",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "graph",
+      "heap-priority-queue",
+      "shortest-path"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "graph",
+      "heap-priority-queue",
+      "shortest-path"
+    ],
+    "QBCategory": "LCD"
+  },
+  "content": {
+    "problemStatement": "You are given an undirected graph (the **\"original graph\"**) with `n` nodes labeled from `0` to `n - 1`. You decide to **subdivide** each edge in the graph into a chain of nodes, with the number of new nodes varying between each edge.\n\nThe graph is given as a 2D array of `edges` where `edges[i] = [u_i, v_i, cnt_i]` indicates that there is an edge between nodes `u_i` and `v_i` in the original graph, and `cnt_i` is the total number of new nodes that you will **subdivide** the edge into. Note that `cnt_i == 0` means you will not subdivide the edge.\n\nTo **subdivide** the edge `[u_i, v_i]`, replace it with `(cnt_i + 1)` new edges and `cnt_i` new nodes. The new nodes are `x_1`, `x_2`, ..., `x_cnti`, and the new edges are `[u_i, x_1]`, `[x_1, x_2]`, `[x_2, x_3]`, ..., `[x_cnti-1, x_cnti]`, `[x_cnti, v_i]`.\n\nIn this **new graph**, you want to know how many nodes are **reachable** from the node `0`, where a node is **reachable** if the distance is `maxMoves` or less.\n\nGiven the original graph and `maxMoves`, return *the number of nodes that are **reachable** from node* `0` *in the new graph*.\n\n**Example 1:**\n\n![](https://s3-lc-upload.s3.amazonaws.com/uploads/2018/08/01/origfinal.png)\n\n```\nInput: edges = [[0,1,10],[0,2,1],[1,2,2]], maxMoves = 6, n = 3\nOutput: 13\nExplanation: The edge subdivisions are shown in the image above.\nThe nodes that are reachable are highlighted in yellow.\n```\n\n**Example 2:**\n\n```\nInput: edges = [[0,1,4],[1,2,6],[0,2,8],[1,3,1]], maxMoves = 10, n = 4\nOutput: 23\n```\n\n**Example 3:**\n\n```\nInput: edges = [[1,2,4],[1,4,5],[1,3,1],[2,3,4],[3,4,5]], maxMoves = 17, n = 5\nOutput: 1\nExplanation: Node 0 is disconnected from the rest of the graph, so only node 0 is reachable.\n```\n\n**Constraints:**\n\n* `0 <= edges.length <= min(n * (n - 1) / 2, 10^4)`\n* `edges[i].length == 3`\n* `0 <= u_i < v_i < n`\n* There are **no multiple edges** in the graph.\n* `0 <= cnt_i <= 10^4`\n* `0 <= maxMoves <= 10^9`\n* `1 <= n <= 3000`",
+    "constraints": [
+      "0 <= edges.length <= min(n * (n - 1) / 2, 10^4)",
+      "edges[i].length == 3",
+      "0 <= u_i < v_i < n",
+      "There are no multiple edges in the graph.",
+      "0 <= cnt_i <= 10^4",
+      "0 <= maxMoves <= 10^9",
+      "1 <= n <= 3000"
+    ],
+    "inputFormat": "Single line: JSON array of all arguments, e.g. [arg1, arg2, ...]",
+    "outputFormat": "Single line: JSON-serialised return value",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "[[[0,1,10],[0,2,1],[1,2,2]],6,3]",
+        "output": "13",
+        "explanation": "The edge subdivisions are shown in the image above.\nThe nodes that are reachable are highlighted in yellow."
+      },
+      {
+        "id": "sample_2",
+        "input": "[[[0,1,4],[1,2,6],[0,2,8],[1,3,1]],10,4]",
+        "output": "23",
+        "explanation": ""
+      },
+      {
+        "id": "sample_3",
+        "input": "[[[1,2,4],[1,4,5],[1,3,1],[2,3,4],[3,4,5]],17,5]",
+        "output": "1",
+        "explanation": "Node 0 is disconnected from the rest of the graph, so only node 0 is reachable."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Two nodes, one edge",
+        "input": "[[[0, 1, 0]], 1, 2]",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Disconnected graph",
+        "input": "[[[0, 1, 0], [2, 3, 0]], 1, 4]",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Connected graph",
+        "input": "[[[0, 1, 0], [1, 2, 0], [2, 0, 0]], 2, 3]",
+        "expectedOutput": "3",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Tree-shaped graph",
+        "input": "[[[0, 1, 0], [0, 2, 0], [0, 3, 0]], 3, 4]",
+        "expectedOutput": "4",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "DAG (directed acyclic)",
+        "input": "[[[0, 1, 0], [0, 2, 0], [1, 3, 0]], 3, 4]",
+        "expectedOutput": "4",
+        "weight": 2
+      },
+      {
+        "id": "tc_6",
+        "label": "Complete graph",
+        "input": "[[[0, 1, 0], [0, 2, 0], [1, 2, 0]], 2, 3]",
+        "expectedOutput": "3",
+        "weight": 2
+      },
+      {
+        "id": "tc_7",
+        "label": "Sparse graph",
+        "input": "[[[0, 1, 0], [2, 3, 0], [4, 5, 0]], 1, 6]",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_8",
+        "label": "Dense graph",
+        "input": "[[[0, 1, 0], [0, 2, 0], [0, 3, 0], [1, 2, 0], [1, 3, 0], [2, 3, 0]], 3, 4]",
+        "expectedOutput": "4",
+        "weight": 2
+      },
+      {
+        "id": "tc_9",
+        "label": "Equal weights",
+        "input": "[[[0, 1, 5], [0, 2, 5], [1, 2, 5]], 10, 3]",
+        "expectedOutput": "18",
+        "weight": 2
+      },
+      {
+        "id": "tc_10",
+        "label": "Random weights",
+        "input": "[[[0, 1, 3], [0, 2, 9], [1, 2, 1]], 10, 3]",
+        "expectedOutput": "16",
+        "weight": 2
+      },
+      {
+        "id": "tc_11",
+        "label": "Zero weight edges",
+        "input": "[[[0, 1, 0], [0, 2, 0], [1, 2, 0]], 10, 3]",
+        "expectedOutput": "3",
+        "weight": 2
+      },
+      {
+        "id": "tc_12",
+        "label": "Large weights",
+        "input": "[[[0, 1, 10000], [0, 2, 10000], [1, 2, 10000]], 10000, 3]",
+        "expectedOutput": "20001",
+        "weight": 2
+      },
+      {
+        "id": "tc_13",
+        "label": "Maximum nodes and edges",
+        "input": "[[[0, 1, 5], [0, 2, 5], [0, 3, 5], [0, 4, 5], [0, 5, 5], [0, 6, 5], [0, 7, 5], [0, 8, 5], [0, 9, 5], [0, 10, 5], [0, 11, 5], [0, 12, 5], [0, 13, 5], [0, 14, 5], [0, 15, 5], [0, 16, 5], [0, 17, 5], [0, 18, 5], [0, 19, 5], [0, 20, 5], [0, 21, 5], [0, 22, 5], [0, 23, 5], [0, 24, 5], [0, 25, 5], [0, 26, 5], [0, 27, 5], [0, 28, 5], [0, 29, 5]], 10000, 3000]",
+        "expectedOutput": "175",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 13,
+    "totalWeight": 26
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 26
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdbool.h>\n\n// Helper JSON parser/tokenizer in C\ntypedef struct {\n    char* s;\n    int pos;\n    int len;\n} Tok;\n\nstatic void skipWS(Tok* t) {\n    while (t->pos < t->len && (t->s[t->pos] == ' ' || t->s[t->pos] == ',' || t->s[t->pos] == '\\t' || t->s[t->pos] == '\\n' || t->s[t->pos] == '\\r')) {\n        t->pos++;\n    }\n}\n\nstatic char* nextToken(Tok* t) {\n    skipWS(t);\n    if (t->pos >= t->len) return NULL;\n    int start = t->pos;\n    if (t->s[t->pos] == '[') {\n        int depth = 0;\n        while (t->pos < t->len) {\n            char c = t->s[t->pos++];\n            if (c == '[') depth++;\n            else if (c == ']') {\n                depth--;\n                if (depth == 0) break;\n            }\n        }\n        int token_len = t->pos - start;\n        char* token = (char*)malloc(token_len + 1);\n        strncpy(token, t->s + start, token_len);\n        token[token_len] = '\\0';\n        return token;\n    } else if (t->s[t->pos] == '\"') {\n        t->pos++;\n        while (t->pos < t->len && t->s[t->pos] != '\"') t->pos++;\n        t->pos++;\n        int token_len = t->pos - start;\n        char* token = (char*)malloc(token_len + 1);\n        strncpy(token, t->s + start, token_len);\n        token[token_len] = '\\0';\n        return token;\n    } else {\n        while (t->pos < t->len && t->s[t->pos] != ',' && t->s[t->pos] != ']' && t->s[t->pos] != '[') t->pos++;\n        int token_len = t->pos - start;\n        char* token = (char*)malloc(token_len + 1);\n        strncpy(token, t->s + start, token_len);\n        token[token_len] = '\\0';\n        int idx = token_len - 1;\n        while (idx >= 0 && token[idx] == ' ') {\n            token[idx] = '\\0';\n            idx--;\n        }\n        return token;\n    }\n}\n\nstatic int parse_int(Tok* t) {\n    char* tok = nextToken(t);\n    if (!tok) return 0;\n    int val = atoi(tok);\n    free(tok);\n    return val;\n}\n\nstatic bool parse_bool(Tok* t) {\n    char* tok = nextToken(t);\n    if (!tok) return false;\n    bool val = (strcmp(tok, \"true\") == 0);\n    free(tok);\n    return val;\n}\n\nstatic double parse_double(Tok* t) {\n    char* tok = nextToken(t);\n    if (!tok) return 0.0;\n    double val = atof(tok);\n    free(tok);\n    return val;\n}\n\nstatic char* parse_string(Tok* t) {\n    char* tok = nextToken(t);\n    if (!tok) return NULL;\n    if (tok[0] == '\"') {\n        int len = strlen(tok);\n        char* res = (char*)malloc(len - 1);\n        strncpy(res, tok + 1, len - 2);\n        res[len - 2] = '\\0';\n        free(tok);\n        return res;\n    }\n    return tok;\n}\n\nstatic int* parse_int_array(Tok* t, int* out_size) {\n    char* tok = nextToken(t);\n    if (!tok || strcmp(tok, \"[]\") == 0) {\n        if (tok) free(tok);\n        *out_size = 0;\n        return NULL;\n    }\n    int len = strlen(tok);\n    char* inner = (char*)malloc(len - 1);\n    strncpy(inner, tok + 1, len - 2);\n    inner[len - 2] = '\\0';\n    free(tok);\n\n    int size = 1;\n    for (int i = 0; inner[i]; i++) {\n        if (inner[i] == ',') size++;\n    }\n    int* arr = (int*)malloc(size * sizeof(int));\n    Tok t2 = { inner, 0, (int)strlen(inner) };\n    for (int i = 0; i < size; i++) {\n        arr[i] = parse_int(&t2);\n    }\n    free(inner);\n    *out_size = size;\n    return arr;\n}\n\nstatic int** parse_int_2d(Tok* t, int* out_rows, int** out_cols) {\n    char* tok = nextToken(t);\n    if (!tok || strcmp(tok, \"[]\") == 0) {\n        if (tok) free(tok);\n        *out_rows = 0;\n        *out_cols = NULL;\n        return NULL;\n    }\n    int len = strlen(tok);\n    char* inner = (char*)malloc(len - 1);\n    strncpy(inner, tok + 1, len - 2);\n    inner[len - 2] = '\\0';\n    free(tok);\n\n    int rows = 0;\n    int depth = 0;\n    for (int i = 0; inner[i]; i++) {\n        if (inner[i] == '[') {\n            if (depth == 0) rows++;\n            depth++;\n        } else if (inner[i] == ']') {\n            depth--;\n        }\n    }\n    int** mat = (int**)malloc(rows * sizeof(int*));\n    int* cols = (int*)malloc(rows * sizeof(int));\n\n    Tok t2 = { inner, 0, (int)strlen(inner) };\n    for (int i = 0; i < rows; i++) {\n        mat[i] = parse_int_array(&t2, &cols[i]);\n    }\n    free(inner);\n    *out_rows = rows;\n    *out_cols = cols;\n    return mat;\n}\n\n// ---------------------------------------------------------------------\n// YOUR SOLUTION  <- Write your code inside the function below\n// ---------------------------------------------------------------------\nint reachableNodes(int** edges, int edgesSize, int* edgesColSize, int maxMoves, int n) {\n    \n    return NULL;\n}\n\n// ---------------------------------------------------------------------\n// DRIVER  (do not modify)\n// ---------------------------------------------------------------------\nint main() {\n    char line[1000000];\n    if (fgets(line, sizeof(line), stdin)) {\n        // Strip outer [ ]\n        int len = strlen(line);\n        while (len > 0 && (line[len - 1] == '\\n' || line[len - 1] == '\\r')) {\n            line[len - 1] = '\\0';\n            len--;\n        }\n        char* raw = (char*)malloc(len - 1);\n        strncpy(raw, line + 1, len - 2);\n        raw[len - 2] = '\\0';\n        Tok tok = { raw, 0, (int)strlen(raw) };\n        \n        int edgesSize = 0;\n        int* edgesColSize = NULL;\n        int** edges = parse_int_2d(&tok, &edgesSize, &edgesColSize);\n        int maxMoves = parse_int(&tok);\n        int n = parse_int(&tok);\n        int result = reachableNodes(edges, edgesSize, edgesColSize, maxMoves, n);\n        printf(\"%d\\n\", result);\n        free(raw);\n    }\n    return 0;\n}",
+    "Python3": "import sys, json\nfrom typing import List\n\n#  HELPER CLASSES  (do not modify)\n\n# ----------------------------------------------------------------------\n#  YOUR SOLUTION  <- Write your code inside the method below\n# ----------------------------------------------------------------------\nclass Solution:\n    def reachableNodes(self, edges: List[List[int]], maxMoves: int, n: int) -> int:\n        pass\n\n#  DRIVER  (do not modify)\nif __name__ == '__main__':\n    _args = json.loads(sys.stdin.readline())\n    _edges = _args[0]\n    _maxMoves = _args[1]\n    _n = _args[2]\n    _result = Solution().reachableNodes(_edges, _maxMoves, _n)\n\n    print(json.dumps(_result))",
+    "JavaScript": "'use strict';\nconst readline = require('readline');\n\n// ---------------------------------------------------------------------\n// YOUR SOLUTION  <- Write your code inside the function below\n// ---------------------------------------------------------------------\n/**\n * @param {number[][]} edges\n * @param {number} maxMoves\n * @param {number} n\n * @return {number}\n */\nvar reachableNodes = function(edges, maxMoves, n) {\n    \n    return 0;\n};\n\n// ---------------------------------------------------------------------\n// DRIVER  (do not modify)\n// ---------------------------------------------------------------------\nconst rl = readline.createInterface({ input: process.stdin });\nrl.on('line', line => {\n    const _args = JSON.parse(line.trim());\n    const _result = reachableNodes(_args[0], _args[1], _args[2]);\n    console.log(JSON.stringify(_result));\n    rl.close();\n});",
+    "Java": "import java.util.*;\nimport java.io.*;\n\n// -\n// ---------------------------------------------------------------------\n// YOUR SOLUTION  <- Write your code inside the function below\n// ---------------------------------------------------------------------\n// -\nclass Solution {\n    public int reachableNodes(int[][] edges, int maxMoves, int n) {\n        \n        return 0;\n    }\n}\n\n// ---------------------------------------------------------------------\n// DRIVER  (do not modify)\n// ---------------------------------------------------------------------\npublic class Main {\n\n    static java.util.ArrayDeque<String> tokenize(String s) {\n        java.util.ArrayDeque<String> q = new java.util.ArrayDeque<>();\n        int i = 0, n = s.length();\n        while (i < n) {\n            char c = s.charAt(i);\n            if (c == '[' || c == ']' || c == ',') { i++; continue; }\n            if (c == '\"') {\n                int j = s.indexOf('\"', i+1); q.add(s.substring(i, j+1)); i = j+1;\n            } else if (c != ' ') {\n                int j = i;\n                while (j < n && s.charAt(j) != ',' && s.charAt(j) != ']' && s.charAt(j) != '[') j++;\n                String tok = s.substring(i, j).trim();\n                if (!tok.isEmpty()) q.add(tok);\n                i = j;\n            } else { i++; }\n        }\n        return q;\n    }\n    static String[] readArrayRaw(String s) {\n        s = s.trim();\n        if (s.equals(\"[]\")) return new String[0];\n        s = s.substring(1, s.length()-1);\n        java.util.List<String> parts = new java.util.ArrayList<>();\n        int depth=0, start=0;\n        for (int i=0; i<s.length(); i++) {\n            char c=s.charAt(i);\n            if (c=='[') depth++; else if (c==']') depth--;\n            else if (c==',' && depth==0) { parts.add(s.substring(start,i).trim()); start=i+1; }\n        }\n        parts.add(s.substring(start).trim());\n        return parts.toArray(new String[0]);\n    }\n    static int[] toIntArray(String s) {\n        String[] parts = readArrayRaw(s);\n        int[] arr = new int[parts.length];\n        for (int i=0; i<parts.length; i++) arr[i] = Integer.parseInt(parts[i].trim());\n        return arr;\n    }\n    static int[][] toInt2D(String s) {\n        String[] rows = readArrayRaw(s);\n        int[][] mat = new int[rows.length][];\n        for (int i=0; i<rows.length; i++) mat[i] = toIntArray(rows[i]);\n        return mat;\n    }\n    static String[] toStringArray(String s) {\n        String[] parts = readArrayRaw(s);\n        for (int i=0; i<parts.length; i++) parts[i] = parts[i].trim().replaceAll(\"^\\\"|\\\"$\",\"\");\n        return parts;\n    }\n    static char[] toCharArray(String s) {\n        String[] parts = readArrayRaw(s);\n        char[] arr = new char[parts.length];\n        for (int i=0; i<parts.length; i++) arr[i] = parts[i].trim().replaceAll(\"^\\\"|\\\"$\",\"\").charAt(0);\n        return arr;\n    }\n    // Reads next top-level token from outer JSON array\n    static int _pos;\n    static String _raw;\n    static String nextToken() {\n        while (_pos < _raw.length() && (_raw.charAt(_pos)==',' || _raw.charAt(_pos)==' ')) _pos++;\n        if (_pos >= _raw.length()) return \"null\";\n        char c = _raw.charAt(_pos);\n        if (c == '[') {\n            int depth=0, start=_pos;\n            while (_pos < _raw.length()) {\n                char x=_raw.charAt(_pos); if(x=='[') depth++; else if(x==']') { depth--; if(depth==0){_pos++;break;} } _pos++;\n            }\n            return _raw.substring(start, _pos);\n        } else if (c == '\"') {\n            int start=_pos++;\n            while (_pos < _raw.length() && _raw.charAt(_pos) != '\"') _pos++;\n            _pos++;\n            return _raw.substring(start, _pos);\n        } else {\n            int start=_pos;\n            while (_pos < _raw.length() && _raw.charAt(_pos) != ',' && _raw.charAt(_pos) != ']') _pos++;\n            return _raw.substring(start, _pos).trim();\n        }\n    }\n    public static void main(String[] a) throws IOException {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        String line = br.readLine().trim();\n        // Strip outer [ ]\n        _raw = line.substring(1, line.length()-1);\n        _pos = 0;\n        int[][] edges = toInt2D(nextToken());\n        int maxMoves = Integer.parseInt(nextToken());\n        int n = Integer.parseInt(nextToken());\n        int result = new Solution().reachableNodes(edges, maxMoves, n);\n        System.out.println(result);\n    }\n}",
+    "C++": "\n#include <bits/stdc++.h>\nusing namespace std;\n\nstruct Tok {\n    string s;\n    int pos = 0;\n    void skipWS() { while(pos<(int)s.size()&&(s[pos]==' '||s[pos]==','||s[pos]=='\\t')) pos++; }\n    string nextToken() {\n        skipWS();\n        if(pos>=(int)s.size()) return \"\";\n        if(s[pos]=='['){\n            int depth=0,st=pos;\n            while(pos<(int)s.size()){char c=s[pos++];if(c=='[')depth++;else if(c==']'){depth--;if(depth==0)break;}}\n            return s.substr(st,pos-st);\n        } else if(s[pos]=='\"'){\n            int st=pos++;\n            while(pos<(int)s.size()&&s[pos]!='\"')pos++;\n            return s.substr(st,++pos-st);\n        } else {\n            int st=pos;\n            while(pos<(int)s.size()&&s[pos]!=','&&s[pos]!=']'&&s[pos]!='[')pos++;\n            string t=s.substr(st,pos-st);\n            while(!t.empty()&&t.back()==' ')t.pop_back();\n            return t;\n        }\n    }\n};\nstring innerArr(const string& s){return s.substr(1,s.size()-2);}\nvector<string> splitTop(const string& s){\n    vector<string> parts; int depth=0,start=0;\n    for(int i=0;i<(int)s.size();i++){\n        if(s[i]=='['||s[i]=='{')depth++;\n        else if(s[i]==']'||s[i]=='}')depth--;\n        else if(s[i]==','&&depth==0){parts.push_back(s.substr(start,i-start));start=i+1;}\n    }\n    parts.push_back(s.substr(start)); return parts;\n}\nvector<int> readIntVec(Tok& tok){\n    string arr=tok.nextToken();\n    if(arr==\"[]\")return {};\n    auto parts=splitTop(innerArr(arr)); vector<int> v;\n    for(auto&p:parts)v.push_back(stoi(p)); return v;\n}\nvector<vector<int>> readInt2D(Tok& tok){\n    string arr=tok.nextToken();\n    if(arr==\"[]\")return {};\n    auto rows=splitTop(innerArr(arr)); vector<vector<int>> mat;\n    for(auto&r:rows){Tok t2;t2.s=\"[\"+innerArr(r)+\"]\";t2.pos=0;mat.push_back(readIntVec(t2));} return mat;\n}\nvector<string> readStrVec(Tok& tok){\n    string arr=tok.nextToken();\n    if(arr==\"[]\")return {};\n    auto parts=splitTop(innerArr(arr)); vector<string> v;\n    for(auto&p:parts){string tmp=p;if(!tmp.empty()&&tmp.front()=='\"')tmp=tmp.substr(1,tmp.size()-2);v.push_back(tmp);}return v;\n}\nvector<char> readCharVec(Tok& tok){\n    auto sv=readStrVec(tok); vector<char> v; for(auto&s:sv)v.push_back(s[0]); return v;\n}\nint readInt(Tok& tok){ return stoi(tok.nextToken()); }\nstring readStr(Tok& tok){ string s=tok.nextToken(); if(!s.empty()&&s.front()=='\"')s=s.substr(1,s.size()-2); return s; }\nbool readBool(Tok& tok){ return tok.nextToken()==\"true\"; }\ndouble readDouble(Tok& tok){ return stod(tok.nextToken()); }\n\n// ---------------------------------------------------------------------\n// YOUR SOLUTION  <- Write your code inside the function below\n// ---------------------------------------------------------------------\nclass Solution {\npublic:\n    int reachableNodes(vector<vector<int>>& edges, int maxMoves, int n) {\n        \n        return 0;\n    }\n};\n\n// ---------------------------------------------------------------------\n// DRIVER  (do not modify)\n// ---------------------------------------------------------------------\nint main() {\n    string line; getline(cin, line);\n    // Strip outer [ ]\n    Tok tok; tok.s = line.substr(1, line.size()-2); tok.pos = 0;\n    auto edges = readInt2D(tok);\n    int maxMoves = readInt(tok);\n    int n = readInt(tok);\n    auto result = Solution().reachableNodes(edges, maxMoves, n);\n    cout << result << endl;\n    return 0;\n}"
+  },
+  "solution": {
+    "approach": "The solution uses Dijkstra's algorithm with a priority queue to find the shortest paths from node 0 to all other nodes in the subdivided graph, while also keeping track of the number of nodes that can be reached within the given maxMoves.",
+    "timeComplexity": "O((n + m) * logn)",
+    "spaceComplexity": "O(n + m)",
+    "code": {
+      "Python3": "# Time:  O((|E| + |V|) * log|V|) = O(|E| * log|V|),\n#        if we can further to use Fibonacci heap, it would be O(|E| + |V| * log|V|)\n# Space: O(|E| + |V|) = O(|E|)\n\nimport collections\nimport heapq\n\nclass Solution(object):\n    def reachableNodes(self, edges, M, N):\n        \"\"\"\n        :type edges: List[List[int]]\n        :type M: int\n        :type N: int\n        :rtype: int\n        \"\"\"\n        adj = [[] for _ in range(N)]\n        for u, v, w in edges:\n            adj[u].append((v, w))\n            adj[v].append((u, w))\n\n        min_heap = [(0, 0)]\n        best = collections.defaultdict(lambda: float(\"inf\"))\n        best[0] = 0\n        count = collections.defaultdict(lambda: collections.defaultdict(int))\n        result = 0\n        while min_heap:\n            curr_total, u = heapq.heappop(min_heap)  # O(|V|*log|V|) in total\n            if best[u] < curr_total:\n                continue\n            result += 1\n            for v, w in adj[u]:\n                count[u][v] = min(w, M-curr_total)\n                next_total = curr_total+w+1\n                if next_total <= M and next_total < best[v]:\n                    best[v] = next_total\n                    heapq.heappush(min_heap, (next_total, v))  # binary heap O(|E|*log|V|) in total\n                                                               # Fibonacci heap O(|E|) in total\n        for u, v, w in edges:\n            result += min(w, count[u][v]+count[v][u])\n        return result"
+    }
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "questionId": "Q8157",
+  "title": "Chef and Elephant Tree",
+  "slug": "chef-and-elephant-tree",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graph | Data Structures | Offline Queries",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Tree",
+      "Euler Tour",
+      "Binary Lifting",
+      "Mo's Algorithm",
+      "Fenwick Tree",
+      "Expected Value",
+      "Modular Arithmetic"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Trees"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Let's define an elephant tree with size NNN as a rooted tree with NNN vertices (numbered 111 through NNN) such that:\n\n\nvertex 111 is the root\nfor any three vertices uuu, vvv and www such that u&lt;v&lt;wu \\lt v \\lt wu&lt;v&lt;w, if www is a (direct or indirect) descendant of uuu, then vvv is also a descendant of uuu\nLittle Chef has an elephant tree with size NNN. Today, he wants to use the leaves of this tree to decorate QQQ dishes (a leaf is a vertex with no children). For each dish, he picks some range [L,R][L, R][L,R] and he wants to uniformly randomly choose a pair of distinct leaves with labels between LLL and RRR inclusive. These leaves are removed and used to decorate the dish; since the tree is magical, the removed leaves grow back immediately.\n\nYou should answer QQQ queries. In each query, Chef is decorating one dish and wants to know the expected value of the distance between the chosen leaves. It can be proved that if at least one pair of leaves can be chosen, this expected value can be expressed as a fraction P/DP/DP/D, where PPP and DDD are coprime positive integers and DDD is coprime to 998,244,353998,244,353998,244,353.\n\nThe answer to a query is 000 if there is at most one leaf in the given range (no pair of leaves can be chosen) or P⋅D−1P \\cdot D^{-1}P⋅D−1 modulo 998,244,353998,244,353998,244,353 otherwise, where D−1D^{-1}D−1 denotes the multiplicative inverse of DDD modulo 998,244,353998,244,353998,244,353.\n\nLittle Chef is very unpredictable, so you have to answer each query immediately after he gives it to you.",
+    "constraints": [
+      "2 ≤ N, Q ≤ 300000",
+      "1 ≤ fi < i for every i (the tree is rooted at 1)",
+      "The tree satisfies the elephant‑tree property, i.e. the vertices of every subtree form a contiguous interval of labels."
+    ],
+    "inputFormat": "The first line contains two integers N and Q – the number of vertices of the elephant tree and the number of queries. The second line contains N‑1 integers f2 … fN, where fi is the parent of vertex i (1‑based indexing, vertex 1 is the root). Then Q lines follow, each containing two integers x and y. For each query let ans be the answer of the previous query (ans = 0 for the first query). The real parameters are L = x xor ans and R = y xor ans (1 ≤ L ≤ R ≤ N).",
+    "outputFormat": "For each query output a single integer – the expected distance between a uniformly random unordered pair of distinct leaves whose labels lie in [L, R], modulo 998244353. If the interval contains fewer than two leaves output 0.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "10 3\n1 2 2 4 5 5 1 8 1 \n2 10\n598946617 598946610\n598946618 598946609",
+        "output": "598946616\n598946616\n332748122",
+        "explanation": "Explanation:\nThe leaves are vertices 333, 666, 777, 999 and 101010.\n\nIn the first query, L=2L = 2L=2, R=10R = 10R=10 and the expected value is 21/521/521/5.\nIn the second query, L=1L = 1L=1, R=10R = 10R=10 and the expected value is 21/521/521/5 again.\nIn the third query, L=2L = 2L=2, R=9R = 9R=9 and the expected value is 13/313/313/3."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Because every subtree of an elephant tree occupies a contiguous interval of labels, the set of leaves is static and each leaf can be identified by its position in the sorted list of leaves. For a query we need the sum of distances over all unordered leaf pairs inside the interval. The distance between two vertices u and v is depth(u)+depth(v)‑2·depth(lca(u,v)). Hence for a set S of leaves we need:\n    sumDepth = Σ_{v∈S} depth(v)\n    sumLCA   = Σ_{(u,v), u<v, u,v∈S} depth(lca(u,v))\nThe answer is (|S|·sumDepth – 2·sumLCA) / C(|S|,2).\n\nWe answer all queries offline with Mo's algorithm on the array of leaves (ordered by label). While moving the current interval we maintain:\n  cnt          – number of leaves in the current interval\n  sumDepth     – Σ depth(v) for the current leaves\n  totalDist    – Σ_{u<v} distance(u,v) for the current leaves\n  fenwick      – a Fenwick tree on the Euler tour of the whole tree that stores, for each vertex, how many of the current leaves lie in its subtree.\nWhen a leaf x is added we compute its contribution to totalDist in O(log N) time:\n  contribution = depth(x)·cnt + sumDepth – 2·Σ_{a ancestor of x} depth(a)·(cntSubtree[a] – cntSubtree[parent(a)])\nThe term Σ_{a ancestor of x} … can be evaluated by climbing the ancestors of x using binary lifting. For each jump we query the Fenwick tree for the number of current leaves inside the jumped node’s subtree. The number of jumps is O(log N), each query is O(log N), so the whole addition/removal costs O(log^2 N).\nAll queries are processed in O((N+Q)·√N·log^2 N) which easily fits the limits.\nModular arithmetic is performed with the given prime MOD = 998244353; the modular inverse of C(cnt,2) is computed with fast exponentiation.\n\nPre‑processing steps:\n  1. Build the tree, run a DFS to obtain tin/tout times, depth array and binary‑lifting table up[k][v].\n  2. Identify all leaves, store them in a vector leaves[] sorted by label and remember for each leaf its position.\n  3. Build a Fenwick tree of size N (Euler tour size) initialised with zeros.\n  4. Prepare the queries for Mo’s ordering (block size ≈ √|leaves|).\n\nDuring Mo’s processing we keep two pointers L,R on the leaves array (0‑based, inclusive). Adding/removing a leaf updates cnt, sumDepth, totalDist and the Fenwick tree accordingly.\nFinally for each query we output 0 if cnt < 2, otherwise (totalDist * inv(C(cnt,2))) mod MOD.\n\nThe algorithm runs in O((N+Q)·√N·log^2 N) time and O(N) memory.",
+    "timeComplexity": "O((N + Q) · √N · log^2 N)",
+    "spaceComplexity": "O(N)",
+    "code": {
+      "C": ""
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

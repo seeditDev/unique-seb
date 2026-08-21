@@ -1,0 +1,143 @@
+{
+  "questionId": "Q5884",
+  "title": "Build the Tree",
+  "slug": "build-the-tree",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Tree",
+      "Dynamic Programming",
+      "Graph"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Flow & Matching"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Problem description.Given a rooted tree with **N** nodes. Nodes of the tree are numbered from **1** to **N**. Node **1** is the root. You need to add **M** nodes to it in the given order. All the nodes have values. Cost for adding a node **A** with value **va** to another node **B** with value **vb** is **va*vb**. There is an additional cost of **y** (so total cost of **va*vb+y**) if **B** has atleast **x** child nodes. After node **A** has been added to another node **B** it becomes a child of **B**.\n\nAfter adding a node **A** to the tree, nodes next in list can be added to **A** also. You need to calculate the total minimal cost to add all **M** nodes in given order.",
+    "constraints": [
+      "1 ≤ N ≤ 100000",
+      "1 ≤ x ≤ 1000",
+      "1 ≤ y ≤ 1000",
+      "1 ≤ Q ≤ 100",
+      "1 ≤ M ≤ 100",
+      "1 ≤ Values of all nodes in input ≤ 1000"
+    ],
+    "inputFormat": "First line contains N, the number of nodes in the tree. The second line contains N integers representing the values of the nodes in order from node 1 to node N. The next N-1 lines define the edges of the tree, with each line containing two integers representing the nodes connected by an edge. The next line contains Q, the number of queries. Each query consists of two lines: the first line contains three integers M, x, and y, and the second line contains M integers representing the values of the nodes to be added in order.",
+    "outputFormat": "For each query, print the minimal total cost to add all the nodes in the given order.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n2 2 3\n1 2\n2 3\n2\n2 2 10\n10 10\n3 2 10\n1 2 2",
+        "output": "40\n6",
+        "explanation": "For the first query, the minimal total cost to add all the nodes in the given order is 40. For the second query, the minimal total cost to add all the nodes in the given order is 6."
+      },
+      {
+        "id": "sample_2",
+        "input": "4\n1 2 3 4\n1 2\n1 3\n1 4\n1\n3 1 1\n1 2 3",
+        "output": "14",
+        "explanation": "The minimal total cost to add all the nodes in the given order is 14."
+      },
+      {
+        "id": "sample_3",
+        "input": "5\n1 1 1 1 1\n1 2\n1 3\n1 4\n1 5\n1\n5 1 1\n1 1 1 1 1",
+        "output": "10",
+        "explanation": "The minimal total cost to add all the nodes in the given order is 10."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "1\n1\n0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "1\n1\n0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "1\n1\n0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "1\n1\n0",
+        "expectedOutput": "0",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a dynamic programming approach. We start by building the tree using the given edges. Then, for each query, we calculate the minimal total cost to add all the nodes in the given order. We use a recursive function to calculate the cost of adding a node to each possible parent node in the tree, considering the additional cost if the parent node has at least x child nodes.",
+    "timeComplexity": "O(N + Q * M * N) per test case, where N is the number of nodes in the tree, Q is the number of queries, and M is the number of nodes to be added in each query.",
+    "spaceComplexity": "O(N + Q * M) — the dominant structure is the tree and the recursive call stack.",
+    "code": {
+      "C": "// COMPLETE, COMPILABLE C code\n// Uses correct I/O\n// Handles all T test cases\n#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <limits.h>\n#define MAXN 100005\n#define MAXM 105\ntypedef struct Node{\n    int val;\n    int childNum;\n    struct Node** child;\n}Node;\nNode* newNode(int val) {\n    Node* node = (Node*)malloc(sizeof(Node));\n    node->val = val;\n    node->childNum = 0;\n    node->child = NULL;\n    return node;\n}\nvoid addNode(Node* parent, Node* child) {\n    parent->childNum++;\n    parent->child = (Node**)realloc(parent->child, parent->childNum * sizeof(Node*));\n    parent->child[parent->childNum - 1] = child;\n}\nint minCost(Node* root, int* nodes, int M, int x, int y) {\n    if (M == 0) return 0;\n    int min = nodes[0] * root->val;\n    if (root->childNum >= x) min += y;\n    int minChild = INT_MAX;\n    for (int i = 0; i < root->childNum; i++) {\n        int cost = minCost(root->child[i], nodes + 1, M - 1, x, y);\n        if (cost < minChild) minChild = cost;\n    }\n    if (minChild != INT_MAX) min += minChild;\n    return min;\n}\nint main() {\n    int N;\n    scanf(\"%d\", &N);\n    Node* root = newNode(0);\n    Node** nodes = (Node**)malloc(N * sizeof(Node*));\n    for (int i = 0; i < N; i++) {\n        int val;\n        scanf(\"%d\", &val);\n        nodes[i] = newNode(val);\n        if (i == 0) root = nodes[i];\n    }\n    for (int i = 0; i < N - 1; i++) {\n        int u, v;\n        scanf(\"%d %d\", &u, &v);\n        addNode(nodes[u - 1], nodes[v - 1]);\n    }\n    int Q;\n    scanf(\"%d\", &Q);\n    for (int i = 0; i < Q; i++) {\n        int M, x, y;\n        scanf(\"%d %d %d\", &M, &x, &y);\n        int* values = (int*)malloc(M * sizeof(int));\n        for (int j = 0; j < M; j++) {\n            scanf(\"%d\", &values[j]);\n        }\n        printf(\"%d\\n\", minCost(root, values, M, x, y));\n        free(values);\n    }\n    for (int i = 0; i < N; i++) {\n        free(nodes[i]->child);\n        free(nodes[i]);\n    }\n    free(nodes);\n    return 0;\n}",
+      "C++": "// COMPLETE, COMPILABLE C++ code\n// Uses correct I/O\n// Handles all T test cases\n#include <iostream>\n#include <vector>\nusing namespace std;\n#define MAXN 100005\n#define MAXM 105\nstruct Node {\n    int val;\n    vector<Node*> child;\n    Node(int val) : val(val) {}\n};\nint minCost(Node* root, vector<int>& nodes, int M, int x, int y) {\n    if (M == 0) return 0;\n    int min = nodes[0] * root->val;\n    if (root->child.size() >= x) min += y;\n    int minChild = INT_MAX;\n    for (auto child : root->child) {\n        vector<int> newNodes(nodes.begin() + 1, nodes.end());\n        int cost = minCost(child, newNodes, M - 1, x, y);\n        if (cost < minChild) minChild = cost;\n    }\n    if (minChild != INT_MAX) min += minChild;\n    return min;\n}\nint main() {\n    int N;\n    cin >> N;\n    Node* root = new Node(0);\n    Node** nodes = new Node*[N];\n    for (int i = 0; i < N; i++) {\n        int val;\n        cin >> val;\n        nodes[i] = new Node(val);\n        if (i == 0) root = nodes[i];\n    }\n    for (int i = 0; i < N - 1; i++) {\n        int u, v;\n        cin >> u >> v;\n        nodes[u - 1]->child.push_back(nodes[v - 1]);\n    }\n    int Q;\n    cin >> Q;\n    for (int i = 0; i < Q; i++) {\n        int M, x, y;\n        cin >> M >> x >> y;\n        vector<int> values(M);\n        for (int j = 0; j < M; j++) {\n            cin >> values[j];\n        }\n        cout << minCost(root, values, M, x, y) << endl;\n    }\n    for (int i = 0; i < N; i++) {\n        delete nodes[i];\n    }\n    delete[] nodes;\n    return 0;\n}",
+      "Java": "// COMPLETE, COMPILABLE Java code\n// Class MUST be named Main\n// Uses correct I/O\n// Handles all T test cases\nimport java.util.ArrayList;\nimport java.util.List;\nimport java.util.Scanner;\npublic class Main {\n    static class Node {\n        int val;\n        List<Node> child;\n        Node(int val) {\n            this.val = val;\n            this.child = new ArrayList<>();\n        }\n    }\n    static int minCost(Node root, int[] nodes, int M, int x, int y) {\n        if (M == 0) return 0;\n        int min = nodes[0] * root.val;\n        if (root.child.size() >= x) min += y;\n        int minChild = Integer.MAX_VALUE;\n        for (Node child : root.child) {\n            int[] newNodes = new int[M - 1];\n            System.arraycopy(nodes, 1, newNodes, 0, M - 1);\n            int cost = minCost(child, newNodes, M - 1, x, y);\n            if (cost < minChild) minChild = cost;\n        }\n        if (minChild != Integer.MAX_VALUE) min += minChild;\n        return min;\n    }\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int N = scanner.nextInt();\n        Node root = new Node(0);\n        Node[] nodes = new Node[N];\n        for (int i = 0; i < N; i++) {\n            int val = scanner.nextInt();\n            nodes[i] = new Node(val);\n            if (i == 0) root = nodes[i];\n        }\n        for (int i = 0; i < N - 1; i++) {\n            int u = scanner.nextInt();\n            int v = scanner.nextInt();\n            nodes[u - 1].child.add(nodes[v - 1]);\n        }\n        int Q = scanner.nextInt();\n        for (int i = 0; i < Q; i++) {\n            int M = scanner.nextInt();\n            int x = scanner.nextInt();\n            int y = scanner.nextInt();\n            int[] values = new int[M];\n            for (int j = 0; j < M; j++) {\n                values[j] = scanner.nextInt();\n            }\n            System.out.println(minCost(root, values, M, x, y));\n        }\n    }\n}",
+      "Python3": "# COMPLETE, RUNNABLE Python3 code\n# Uses input() or sys.stdin\n# Handles all T test cases\nimport sys\nclass Node:\n    def __init__(self, val):\n        self.val = val\n        self.child = []\ndef minCost(root, nodes, M, x, y):\n    if M == 0: return 0\n    min = nodes[0] * root.val\n    if len(root.child) >= x: min += y\n    minChild = float('inf')\n    for child in root.child:\n        cost = minCost(child, nodes[1:], M - 1, x, y)\n        if cost < minChild: minChild = cost\n    if minChild != float('inf'): min += minChild\n    return min\nN = int(input())\nroot = Node(0)\nnodes = [Node(0) for _ in range(N)]\nfor i in range(N):\n    val = int(input())\n    nodes[i] = Node(val)\n    if i == 0: root = nodes[i]\nfor i in range(N - 1):\n    u, v = map(int, input().split())\n    nodes[u - 1].child.append(nodes[v - 1])\nQ = int(input())\nfor i in range(Q):\n    M, x, y = map(int, input().split())\n    values = list(map(int, input().split()))\n    print(minCost(root, values, M, x, y))",
+      "JavaScript": "// COMPLETE, RUNNABLE JavaScript code\n// Uses fs.readFileSync(0,'utf-8') — NEVER readline()\n// Handles all T test cases\nconst fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nfunction nextLine() { return lines[idx++]; }\nfunction nextInt() { return parseInt(nextLine()); }\nfunction nextInts() { return nextLine().split(' ').map(Number); }\nclass Node {\n    constructor(val) {\n        this.val = val;\n        this.child = [];\n    }\n}\nfunction minCost(root, nodes, M, x, y) {\n    if (M == 0) return 0;\n    let min = nodes[0] * root.val;\n    if (root.child.length >= x) min += y;\n    let minChild = Infinity;\n    for (let child of root.child) {\n        let cost = minCost(child, nodes.slice(1), M - 1, x, y);\n        if (cost < minChild) minChild = cost;\n    }\n    if (minChild != Infinity) min += minChild;\n    return min;\n}\nlet N = nextInt();\nlet root = new Node(0);\nlet nodes = new Array(N);\nfor (let i = 0; i < N; i++) {\n    let val = nextInt();\n    nodes[i] = new Node(val);\n    if (i == 0) root = nodes[i];\n}\nfor (let i = 0; i < N - 1; i++) {\n    let [u, v] = nextInts();\n    nodes[u - 1].child.push(nodes[v - 1]);\n}\nlet Q = nextInt();\nfor (let i = 0; i < Q; i++) {\n    let [M, x, y] = nextInts();\n    let values = nextInts();\n    console.log(minCost(root, values, M, x, y));\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

@@ -1,0 +1,129 @@
+{
+  "questionId": "Q2738",
+  "title": "Combinatorial Numbers",
+  "slug": "combinatorial-numbers",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Lexicographical Order",
+      "Combinatorial Numbers",
+      "Strings",
+      "Binary Strings"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Combinatorics & Probability"
+    ]
+  },
+  "content": {
+    "problemStatement": "Read problems statements in Russian hereChef has a special affection for sets of binary strings of equal length which have same numbers of **1's**. Given three integers **n**, **k** and **m**, your task is to find the the lexicographically  **mth** smallest string among strings  which have length n and have **k** **1's**. If no such string exists output **-1**. \n\nTips:  To see what lexicographic order means . See http://en.wikipedia.org/wiki/Lexicographical_order",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 350",
+      "1 <= K <= N",
+      "1 <= M <= number of combinations of N items taken K at a time"
+    ],
+    "inputFormat": "The first line of the input contains an integer T denoting the number of test cases. The first and only line of each test case contains three space separated integers N, K and M.",
+    "outputFormat": "For each test case output the lexicographically mth smallest string among strings which have length n and have k 1's. If no such string exists output -1.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n3 2 2",
+        "output": "101",
+        "explanation": "The set of strings in lexicographic order is \"011\", \"101\", and \"110\"."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n4 2 3",
+        "output": "1100",
+        "explanation": "The set of strings in lexicographic order is \"0011\", \"0101\", \"0110\", \"1001\", \"1010\", and \"1100\"."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n5 3 5",
+        "output": "10110",
+        "explanation": "The set of strings in lexicographic order is \"00111\", \"01011\", \"01101\", \"01110\", \"10011\", \"10101\", \"10110\", \"11001\", \"11010\", and \"11100\"."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n350 175 1",
+        "expectedOutput": "The lexicographically smallest string with 350 bits and 175 ones.",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n10 5 10",
+        "expectedOutput": "The lexicographically 10th smallest string with 10 bits and 5 ones.",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n20 10 5",
+        "expectedOutput": "The lexicographically 5th smallest string with 20 bits and 10 ones.",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n30 15 10",
+        "expectedOutput": "The lexicographically 10th smallest string with 30 bits and 15 ones.",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use combinatorial numbers and lexicographical order. We can generate all possible binary strings of length N with K 1's and then sort them in lexicographical order. Finally, we can output the Mth smallest string.",
+    "timeComplexity": "O(T * (N choose K) * N) - where (N choose K) is the number of combinations of N items taken K at a time",
+    "spaceComplexity": "O(T * (N choose K) * N) - for storing all possible binary strings",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#define MAX 351\n\nint compare(const void *a, const void *b) {\n    char *str1 = *(char **)a;\n    char *str2 = *(char **)b;\n    return strcmp(str1, str2);\n}\n\nchar **generateBinaryStrings(int N, int K) {\n    int count = 0;\n    char **binaryStrings = (char **)malloc(1000000 * sizeof(char *));\n    for (int i = 0; i < (1 << N); i++) {\n        int ones = 0;\n        char *str = (char *)malloc((N + 1) * sizeof(char));\n        for (int j = 0; j < N; j++) {\n            if ((i & (1 << j))) {\n                str[j] = '1';\n                ones++;\n            } else {\n                str[j] = '0';\n            }\n        }\n        str[N] = '\\0';\n        if (ones == K) {\n            binaryStrings[count] = str;\n            count++;\n        } else {\n            free(str);\n        }\n    }\n    binaryStrings[count] = NULL;\n    return binaryStrings;\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int N, K, M;\n        scanf(\"%d %d %d\", &N, &K, &M);\n        char **binaryStrings = generateBinaryStrings(N, K);\n        int count = 0;\n        while (binaryStrings[count] != NULL) count++;\n        if (M > count) {\n            printf(\"-1\\n\");\n        } else {\n            qsort(binaryStrings, count, sizeof(char *), compare);\n            printf(\"%s\\n\", binaryStrings[M - 1]);\n        }\n        for (int i = 0; i < count; i++) {\n            free(binaryStrings[i]);\n        }\n        free(binaryStrings);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\n#include <algorithm>\n#include <string>\nusing namespace std;\n\nvector<string> generateBinaryStrings(int N, int K) {\n    vector<string> binaryStrings;\n    for (int i = 0; i < (1 << N); i++) {\n        string str = \"\";\n        int ones = 0;\n        for (int j = 0; j < N; j++) {\n            if ((i & (1 << j))) {\n                str += '1';\n                ones++;\n            } else {\n                str += '0';\n            }\n        }\n        if (ones == K) {\n            binaryStrings.push_back(str);\n        }\n    }\n    return binaryStrings;\n}\n\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        int N, K, M;\n        cin >> N >> K >> M;\n        vector<string> binaryStrings = generateBinaryStrings(N, K);\n        if (M > binaryStrings.size()) {\n            cout << -1 << endl;\n        } else {\n            sort(binaryStrings.begin(), binaryStrings.end());\n            cout << binaryStrings[M - 1] << endl;\n        }\n    }\n    return 0;\n}",
+      "Java": "import java.util.Arrays;\nimport java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int T = scanner.nextInt();\n        while (T-- > 0) {\n            int N = scanner.nextInt();\n            int K = scanner.nextInt();\n            int M = scanner.nextInt();\n            String[] binaryStrings = generateBinaryStrings(N, K);\n            if (M > binaryStrings.length) {\n                System.out.println(-1);\n            } else {\n                Arrays.sort(binaryStrings);\n                System.out.println(binaryStrings[M - 1]);\n            }\n        }\n    }\n\n    public static String[] generateBinaryStrings(int N, int K) {\n        int count = 0;\n        for (int i = 0; i < (1 << N); i++) {\n            int ones = 0;\n            for (int j = 0; j < N; j++) {\n                if ((i & (1 << j)) != 0) {\n                    ones++;\n                }\n            }\n            if (ones == K) {\n                count++;\n            }\n        }\n        String[] binaryStrings = new String[count];\n        count = 0;\n        for (int i = 0; i < (1 << N); i++) {\n            int ones = 0;\n            String str = \"\";\n            for (int j = 0; j < N; j++) {\n                if ((i & (1 << j)) != 0) {\n                    str += '1';\n                    ones++;\n                } else {\n                    str += '0';\n                }\n            }\n            if (ones == K) {\n                binaryStrings[count] = str;\n                count++;\n            }\n        }\n        return binaryStrings;\n    }\n}",
+      "Python3": "import sys\nimport itertools\n\ndef generate_binary_strings(N, K):\n    binary_strings = []\n    for bits in itertools.product('01', repeat=N):\n        if bits.count('1') == K:\n            binary_strings.append(''.join(bits))\n    return binary_strings\n\nT = int(sys.stdin.readline().strip())\nfor _ in range(T):\n    N, K, M = map(int, sys.stdin.readline().strip().split())\n    binary_strings = generate_binary_strings(N, K)\n    if M > len(binary_strings):\n        print(-1)\n    else:\n        binary_strings.sort()\n        print(binary_strings[M - 1])",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\n\nfunction generateBinaryStrings(N, K) {\n    let binaryStrings = [];\n    for (let i = 0; i < (1 << N); i++) {\n        let str = '';\n        let ones = 0;\n        for (let j = 0; j < N; j++) {\n            if ((i & (1 << j))) {\n                str += '1';\n                ones++;\n            } else {\n                str += '0';\n            }\n        }\n        if (ones === K) {\n            binaryStrings.push(str);\n        }\n    }\n    return binaryStrings;\n}\n\nlet T = parseInt(lines[idx++]);\nwhile (T-- > 0) {\n    let [N, K, M] = lines[idx++].trim().split(' ').map(Number);\n    let binaryStrings = generateBinaryStrings(N, K);\n    if (M > binaryStrings.length) {\n        console.log(-1);\n    } else {\n        binaryStrings.sort();\n        console.log(binaryStrings[M - 1]);\n    }\n}"
+    }
+  }
+}

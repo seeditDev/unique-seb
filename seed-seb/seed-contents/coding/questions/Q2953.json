@@ -1,0 +1,127 @@
+{
+  "questionId": "Q2953",
+  "title": "Chef and easy problem 2",
+  "slug": "chef-and-easy-problem-2",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Prime Factorization",
+      "Number Theory",
+      "Math"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Mathematics"
+    ]
+  },
+  "content": {
+    "problemStatement": "Roma gave Chef an array of intergers.\n\nChef wants to make all integers in the array equal to 1.\n\nIn a single operation, he can select a prime number **p** and a subset of the integers, and then divide all of the integers in the subset by **p**.\n\nChef can make this operation only if every integer in the selected subset is divisible by **p**.\n\n\n\nPlease help Chef to make all the integers in the array equal to 1 with minimum number of operations.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 100000",
+      "1 <= Ai <= 1000000"
+    ],
+    "inputFormat": "First line contains T, the number of test cases. Each test case contains two lines. The first line contains a single integer N, the size of the array. The second line contains N space-separated integers A1, A2, ..., AN.",
+    "outputFormat": "For each test case, print the minimum number of operations required to make all array elements equal to 1.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n3\n1 2 4",
+        "output": "2",
+        "explanation": "Prime 2 appears with exponents 0,1,2; maximum is 2. No other primes. Minimum operations = 2."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n4\n6 10 15 1",
+        "output": "3",
+        "explanation": "Prime 2 max exponent 1, prime 3 max 1, prime 5 max 1. Sum = 3."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n5\n8 9 25 7 1",
+        "output": "8",
+        "explanation": "2^3, 3^2, 5^2, 7^1 \u2192 3+2+2+1 = 8."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n1",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n10\n1000000 1000000 1000000 1000000 1000000 1000000 1000000 1000000 1000000 1000000",
+        "expectedOutput": "1000000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n5\n2 2 2 2 2",
+        "expectedOutput": "5",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n5\n3 3 3 3 3",
+        "expectedOutput": "5",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "5\n5\n2 3 5 7 11\n5\n2 4 6 8 10\n5\n1 1 1 1 1\n5\n1000000 1000000 1000000 1000000 1000000\n5\n2 4 8 16 32",
+        "expectedOutput": "5\n4\n0\n1000000\n15",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved by finding the prime factorization of each number in the array and then finding the maximum exponent of each prime factor across all numbers. The minimum number of operations required is the sum of the maximum exponents of all prime factors.",
+    "timeComplexity": "O(T * N * log(MAXA)) per test case, where MAXA is the maximum value in the array. The overall time complexity is O(T * N * log(MAXA)) because we iterate over each test case, each number in the array, and each prime factor of the number.",
+    "spaceComplexity": "O(MAXA) for storing the smallest prime factor of each number up to MAXA.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#define MAXA 1000000\nint spf[MAXA+1];\nvoid sieve(){\n    for(int i=2;i<=MAXA;i++) spf[i]=0;\n    for(int i=2;i<=MAXA;i++) if(!spf[i]){\n        spf[i]=i;\n        if((long long)i*i<=MAXA) for(long long j=(long long)i*i;j<=MAXA;j+=i) if(!spf[j]) spf[j]=i;\n    }\n}\nint main(){\n    sieve();\n    int T; if(scanf(\"%d\",&T)!=1) return 0;\n    while(T--){\n        int N; scanf(\"%d\",&N);\n        // map prime -> max exponent (simple array because prime <= MAXA)\n        static int maxExp[MAXA+1];\n        // reset only used entries later\n        static int used[MAXA+1];\n        int usedCnt=0;\n        for(int i=0;i<N;i++){\n            int x; scanf(\"%d\",&x);\n            while(x>1){\n                int p=spf[x];\n                int cnt=0;\n                while(x%p==0){x/=p;cnt++;}\n                if(!used[p]){used[p]=1; usedCnt++; maxExp[p]=cnt;}\n                else if(cnt>maxExp[p]) maxExp[p]=cnt;\n            }\n        }\n        long long ans=0;\n        for(int i=2;i<=MAXA;i++) if(used[i]){ans+=maxExp[i]; used[i]=0;}\n        printf(\"%lld\\n\",ans);\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nconst int MAXA = 1000000;\nint spf[MAXA+1];\nvoid sieve(){\n    for(int i=2;i<=MAXA;i++) if(!spf[i]){\n        spf[i]=i;\n        if(1LL*i*i<=MAXA) for(long long j=1LL*i*i;j<=MAXA;j+=i) if(!spf[j]) spf[j]=i;\n    }\n}\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    sieve();\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N; cin>>N;\n        unordered_map<int,int> best; // prime -> max exponent\n        for(int i=0;i<N;i++){\n            int x; cin>>x;\n            while(x>1){\n                int p=spf[x];\n                int cnt=0;\n                while(x%p==0){x/=p;cnt++;}\n                auto it=best.find(p);\n                if(it==best.end()||cnt>it->second) best[p]=cnt;\n            }\n        }\n        long long ans=0;\n        for(auto &kv:best) ans+=kv.second;\n        cout<<ans<<\"\\n\";\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    static final int MAXA = 1_000_000;\n    static int[] spf = new int[MAXA + 1];\n    static void sieve(){\n        for(int i=2;i<=MAXA;i++) if(spf[i]==0){\n            spf[i]=i;\n            if((long)i*i<=MAXA) for(long j=(long)i*i;j<=MAXA;j+=i) if(spf[(int)j]==0) spf[(int)j]=i;\n        }\n    }\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner(System.in);\n        sieve();\n        int T = fs.nextInt();\n        StringBuilder sb = new StringBuilder();\n        while(T-- > 0){\n            int N = fs.nextInt();\n            HashMap<Integer,Integer> best = new HashMap<>();\n            for(int i=0;i<N;i++){\n                int x = fs.nextInt();\n                while(x>1){\n                    int p = spf[x];\n                    int cnt = 0;\n                    while(x%p==0){x/=p;cnt++;}\n                    best.merge(p, cnt, Math::max);\n                }\n            }\n            long ans = 0;\n            for(int v: best.values()) ans += v;\n            sb.append(ans).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n    // fast scanner\n    static class FastScanner {\n        private final InputStream in;\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        FastScanner(InputStream in){ this.in = in; }\n        private int readByte() throws IOException {\n            if(ptr >= len){ len = in.read(buffer); ptr = 0; if(len <= 0) return -1; }\n            return buffer[ptr++];\n        }\n        int nextInt() throws IOException {\n            int c, sign = 1, val = 0;\n            do { c = readByte(); } while(c <= ' ');\n            if(c=='-'){ sign = -1; c = readByte(); }\n            while(c > ' '){ val = val*10 + (c - '0'); c = readByte(); }\n            return val*sign;\n        }\n    }\n}\n",
+      "Python3": "import sys\nMAXA = 10**6\nspf = [0]*(MAXA+1)\nfor i in range(2, MAXA+1):\n    if spf[i]==0:\n        spf[i]=i\n        if i*i <= MAXA:\n            step = i\n            start = i*i\n            for j in range(start, MAXA+1, step):\n                if spf[j]==0:\n                    spf[j]=i\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it))\n        best = {}\n        for _ in range(N):\n            x = int(next(it))\n            while x > 1:\n                p = spf[x]\n                cnt = 0\n                while x % p == 0:\n                    x //= p\n                    cnt += 1\n                if cnt > best.get(p, 0):\n                    best[p] = cnt\n        ans = sum(best.values())\n        out_lines.append(str(ans))\n    sys.stdout.write('\\n'.join(out_lines))\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/).map(Number);\nlet idx = 0;\nconst MAXA = 1000000;\nconst spf = new Uint32Array(MAXA + 1);\nfor(let i = 2; i <= MAXA; i++) if(spf[i] === 0){\n    spf[i] = i;\n    if(i * i <= MAXA){\n        for(let j = i * i; j <= MAXA; j += i) if(spf[j] === 0) spf[j] = i;\n    }\n}\nfunction next(){return input[idx++];}\nconst T = next();\nlet outputs = [];\nfor(let t = 0; t < T; t++){\n    const N = next();\n    const best = new Map();\n    for(let i = 0; i < N; i++){\n        let x = next();\n        while(x > 1){\n            const p = spf[x];\n            let cnt = 0;\n            while(x % p === 0){ x /= p; cnt++; }\n            const prev = best.get(p) || 0;\n            if(cnt > prev) best.set(p, cnt);\n        }\n    }\n    let ans = 0;\n    for(const v of best.values()) ans += v;\n    outputs.push(String(ans));\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  }
+}

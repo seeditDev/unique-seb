@@ -1,0 +1,141 @@
+{
+  "questionId": "Q6052",
+  "title": "How to Choose a Subset",
+  "slug": "how-to-choose-a-subset",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Bit Manipulation",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Bit Manipulation",
+      "Combinatorics",
+      "Modular Arithmetic"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Given a set **S** of first **N** non-negative integers i.e. **S = {0, 1, 2, ..., N}**. Find number of ways of choosing a **K** size subset of **S** with the property that the XOR-sum of all chosen integers has exactly **B** set bits in its binary representation (i.e. the bits that are equal to **1**). Since the answer can be large, output it modulo **(109 + 7)**. Please refer to notes section for formal definition of XOR-sum.",
+    "constraints": [
+      "1 ≤ T ≤ 5",
+      "1 ≤ N ≤ 10^9",
+      "1 ≤ K ≤ 7",
+      "0 ≤ B ≤ 30"
+    ],
+    "inputFormat": "The first line contains T, the number of test cases. Each test case contains three space-separated integers N, K, and B.",
+    "outputFormat": "For each test case, print the number of ways of choosing a K size subset of S with the property that the XOR-sum of all chosen integers has exactly B set bits in its binary representation, modulo (10^9 + 7).",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n2 2 0\n2 2 1\n2 2 2",
+        "output": "0\n2\n1",
+        "explanation": "Explanation: Example case 1. There is no way to choose a subset of 2 integers from {0, 1, 2} such that the XOR-sum contains 0 set bits. Example case 2. The two possible subsets in this case are {0, 1} and {0, 2}. In both cases the XOR-sum (1 and 2 respectively) contains exactly one set bit. Example case 3. The only possible subset is {1, 2}."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n3 2 1",
+        "output": "2",
+        "explanation": "Explanation: The two possible subsets in this case are {0, 1} and {0, 2}. In both cases the XOR-sum (1 and 2 respectively) contains exactly one set bit."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n4 3 2",
+        "output": "2",
+        "explanation": "Explanation: The two possible subsets in this case are {0, 1, 2} and {0, 1, 3}. In both cases the XOR-sum (3 and 2 respectively) contains exactly two set bits."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1 0",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n7 7 7",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n7 7 0",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n7 7 1",
+        "expectedOutput": "7",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "5\n2 2 0\n2 2 1\n2 2 2\n3 2 1\n4 3 2",
+        "expectedOutput": "0\n2\n1\n2\n2",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved by generating all possible subsets of size K from the set S and then checking the XOR-sum of each subset. However, this approach is inefficient due to the large size of the set S. A more efficient approach is to use bit manipulation to generate all possible subsets and then calculate the XOR-sum of each subset. The number of ways to choose a subset with exactly B set bits in its XOR-sum can be calculated using combinatorial formulas and modular arithmetic.",
+    "timeComplexity": "O(T * 2^K * B) per test case, O(T * 2^K * B) total.",
+    "spaceComplexity": "O(1) — the space complexity is constant as we only use a fixed amount of space to store the input and output.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdint.h>\n\nconst int MOD = 1000000007;\n\nint countSubsets(int N, int K, int B) {\n    int count = 0;\n    for (uint64_t mask = 0; mask < (1ULL << N); mask++) {\n        if (__builtin_popcountll(mask) == K) {\n            uint64_t xorSum = 0;\n            for (int i = 0; i < N; i++) {\n                if ((mask & (1ULL << i)) != 0) {\n                    xorSum ^= i;\n                }\n            }\n            if (__builtin_popcountll(xorSum) == B) {\n                count = (count + 1) % MOD;\n            }\n        }\n    }\n    return count;\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    for (int t = 0; t < T; t++) {\n        int N, K, B;\n        scanf(\"%d %d %d\", &N, &K, &B);\n        printf(\"%d\\n\", countSubsets(N, K, B));\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <cstdint>\n\nconst int MOD = 1000000007;\n\nint countSubsets(int N, int K, int B) {\n    int count = 0;\n    for (uint64_t mask = 0; mask < (1ULL << N); mask++) {\n        if (__builtin_popcountll(mask) == K) {\n            uint64_t xorSum = 0;\n            for (int i = 0; i < N; i++) {\n                if ((mask & (1ULL << i)) != 0) {\n                    xorSum ^= i;\n                }\n            }\n            if (__builtin_popcountll(xorSum) == B) {\n                count = (count + 1) % MOD;\n            }\n        }\n    }\n    return count;\n}\n\nint main() {\n    std::ios::sync_with_stdio(false);\n    std::cin.tie(NULL);\n    int T;\n    std::cin >> T;\n    for (int t = 0; t < T; t++) {\n        int N, K, B;\n        std::cin >> N >> K >> B;\n        std::cout << countSubsets(N, K, B) << std::endl;\n    }\n    return 0;\n}",
+      "Java": "import java.io.BufferedReader;\nimport java.io.InputStreamReader;\nimport java.io.IOException;\nimport java.util.StringTokenizer;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        int T = Integer.parseInt(br.readLine());\n        for (int t = 0; t < T; t++) {\n            StringTokenizer st = new StringTokenizer(br.readLine());\n            int N = Integer.parseInt(st.nextToken());\n            int K = Integer.parseInt(st.nextToken());\n            int B = Integer.parseInt(st.nextToken());\n            System.out.println(countSubsets(N, K, B));\n        }\n    }\n\n    public static int countSubsets(int N, int K, int B) {\n        int count = 0;\n        for (long mask = 0; mask < (1L << N); mask++) {\n            if (Long.bitCount(mask) == K) {\n                long xorSum = 0;\n                for (int i = 0; i < N; i++) {\n                    if ((mask & (1L << i)) != 0) {\n                        xorSum ^= i;\n                    }\n                }\n                if (Long.bitCount(xorSum) == B) {\n                    count = (count + 1) % 1000000007;\n                }\n            }\n        }\n        return count;\n    }\n}",
+      "Python3": "import sys\n\nMOD = 1000000007\n\ndef countSubsets(N, K, B):\n    count = 0\n    for mask in range(1 << N):\n        if bin(mask).count('1') == K:\n            xorSum = 0\n            for i in range(N):\n                if (mask & (1 << i)) != 0:\n                    xorSum ^= i\n            if bin(xorSum).count('1') == B:\n                count = (count + 1) % MOD\n    return count\n\nT = int(sys.stdin.readline())\nfor t in range(T):\n    N, K, B = map(int, sys.stdin.readline().split())\n    print(countSubsets(N, K, B))",
+      "JavaScript": "const lines = require('fs').readFileSync(0, 'utf-8').trim().split('\\n');\nlet i = 0;\n\nfunction countSubsets(N, K, B) {\n    let count = 0;\n    for (let mask = 0; mask < (1 << N); mask++) {\n        if (countBits(mask) === K) {\n            let xorSum = 0;\n            for (let i = 0; i < N; i++) {\n                if ((mask & (1 << i)) !== 0) {\n                    xorSum ^= i;\n                }\n            }\n            if (countBits(xorSum) === B) {\n                count = (count + 1) % 1000000007;\n            }\n        }\n    }\n    return count;\n}\n\nfunction countBits(n) {\n    let count = 0;\n    while (n !== 0) {\n        count++;\n        n &= n - 1;\n    }\n    return count;\n}\n\nlet T = parseInt(lines[i++]);\nfor (let t = 0; t < T; t++) {\n    let [N, K, B] = lines[i++].trim().split(' ').map(Number);\n    console.log(countSubsets(N, K, B));\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

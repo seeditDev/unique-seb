@@ -1,0 +1,141 @@
+{
+  "questionId": "Q5694",
+  "title": "Draughts",
+  "slug": "draughts",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Counting",
+      "Forest",
+      "Adjacency List",
+      "DFS"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Graphs"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Furik and Rubik have come to the sanatorium, which consists of **N** rooms and **M** passageways. Each passageway connects two rooms, and there is at most one way to move between each pair of rooms. Some rooms have opened windows. There is a draught between two different rooms if both rooms have opened windows, and are connected with each other by some way.\n\nFurik is interested in one question: what is the number of pairs of rooms, which have a draught between them. Rubik wants to know what is the number of the rooms, which have at least one draught passing through the room.",
+    "constraints": [
+      "1 ≤ N ≤ 50000",
+      "0 ≤ M ≤ N‑1",
+      "The given graph is a forest"
+    ],
+    "inputFormat": "The first line contains two integers N and M – the number of rooms and the number of passageways. The second line contains N integers a_i (0 or 1) where a_i = 1 means the window of room i is opened. Each of the next M lines contains two integers u and v – a passageway connecting rooms u and v. The graph is a forest (no cycles, at most one edge between any pair of rooms).",
+    "outputFormat": "Print two integers separated by a space: the number of pairs of rooms that have a draught between them, and the number of rooms that belong to at least one such pair.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "6 5\n1 1 1 1 1 0\n1 2\n1 6\n1 5\n2 4\n4 3",
+        "output": "10 5",
+        "explanation": "All edges except (1,6) connect two rooms with opened windows, giving 5 edges. Each such edge contributes one pair, but because the graph is a tree, the total number of unordered pairs of opened‑window rooms that are directly connected equals the sum of degrees of opened rooms divided by 2, which is 10. All rooms except room 6 belong to at least one draught, so the second answer is 5."
+      },
+      {
+        "id": "sample_2",
+        "input": "2 1\n1 0\n1 2",
+        "output": "0 0",
+        "explanation": "The only edge connects a room with an opened window to a closed one, therefore no draught exists."
+      },
+      {
+        "id": "sample_3",
+        "input": "5 4\n1 1 1 1 1\n1 2\n2 3\n3 4\n4 5",
+        "output": "4 5",
+        "explanation": "All four edges connect opened windows, so there are 4 draught pairs and every of the 5 rooms participates in at least one draught."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1 0\n1",
+        "expectedOutput": "0 0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary (small representative)",
+        "input": "5 4\n1 1 1 1 1\n1 2\n2 3\n3 4\n4 5",
+        "expectedOutput": "4 5",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case – no opened windows",
+        "input": "3 2\n0 0 0\n1 2\n2 3",
+        "expectedOutput": "0 0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case – mixed windows",
+        "input": "4 3\n1 0 1 1\n1 2\n2 3\n3 4",
+        "expectedOutput": "1 2",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "star graph with mixed windows",
+        "input": "5 4\n1 1 0 1 0\n1 2\n1 3\n1 4\n1 5",
+        "expectedOutput": "2 3",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For every passageway (u, v) we only need to know whether both ends have an opened window. If windows[u] == 1 and windows[v] == 1, this edge contributes one draught pair. At the same time we mark both vertices as \"has a draught\". After processing all edges, the first answer is the number of such edges, the second answer is the count of vertices that were marked. The algorithm scans the input once, O(N+M) time, O(N) memory for the window array and the boolean marks.",
+    "timeComplexity": "O(N + M) – each vertex and each edge is examined once.",
+    "spaceComplexity": "O(N) – arrays for window states and marks.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\nint main(){\n    int N,M; if(scanf(\"%d %d\",&N,&M)!=2) return 0;\n    int *win = (int*)malloc((N+1)*sizeof(int));\n    for(int i=1;i<=N;i++) scanf(\"%d\",&win[i]);\n    char *has = (char*)calloc(N+1,sizeof(char));\n    long long draught=0;\n    for(int i=0;i<M;i++){\n        int u,v; scanf(\"%d %d\",&u,&v);\n        if(win[u] && win[v]){ draught++; has[u]=1; has[v]=1; }\n    }\n    int rooms=0; for(int i=1;i<=N;i++) if(has[i]) rooms++;\n    printf(\"%lld %d\\n\",draught,rooms);\n    free(win); free(has);\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int N,M; if(!(cin>>N>>M)) return 0;\n    vector<int> win(N+1);\n    for(int i=1;i<=N;i++) cin>>win[i];\n    vector<char> has(N+1,0);\n    long long draught=0;\n    for(int i=0;i<M;i++){\n        int u,v; cin>>u>>v;\n        if(win[u] && win[v]){ draught++; has[u]=has[v]=1; }\n    }\n    int rooms=0; for(int i=1;i<=N;i++) if(has[i]) rooms++;\n    cout<<draught<<' '<<rooms<<\"\\n\";\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner(System.in);\n        int N = fs.nextInt();\n        int M = fs.nextInt();\n        int[] win = new int[N+1];\n        for (int i = 1; i <= N; i++) win[i] = fs.nextInt();\n        boolean[] has = new boolean[N+1];\n        long draught = 0;\n        for (int i = 0; i < M; i++) {\n            int u = fs.nextInt();\n            int v = fs.nextInt();\n            if (win[u] == 1 && win[v] == 1) {\n                draught++;\n                has[u] = true;\n                has[v] = true;\n            }\n        }\n        int rooms = 0;\n        for (int i = 1; i <= N; i++) if (has[i]) rooms++;\n        System.out.println(draught + \" \" + rooms);\n    }\n    // fast scanner\n    static class FastScanner {\n        private final InputStream in;\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        FastScanner(InputStream in) { this.in = in; }\n        private int readByte() throws IOException {\n            if (ptr >= len) {\n                len = in.read(buffer);\n                ptr = 0;\n                if (len <= 0) return -1;\n            }\n            return buffer[ptr++];\n        }\n        int nextInt() throws IOException {\n            int c, sign = 1, val = 0;\n            do { c = readByte(); } while (c <= ' ');\n            if (c == '-') { sign = -1; c = readByte(); }\n            while (c > ' ') { val = val * 10 + (c - '0'); c = readByte(); }\n            return val * sign;\n        }\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    N = int(next(it))\n    M = int(next(it))\n    win = [0] * (N + 1)\n    for i in range(1, N + 1):\n        win[i] = int(next(it))\n    has = [False] * (N + 1)\n    draught = 0\n    for _ in range(M):\n        u = int(next(it)); v = int(next(it))\n        if win[u] and win[v]:\n            draught += 1\n            has[u] = has[v] = True\n    rooms = sum(1 for i in range(1, N + 1) if has[i])\n    print(draught, rooms)\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst data = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nif (data.length === 0) process.exit(0);\nconst N = Number(data[idx++]);\nconst M = Number(data[idx++]);\nconst win = new Array(N + 1).fill(0);\nfor (let i = 1; i <= N; i++) win[i] = Number(data[idx++]);\nconst has = new Array(N + 1).fill(false);\nlet draught = 0;\nfor (let i = 0; i < M; i++) {\n  const u = Number(data[idx++]);\n  const v = Number(data[idx++]);\n  if (win[u] && win[v]) {\n    draught++;\n    has[u] = true;\n    has[v] = true;\n  }\n}\nlet rooms = 0;\nfor (let i = 1; i <= N; i++) if (has[i]) rooms++;\nconsole.log(draught + ' ' + rooms);\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "questionId": "Q2903",
+  "title": "Painting",
+  "slug": "painting",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "Bit Manipulation",
+      "Dynamic Programming",
+      "Masking"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Sorting"
+    ]
+  },
+  "content": {
+    "problemStatement": "You are given a transparent three-dimensional table, the height equals to **H** and the base is a two-dimensional table **N\u2219M**.\n\nThe layers of the 3D table are numbered from 1 to **H**. Each layer is a two-dimensional table, the rows are numbered from 1 to **N** and the columns are numbered from 1 to **M**. A pair **(i, j)** (1 \u2264 **i** \u2264 **N**, 1 \u2264 **j** \u2264 **M**) corresponds to the cell at the intersection of **i**'th row and **j**'th column of a two-dimensional table.\n\nWe can paint cells of the three-dimensional table, but not more than **Tk** cells on **k**'th layer can be painted. Painting of one cell on **k**'th layer costs **Ck**. Your task is to find the minimum cost of painting the table thus that it can't be seen throught from the top (there is no cell which is unpainted on every layer). Formally you need to find a painting, that for any pair **(i, j)** (1 \u2264 **i** \u2264 **N**, 1 \u2264 **j** \u2264 **M**) there is a layer **k** (1 \u2264 **k** \u2264 **H**), where cell **(i, j)** is painted. If there is no such a painting then the answer is \"Impossible\".",
+    "constraints": [
+      "1 <= N*M <= 10^12",
+      "1 <= H <= 10^5",
+      "0 <= Tk <= 10^12 for each layer",
+      "0 <= Ck <= 10^5 for each layer"
+    ],
+    "inputFormat": "First line contains three integers N, M and H. Each of the next H lines contains two integers Tk and Ck.",
+    "outputFormat": "The output should contain the minimum cost of the painting if there is one, otherwise output Impossible.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3 4 2\n6 1\n6 2",
+        "output": "18",
+        "explanation": "Explanation: In the first example, we should paint 6 cells on the first layer and 6 cells on the second layer."
+      },
+      {
+        "id": "sample_2",
+        "input": "2 2 3\n1 1\n1 2\n1 3",
+        "output": "Impossible",
+        "explanation": "Explanation: In the second example, there are not enough cells to paint the table properly."
+      },
+      {
+        "id": "sample_3",
+        "input": "1 1 1\n1 1",
+        "output": "1",
+        "explanation": "Explanation: In the third example, we should paint 1 cell on the first layer."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1 1 1\n1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1000 1000 10\n1000 100\n1000 100\n1000 100\n1000 100\n1000 100\n1000 100\n1000 100\n1000 100\n1000 100",
+        "expectedOutput": "1000000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1 1 1\n0 1",
+        "expectedOutput": "Impossible",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "2 2 2\n1 1\n1 1",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "10 10 5\n10 10\n10 10\n10 10\n10 10\n10 10",
+        "expectedOutput": "500",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved by iterating over all possible subsets of layers and calculating the cost for each subset. The minimum cost is updated whenever a smaller cost is found. The key insight is to use bit manipulation to generate all possible subsets of layers and check if the current subset can paint the table.",
+    "timeComplexity": "O(2^H * H) per test case, O(T * 2^H * H) total. Precomputation is not required.",
+    "spaceComplexity": "O(1) \u2014 the dominant structure is the input array.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <math.h>\n#define MAX_H 100005\n#define MAX_N 1005\n#define MAX_M 1005\n#define MAX_T 1000005\n#define INF 1000000000000000000LL\n\nint compare(const void *a, const void *b) {\n    return (*(long long *)a - *(long long *)b);\n}\n\nint main() {\n    int N, M, H;\n    long long T[MAX_H], C[MAX_H];\n    long long min_cost = INF;\n    long long cost = 0;\n    long long mask;\n    int i, j, k;\n    scanf(\"%d %d %d\", &N, &M, &H);\n    for (i = 0; i < H; i++) {\n        scanf(\"%lld %lld\", &T[i], &C[i]);\n    }\n    for (mask = 0; mask < (1LL << H); mask++) {\n        cost = 0;\n        int can_paint = 1;\n        for (i = 0; i < N; i++) {\n            for (j = 0; j < M; j++) {\n                int painted = 0;\n                for (k = 0; k < H; k++) {\n                    if ((mask & (1LL << k)) != 0 && T[k] > 0) {\n                        T[k]--;\n                        painted = 1;\n                        break;\n                    }\n                }\n                if (!painted) {\n                    can_paint = 0;\n                    break;\n                }\n            }\n            if (!can_paint) break;\n        }\n        if (can_paint) {\n            for (i = 0; i < H; i++) {\n                if ((mask & (1LL << i)) != 0) {\n                    cost += C[i] * (N * M - T[i]);\n                }\n            }\n            if (cost < min_cost) {\n                min_cost = cost;\n            }\n        }\n    }\n    if (min_cost == INF) {\n        printf(\"Impossible\\n\");\n    } else {\n        printf(\"%lld\\n\", min_cost);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\n#include <algorithm>\n#include <cmath>\nusing namespace std;\n#define MAX_H 100005\n#define MAX_N 1005\n#define MAX_M 1005\n#define MAX_T 1000005\n#define INF 1000000000000000000LL\n\nint main() {\n    int N, M, H;\n    long long T[MAX_H], C[MAX_H];\n    long long min_cost = INF;\n    long long cost = 0;\n    long long mask;\n    int i, j, k;\n    ios::sync_with_stdio(false);\n    cin.tie(NULL);\n    cin >> N >> M >> H;\n    for (i = 0; i < H; i++) {\n        cin >> T[i] >> C[i];\n    }\n    for (mask = 0; mask < (1LL << H); mask++) {\n        cost = 0;\n        int can_paint = 1;\n        long long temp_T[H];\n        for (i = 0; i < H; i++) temp_T[i] = T[i];\n        for (i = 0; i < N; i++) {\n            for (j = 0; j < M; j++) {\n                int painted = 0;\n                for (k = 0; k < H; k++) {\n                    if ((mask & (1LL << k)) != 0 && temp_T[k] > 0) {\n                        temp_T[k]--;\n                        painted = 1;\n                        break;\n                    }\n                }\n                if (!painted) {\n                    can_paint = 0;\n                    break;\n                }\n            }\n            if (!can_paint) break;\n        }\n        if (can_paint) {\n            for (i = 0; i < H; i++) {\n                if ((mask & (1LL << i)) != 0) {\n                    cost += C[i] * (N * M - temp_T[i]);\n                }\n            }\n            if (cost < min_cost) {\n                min_cost = cost;\n            }\n        }\n    }\n    if (min_cost == INF) {\n        cout << \"Impossible\" << endl;\n    } else {\n        cout << min_cost << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int N = sc.nextInt();\n        int M = sc.nextInt();\n        int H = sc.nextInt();\n        long[] T = new long[H];\n        long[] C = new long[H];\n        long min_cost = Long.MAX_VALUE;\n        long cost = 0;\n        long mask;\n        int i, j, k;\n        for (i = 0; i < H; i++) {\n            T[i] = sc.nextLong();\n            C[i] = sc.nextLong();\n        }\n        for (mask = 0; mask < (1L << H); mask++) {\n            cost = 0;\n            int can_paint = 1;\n            long[] temp_T = new long[H];\n            for (i = 0; i < H; i++) temp_T[i] = T[i];\n            for (i = 0; i < N; i++) {\n                for (j = 0; j < M; j++) {\n                    int painted = 0;\n                    for (k = 0; k < H; k++) {\n                        if ((mask & (1L << k)) != 0 && temp_T[k] > 0) {\n                            temp_T[k]--;\n                            painted = 1;\n                            break;\n                        }\n                    }\n                    if (!painted) {\n                        can_paint = 0;\n                        break;\n                    }\n                }\n                if (!can_paint) break;\n            }\n            if (can_paint) {\n                for (i = 0; i < H; i++) {\n                    if ((mask & (1L << i)) != 0) {\n                        cost += C[i] * (N * M - temp_T[i]);\n                    }\n                }\n                if (cost < min_cost) {\n                    min_cost = cost;\n                }\n            }\n        }\n        if (min_cost == Long.MAX_VALUE) {\n            System.out.println(\"Impossible\");\n        } else {\n            System.out.println(min_cost);\n        }\n    }\n}",
+      "Python3": "import sys\nN, M, H = map(int, sys.stdin.readline().split())\nT = [0] * H\nC = [0] * H\nmin_cost = float('inf')\ncost = 0\nmask = 0\nfor i in range(H):\n    T[i], C[i] = map(int, sys.stdin.readline().split())\nfor mask in range(1 << H):\n    cost = 0\n    can_paint = 1\n    temp_T = T[:]\n    for i in range(N):\n        for j in range(M):\n            painted = 0\n            for k in range(H):\n                if (mask & (1 << k)) != 0 and temp_T[k] > 0:\n                    temp_T[k] -= 1\n                    painted = 1\n                    break\n            if not painted:\n                can_paint = 0\n                break\n        if not can_paint: break\n    if can_paint:\n        for i in range(H):\n            if (mask & (1 << i)) != 0:\n                cost += C[i] * (N * M - temp_T[i])\n        if cost < min_cost:\n            min_cost = cost\nif min_cost == float('inf'):\n    print('Impossible')\nelse:\n    print(min_cost)",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst readline = () => input[idx++];\nconst N = parseInt(readline().split(' ')[0]);\nconst M = parseInt(readline().split(' ')[1]);\nconst H = parseInt(readline().split(' ')[2]);\nconst T = new Array(H);\nconst C = new Array(H);\nlet min_cost = Infinity;\nlet cost = 0;\nlet mask;\nfor (let i = 0; i < H; i++) {\n    const line = readline().split(' ');\n    T[i] = parseInt(line[0]);\n    C[i] = parseInt(line[1]);\n}\nfor (mask = 0; mask < (1 << H); mask++) {\n    cost = 0;\n    let can_paint = 1;\n    let temp_T = T.slice();\n    for (let i = 0; i < N; i++) {\n        for (let j = 0; j < M; j++) {\n            let painted = 0;\n            for (let k = 0; k < H; k++) {\n                if ((mask & (1 << k)) !== 0 && temp_T[k] > 0) {\n                    temp_T[k]--;\n                    painted = 1;\n                    break;\n                }\n            }\n            if (!painted) {\n                can_paint = 0;\n                break;\n            }\n        }\n        if (!can_paint) break;\n    }\n    if (can_paint) {\n        for (let i = 0; i < H; i++) {\n            if ((mask & (1 << i)) !== 0) {\n                cost += C[i] * (N * M - temp_T[i]);\n            }\n        }\n        if (cost < min_cost) {\n            min_cost = cost;\n        }\n    }\n}\nif (min_cost === Infinity) {\n    console.log('Impossible');\n} else {\n    console.log(min_cost);\n}"
+    }
+  }
+}

@@ -1,0 +1,132 @@
+{
+  "questionId": "Q11922",
+  "title": "Bottom view of BT",
+  "slug": "bottomviewofbt",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Trees",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Binary Tree",
+      "BFS",
+      "Bottom View"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Given a Binary Tree, return its Bottom View. The Bottom View of a Binary Tree is the set of nodes visible when we see the tree from the bottom.",
+    "constraints": [
+      "1 <= N <= 10^5",
+      "1 <= node value <= 10^4",
+      "-1 represents an empty node"
+    ],
+    "inputFormat": "The input will be a binary tree represented as an array where the index represents the node and the value at that index represents the node's value. The left child of a node at index i is at index 2*i + 1 and the right child is at index 2*i + 2. The input array will be in the format [1, 2, 3, 4, 5, 6, 7] where -1 represents an empty node.",
+    "outputFormat": "The output will be an array representing the bottom view of the binary tree.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "Binary Tree: 1 2 3 4 10 9 11 -1 5 -1 -1 -1 -1 -1 -1 -1 6",
+        "output": "Bottom View Traversal: [4, 5, 6, 3, 11]\n**Explanation: **The bottom view of the binary tree would comprise of the nodes that are the last encountered nodes for each vertical index.",
+        "explanation": ""
+      },
+      {
+        "id": "sample_2",
+        "input": "Binary Tree: 2 7 5 2 6 -1 9 -1 -1 5 11 4 -1",
+        "output": "Bottom View: [2 5 6 11 4 9]\n**Explanation: **",
+        "explanation": ""
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "Binary Tree: 1",
+        "expectedOutput": "[1]",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "Binary Tree: 1 2 3 4 5 6 7",
+        "expectedOutput": "[4, 5, 6, 3, 7]",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": "Binary Tree: 1 -1 -1",
+        "expectedOutput": "[1]",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case / empty-like / negative if allowed",
+        "input": "Binary Tree: -1",
+        "expectedOutput": "[]",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": "Binary Tree: 1 2 3 4 10 9 11 -1 5 -1 -1 -1 -1 -1 -1 -1 6",
+        "expectedOutput": "[4, 5, 6, 3, 11]",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Use a queue to perform a BFS traversal of the tree and keep track of the last node at each horizontal distance from the root.",
+    "timeComplexity": "O(N)",
+    "spaceComplexity": "O(N)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <queue>\n\n// Node structure for the binary tree\nstruct Node {\n    int data;\n    struct Node* left;\n    struct Node* right;\n};\n\n// Function to create a new node\nstruct Node* newNode(int data) {\n    struct Node* node = (struct Node*)malloc(sizeof(struct Node));\n    node->data = data;\n    node->left = NULL;\n    node->right = NULL;\n    return node;\n}\n\n// Function to return the bottom view of the binary tree\nvoid bottomView(struct Node* root) {\n    if (root == NULL) return;\n\n    std::queue<std::pair<struct Node*, int>> q;\n    q.push({root, 0});\n\n    std::map<int, int> mpp;\n\n    while (!q.empty()) {\n        auto it = q.front();\n        q.pop();\n        struct Node* node = it.first;\n        int line = it.second;\n\n        mpp[line] = node->data;\n\n        if (node->left != NULL) q.push({node->left, line - 1});\n        if (node->right != NULL) q.push({node->right, line + 1});\n    }\n\n    for (auto it : mpp) {\n        printf(\"%d \", it.second);\n    }\n}\n",
+      "C++": "#include <iostream>\n#include <vector>\n#include <set>\n#include <queue>\n#include <map>\n\nusing namespace std;\n\n// Node structure for the binary tree\nstruct Node {\n    int data;\n    Node* left;\n    Node* right;\n    // Constructor to initialize\n    // the node with a value\n    Node(int val) : data(val), left(nullptr), right(nullptr) {}\n};\n\nclass Solution{\npublic:\n    // Function to return the\n    // bottom view of the binary tree\n    vector<int> bottomView(Node* root){\n        // Vector to store the result\n        vector<int> ans;\n        \n        // Check if the tree is empty\n        if(root == NULL){\n            return ans;\n        }\n        \n        // Map to store the bottom view nodes\n        // based on their vertical positions\n        map<int, int> mpp;\n        \n        // Queue for BFS traversal, each\n        // element is a pair containing node\n        // and its vertical position\n        queue<pair<Node*, int>> q;\n        \n        // Push the root node with its vertical\n        // position (0) into the queue\n        q.push({root, 0});\n        \n        // BFS traversal\n        while(!q.empty()){\n            // Retrieve the node and its vertical\n            // position from the front of the queue\n            auto it = q.front();\n            q.pop();\n            Node* node = it.first;\n            int line = it.second;\n            \n            // Update the map with the node's data\n            // for the current vertical position\n            mpp[line] = node->data;\n            \n            // Process left child\n            if(node->left != NULL){\n                // Push the left child with a decreased\n                // vertical position into the queue\n                q.push({node->left, line - 1});\n            }\n            \n            // Process right child\n            if(node->right != NULL){\n                // Push the right child with an increased\n                // vertical position into the queue\n                q.push({node->right, line + 1});\n            }\n        }\n        \n        // Transfer values from the\n        // map to the result vector\n        for(auto it : mpp){\n            ans.push_back(it.second);\n        }\n        \n        return ans;\n    }\n};\n",
+      "Java": "import java.util.*;\n\n// Node structure for the binary tree\nclass Node {\n    int data;\n    Node left;\n    Node right;\n    \n    // Constructor to initialize\n    // the node with a value\n    public Node(int val) {\n        data = val;\n        left = null;\n        right = null;\n    }\n}\n\npublic class Solution {\n    // Function to return the\n    // bottom view of the binary tree\n    public List<Integer> bottomView(Node root) {\n        // List to store the result\n        List<Integer> ans = new ArrayList<>();\n        \n        // Check if the tree is empty\n        if(root == null) {\n            return ans;\n        }\n        \n        // Map to store the bottom view nodes\n        // based on their vertical positions\n        Map<Integer, Integer> mpp = new TreeMap<>();\n        \n        // Queue for BFS traversal, each\n        // element is a pair containing node\n        // and its vertical position\n        Queue<Pair<Node, Integer>> q = new LinkedList<>();\n        \n        // Push the root node with its vertical\n        // position (0) into the queue\n        q.add(new Pair<>(root, 0));\n        \n        // BFS traversal\n        while(!q.isEmpty()) {\n            // Retrieve the node and its vertical\n            // position from the front of the queue\n            Pair<Node, Integer> pair = q.poll();\n            Node node = pair.getKey();\n            int line = pair.getValue();\n            \n            // Update the map with the node's data\n            // for the current vertical position\n            mpp.put(line, node.data);\n            \n            // Process left child\n            if(node.left != null) {\n                // Push the left child with a decreased\n                // vertical position into the queue\n                q.add(new Pair<>(node.left, line - 1));\n            }\n            \n            // Process right child\n            if(node.right != null) {\n                // Push the right child with an increased\n                // vertical position into the queue\n                q.add(new Pair<>(node.right, line + 1));\n            }\n        }\n        \n        // Transfer values from the\n        // map to the result list\n        for(Map.Entry<Integer, Integer> entry : mpp.entrySet()) {\n            ans.add(entry.getValue());\n        }\n        \n        return ans;\n    }\n}\n",
+      "Python3": "from queue import Queue\nfrom collections import deque, defaultdict\n\n# Node class to represent the binary tree\nclass Node:\n    def __init__(self, val):\n        self.data = val\n        self.left = None\n        self.right = None\n\nclass Solution:\n    def bottomView(self, root):\n        \"\"\"\n        Function to return the\n        bottom view of the binary tree\n        \"\"\"\n        # Vector to store the result\n        ans = []\n\n        # Check if the tree is empty\n        if root is None:\n            return ans\n\n        # Map to store the bottom view nodes\n        # based on their vertical positions\n        mpp = defaultdict(int)\n\n        # Queue for BFS traversal, each\n        # element is a pair containing node\n        # and its vertical position\n        q = Queue()\n\n        # Push the root node with its vertical\n        # position (0) into the queue\n        q.put((root, 0))\n\n        # BFS traversal\n        while not q.empty():\n            # Retrieve the node and its vertical\n            # position from the front of the queue\n            it = q.get()\n            node, line = it[0], it[1]\n\n            # Update the map with the node's data\n            # for the current vertical position\n            mpp[line] = node.data\n\n            # Process left child\n            if node.left:\n                # Push the left child with a decreased\n                # vertical position into the queue\n                q.put((node.left, line - 1))\n\n            # Process right child\n            if node.right:\n                # Push the right child with an increased\n                # vertical position into the queue\n                q.put((node.right, line + 1))\n\n        # Transfer values from the\n        # map to the result vector\n        for key, value in sorted(mpp.items()):\n            ans.append(value)\n\n        return ans\n",
+      "JavaScript": "// Node structure for the binary tree\nclass Node {\n    constructor(val) {\n        this.data = val;\n        this.left = null;\n        this.right = null;\n    }\n}\n\nclass Solution {\n    // Function to return the bottom view of the binary tree\n    bottomView(root) {\n        // Vector to store the result\n        let ans = [];\n        \n        // Check if the tree is empty\n        if (root === null) {\n            return ans;\n        }\n        \n        // Map to store the bottom view nodes\n        // based on their vertical positions\n        let mpp = new Map();\n        \n        // Queue for BFS traversal, each\n        // element is a pair containing node\n        // and its vertical position\n        let q = [];\n        \n        // Push the root node with its vertical\n        // position (0) into the queue\n        q.push([root, 0]);\n        \n        // BFS traversal\n        while (q.length > 0) {\n            // Retrieve the node and its vertical\n            // position from the front of the queue\n            let [node, line] = q.shift();\n            \n            // Update the map with the node's data\n            // for the current vertical position\n            mpp.set(line, node.data);\n            \n            // Process left child\n            if (node.left !== null) {\n                // Push the left child with a decreased\n                // vertical position into the queue\n                q.push([node.left, line - 1]);\n            }\n            \n            // Process right child\n            if (node.right !== null) {\n                // Push the right child with an increased\n                // vertical position into the queue\n                q.push([node.right, line + 1]);\n            }\n        }\n        \n        // Transfer values from the\n        // map to the result vector\n        for (let [key, value] of mpp) {\n            ans.push(value);\n        }\n        \n        return ans;\n    }\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

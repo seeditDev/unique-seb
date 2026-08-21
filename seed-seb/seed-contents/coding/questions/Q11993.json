@@ -1,0 +1,127 @@
+{
+  "questionId": "Q11993",
+  "title": "Topological Sort BFS",
+  "slug": "topologicalsortbfs",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Graphs",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Topological Sort",
+      "BFS"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Given a graph, find the topological order for the given graph.",
+    "constraints": [
+      "1 <= N <= 10^5",
+      "0 <= M <= N*(N-1)",
+      "The graph is a directed acyclic graph (DAG)"
+    ],
+    "inputFormat": "The first line contains an integer N, representing the number of nodes in the graph. The next N lines contain the adjacency list representation of the graph, where each line contains a node and its neighbors separated by spaces.",
+    "outputFormat": "The topological order of the nodes in the graph, separated by spaces.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "",
+        "output": "4 5 2 0 3 1",
+        "explanation": "4 is appearing before its neighbours (1,0)\n             5 is appearing before its neighbours (0,2)\n             2 is appearing before its neighbours (3)\n             3 is appearing before its neighbours (1)"
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "1\n0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "10\n0 1 2\n1 3 4\n2 5 6\n3 7 8\n4 9\n5\n6\n7\n8\n9",
+        "expectedOutput": "0 1 2 3 4 5 6 7 8 9",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": "5\n0 1\n1 2\n2 3\n3 4\n4",
+        "expectedOutput": "0 1 2 3 4",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case / empty-like",
+        "input": "0",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": "6\n5 2 0\n4 0 1\n3 1\n2 3\n1\n0",
+        "expectedOutput": "5 4 2 3 1 0",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Kahn's Algorithm",
+    "timeComplexity": "O(N + M)",
+    "spaceComplexity": "O(N + M)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nint* topo(int N, int** adj, int* indegree) {\n    int* topo = (int*)malloc(N * sizeof(int));\n    int index = 0;\n    for (int i = 0; i < N; i++) {\n        if (indegree[i] == 0) {\n            topo[index++] = i;\n        }\n    }\n    for (int i = 0; i < N; i++) {\n        for (int j = 0; j < N; j++) {\n            if (adj[topo[i]][j] == 1) {\n                indegree[j]--;\n                if (indegree[j] == 0) {\n                    topo[index++] = j;\n                }\n            }\n        }\n    }\n    return topo;\n}\n\nint main() {\n    int N;\n    scanf(\"%d\", &N);\n    int** adj = (int**)malloc(N * sizeof(int*));\n    int* indegree = (int*)malloc(N * sizeof(int));\n    for (int i = 0; i < N; i++) {\n        adj[i] = (int*)malloc(N * sizeof(int));\n        indegree[i] = 0;\n    }\n    for (int i = 0; i < N; i++) {\n        for (int j = 0; j < N; j++) {\n            scanf(\"%d\", &adj[i][j]);\n            if (adj[i][j] == 1) {\n                indegree[j]++;\n            }\n        }\n    }\n    int* topo = topo(N, adj, indegree);\n    for (int i = 0; i < N; i++) {\n        printf(\"%d \", topo[i]);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nclass Solution {\npublic:\n    vector<int> topo(int N, vector<int> adj[]) {\n        queue<int> q;\n        vector<int> indegree(N, 0);\n        for (int i = 0; i < N; i++) {\n            for (auto it : adj[i]) {\n                indegree[it]++;\n            }\n        }\n        for (int i = 0; i < N; i++) {\n            if (indegree[i] == 0) {\n                q.push(i);\n            }\n        }\n        vector<int> topo;\n        while (!q.empty()) {\n            int node = q.front();\n            q.pop();\n            topo.push_back(node);\n            for (auto it : adj[node]) {\n                indegree[it]--;\n                if (indegree[it] == 0) {\n                    q.push(it);\n                }\n            }\n        }\n        return topo;\n    }\n};\n\nint main() {\n    int N;\n    cin >> N;\n    vector<int> adj[N];\n    for (int i = 0; i < N; i++) {\n        int x;\n        while (cin >> x) {\n            adj[i].push_back(x);\n            if (cin.peek() == '\n') break;\n        }\n    }\n    Solution obj;\n    vector<int> v = obj.topo(N, adj);\n    for (auto it : v) cout << it << \" \";\n    return 0;\n}",
+      "Java": "import java.util.*;\nimport java.io.*;\nimport java.lang.*;\n\npublic class TopoLogicalSortBFS {\n    public static void main(String args[]) {\n        Scanner sc = new Scanner(System.in);\n        int N = sc.nextInt();\n        ArrayList<ArrayList<Integer>> adj = new ArrayList<>();\n        for (int i = 0; i < N; i++) {\n            adj.add(new ArrayList<>());\n        }\n        for (int i = 0; i < N; i++) {\n            int x;\n            while (sc.hasNextInt()) {\n                x = sc.nextInt();\n                adj.get(i).add(x);\n                if (!sc.hasNextInt()) break;\n            }\n        }\n        Solution obj = new Solution();\n        obj.isCyclic(N, adj);\n    }\n}\n\nclass Solution {\n    public void isCyclic(int N, ArrayList<ArrayList<Integer>> adj) {\n        int[] indegree = new int[N];\n        for (int i = 0; i < N; i++) {\n            for (Integer it : adj.get(i)) {\n                indegree[it]++;\n            }\n        }\n        Queue<Integer> q = new LinkedList<Integer>();\n        for (int i = 0; i < N; i++) {\n            if (indegree[i] == 0) {\n                q.add(i);\n            }\n        }\n        int cnt = 0;\n        int ind = 0;\n        int[] topo = new int[N];\n        while (!q.isEmpty()) {\n            Integer node = q.poll();\n            topo[ind++] = node;\n            cnt++;\n            for (Integer it : adj.get(node)) {\n                indegree[it]--;\n                if (indegree[it] == 0) {\n                    q.add(it);\n                }\n            }\n        }\n        for (int i = 0; i < N; i++) {\n            System.out.print(topo[i] + \" \");\n        }\n    }\n}",
+      "Python3": "from collections import defaultdict, deque\n\ndef topo(N, adj):\n    indegree = [0] * N\n    for i in range(N):\n        for j in adj[i]:\n            indegree[j] += 1\n    q = deque([])\n    for i in range(N):\n        if indegree[i] == 0:\n            q.append(i)\n    topo = []\n    while q:\n        node = q.popleft()\n        topo.append(node)\n        for i in adj[node]:\n            indegree[i] -= 1\n            if indegree[i] == 0:\n                q.append(i)\n    return topo\n\nN = int(input())\nadj = [[] for _ in range(N)]\nfor i in range(N):\n    x = list(map(int, input().split()))\n    for j in x:\n        adj[i].append(j)\nprint(*topo(N, adj))",
+      "JavaScript": "function topo(N, adj) {\n    let indegree = new Array(N).fill(0);\n    for (let i = 0; i < N; i++) {\n        for (let j of adj[i]) {\n            indegree[j]++;\n        }\n    }\n    let q = [];\n    for (let i = 0; i < N; i++) {\n        if (indegree[i] == 0) {\n            q.push(i);\n        }\n    }\n    let topo = [];\n    while (q.length > 0) {\n        let node = q.shift();\n        topo.push(node);\n        for (let i of adj[node]) {\n            indegree[i]--;\n            if (indegree[i] == 0) {\n                q.push(i);\n            }\n        }\n    }\n    return topo;\n}\n\nlet N = parseInt(readline());\nlet adj = new Array(N);\nfor (let i = 0; i < N; i++) {\n    adj[i] = readline().split(' ').map(x => parseInt(x));\n}\nprint(topo(N, adj).join(' '));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  },
+  "video": "rZv_jHZva34",
+  "articleContent": "T2a69,<!-- wp:paragraph -->\n<p><strong>Problem statement: </strong>Given a graph, find the topological order for the given graph.</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:paragraph -->\n<p>Topological sort: The linear ordering of nodes/vertices such that if there exists an edge between 2 nodes u,v then \u2018u\u2019 appears before \u2018v\u2019.</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:paragraph -->\n<p><strong>Example:</strong></p>\n<!-- /wp:paragraph -->\n\n<!-- wp:preformatted -->\n<pre class=\"wp-block-preformatted\"><strong>Example:</strong>\n\n<strong>Input:</strong>\n<img width=\"230\" height=\"224\" src=\"https://lh5.googleusercontent.com/RHckT-WmMrHUv-yXrdlc-PfHF1tnJxKHvPIK4dOKRbqALb4hrQYzr27mvHHvGVrBCBMYmR25K6e4PeFBx_BJy8J3Topn40kZK-u-TJbF13DrkwMyv9j_ai5iGXhtjDGhHzwIeLtH\">\n<strong>Output:</strong> 4 5 2 0 3 1 \n \n<strong>Explanation:</strong> 4 is appearing before its neighbours (1,0)\n             5 is appearing before its neighbours (0,2)\n             2 is appearing before its neighbours (3)\n             3 is appearing before its neighbours (1)\n</pre>\n<!-- /wp:preformatted -->\n\n<!-- wp:paragraph -->\n<p><strong>Note</strong>: This can be possible only for DAG ( Directed acyclic graph) because in an undirected graph we can\u2019t decide which node will come first because there will be no direction, and if there is a cycle topological order will not be possible (See below figure to understand why it is not possible for graphs containing cycle).</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:paragraph -->\n<p><img width=\"194\" height=\"156\" src=\"https://lh5.googleusercontent.com/AktJhtW67RIXo0uCQUTyDuQN0Zy_TOnvT_GfHUL_fMEFCDgI95djLpgH-9CcjLJvqytVdfh0up8vjKr65AWAIPRqjWmFGwWb11_UmgGIJCVidMk8KNrETZ9fu3HdHA6s5hL5Zf7P\"></p>\n<!-- /wp:paragraph -->\n\n<!-- wp:paragraph -->\n<p>2 -&gt;3 -&gt;4 -&gt;2 here if you can observe&nbsp;</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:paragraph -->\n<p>2 is appearing before 3</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:paragraph -->\n<p>3 is appearing before 4</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:paragraph -->\n<p>4 is appearing before 2&nbsp;</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:paragraph -->\n<p>But 2 has already appeared before 4, So topological ordering will not be possible</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:paragraph -->\n<p><strong>Intuition</strong>:&nbsp;</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:paragraph -->\n<p>The question states that if there is an edge between u and v then u should appear before v, Which means we have to start this question from a node that doesn't have any previous edges. But how to find that node that has no edge before if? Here, we use the concept of in-degree (Number of edges pointing toward a node). We find an in-degree which has indegree=0 and we start from this. We use the Indegree concept to find topological sorting. Let\u2019s see how.</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:paragraph -->\n<p><strong>Approach</strong>:</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:list {\"ordered\":true} -->\n<ol><li>In order to maintain the In-degree of each and every node, we take an array of size v( where v is the number of nodes).</li><li>Find in-degree of all nodes and fill them in an array</li><li>Now take Queue data structure and add nodes that have in-degree is 0 (as we discussed in the intuition), and simply apply bfs on queue with some condition.</li><li>Take the top/peek node from Queue ( let the popped node be x), add this x to our answer. (If you can observe clearly the above step is nothing but Normal BFS traversal).<br><br>We'll apply some conditions to the BFS:<br><ol><li>Now take neighbour nodes of popped nodes and reduce their in-degree by 1.</li><li>Check if any of the popped element nodes in degree becomes 0, after reducing in-degree by 1 if it happens then add this neighbour element to the queue for which the in-degree became zero.<br></li></ol></li><li>Repeat step 4 till the queue becomes empty.</li></ol>\n<!-- /wp:list -->\n\n<!-- wp:paragraph -->\n<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;We\u2019ll apply some conditions to the BFS:</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:paragraph -->\n<p>\u00a0     a) Now take neighbour nodes of popped nodes and reduce their indegree by 1.</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:paragraph -->\n<p>\u00a0\u00a0\u00a0\u00a0\u00a0\u00a0b) Check if any of popped element nodes in degree become 0, after reducing in-degree by 1, if it happens then add this neighbour element which in-degree became 0 to the queue.</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:paragraph -->\n<p><strong><em>Let's see how it works pictorially:</em></strong></p>\n<!-- /wp:paragraph -->\n\n<!-- wp:paragraph -->\n<p><img width=\"718\" height=\"370\" src=\"https://lh5.googleusercontent.com/p-yARKXVWraL07qeH9Wpx_JAJwDm074oFrhZMUoWkVgwrjHoghRE_F6dNu7cl9OTITLhnqM54ZF1-Bfs1rXISbwEP_K2km4Zk6ys1EFeFa6NFJqFSVH2iJ_no9MLPI_R8c8cZ-nu\"></p>\n<!-- /wp:paragraph -->\n\n<!-- wp:paragraph -->\n<p><strong>Code:</strong></p>\n<!-- /wp:paragraph -->\n\n<!-- wp:paragraph -->\n\n    <div class=\"code-section secondary-details\">\n    <div class=\"code-tabs\">\n    <button class=\"code-tab dsa_article_code_active\" data-lang=\"cpp\">C++</button>\n    <button class=\"code-tab\" data-lang=\"java\">Java</button>\n    \n    \n    <svg width=\"17\" class=\"copy-btn\" height=\"20\" viewBox=\"0 0 17 20\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n    <path d=\"M2 20C1.45 20 0.979002 19.804 0.587002 19.412C0.195002 19.02 -0.000664969 18.5493 1.69779e-06 18V4H2V18H13V20H2ZM6 16C5.45 16 4.979 15.804 4.587 15.412C4.195 15.02 3.99934 14.5493 4 14V2C4 1.45 4.196 0.979002 4.588 0.587002C4.98 0.195002 5.45067 -0.000664969 6 1.69779e-06H15C15.55 1.69779e-06 16.021 0.196002 16.413 0.588002C16.805 0.980002 17.0007 1.45067 17 2V14C17 14.55 16.804 15.021 16.412 15.413C16.02 15.805 15.5493 16.0007 15 16H6ZM6 14H15V2H6V14Z\">\n    </path>\n    </svg>\n    </div>\n    <div class=\"code-content\">\n    <div class=\"code-block dsa_article_code_active\" data-lang=\"cpp\">\n    \n<!-- /wp:paragraph -->\n\n<!-- wp:code -->\n<pre class=\"wp-block-code\"><code lang=\"cpp\" class=\"language-cpp\">#include&lt;bits/stdc++.h&gt;\nusing namespace std;\n\nclass Solution {\npublic:\n\tvector&lt;int&gt; topo(int N, vector&lt;int&gt; adj[]) {\n        queue&lt;int&gt; q; \n\t    vector&lt;int&gt; indegree(N, 0); \n\t    for(int i = 0;i&lt;N;i++) {\n\t        for(auto it: adj[i]) {\n\t            indegree[it]++; \n\t        }\n\t    }\n\t    \n\t    for(int i = 0;i&lt;N;i++) {\n\t        if(indegree[i] == 0) {\n\t            q.push(i); \n\t        }\n\t    }\n\t    vector&lt;int&gt; topo;\n\t    while(!q.empty()) {\n\t        int node = q.front(); \n\t        q.pop(); \n\t        topo.push_back(node);\n\t        for(auto it : adj[node]) {\n\t            indegree[it]--;\n\t            if(indegree[it] == 0) {\n\t                q.push(it); \n\t            }\n\t        }\n\t    }\n\t    return topo;\n\t}\n};\n\n\n\nint main()\n{\n\n    \tvector&lt;int&gt; adj[6];\n    \tadj[5].push_back(2);\n    \tadj[5].push_back(0);\n    \tadj[4].push_back(0);\n    \tadj[4].push_back(1);\n    \tadj[3].push_back(1);\n    \tadj[2].push_back(3);\n\n    \tSolution obj;\n    \tvector&lt;int&gt; v=obj.topo(6, adj);\n    \tfor(auto it:v)\n    \tcout&lt;&lt;it&lt;&lt;\" \";\n    \n\n    return 0;\n}</code></pre>\n<!-- /wp:code -->\n\n<!-- wp:paragraph -->\n<p><strong>Output:</strong></p>\n<!-- /wp:paragraph -->\n\n<!-- wp:paragraph -->\n<p>4 5 2 0 3 1</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:paragraph -->\n<p><strong>Time Complexity:</strong> O(N+E)</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:paragraph -->\n<p><strong>Space complexity:</strong> O(N)+O(N)</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:paragraph -->\n\n    </div>\n    <div class=\"code-block \" data-lang=\"java\">\n    \n<!-- /wp:paragraph -->\n\n<!-- wp:code -->\n<pre class=\"wp-block-code\"><code lang=\"java\" class=\"language-java\">import java.util.*;\nimport java.io.*;\nimport java.lang.*;\n\n    class Solution\n    {\n            public boolean isCyclic(int N, ArrayList&lt;ArrayList&lt;Integer&gt;&gt; adj) {\n                int topo[] = new int[N];\n                int indegree[] = new int[N];\n                \n                //finding indegree\n                for(int i = 0;i&lt;N;i++) {\n                    for(Integer it: adj.get(i)) {\n                        indegree[it]++;\n                    }\n                }\n                \n                \n                Queue&lt;Integer&gt; q = new LinkedList&lt;Integer&gt;();\n                for(int i = 0;i&lt;N;i++) {\n                    //adding nodes to queue with indegree = 0\n                    if(indegree[i] == 0) {\n                        q.add(i);\n                    }\n                }\n                \n                int cnt = 0;\n                int ind=0;\n                \n                while(!q.isEmpty()) {\n                    Integer node = q.poll();\n                    topo[ind++] = node;\n                    cnt++;\n                    //getting neighbour nodes of popped node and decreasing  their \n                    indegree by1\n                    for(Integer it: adj.get(node)) {\n                        indegree[it]--;\n                        if(indegree[it] == 0) {\n                            q.add(it);\n                        }\n                    }\n                }\n                 //printing topological ordering of nodes\n                for (int i=0;i&lt; topo.length;i++){\n                    System.out.print(topo[i]+\" \");\n                }\n                if(cnt == N) return false;\n                return true;\n            }\n        }\npublic class TopoLogicalSortBFS {\n        public static void main(String args[]) {\n\n            ArrayList &lt; ArrayList &lt; Integer &gt;&gt; adj = new ArrayList &lt; &gt; ();\n\n            // adding new arraylists to 'adj' to add neighbour nodes\n            for (int i = 0; i &lt; 6; i++) {\n                adj.add(new ArrayList &lt; &gt; ());\n            }\n\n\n            adj.get(5).add(2);\n            adj.get(5).add(0);\n            adj.get(4).add(0);\n            adj.get(4).add(1);\n            adj.get(3).add(1);\n            adj.get(2).add(3);\n\n\n           new Solution().isCyclic(6,adj);\n\n        }\n    }\n</code></pre>\n<!-- /wp:code -->\n\n<!-- wp:paragraph -->\n<p><strong>Output:</strong></p>\n<!-- /wp:paragraph -->\n\n<!-- wp:paragraph -->\n<p>4 5 2 0 3 1</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:paragraph -->\n<p><strong>Time Complexity:</strong> O(N+E)</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:paragraph -->\n<p><strong>Space complexity:</strong> O(N)+O(N)</p>\n<!-- /wp:paragraph -->\n\n<!-- wp:paragraph -->\n\n    </div>\n    </div>\n    </div>\n    \n<!-- /wp:paragraph -->\n\n<!-- wp:quote -->\n<blockquote class=\"wp-block-quote\"><p><em>Special thanks to&nbsp;<strong><a href=\"https://www.linkedin.com/in/sai-bargav-nellepalli-74799b1bb/\" target=\"_blank\" rel=\"noreferrer noopener\">Sai bargav Nellepalli</a></strong>&nbsp;for contributing to this article on takeUforward. If you also wish to share your knowledge with the takeUforward fam,&nbsp;</em><a href=\"https://takeuforward.org/interviews/paid-work-from-home-internship-at-takeuforward/\">please check out this article</a></p></blockquote>\n<!-- /wp:quote -->"
+}

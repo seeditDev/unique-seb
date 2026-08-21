@@ -1,0 +1,126 @@
+{
+  "questionId": "Q2715",
+  "title": "Yet Another Cute Girl",
+  "slug": "yet-another-cute-girl",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Prime checking",
+      "Divisor function",
+      "Math",
+      "Prime number",
+      "Number of divisors",
+      "Segmented sieve"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Mathematics"
+    ]
+  },
+  "content": {
+    "problemStatement": "Chef doesn't love math anymore. He loves Sasha. Sashen'ka is cute.\n\n\nChef goes on a date with her. Flowers are boring, while numbers are not. He knows that most of all this girl loves numbers, that's why he is going to bring ribbon with numbers **L, L+1, L+2, ..., R** written on it.\n\n\n\nSasha thinks that numbers with prime number of divisors are special. That's why she is going to kiss boy for each such number he will bring.\n\n\nNow Chef wonder how many times he will be kissed by Sashen'ka ?\n\n\n&nbsp;",
+    "constraints": [
+      "1 \u2264 T \u2264 5",
+      "1 \u2264 L \u2264 R \u2264 10^12",
+      "0 \u2264 R\u2011L \u2264 10^6"
+    ],
+    "inputFormat": "First line contains an integer T, the number of test cases. Each of the next T lines contains two space\u2011separated integers L and R (1 \u2264 L \u2264 R \u2264 10^12, 0 \u2264 R\u2011L \u2264 10^6).",
+    "outputFormat": "For each test case output a single line containing the count of integers x in [L, R] whose number of positive divisors \u03c4(x) is a prime number.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n1 10",
+        "output": "6",
+        "explanation": "The numbers 2, 3, 4, 5, 7, and 9 have a prime number of divisors."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n11 15",
+        "output": "2",
+        "explanation": "The numbers 11 and 13 have a prime number of divisors."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n20 25",
+        "output": "2",
+        "explanation": "The numbers 23 have a prime number of divisors."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For an integer x with prime factorisation x = p1^e1 * p2^e2 * \u2026 * pk^ek the divisor count is \u03c4(x) = (e1+1)*(e2+1)*\u2026*(ek+1). \u03c4(x) is prime only when exactly one of the factors (ei+1) is greater than 1 and all others are 1, i.e. k = 1 and (e1+1) itself is prime. Therefore the numbers we are looking for are prime powers p^{q-1} where p is prime and q = e1+1 is a prime (examples: p (q=2), p^2 (q=3), p^4 (q=5), p^6 (q=7), \u2026). To count such numbers in a large interval we compute \u03c4(x) for every x in [L,R] using a segmented factorisation. We pre\u2011compute all primes up to \u221aR (\u226410^6) with a simple sieve. For each test case we keep two arrays of length N = R\u2011L+1:\u202frem[i] initially equals L+i and divCnt[i] initially 1. For every prime p \u2264 \u221aR we locate the first multiple in the segment and repeatedly divide it out, counting the exponent e and updating divCnt[i] *= (e+1). After processing all small primes, any remaining rem[i] > 1 is a prime factor larger than \u221aR, so we multiply divCnt[i] by 2. Finally we need to know whether divCnt[i] is prime; the maximum possible \u03c4(x) for x \u2264 10^12 is well below 200\u202f000, so we pre\u2011compute a boolean prime table up to 200\u202f000. The answer for the test case is the number of i with primeDivCount[divCnt[i]] true. The algorithm runs in O(N\u202flog\u202flog\u202fR + \u221aR) per test case and uses O(N + \u221aR) memory, which fits the limits.",
+    "timeComplexity": "O(N\u202flog\u202flog\u202fR + \u221aR) per test case, where N = R\u2011L+1",
+    "spaceComplexity": "O(N + \u221aR)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdbool.h>\n#include <math.h>\n\n#define MAX_ROOT 1000000\n#define MAX_DIV 200000\n\n// simple sieve for primes up to limit\nstatic void sieve(int limit, int **primes, int *primeCount) {\n    bool *isComp = (bool*)calloc(limit + 1, sizeof(bool));\n    int *temp = (int*)malloc((limit/10 + 10) * sizeof(int)); // over\u2011estimate\n    int cnt = 0;\n    for (int i = 2; i <= limit; ++i) {\n        if (!isComp[i]) {\n            temp[cnt++] = i;\n            if ((long long)i * i <= limit) {\n                for (int j = i * i; j <= limit; j += i) isComp[j] = true;\n            }\n        }\n    }\n    free(isComp);\n    *primes = temp;\n    *primeCount = cnt;\n}\n\nint main() {\n    // pre\u2011compute primes up to 1e6\n    int *primes = NULL;\n    int primeCnt = 0;\n    sieve(MAX_ROOT, &primes, &primeCnt);\n\n    // prime table for divisor counts\n    bool *isPrimeDiv = (bool*)calloc(MAX_DIV + 1, sizeof(bool));\n    isPrimeDiv[2] = true; // 2 is prime, others will be filled by sieve\n    // simple sieve for divisor\u2011count primality\n    for (int i = 2; i <= MAX_DIV; ++i) isPrimeDiv[i] = true;\n    isPrimeDiv[0] = isPrimeDiv[1] = false;\n    for (int i = 2; i * i <= MAX_DIV; ++i) {\n        if (isPrimeDiv[i]) {\n            for (int j = i * i; j <= MAX_DIV; j += i) isPrimeDiv[j] = false;\n        }\n    }\n\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        unsigned long long L, R;\n        scanf(\"%llu %llu\", &L, &R);\n        unsigned int N = (unsigned int)(R - L + 1);\n        unsigned long long *rem = (unsigned long long*)malloc(N * sizeof(unsigned long long));\n        int *divCnt = (int*)malloc(N * sizeof(int));\n        for (unsigned int i = 0; i < N; ++i) {\n            rem[i] = L + i;\n            divCnt[i] = 1;\n        }\n        unsigned long long limit = (unsigned long long)sqrt((long double)R) + 1;\n        for (int pi = 0; pi < primeCnt && (unsigned long long)primes[pi] <= limit; ++pi) {\n            unsigned long long p = (unsigned long long)primes[pi];\n            unsigned long long start = (L + p - 1) / p * p;\n            for (unsigned long long val = start; val <= R; val += p) {\n                unsigned int idx = (unsigned int)(val - L);\n                int exp = 0;\n                while (rem[idx] % p == 0) {\n                    rem[idx] /= p;\n                    ++exp;\n                }\n                if (exp) divCnt[idx] *= (exp + 1);\n            }\n        }\n        int answer = 0;\n        for (unsigned int i = 0; i < N; ++i) {\n            if (rem[i] > 1) divCnt[i] *= 2; // remaining prime factor\n            if (divCnt[i] <= MAX_DIV && isPrimeDiv[divCnt[i]]) ++answer;\n        }\n        printf(\"%d\\n\", answer);\n        free(rem);\n        free(divCnt);\n    }\n    free(primes);\n    free(isPrimeDiv);\n    return 0;\n}\n"
+    }
+  }
+}

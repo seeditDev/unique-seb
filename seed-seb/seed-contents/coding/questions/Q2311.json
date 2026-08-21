@@ -1,0 +1,130 @@
+{
+  "questionId": "Q2311",
+  "title": "The Great Wall of Byteland",
+  "slug": "the-great-wall-of-byteland",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "Fast Doubling",
+      "Matrix Exponentiation",
+      "Modulo Arithmetic",
+      "Tiling",
+      "Dynamic Programming",
+      "Fibonacci"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ]
+  },
+  "content": {
+    "problemStatement": "In order to protect the southern border of Bytelandian Empire against intrusions by various nomadic groups, the Emperor of Byteland has decided to build a wall along the southern border. The best architect Johny is recruited for the task.\n\n\nIn order to minimise the cost of raw material, Johny is restricted to use only following two kinds of building blocks:\nX &nbsp; &nbsp;  #\n\nXX\n\nThe height of the wall is fixed and is 2 units, but the length of the wall varies. As a part of his job Johny needs to find out the number of ways he can construct the wall using above two types of building blocks where the length of the wall is specified. Write a program to help Johny.",
+    "constraints": [
+      "1 \u2264 T \u2264 1000",
+      "1 \u2264 N \u2264 10^9",
+      "Result must be given modulo 1000000007"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains a single integer N (1 \u2264 N \u2264 10^9) \u2013 the length of the wall.",
+    "outputFormat": "For each test case output a single line containing the number of ways to build a 2\u00d7N wall using the given blocks, modulo 1000000007.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "5\n1\n2\n3\n4\n5",
+        "output": "1\n2\n3\n5\n8",
+        "explanation": "For N=1 only a vertical block fits \u2192 1 way. N=2 can be two vertical blocks or one 2\u00d72 block \u2192 2 ways. The recurrence f(N)=f(N-1)+f(N-2) yields the sequence 1,2,3,5,8."
+      },
+      {
+        "id": "sample_2",
+        "input": "3\n6\n7\n8",
+        "output": "13\n21\n34",
+        "explanation": "Continuing the recurrence: f(6)=13, f(7)=21, f(8)=34."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n30",
+        "output": "1346269",
+        "explanation": "f(30)=F_{31}=1,346,269."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "large N within manual verification",
+        "input": "1\n45",
+        "expectedOutput": "836311896",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n2",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n10",
+        "expectedOutput": "89",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n20",
+        "expectedOutput": "10946",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The wall can be tiled using either a vertical 2\u00d71 block (covers one column) or a 2\u00d72 block (covers two columns). Let f(N) be the number of ways to tile a 2\u00d7N wall. For the first column we either place a vertical block and then tile the remaining 2\u00d7(N\u20111) wall, or we place a 2\u00d72 block and then tile the remaining 2\u00d7(N\u20112) wall. Hence f(N) = f(N\u20111) + f(N\u20112) with base values f(1)=1, f(2)=2. This is exactly the Fibonacci sequence shifted by one: f(N) = F_{N+1} where F_1 = 1, F_2 = 1. To handle N up to 10^9 we compute F_{N+1} modulo 1e9+7 using the fast\u2011doubling method, which returns (F_n, F_{n+1}) in O(log n) time. The algorithm is recursive, uses only a few modular multiplications, and fits easily within the limits.",
+    "timeComplexity": "O(T\u00b7log N) \u2013 each test case requires O(log N) operations due to fast doubling.",
+    "spaceComplexity": "O(log N) \u2013 recursion depth of the fast\u2011doubling routine.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdint.h>\n\nconst int64_t MOD = 1000000007LL;\n\n// Returns (F_n, F_{n+1}) modulo MOD using fast doubling\nvoid fib(int64_t n, int64_t *fn, int64_t *fn1) {\n    if (n == 0) {\n        *fn = 0;\n        *fn1 = 1;\n        return;\n    }\n    int64_t a, b;\n    fib(n >> 1, &a, &b); // a = F_m, b = F_{m+1}, m = n/2\n    int64_t c = (a * ((2 * b % MOD - a + MOD) % MOD)) % MOD; // F_{2m}\n    int64_t d = ((a * a) % MOD + (b * b) % MOD) % MOD;       // F_{2m+1}\n    if ((n & 1) == 0) {\n        *fn = c;\n        *fn1 = d;\n    } else {\n        *fn = d;\n        *fn1 = (c + d) % MOD;\n    }\n}\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        long long N;\n        scanf(\"%lld\", &N);\n        int64_t fn, fn1;\n        // answer is F_{N+1}\n        fib(N + 1, &fn, &fn1);\n        printf(\"%lld\\n\", fn);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nconst long long MOD = 1000000007LL;\n\npair<long long,long long> fib(long long n) {\n    if (n == 0) return {0, 1};\n    auto p = fib(n >> 1);\n    long long a = p.first;   // F_m\n    long long b = p.second;  // F_{m+1}\n    long long c = (a * ((2 * b % MOD - a + MOD) % MOD)) % MOD; // F_{2m}\n    long long d = ((a * a) % MOD + (b * b) % MOD) % MOD;       // F_{2m+1}\n    if ((n & 1) == 0) return {c, d};\n    else return {d, (c + d) % MOD};\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; \n    if(!(cin >> T)) return 0;\n    while (T--) {\n        long long N; \n        cin >> N;\n        cout << fib(N + 1).first << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    static final long MOD = 1_000_000_007L;\n    static long[] fib(long n) {\n        if (n == 0) return new long[]{0L, 1L};\n        long[] p = fib(n >> 1);\n        long a = p[0]; // F_m\n        long b = p[1]; // F_{m+1}\n        long c = (a * ((2L * b % MOD - a + MOD) % MOD)) % MOD; // F_{2m}\n        long d = ((a * a) % MOD + (b * b) % MOD) % MOD;       // F_{2m+1}\n        if ((n & 1L) == 0) return new long[]{c, d};\n        else return new long[]{d, (c + d) % MOD};\n    }\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder sb = new StringBuilder();\n        for (int i = 0; i < T; i++) {\n            long N = Long.parseLong(br.readLine().trim());\n            sb.append(fib(N + 1)[0]).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys\nMOD = 1000000007\n\ndef fib(n):\n    if n == 0:\n        return (0, 1)\n    a, b = fib(n >> 1)  # a = F_m, b = F_{m+1}\n    c = (a * ((2 * b % MOD - a + MOD) % MOD)) % MOD  # F_{2m}\n    d = (a * a + b * b) % MOD                       # F_{2m+1}\n    if n & 1:\n        return (d, (c + d) % MOD)\n    else:\n        return (c, d)\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    t = int(data[0])\n    out = []\n    for i in range(1, t + 1):\n        n = int(data[i])\n        out.append(str(fib(n + 1)[0]))\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst MOD = 1000000007n;\nfunction fib(n) {\n  if (n === 0n) return [0n, 1n];\n  const [a, b] = fib(n >> 1n); // a = F_m, b = F_{m+1}\n  const c = (a * ((2n * b % MOD - a + MOD) % MOD)) % MOD; // F_{2m}\n  const d = (a * a + b * b) % MOD;                       // F_{2m+1}\n  if (n & 1n) return [d, (c + d) % MOD];\n  else return [c, d];\n}\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nif (input.length === 0) process.exit(0);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet out = [];\nfor (let i = 0; i < T; i++) {\n  const N = BigInt(input[idx++]);\n  out.push(String(fib(N + 1n)[0]));\n}\nconsole.log(out.join('\\n'));\n"
+    }
+  }
+}

@@ -1,0 +1,129 @@
+{
+  "questionId": "Q6766",
+  "title": "A humongous Query",
+  "slug": "a-humongous-query",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings | Dynamic Programming",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "10-strings",
+      "Humongous subsequences",
+      "Minimum flips"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Let's define a 10-string as a string that contains only characters '1' and '0', starts with '1' and ends with '0'. For example, **\"10101010\"**, **\"100\"** or **\"1010\"** are 10-strings, while **\"011\"**, **\"11120\"** or **\"10101\"** are not.\n\nA subsequence of any 10-string is called humongous if it is of the form \"1010...10\" (\"10\" concatenated an arbitrary number of times).\n\nFor example, the 10-string **\"110\"** contains exactly 2 humongous subsequences and **\"1010\"** contains exactly 4 humongous subsequences (formed using indices **{1, 2}**, **{3, 4}**, **{1, 4}**, **{1, 2, 3, 4}**).\n\nYou should process some really humongous queries. Each query is as follows:\n\n\n\nYou're given a 10-string **S** and an integer **X**.\nYou should convert **S** into another 10-string **U** by flipping a number of characters (possibly zero; a flip means changing a '1' to '0' or '0' to '1') of **S**.\nThe string **U** should contain exactly **X** humongous subsequences.\nThe answer to the query is the **minimum** number of flips that need to be performed. If it's impossible to convert **S** into a valid string **U**, the answer doesn't exist.\n\n\nNote that **U** has to be a 10-string.\n\nFor each query, compute the minimum possible number of flips or determine that there is no answer.",
+    "constraints": [
+      "1 <= T <= 10",
+      "2 <= |S| <= 32",
+      "1 <= X <= 10^6",
+      "S will be a 10-string"
+    ],
+    "inputFormat": "The first line of the input contains a single integer T denoting the number of test cases. The description of T test cases follows. The first line of each test case contains a single string S. The second line contains a single integer X.",
+    "outputFormat": "For each test case: If there is no answer, print a single line containing one string 'NO' (without quotes). If an answer exists, print two lines. The first line should contains a single string 'YES' (without quotes). The second line should contain a single integer denoting the minimum necessary number of flips.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n1110\n4\n110\n1",
+        "output": "YES\n1\nNO",
+        "explanation": "Example case 1: We can convert the given 10-string into U = \"1010\" using only one flip; this string has exactly 4 humongous subsequences. This is the minimum possible number of flips.\nExample case 2: The only 10-strings we can obtain after any number of flips are \"100\" and \"110\". Each of them contains exactly 2 humongous subsequences, so there is no answer."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n10\n1",
+        "expectedOutput": "YES\n0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n11111111111111111111111111111110\n1024",
+        "expectedOutput": "NO",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n110\n1",
+        "expectedOutput": "NO",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n1010\n4",
+        "expectedOutput": "YES\n0",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n1110\n4",
+        "expectedOutput": "YES\n1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a dynamic programming approach. We will generate all possible 10-strings of the given length and calculate the number of humongous subsequences in each string. Then, we will find the string with the minimum number of flips that has exactly X humongous subsequences.",
+    "timeComplexity": "O(T * 2^n) — where n is the length of the string S. This is because we are generating all possible 10-strings of length n.",
+    "spaceComplexity": "O(2^n) — where n is the length of the string S. This is because we are storing all possible 10-strings of length n.",
+    "code": {
+      "C": "// COMPLETE, COMPILABLE C code\n#include <stdio.h>\n#include <string.h>\n\nint minFlips(char *s, int x) {\n    int n = strlen(s);\n    int minFlips = n;\n    for (int mask = 0; mask < (1 << n); mask++) {\n        char t[n + 1];\n        strcpy(t, s);\n        for (int i = 0; i < n; i++) {\n            if ((mask & (1 << i)) != 0) {\n                t[i] = (t[i] == '0') ? '1' : '0';\n            }\n        }\n        if (t[0] == '1' && t[n - 1] == '0') {\n            int count = 0;\n            for (int i = 0; i < n - 1; i++) {\n                if (t[i] == '1' && t[i + 1] == '0') {\n                    count++;\n                }\n            }\n            if (count == x) {\n                int flips = 0;\n                for (int i = 0; i < n; i++) {\n                    if (s[i] != t[i]) {\n                        flips++;\n                    }\n                }\n                minFlips = (flips < minFlips) ? flips : minFlips;\n            }\n        }\n    }\n    return minFlips;\n}\n\nint main() {\n    int t;\n    scanf(\"%d\", &t);\n    while (t--) {\n        char s[100];\n        scanf(\"%s\", s);\n        int x;\n        scanf(\"%d\", &x);\n        int minFlips = minFlips(s, x);\n        if (minFlips == strlen(s)) {\n            printf(\"NO\\n\");\n        } else {\n            printf(\"YES\\n\");\n            printf(\"%d\\n\", minFlips);\n        }\n    }\n    return 0;\n}",
+      "C++": "// COMPLETE, COMPILABLE C++ code\n#include <iostream>\n#include <string>\nusing namespace std;\n\nint minFlips(string s, int x) {\n    int n = s.length();\n    int minFlips = n;\n    for (int mask = 0; mask < (1 << n); mask++) {\n        string t = s;\n        for (int i = 0; i < n; i++) {\n            if ((mask & (1 << i)) != 0) {\n                t[i] = (t[i] == '0') ? '1' : '0';\n            }\n        }\n        if (t[0] == '1' && t[n - 1] == '0') {\n            int count = 0;\n            for (int i = 0; i < n - 1; i++) {\n                if (t[i] == '1' && t[i + 1] == '0') {\n                    count++;\n                }\n            }\n            if (count == x) {\n                int flips = 0;\n                for (int i = 0; i < n; i++) {\n                    if (s[i] != t[i]) {\n                        flips++;\n                    }\n                }\n                minFlips = (flips < minFlips) ? flips : minFlips;\n            }\n        }\n    }\n    return minFlips;\n}\n\nint main() {\n    int t;\n    cin >> t;\n    while (t--) {\n        string s;\n        cin >> s;\n        int x;\n        cin >> x;\n        int minFlips = minFlips(s, x);\n        if (minFlips == s.length()) {\n            cout << \"NO\" << endl;\n        } else {\n            cout << \"YES\" << endl;\n            cout << minFlips << endl;\n        }\n    }\n    return 0;\n}",
+      "Java": "// COMPLETE, COMPILABLE Java code\nimport java.util.Scanner;\npublic class Main {\n    public static int minFlips(String s, int x) {\n        int n = s.length();\n        int minFlips = n;\n        for (int mask = 0; mask < (1 << n); mask++) {\n            char[] t = s.toCharArray();\n            for (int i = 0; i < n; i++) {\n                if ((mask & (1 << i)) != 0) {\n                    t[i] = (t[i] == '0') ? '1' : '0';\n                }\n            }\n            if (t[0] == '1' && t[n - 1] == '0') {\n                int count = 0;\n                for (int i = 0; i < n - 1; i++) {\n                    if (t[i] == '1' && t[i + 1] == '0') {\n                        count++;\n                    }\n                }\n                if (count == x) {\n                    int flips = 0;\n                    for (int i = 0; i < n; i++) {\n                        if (s.charAt(i) != t[i]) {\n                            flips++;\n                        }\n                    }\n                    minFlips = (flips < minFlips) ? flips : minFlips;\n                }\n            }\n        }\n        return minFlips;\n    }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int t = sc.nextInt();\n        while (t-- > 0) {\n            String s = sc.next();\n            int x = sc.nextInt();\n            int minFlips = minFlips(s, x);\n            if (minFlips == s.length()) {\n                System.out.println(\"NO\");\n            } else {\n                System.out.println(\"YES\");\n                System.out.println(minFlips);\n            }\n        }\n    }\n}",
+      "Python3": "# COMPLETE, RUNNABLE Python3 code\nimport sys\n\ndef minFlips(s, x):\n    n = len(s)\n    minFlips = n\n    for mask in range(1 << n):\n        t = list(s)\n        for i in range(n):\n            if (mask & (1 << i)) != 0:\n                t[i] = '1' if t[i] == '0' else '0'\n        if t[0] == '1' and t[-1] == '0':\n            count = 0\n            for i in range(n - 1):\n                if t[i] == '1' and t[i + 1] == '0':\n                    count += 1\n            if count == x:\n                flips = 0\n                for i in range(n):\n                    if s[i] != t[i]:\n                        flips += 1\n                minFlips = min(minFlips, flips)\n    return minFlips\n\nt = int(input())\nwhile t > 0:\n    s = input()\n    x = int(input())\n    minFlips = minFlips(s, x)\n    if minFlips == len(s):\n        print('NO')\n    else:\n        print('YES')\n        print(minFlips)\n    t -= 1",
+      "JavaScript": "// COMPLETE, RUNNABLE JavaScript code\nconst fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\n\nfunction minFlips(s, x) {\n    const n = s.length;\n    let minFlips = n;\n    for (let mask = 0; mask < (1 << n); mask++) {\n        let t = s.split('');\n        for (let i = 0; i < n; i++) {\n            if ((mask & (1 << i)) != 0) {\n                t[i] = (t[i] == '0') ? '1' : '0';\n            }\n        }\n        if (t[0] == '1' && t[n - 1] == '0') {\n            let count = 0;\n            for (let i = 0; i < n - 1; i++) {\n                if (t[i] == '1' && t[i + 1] == '0') {\n                    count++;\n                }\n            }\n            if (count == x) {\n                let flips = 0;\n                for (let i = 0; i < n; i++) {\n                    if (s[i] != t[i]) {\n                        flips++;\n                    }\n                }\n                minFlips = (flips < minFlips) ? flips : minFlips;\n            }\n        }\n    }\n    return minFlips;\n}\n\nlet t = parseInt(lines[idx++]);\nwhile (t-- > 0) {\n    let s = lines[idx++];\n    let x = parseInt(lines[idx++]);\n    let minFlips = minFlips(s, x);\n    if (minFlips == s.length) {\n        console.log('NO');\n    } else {\n        console.log('YES');\n        console.log(minFlips);\n    }\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

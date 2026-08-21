@@ -1,0 +1,124 @@
+{
+  "questionId": "Q11375",
+  "title": "Insert Interval",
+  "slug": "insert-interval",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Array",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Sorting",
+      "Interval"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Write a program for the coding challenge \"Insert Interval\". Refer to SEED-IT description: https://leetcode.com/problems/insert-interval/",
+    "constraints": [
+      "0 <= intervals.length <= 10^4",
+      "intervals[i].length == 2",
+      "0 <= intervals[i][0] <= 10^5",
+      "0 <= intervals[i][1] <= 10^5",
+      "intervals[i][0] <= intervals[i][1]",
+      "newInterval.length == 2",
+      "0 <= newInterval[0] <= 10^5",
+      "0 <= newInterval[1] <= 10^5",
+      "newInterval[0] <= newInterval[1]"
+    ],
+    "inputFormat": "intervals = [[int, int]], newInterval = [int, int]",
+    "outputFormat": "[[int, int]]",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "[[], [1,2]]",
+        "expectedOutput": "[[1,2]]",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "[[1,100000], [1,100000]]",
+        "expectedOutput": "[[1,100000]]",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": "[[1,2],[3,5],[6,7],[8,10],[12,16]], [4,8]",
+        "expectedOutput": "[[1,2],[3,10],[12,16]]",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case / empty-like / negative if allowed",
+        "input": "[], [5,7]",
+        "expectedOutput": "[[5,7]]",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": "[[1,3],[6,9]], [2,5]",
+        "expectedOutput": "[[1,5],[6,9]]",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Iterate through intervals and merge overlapping intervals",
+    "timeComplexity": "O(n)",
+    "spaceComplexity": "O(n)",
+    "code": {
+      "C": "#include <stdio.h>\nint** insert(int** intervals, int intervalsSize, int* intervalsColSize, int* newInterval, int newIntervalSize, int* returnSize, int** returnColumnSizes) {\n    int** res = (int**)malloc(10000 * sizeof(int*));\n    int idx = 0;\n    int i = 0;\n    for (; i < intervalsSize && intervals[i][1] < newInterval[0]; i++) {\n        res[idx++] = intervals[i];\n    }\n    while (i < intervalsSize && intervals[i][0] <= newInterval[1]) {\n        newInterval[0] = (newInterval[0] < intervals[i][0]) ? newInterval[0] : intervals[i][0];\n        newInterval[1] = (newInterval[1] > intervals[i][1]) ? newInterval[1] : intervals[i][1];\n        i++;\n    }\n    res[idx++] = newInterval;\n    while (i < intervalsSize) {\n        res[idx++] = intervals[i];\n        i++;\n    }\n    *returnSize = idx;\n    *returnColumnSizes = (int*)malloc(idx * sizeof(int));\n    for (i = 0; i < idx; i++) {\n        (*returnColumnSizes)[i] = 2;\n    }\n    return res;\n}",
+      "C++": "#include <vector>\nusing namespace std;\nvector<vector<int>> insert(vector<vector<int>>& intervals, vector<int>& newInterval) {\n    vector<vector<int>> res;\n    int i = 0;\n    for (; i < intervals.size() && intervals[i][1] < newInterval[0]; i++) {\n        res.push_back(intervals[i]);\n    }\n    while (i < intervals.size() && intervals[i][0] <= newInterval[1]) {\n        newInterval[0] = min(newInterval[0], intervals[i][0]);\n        newInterval[1] = max(newInterval[1], intervals[i][1]);\n        i++;\n    }\n    res.push_back(newInterval);\n    while (i < intervals.size()) {\n        res.push_back(intervals[i]);\n        i++;\n    }\n    return res;\n}",
+      "Java": "import java.util.ArrayList;\nimport java.util.List;\npublic class Solution {\n    public int[][] insert(int[][] intervals, int[] newInterval) {\n        List<int[]> res = new ArrayList<>();\n        int i = 0;\n        for (; i < intervals.length && intervals[i][1] < newInterval[0]; i++) {\n            res.add(intervals[i]);\n        }\n        while (i < intervals.length && intervals[i][0] <= newInterval[1]) {\n            newInterval[0] = Math.min(newInterval[0], intervals[i][0]);\n            newInterval[1] = Math.max(newInterval[1], intervals[i][1]);\n            i++;\n        }\n        res.add(newInterval);\n        while (i < intervals.length) {\n            res.add(intervals[i]);\n            i++;\n        }\n        return res.toArray(new int[0][]);\n    }\n}",
+      "Python3": "def insert(intervals, newInterval):\n    res = []\n    i = 0\n    for interval in intervals:\n        if interval[1] < newInterval[0]:\n            res.append(interval)\n            i += 1\n        elif interval[0] > newInterval[1]:\n            break\n        else:\n            newInterval[0] = min(newInterval[0], interval[0])\n            newInterval[1] = max(newInterval[1], interval[1])\n    res.append(newInterval)\n    res.extend(intervals[i:])\n    return res",
+      "JavaScript": "function insert(intervals, newInterval) {\n    let res = [];\n    let i = 0;\n    for (; i < intervals.length && intervals[i][1] < newInterval[0]; i++) {\n        res.push(intervals[i]);\n    }\n    while (i < intervals.length && intervals[i][0] <= newInterval[1]) {\n        newInterval[0] = Math.min(newInterval[0], intervals[i][0]);\n        newInterval[1] = Math.max(newInterval[1], intervals[i][1]);\n        i++;\n    }\n    res.push(newInterval);\n    while (i < intervals.length) {\n        res.push(intervals[i]);\n        i++;\n    }\n    return res;\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

@@ -1,0 +1,130 @@
+{
+  "questionId": "Q9750",
+  "title": "3-Blast Palindrome",
+  "slug": "3-blast-palindrome",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Greedy",
+      "Counting",
+      "Modulo",
+      "Palindrome"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Strings"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given a string SSS of length NNN.\n\nYour task is to convert the string into a **non-empty** palindrome using the following operation any (possibly zero) number of times:\n\n\nChoose an index 1&lt;i&lt;∣S∣1\\lt i\\lt |S|1&lt;i&lt;∣S∣, where ∣S∣|S|∣S∣ denotes the current length of string;\nRemove the characters at indices (i−1)(i-1)(i−1), iii, and (i+1)(i+1)(i+1) from the string and concatenate remaining part(s) of the string.\nPrint `YES` if it is possible to convert the string into a non-empty palindrome and `NO` otherwise.\n\n\nInput Format\n\nThe first line of input will contain a single integer TTT, denoting the number of test cases.\nEach test case consists of two lines of input.\n\nThe first line of each test case contains NNN - the length of string.\nThe next line contains string SSS.\n\n\n\n\nOutput Format\nFor each test case, print on a new line, `YES`, if it is possible to convert the given string into a non-empty palindrome, otherwise print `NO`.\n\n\nEach character of the output may be printed in either uppercase or lowercase, i.e, the strings `Yes`, `YES`, `yes`, and `yEs` will be treated as identical.",
+    "constraints": [
+      "1 ≤ T ≤ 10^5",
+      "1 ≤ N ≤ 2·10^5",
+      "The sum of N over all test cases does not exceed 5·10^5",
+      "S consists only of lowercase English letters"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case consists of two lines: the first line contains an integer N, the length of the string, and the second line contains a string S of length N consisting of lowercase English letters.",
+    "outputFormat": "For each test case output a single line containing \"YES\" if it is possible to obtain a non‑empty palindrome by repeatedly deleting any three consecutive characters, otherwise output \"NO\".",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n5\naaaaa\n5\nabcde\n5\naabcd",
+        "output": "YES\nNO\nYES",
+        "explanation": "Explanation:\nTest case 111: The given string is already a palindrome. Thus, we need 000 operations.\nTest case 222: It is not possible to convert the string abcde into a palindrome using any number of operations.\nTest case 333: Choose i=4i = 4i=4 and delete the characters at indices 3,4,3, 4,3,4, and 555. Thus, the string aabcd becomes aa, which is a palindrome."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Each operation reduces the length of the string by exactly three, therefore the length L of the final string must satisfy L ≡ N (mod 3) and L > 0. We only need to know whether a palindrome subsequence of such a length exists.\n\n* If N % 3 == 1 we can keep any single character (L = 1) → always YES.\n* If N % 3 == 2 we need a palindrome of length 2, i.e. two equal characters. So the answer is YES iff some character appears at least twice.\n* If N % 3 == 0 we need a palindrome of length 3 (or any multiple of three, but length 3 is the smallest possible). A length‑3 palindrome exists iff either\n    - some character appears at least three times, or\n    - there are two equal characters with at least one other character between them (their first and last occurrence differ by at least 2).\n  If neither condition holds, a length‑3 palindrome cannot be formed, and longer palindromes are impossible because they would need at least three characters.\n\nThe algorithm scans the string once, counting frequencies and remembering the first and last position of each character. All checks are O(N) per test case, which fits the constraints.\n",
+    "timeComplexity": "O(N) per test case, total O( Σ N ) ≤ 5·10^5.",
+    "spaceComplexity": "O(1) extra (26 counters and positions).",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    while(T--){\n        int N; scanf(\"%d\", &N);\n        char s[200005]; scanf(\"%s\", s);\n        int freq[26] = {0};\n        int first[26]; int last[26];\n        for(int i=0;i<26;i++) first[i] = -1, last[i] = -1;\n        for(int i=0;i<N;i++){\n            int c = s[i]-'a';\n            freq[c]++;\n            if(first[c]==-1) first[c]=i;\n            last[c]=i;\n        }\n        int mod = N%3;\n        int ans = 0;\n        if(mod==1) ans = 1; // any single character\n        else if(mod==2){\n            for(int i=0;i<26;i++) if(freq[i]>=2){ ans = 1; break; }\n        }else{ // mod == 0\n            for(int i=0;i<26;i++){\n                if(freq[i]>=3){ ans = 1; break; }\n                if(freq[i]>=2 && last[i]-first[i]>=2){ ans = 1; break; }\n            }\n        }\n        printf(ans?\"YES\\n\":\"NO\\n\");\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N; string s; cin>>N>>s;\n        int freq[26] = {};\n        int first[26]; int last[26];\n        fill(begin(first), end(first), -1);\n        fill(begin(last), end(last), -1);\n        for(int i=0;i<N;i++){\n            int c = s[i]-'a';\n            ++freq[c];\n            if(first[c]==-1) first[c]=i;\n            last[c]=i;\n        }\n        int mod = N%3;\n        bool ok = false;\n        if(mod==1) ok = true;\n        else if(mod==2){\n            for(int i=0;i<26;i++) if(freq[i]>=2){ ok=true; break; }\n        }else{ // mod==0\n            for(int i=0;i<26;i++){\n                if(freq[i]>=3){ ok=true; break; }\n                if(freq[i]>=2 && last[i]-first[i]>=2){ ok=true; break; }\n            }\n        }\n        cout << (ok?\"YES\":\"NO\") << '\\n';\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner(System.in);\n        int T = fs.nextInt();\n        StringBuilder out = new StringBuilder();\n        while (T-- > 0) {\n            int N = fs.nextInt();\n            char[] s = fs.next().toCharArray();\n            int[] freq = new int[26];\n            int[] first = new int[26];\n            int[] last = new int[26];\n            Arrays.fill(first, -1);\n            Arrays.fill(last, -1);\n            for (int i = 0; i < N; i++) {\n                int c = s[i] - 'a';\n                freq[c]++;\n                if (first[c] == -1) first[c] = i;\n                last[c] = i;\n            }\n            int mod = N % 3;\n            boolean ok = false;\n            if (mod == 1) ok = true;\n            else if (mod == 2) {\n                for (int i = 0; i < 26; i++) if (freq[i] >= 2) { ok = true; break; }\n            } else { // mod == 0\n                for (int i = 0; i < 26; i++) {\n                    if (freq[i] >= 3) { ok = true; break; }\n                    if (freq[i] >= 2 && last[i] - first[i] >= 2) { ok = true; break; }\n                }\n            }\n            out.append(ok ? \"YES\" : \"NO\").append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n\n    // Fast scanner for large input\n    static class FastScanner {\n        private final InputStream in;\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        FastScanner(InputStream in) { this.in = in; }\n        private int readByte() throws IOException {\n            if (ptr >= len) {\n                len = in.read(buffer);\n                ptr = 0;\n                if (len <= 0) return -1;\n            }\n            return buffer[ptr++];\n        }\n        int nextInt() throws IOException {\n            int c, sign = 1, val = 0;\n            do { c = readByte(); } while (c <= ' ');\n            if (c == '-') { sign = -1; c = readByte(); }\n            while (c > ' ') { val = val * 10 + (c - '0'); c = readByte(); }\n            return val * sign;\n        }\n        String next() throws IOException {\n            int c;\n            do { c = readByte(); } while (c <= ' ');\n            StringBuilder sb = new StringBuilder();\n            while (c > ' ') { sb.append((char) c); c = readByte(); }\n            return sb.toString();\n        }\n    }\n}\n",
+      "Python3": "#!/usr/bin/env python3\nimport sys\n\ndef solve():\n    data = sys.stdin.read().split()\n    it = iter(data)\n    t = int(next(it))\n    out = []\n    for _ in range(t):\n        n = int(next(it))\n        s = next(it)\n        freq = [0]*26\n        first = [-1]*26\n        last = [-1]*26\n        for i,ch in enumerate(s):\n            c = ord(ch)-97\n            freq[c] += 1\n            if first[c]==-1:\n                first[c]=i\n            last[c]=i\n        mod = n%3\n        ok = False\n        if mod==1:\n            ok = True\n        elif mod==2:\n            ok = any(f>=2 for f in freq)\n        else: # mod==0\n            for i in range(26):\n                if freq[i]>=3:\n                    ok = True\n                    break\n                if freq[i]>=2 and last[i]-first[i]>=2:\n                    ok = True\n                    break\n        out.append('YES' if ok else 'NO')\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet out = [];\nfor (let tc = 0; tc < T; tc++) {\n  const N = Number(input[idx++]);\n  const s = input[idx++];\n  const freq = new Array(26).fill(0);\n  const first = new Array(26).fill(-1);\n  const last = new Array(26).fill(-1);\n  for (let i = 0; i < N; i++) {\n    const c = s.charCodeAt(i) - 97;\n    freq[c]++;\n    if (first[c] === -1) first[c] = i;\n    last[c] = i;\n  }\n  const mod = N % 3;\n  let ok = false;\n  if (mod === 1) ok = true;\n  else if (mod === 2) {\n    ok = freq.some(f => f >= 2);\n  } else { // mod === 0\n    for (let i = 0; i < 26; i++) {\n      if (freq[i] >= 3) { ok = true; break; }\n      if (freq[i] >= 2 && last[i] - first[i] >= 2) { ok = true; break; }\n    }\n  }\n  out.push(ok ? 'YES' : 'NO');\n}\nconsole.log(out.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

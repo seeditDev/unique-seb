@@ -1,0 +1,127 @@
+{
+  "questionId": "Q1347",
+  "title": "Row With Maximum Ones",
+  "slug": "row-with-maximum-ones",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Arrays",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "Binary Search",
+      "Arrays"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Binary Search"
+    ]
+  },
+  "content": {
+    "problemStatement": "Find the row with maximum no. of 1\u2019s in a row-wise sorted binary matrix. If there are many such rows, print the first one.\n\nFor eg. in the following matrix:\n\n\n\nBoth row `2` and row `4` has maximum number of 1's, hence the answer would be **2** as its the first row which has maximum 1's.\n\n\nInput Format\n\nThe first line of input will contain two space separated integers NNN and MMM, denoting the no. of rows and columns in the row-wise sorted binary matrix.\nNext NNN lines contains NNN space separated integers, the elements of the matrix.\n\n\nOutput Format\n\nOutput on a single line the row number which has maximum 1's.\n**Follow up:** can you solve it in better than `O(N*M)` time complexity?",
+    "constraints": [
+      "1 <= N <= 1001",
+      "1 <= M <= 1001",
+      "The elements of the matrix are either 0 or 1.",
+      "Matrix is row-wise sorted."
+    ],
+    "inputFormat": "The first line contains two space-separated integers N and M, denoting the number of rows and columns in the row-wise sorted binary matrix. Next N lines contain N space-separated integers, the elements of the matrix.",
+    "outputFormat": "Output on a single line the row number which has maximum 1's.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3 3\n0 1 1\n0 1 1\n0 1 1",
+        "output": "1",
+        "explanation": "All rows have the same number of 1's, so the first row is returned."
+      },
+      {
+        "id": "sample_2",
+        "input": "3 3\n0 0 0\n0 1 1\n1 1 1",
+        "output": "3",
+        "explanation": "The third row has the most 1's, so it is returned."
+      },
+      {
+        "id": "sample_3",
+        "input": "3 3\n1 1 1\n0 1 1\n0 0 1",
+        "output": "1",
+        "explanation": "The first row has the most 1's, so it is returned."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1 1\n0",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1001 1001\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "3 3\n1 1 1\n1 1 1\n1 1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "3 3\n0 0 0\n0 0 0\n0 0 0",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "10 10\n1 0 1 0 1 0 1 0 1 0\n0 1 0 1 0 1 0 1 0 1\n1 1 1 1 1 1 1 1 1 1\n0 0 0 0 0 0 0 0 0 0\n1 1 1 1 1 1 1 1 1 1\n0 0 0 0 0 0 0 0 0 0\n1 0 1 0 1 0 1 0 1 0\n0 1 0 1 0 1 0 1 0 1\n1 1 1 1 1 1 1 1 1 1\n0 0 0 0 0 0 0 0 0 0",
+        "expectedOutput": "3",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved by iterating over each row in the matrix and using binary search to find the first occurrence of 1 in the row. The row with the most 1's will be the row with the smallest index of the first 1. If there are multiple rows with the same maximum number of 1's, the first row will be returned.",
+    "timeComplexity": "O(N * log M) per test case, where N is the number of rows and M is the number of columns.",
+    "spaceComplexity": "O(1) - no additional space is used.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <assert.h>\n\nint firstOne(int row[], int low, int high) {\n    while (low <= high) {\n        int mid = low + (high - low) / 2;\n        if ((mid == 0 || row[mid - 1] == 0) && row[mid] == 1)\n            return mid;\n        else if (row[mid] == 0)\n            return firstOne(row, mid + 1, high);\n        else\n            return firstOne(row, low, mid - 1);\n    }\n    return -1; \n}\n\nint maxOneRow(int mat[][1001], int m, int n) {\n    int maxones = 0, row = 0;\n    for(int i = 0; i < m; i++) {\n        int ones = n - firstOne(mat[i], 0, n - 1);\n        if(ones > maxones) {\n            maxones = ones;\n            row = i;\n        }\n    }\n    return row + 1; \n}\n\nint main() {\n    int n, m;\n    scanf(\"%d %d\", &n, &m);\n    assert(1 <= n && n <= 1001);\n    assert(1 <= m && m <= 1001);\n\n    int mat[1001][1001];\n    for (int i = 0; i < n; i++) {\n        for (int j = 0; j < m; j++) {\n            scanf(\"%d\", &mat[i][j]);\n            assert(mat[i][j] == 0 || mat[i][j] == 1);\n        }\n    }\n\n    printf(\"%d\\n\", maxOneRow(mat, n, m));\n\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nint firstOne(vector<int> &row, int low, int high) {\n    while (low <= high) {\n        int mid = low + (high - low) / 2;\n        if ((mid == 0 || row[mid - 1] == 0) && row[mid] == 1)\n            return mid;\n        else if (row[mid] == 0)\n            return firstOne(row, mid + 1, high);\n        else\n            return firstOne(row, low, mid - 1);\n    }\n    return -1; \n}\n\nint maxOneRow(vector<vector<int>>& mat) {\n    int m = mat.size();\n    int n = mat[0].size();\n    int maxones = 0, row = 0;\n    for(int i = 0; i < m; i++) {\n        int ones = n - firstOne(mat[i], 0, n - 1);\n        if(ones > maxones) {\n            maxones = ones;\n            row = i;\n        }\n    }\n    return row + 1; \n}\n\nint main() {\n    int n, m;\n    cin >> n >> m;\n    assert(1 <= n && n <= 1001);\n    assert(1 <= m && m <= 1001);\n\n    vector<vector<int> > mat(n, vector<int> (m));\n    for(int i = 0; i < n; i++) {\n        for(int j = 0; j < m; j++) {\n            cin >> mat[i][j];\n            assert(mat[i][j] == 0 || mat[i][j] == 1);\n        }\n    }\n\n    cout << maxOneRow(mat);\n\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\n\npublic class Main {\n    public static int firstOne(int[] row, int low, int high) {\n        while (low <= high) {\n            int mid = low + (high - low) / 2;\n            if ((mid == 0 || row[mid - 1] == 0) && row[mid] == 1)\n                return mid;\n            else if (row[mid] == 0)\n                return firstOne(row, mid + 1, high);\n            else\n                return firstOne(row, low, mid - 1);\n        }\n        return -1; \n    }\n\n    public static int maxOneRow(int[][] mat) {\n        int maxones = 0;\n        int rowIdx = 0;\n        for (int i = 0; i < mat.length; i++) {\n            int ones = mat[i].length - firstOne(mat[i], 0, mat[i].length - 1);\n            if (ones > maxones) {\n                maxones = ones;\n                rowIdx = i;\n            }\n        }\n        return rowIdx + 1;\n    }\n\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n\n        int n = scanner.nextInt();\n        int m = scanner.nextInt();\n        assert (1 <= n && n <= 1001);\n        assert (1 <= m && m <= 1001);\n\n        int[][] mat = new int[n][m];\n        for (int i = 0; i < n; i++) {\n            for (int j = 0; j < m; j++) {\n                mat[i][j] = scanner.nextInt();\n                assert (mat[i][j] == 0 || mat[i][j] == 1);\n            }\n        }\n\n        System.out.println(maxOneRow(mat));\n    }\n}",
+      "Python3": "def firstOne(row, low, high):\n    while low <= high:\n        mid = low + (high - low) // 2\n        if (mid == 0 or row[mid - 1] == 0) and row[mid] == 1:\n            return mid\n        elif row[mid] == 0:\n            return firstOne(row, mid + 1, high)\n        else:\n            return firstOne(row, low, mid - 1)\n    return -1\n\ndef maxOneRow(mat):\n    maxones = 0\n    row_idx = 0\n    for i, row in enumerate(mat):\n        ones = len(row) - firstOne(row, 0, len(row) - 1)\n        if ones > maxones:\n            maxones = ones\n            row_idx = i\n    return row_idx + 1\n\nn, m = map(int, input().split())\nassert 1 <= n <= 1001\nassert 1 <= m <= 1001\n\nmat = [list(map(int, input().split())) for _ in range(n)]\nfor row in mat:\n    for elem in row:\n        assert elem == 0 or elem == 1\n\nprint(maxOneRow(mat))\n",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet i = 0;\n\nfunction firstOne(row, low, high) {\n    while (low <= high) {\n        const mid = low + Math.floor((high - low) / 2);\n        if ((mid === 0 || row[mid - 1] === 0) && row[mid] === 1)\n            return mid;\n        else if (row[mid] === 0)\n            return firstOne(row, mid + 1, high);\n        else\n            return firstOne(row, low, mid - 1);\n    }\n    return -1;\n}\n\nfunction maxOneRowInMatrix(mat) {\n    const m = mat.length;\n    const n = mat[0].length;\n    let maxOnes = 0;\n    let rowIndex = 0;\n    for (let i = 0; i < m; i++) {\n        const ones = n - firstOne(mat[i], 0, n - 1);\n        if (ones > maxOnes) {\n            maxOnes = ones;\n            rowIndex = i;\n        }\n    }\n    return rowIndex + 1;\n}\n\nconst [n, m] = lines[i++].split(' ').map(Number);\nassert(1 <= n && n <= 1001);\nassert(1 <= m && m <= 1001);\n\nlet mat = [];\nfor (let i = 0; i < n; i++) {\n    mat.push(lines[i++].split(' ').map(Number));\n}\nfor (let row of mat) {\n    for (let elem of row) {\n        assert(elem === 0 || elem === 1);\n    }\n}\n\nconst result = maxOneRowInMatrix(mat);\nconsole.log(result);\n"
+    }
+  }
+}

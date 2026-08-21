@@ -1,0 +1,138 @@
+{
+  "questionId": "Q8610",
+  "title": "BFS Ordering",
+  "slug": "bfs-ordering",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "BFS",
+      "Lexicographically Minimal",
+      "Sorting",
+      "Queue"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Graphs"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given an undirected connected graph with NNN nodes and MMM edges. You are also given a node XXX.\n\nA sequence in which all the nodes of a graph appear exactly once is called a **BFS ordering** if and only the breadth first search algorithm starting from the node XXX can output it as a result.\n\nYou need to print the lexicographically minimal **BFS ordering** of the given graph that starts from the node XXX.\n\n\nInput Format\n\n\nThe first line of the input contains a single integer TTT - the number of test cases. The description of TTT test cases follows.\n\n\n\n\nThe first line of each test case contains three space-separated integers NNN, MMM and XXX.\n\n\n\n\nMMM lines follow. The iii-th of these lines contains two space-separated integers uiu_iui​ and viv_ivi​ denoting an edge of the graph.\n\n\n\n\n\nOutput Format\n\n\nFor each test case, print a single line.\n\n\n\n\nIn that line, print NNN space-separated integers ― the lexicographically minimal **BFS ordering** of the given graph.",
+    "constraints": [
+      "1 ≤ T ≤ 100",
+      "1 ≤ N ≤ 2·10^5 (sum of N over all test cases ≤ 4·10^5)",
+      "N‑1 ≤ M ≤ min(2·10^5, N·(N‑1)/2) (sum of M over all test cases ≤ 4·10^5)",
+      "1 ≤ X ≤ N",
+      "1 ≤ u, v ≤ N, u ≠ v",
+      "No multiple edges, the graph is connected"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, the first line contains three integers N, M and X — the number of nodes, the number of edges and the starting node. Then M lines follow, each containing two integers u and v denoting an undirected edge between nodes u and v. The graph is connected.",
+    "outputFormat": "For each test case output a single line with N space‑separated integers — the lexicographically minimal BFS ordering that starts from node X.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n5 5 2\n4 2\n1 3\n2 1\n3 4\n2 5\n5 7 5\n1 2\n2 5\n5 4\n2 4\n1 4\n1 3\n3 4",
+        "output": "2 1 4 5 3\n5 2 4 1 3",
+        "explanation": "First test case: BFS from 2 visits neighbours 1,4,5 (sorted) then node 3. Second test case: BFS from 5 visits neighbours 2,4 then nodes 1,3."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n4 3 3\n3 1\n3 2\n2 4",
+        "output": "3 1 2 4",
+        "explanation": "From start 3, neighbours are 1 and 2. After visiting 1 (no new nodes) we visit 2 which adds 4."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each test case build an adjacency list. Sort every adjacency list in increasing order. Perform a standard BFS starting from X using a queue. When a node is popped, append it to the answer and iterate over its sorted neighbours; for each unvisited neighbour mark it visited and push it into the queue. Because neighbours are enqueued in increasing order, the produced order is the smallest possible lexicographically among all BFS orders that can be generated from X. The algorithm runs in O(N + M log D) where D is the average degree (sorting each adjacency list).",
+    "timeComplexity": "O(N + M log maxDegree) per test case (sorting dominates).",
+    "spaceComplexity": "O(N + M) for adjacency lists, visited array and queue.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\ntypedef struct Node {int v; struct Node* next;} Node;\n\nint cmp(const void* a, const void* b){return *(int*)a - *(int*)b;}\n\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    while(T--){\n        int N,M,X; scanf(\"%d %d %d\", &N, &M, &X);\n        int *deg = calloc(N+1, sizeof(int));\n        int (*adj)[];\n        // temporary storage of edges\n        int *u = malloc(M*sizeof(int));\n        int *v = malloc(M*sizeof(int));\n        for(int i=0;i<M;i++){\n            scanf(\"%d %d\", &u[i], &v[i]);\n            deg[u[i]]++; deg[v[i]]++;\n        }\n        // allocate adjacency arrays\n        int **g = malloc((N+1)*sizeof(int*));\n        for(int i=1;i<=N;i++) g[i]=malloc(deg[i]*sizeof(int));\n        int *pos = calloc(N+1, sizeof(int));\n        for(int i=0;i<M;i++){\n            int a=u[i], b=v[i];\n            g[a][pos[a]++] = b;\n            g[b][pos[b]++] = a;\n        }\n        free(u); free(v); free(pos);\n        for(int i=1;i<=N;i++) qsort(g[i], deg[i], sizeof(int), cmp);\n        int *vis = calloc(N+1, sizeof(int));\n        int *queue = malloc(N*sizeof(int));\n        int head=0, tail=0;\n        queue[tail++] = X; vis[X]=1;\n        while(head<tail){\n            int cur = queue[head++];\n            printf(\"%d\", cur);\n            if(head!=1 || tail!=1) printf(\" \");\n            for(int i=0;i<deg[cur];i++){\n                int nb = g[cur][i];\n                if(!vis[nb]){vis[nb]=1; queue[tail++]=nb;}\n            }\n        }\n        printf(\"\\n\");\n        for(int i=1;i<=N;i++) free(g[i]);\n        free(g); free(deg); free(vis); free(queue);\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N,M,X; cin>>N>>M>>X;\n        vector<vector<int>> g(N+1);\n        for(int i=0;i<M;i++){\n            int u,v; cin>>u>>v;\n            g[u].push_back(v);\n            g[v].push_back(u);\n        }\n        for(int i=1;i<=N;i++) sort(g[i].begin(), g[i].end());\n        vector<int> ans; ans.reserve(N);\n        vector<char> vis(N+1,0);\n        queue<int> q; q.push(X); vis[X]=1;\n        while(!q.empty()){\n            int cur=q.front(); q.pop();\n            ans.push_back(cur);\n            for(int nb: g[cur]) if(!vis[nb]){vis[nb]=1; q.push(nb);}        }\n        for(int i=0;i<N;i++){\n            if(i) cout<<' ';\n            cout<<ans[i];\n        }\n        cout<<'\\n';\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner(System.in);\n        int T = fs.nextInt();\n        StringBuilder out = new StringBuilder();\n        while (T-- > 0) {\n            int N = fs.nextInt();\n            int M = fs.nextInt();\n            int X = fs.nextInt();\n            List<Integer>[] g = new ArrayList[N+1];\n            for (int i = 1; i <= N; i++) g[i] = new ArrayList<>();\n            for (int i = 0; i < M; i++) {\n                int u = fs.nextInt();\n                int v = fs.nextInt();\n                g[u].add(v);\n                g[v].add(u);\n            }\n            for (int i = 1; i <= N; i++) Collections.sort(g[i]);\n            boolean[] vis = new boolean[N+1];\n            int[] ans = new int[N];\n            int idx = 0;\n            ArrayDeque<Integer> q = new ArrayDeque<>();\n            q.add(X); vis[X] = true;\n            while (!q.isEmpty()) {\n                int cur = q.poll();\n                ans[idx++] = cur;\n                for (int nb : g[cur]) if (!vis[nb]) {vis[nb] = true; q.add(nb);}            }\n            for (int i = 0; i < N; i++) {\n                if (i > 0) out.append(' ');\n                out.append(ans[i]);\n            }\n            out.append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n    // fast scanner\n    static class FastScanner {\n        private final InputStream in;\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        FastScanner(InputStream in) { this.in = in; }\n        private int readByte() throws IOException {\n            if (ptr >= len) { len = in.read(buffer); ptr = 0; if (len <= 0) return -1; }\n            return buffer[ptr++];\n        }\n        int nextInt() throws IOException {\n            int c, sign = 1, val = 0;\n            do { c = readByte(); } while (c <= ' ');\n            if (c == '-') { sign = -1; c = readByte(); }\n            while (c > ' ') { val = val * 10 + (c - '0'); c = readByte(); }\n            return val * sign;\n        }\n    }\n}\n",
+      "Python3": "import sys\nfrom collections import deque\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it)); M = int(next(it)); X = int(next(it))\n        g = [[] for _ in range(N+1)]\n        for _ in range(M):\n            u = int(next(it)); v = int(next(it))\n            g[u].append(v); g[v].append(u)\n        for lst in g:\n            lst.sort()\n        vis = [False]*(N+1)\n        q = deque([X])\n        vis[X] = True\n        order = []\n        while q:\n            cur = q.popleft()\n            order.append(str(cur))\n            for nb in g[cur]:\n                if not vis[nb]:\n                    vis[nb] = True\n                    q.append(nb)\n        out_lines.append(' '.join(order))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/).map(Number);\nlet idx = 0;\nconst T = input[idx++];\nlet outputs = [];\nfor (let t = 0; t < T; t++) {\n  const N = input[idx++];\n  const M = input[idx++];\n  const X = input[idx++];\n  const g = Array.from({length: N + 1}, () => []);\n  for (let i = 0; i < M; i++) {\n    const u = input[idx++];\n    const v = input[idx++];\n    g[u].push(v);\n    g[v].push(u);\n  }\n  for (let i = 1; i <= N; i++) g[i].sort((a, b) => a - b);\n  const visited = new Array(N + 1).fill(false);\n  const queue = [];\n  const order = [];\n  queue.push(X);\n  visited[X] = true;\n  while (queue.length) {\n    const cur = queue.shift();\n    order.push(cur);\n    for (const nb of g[cur]) {\n      if (!visited[nb]) {\n        visited[nb] = true;\n        queue.push(nb);\n      }\n    }\n  }\n  outputs.push(order.join(' '));\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

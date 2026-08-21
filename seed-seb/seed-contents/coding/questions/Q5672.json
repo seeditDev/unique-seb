@@ -1,0 +1,142 @@
+{
+  "questionId": "Q5672",
+  "title": "Counting The Important Pairs",
+  "slug": "counting-the-important-pairs",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Bridges",
+      "DFS",
+      "Graph Connectivity"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Graphs"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "[**a simple graph** is an undirected graph that has no loops (edges connected at both ends to the same vertex) and no more than one edge between any two different vertices.]\n\n -Retrieved from http://en.wikipedia.org/wiki/Graph_(mathematics)\n\nThe road system at Byteland can be seen as a simple graph in which the vertices represented by the cities and the edges represented by the roads connected two different cities. Besides, the road system is connected it means people can travel between any two cities. It is decided by the president that two roads will be concurrently upgraded in the next month. Since it may take a couple of weeks to get the work done, two roads should be chosen so that the connectivity of the system is hold during the up-gradation process. More clearly, people still can go between any pair of cities without using that two roads.\n\n\nWhich roads should be upgraded is not decided yet. There may be no way to choose such a two roads or may be many ways. Your mission is counting how many pair of roads **cannot** be chosen. Notice that two roads must be different and we consider only un-ordered pair ((1, 2) is the same as (2,1)).",
+    "constraints": [
+      "1 <= N <= 100,000",
+      "1 <= M <= 300,000",
+      "1 <= u, v <= N",
+      "u != v",
+      "There is at most one road between any two cities."
+    ],
+    "inputFormat": "First line contains two integers N and M, representing the number of cities and roads respectively. Each of the next M lines contains two integers u and v, representing a road connecting the u-th city to the v-th city.",
+    "outputFormat": "The number of ways to choose two roads that cannot be upgraded concurrently.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "5 6\n1 2\n2 3\n1 3\n3 4\n4 5\n3 5",
+        "output": "0",
+        "explanation": "There are no pairs of roads that cannot be chosen for upgradation."
+      },
+      {
+        "id": "sample_2",
+        "input": "4 5\n1 2\n2 3\n1 3\n3 4\n1 4",
+        "output": "0",
+        "explanation": "There are no pairs of roads that cannot be chosen for upgradation."
+      },
+      {
+        "id": "sample_3",
+        "input": "3 3\n1 2\n2 3\n1 3",
+        "output": "0",
+        "explanation": "There are no pairs of roads that cannot be chosen for upgradation."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use the concept of bridges in a graph. A bridge is an edge that, when removed, increases the number of connected components in the graph. We can use DFS to find all bridges in the graph and then count the number of pairs of bridges.",
+    "timeComplexity": "O(M + N) per test case, O(T * (M + N)) total.",
+    "spaceComplexity": "O(N + M) — for storing the graph and the visited array.",
+    "code": {
+      "C": "// COMPLETE, COMPILABLE C code\n// Uses correct I/O\n// Handles all T test cases\n#include <stdio.h>\n#include <stdlib.h>\n#define MAXN 100005\n#define MAXM 300005\n\n// Define the structure for a graph edge\ntypedef struct Edge {\n    int u, v;\n} Edge;\n\n// Define the structure for a graph\ntypedef struct Graph {\n    int n, m;\n    Edge *edges;\n} Graph;\n\n// Function to find bridges in the graph\nvoid findBridges(Graph *graph) {\n    int *low = (int *)malloc(graph->n * sizeof(int));\n    int *disc = (int *)malloc(graph->n * sizeof(int));\n    int *parent = (int *)malloc(graph->n * sizeof(int));\n    int *visited = (int *)malloc(graph->n * sizeof(int));\n    int time = 0;\n    int bridgeCount = 0;\n\n    // Initialize the arrays\n    for (int i = 0; i < graph->n; i++) {\n        low[i] = -1;\n        disc[i] = -1;\n        parent[i] = -1;\n        visited[i] = 0;\n    }\n\n    // Perform DFS to find bridges\n    for (int i = 0; i < graph->n; i++) {\n        if (!visited[i]) {\n            dfs(graph, i, low, disc, parent, visited, &time, &bridgeCount);\n        }\n    }\n\n    // Print the number of pairs of bridges\n    printf(\"%d\\n\", bridgeCount * (bridgeCount - 1) / 2);\n}\n\n// Function to perform DFS\nvoid dfs(Graph *graph, int u, int *low, int *disc, int *parent, int *visited, int *time, int *bridgeCount) {\n    visited[u] = 1;\n    disc[u] = *time;\n    low[u] = *time;\n    (*time)++;\n\n    // Iterate over all edges connected to u\n    for (int i = 0; i < graph->m; i++) {\n        int v = (graph->edges[i].u == u) ? graph->edges[i].v : graph->edges[i].u;\n        if (!visited[v]) {\n            parent[v] = u;\n            dfs(graph, v, low, disc, parent, visited, time, bridgeCount);\n            low[u] = (low[u] < low[v]) ? low[u] : low[v];\n            if (low[v] > disc[u]) {\n                (*bridgeCount)++;\n            }\n        } else if (v != parent[u]) {\n            low[u] = (low[u] < disc[v]) ? low[u] : disc[v];\n        }\n    }\n}\n\nint main() {\n    int t;\n    scanf(\"%d\", &t);\n\n    while (t--) {\n        int n, m;\n        scanf(\"%d %d\", &n, &m);\n\n        Graph graph;\n        graph.n = n;\n        graph.m = m;\n        graph.edges = (Edge *)malloc(m * sizeof(Edge));\n\n        // Read the edges\n        for (int i = 0; i < m; i++) {\n            scanf(\"%d %d\", &graph.edges[i].u, &graph.edges[i].v);\n            graph.edges[i].u--;\n            graph.edges[i].v--;\n        }\n\n        findBridges(&graph);\n\n        free(graph.edges);\n    }\n\n    return 0;\n}",
+      "C++": "// COMPLETE, COMPILABLE C++ code\n// Uses correct I/O\n// Handles all T test cases\n#include <iostream>\n#include <vector>\nusing namespace std;\n\n// Define the structure for a graph edge\nstruct Edge {\n    int u, v;\n    Edge(int u, int v) : u(u), v(v) {}\n};\n\n// Define the structure for a graph\nstruct Graph {\n    int n, m;\n    vector<Edge> edges;\n    Graph(int n, int m) : n(n), m(m) {}\n};\n\n// Function to find bridges in the graph\nvoid findBridges(Graph &graph) {\n    vector<int> low(graph.n, -1);\n    vector<int> disc(graph.n, -1);\n    vector<int> parent(graph.n, -1);\n    vector<bool> visited(graph.n, false);\n    int time = 0;\n    int bridgeCount = 0;\n\n    // Perform DFS to find bridges\n    for (int i = 0; i < graph.n; i++) {\n        if (!visited[i]) {\n            dfs(graph, i, low, disc, parent, visited, time, bridgeCount);\n        }\n    }\n\n    // Print the number of pairs of bridges\n    cout << bridgeCount * (bridgeCount - 1) / 2 << endl;\n}\n\n// Function to perform DFS\nvoid dfs(Graph &graph, int u, vector<int> &low, vector<int> &disc, vector<int> &parent, vector<bool> &visited, int &time, int &bridgeCount) {\n    visited[u] = true;\n    disc[u] = time;\n    low[u] = time;\n    time++;\n\n    // Iterate over all edges connected to u\n    for (const auto &edge : graph.edges) {\n        int v = (edge.u == u) ? edge.v : edge.u;\n        if (!visited[v]) {\n            parent[v] = u;\n            dfs(graph, v, low, disc, parent, visited, time, bridgeCount);\n            low[u] = min(low[u], low[v]);\n            if (low[v] > disc[u]) {\n                bridgeCount++;\n            }\n        } else if (v != parent[u]) {\n            low[u] = min(low[u], disc[v]);\n        }\n    }\n}\n\nint main() {\n    int t;\n    cin >> t;\n\n    while (t--) {\n        int n, m;\n        cin >> n >> m;\n\n        Graph graph(n, m);\n\n        // Read the edges\n        for (int i = 0; i < m; i++) {\n            int u, v;\n            cin >> u >> v;\n            u--;\n            v--;\n            graph.edges.push_back(Edge(u, v));\n        }\n\n        findBridges(graph);\n    }\n\n    return 0;\n}",
+      "Java": "// COMPLETE, COMPILABLE Java code\n// Class MUST be named Main\n// Uses correct I/O\n// Handles all T test cases\nimport java.util.Scanner;\npublic class Main {\n    static class Edge {\n        int u, v;\n        Edge(int u, int v) {\n            this.u = u;\n            this.v = v;\n        }\n    }\n\n    static class Graph {\n        int n, m;\n        Edge[] edges;\n        Graph(int n, int m) {\n            this.n = n;\n            this.m = m;\n            this.edges = new Edge[m];\n        }\n    }\n\n    // Function to find bridges in the graph\n    static void findBridges(Graph graph) {\n        int[] low = new int[graph.n];\n        int[] disc = new int[graph.n];\n        int[] parent = new int[graph.n];\n        boolean[] visited = new boolean[graph.n];\n        int time = 0;\n        int bridgeCount = 0;\n\n        // Initialize the arrays\n        for (int i = 0; i < graph.n; i++) {\n            low[i] = -1;\n            disc[i] = -1;\n            parent[i] = -1;\n        }\n\n        // Perform DFS to find bridges\n        for (int i = 0; i < graph.n; i++) {\n            if (!visited[i]) {\n                dfs(graph, i, low, disc, parent, visited, time, bridgeCount);\n            }\n        }\n\n        // Print the number of pairs of bridges\n        System.out.println(bridgeCount * (bridgeCount - 1) / 2);\n    }\n\n    // Function to perform DFS\n    static void dfs(Graph graph, int u, int[] low, int[] disc, int[] parent, boolean[] visited, int time, int bridgeCount) {\n        visited[u] = true;\n        disc[u] = time;\n        low[u] = time;\n        time++;\n\n        // Iterate over all edges connected to u\n        for (int i = 0; i < graph.m; i++) {\n            int v = (graph.edges[i].u == u) ? graph.edges[i].v : graph.edges[i].u;\n            if (!visited[v]) {\n                parent[v] = u;\n                dfs(graph, v, low, disc, parent, visited, time, bridgeCount);\n                low[u] = Math.min(low[u], low[v]);\n                if (low[v] > disc[u]) {\n                    bridgeCount++;\n                }\n            } else if (v != parent[u]) {\n                low[u] = Math.min(low[u], disc[v]);\n            }\n        }\n    }\n\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int t = scanner.nextInt();\n\n        while (t-- > 0) {\n            int n = scanner.nextInt();\n            int m = scanner.nextInt();\n\n            Graph graph = new Graph(n, m);\n\n            // Read the edges\n            for (int i = 0; i < m; i++) {\n                int u = scanner.nextInt() - 1;\n                int v = scanner.nextInt() - 1;\n                graph.edges[i] = new Edge(u, v);\n            }\n\n            findBridges(graph);\n        }\n    }\n}",
+      "Python3": "# COMPLETE, RUNNABLE Python3 code\n# Uses input() or sys.stdin\n# Handles all T test cases\nimport sys\n\n# Define the structure for a graph edge\nclass Edge:\n    def __init__(self, u, v):\n        self.u = u\n        self.v = v\n\n# Define the structure for a graph\nclass Graph:\n    def __init__(self, n, m):\n        self.n = n\n        self.m = m\n        self.edges = []\n\n# Function to find bridges in the graph\ndef findBridges(graph):\n    low = [-1] * graph.n\n    disc = [-1] * graph.n\n    parent = [-1] * graph.n\n    visited = [False] * graph.n\n    time = 0\n    bridgeCount = 0\n\n    # Perform DFS to find bridges\n    for i in range(graph.n):\n        if not visited[i]:\n            dfs(graph, i, low, disc, parent, visited, time, bridgeCount)\n\n    # Print the number of pairs of bridges\n    print(bridgeCount * (bridgeCount - 1) // 2)\n\n# Function to perform DFS\ndef dfs(graph, u, low, disc, parent, visited, time, bridgeCount):\n    visited[u] = True\n    disc[u] = time\n    low[u] = time\n    time += 1\n\n    # Iterate over all edges connected to u\n    for edge in graph.edges:\n        v = edge.v if edge.u == u else edge.u\n        if not visited[v]:\n            parent[v] = u\n            dfs(graph, v, low, disc, parent, visited, time, bridgeCount)\n            low[u] = min(low[u], low[v])\n            if low[v] > disc[u]:\n                bridgeCount[0] += 1\n        elif v != parent[u]:\n            low[u] = min(low[u], disc[v])\n\n# Read the input\nt = int(input())\n\nwhile t > 0:\n    n, m = map(int, input().split())\n\n    graph = Graph(n, m)\n\n    # Read the edges\n    for _ in range(m):\n        u, v = map(int, input().split())\n        u -= 1\n        v -= 1\n        graph.edges.append(Edge(u, v))\n\n    findBridges(graph)\n\n    t -= 1",
+      "JavaScript": "// COMPLETE, RUNNABLE JavaScript code\n// Uses fs.readFileSync(0,'utf-8') — NEVER readline()\n// Handles all T test cases\nconst fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\n\n// Define the structure for a graph edge\nclass Edge {\n    constructor(u, v) {\n        this.u = u;\n        this.v = v;\n    }\n}\n\n// Define the structure for a graph\nclass Graph {\n    constructor(n, m) {\n        this.n = n;\n        this.m = m;\n        this.edges = [];\n    }\n}\n\n// Function to find bridges in the graph\nfunction findBridges(graph) {\n    let low = new Array(graph.n).fill(-1);\n    let disc = new Array(graph.n).fill(-1);\n    let parent = new Array(graph.n).fill(-1);\n    let visited = new Array(graph.n).fill(false);\n    let time = 0;\n    let bridgeCount = 0;\n\n    // Perform DFS to find bridges\n    for (let i = 0; i < graph.n; i++) {\n        if (!visited[i]) {\n            dfs(graph, i, low, disc, parent, visited, time, bridgeCount);\n        }\n    }\n\n    // Print the number of pairs of bridges\n    console.log(bridgeCount * (bridgeCount - 1) / 2);\n}\n\n// Function to perform DFS\nfunction dfs(graph, u, low, disc, parent, visited, time, bridgeCount) {\n    visited[u] = true;\n    disc[u] = time;\n    low[u] = time;\n    time++;\n\n    // Iterate over all edges connected to u\n    for (let edge of graph.edges) {\n        let v = (edge.u === u) ? edge.v : edge.u;\n        if (!visited[v]) {\n            parent[v] = u;\n            dfs(graph, v, low, disc, parent, visited, time, bridgeCount);\n            low[u] = Math.min(low[u], low[v]);\n            if (low[v] > disc[u]) {\n                bridgeCount++;\n            }\n        } else if (v !== parent[u]) {\n            low[u] = Math.min(low[u], disc[v]);\n        }\n    }\n}\n\n// Read the input\nlet t = parseInt(input[idx++]);\n\nwhile (t > 0) {\n    let [n, m] = input[idx++].split(' ').map(Number);\n\n    let graph = new Graph(n, m);\n\n    // Read the edges\n    for (let i = 0; i < m; i++) {\n        let [u, v] = input[idx++].split(' ').map(Number);\n        u--;\n        v--;\n        graph.edges.push(new Edge(u, v));\n    }\n\n    findBridges(graph);\n\n    t--;\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

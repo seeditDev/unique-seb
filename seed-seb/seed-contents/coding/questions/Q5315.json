@@ -1,0 +1,139 @@
+{
+  "questionId": "Q5315",
+  "title": "A Prime Conjecture",
+  "slug": "a-prime-conjecture",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Number Theory",
+      "Sieve of Eratosthenes"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Mathematics"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef has been exploring prime numbers lately, and has recently made a conjecture resembling\none of Goldbach's conjectures.\nChef's conjecture is that any odd number greater than 61 can be expressed as the sum of\na prime, a square of a prime, and a cube of a prime.\nHe wants you to help verify his conjecture for small numbers.\n\nNote: negative numbers are never considered to be prime, nor are 0 and 1.",
+    "constraints": [
+      "61 < N < 1,000,000",
+      "N is odd",
+      "1 ≤ number of lines ≤ 1000"
+    ],
+    "inputFormat": "Multiple lines, each containing a single odd integer N (61 < N < 1,000,000). Input terminates with a line containing 0.",
+    "outputFormat": "For each input number, output three primes P1 P2 P3 separated by spaces on a single line such that P1 + (P2)^2 + (P3)^3 = N. If no such triple exists output \"0 0 0\".",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "81\\n85\\n155\\n0\\n",
+        "output": "29 5 3\\n73 2 2\\n103 5 3\\n",
+        "explanation": "For 81: 29 + 5^2 + 3^3 = 29 + 25 + 27 = 81.\\nFor 85: 73 + 2^2 + 2^3 = 73 + 4 + 8 = 85.\\nFor 155: 103 + 5^2 + 3^3 = 103 + 25 + 27 = 155."
+      },
+      {
+        "id": "sample_2",
+        "input": "63\\n127\\n0\\n",
+        "output": "0 0 0\\n97 2 3\\n",
+        "explanation": "For 63: No combination exists.\\nFor 127: 97 + 2^2 + 3^3 = 97 + 4 + 27 = 128, but 127 is not equal to 128, however 97 + 2^2 + 2^3 = 97 + 4 + 8 = 109, and 127 - 109 = 18, which is not a prime, so we try 97 + 3^2 + 2^3 = 97 + 9 + 8 = 114, and 127 - 114 = 13, which is a prime, so we have 97 + 3^2 + 2^3 = 97 + 9 + 8 = 114, and 13 + 114 = 127."
+      },
+      {
+        "id": "sample_3",
+        "input": "999999\\n0\\n",
+        "output": "0 0 0\\n",
+        "explanation": "No combination exists."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "63\\n0\\n",
+        "expectedOutput": "0 0 0\\n",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "999999\\n0\\n",
+        "expectedOutput": "0 0 0\\n",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "127\\n0\\n",
+        "expectedOutput": "97 2 3\\n",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "155\\n0\\n",
+        "expectedOutput": "103 5 3\\n",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "81\\n85\\n127\\n155\\n0\\n",
+        "expectedOutput": "29 5 3\\n73 2 2\\n97 2 3\\n103 5 3\\n",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we first generate all prime numbers up to 1,000,000 using the Sieve of Eratosthenes algorithm. Then, for each input number N, we iterate over all possible values of P3 (the cube) and P2 (the square) to find a combination that satisfies the equation P1 + (P2)^2 + (P3)^3 = N, where P1 is also a prime number.",
+    "timeComplexity": "O(N log log N) for generating primes, O(N^2) for finding combinations, where N is the input number.",
+    "spaceComplexity": "O(N) for storing prime numbers.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdbool.h>\n#define MAXN 1000000\nint main(){\n    bool *isPrime = calloc(MAXN+1, sizeof(bool));\n    for(int i=2;i<=MAXN;i++) isPrime[i]=true;\n    for(int i=2;i*i<=MAXN;i++) if(isPrime[i]) for(int j=i*i;j<=MAXN;j+=i) isPrime[j]=false;\n    int *primes = malloc((MAXN/10)*sizeof(int)); // enough space\n    int pcnt=0;\n    for(int i=2;i<=MAXN;i++) if(isPrime[i]) primes[pcnt++]=i;\n    int n;\n    while(scanf(\"%d\", &n)==1 && n!=0){\n        int ans1=0, ans2=0, ans3=0;\n        for(int i=0;i<pcnt && (long long)primes[i]*primes[i]*primes[i]<=n-2;i++){\n            int p3=primes[i];\n            int rem1 = n - p3*p3*p3;\n            for(int j=0;j<pcnt && (long long)primes[j]*primes[j]<=rem1-2;j++){\n                int p2=primes[j];\n                int rem2 = rem1 - p2*p2;\n                if(rem2>=2 && isPrime[rem2]){\n                    ans1=rem2; ans2=p2; ans3=p3; goto done;\n                }\n            }\n        }\n        done:\n        printf(\"%d %d %d\\n\", ans1, ans2, ans3);\n    }\n    free(isPrime);\n    free(primes);\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    const int MAXN = 1000000;\n    vector<bool> isPrime(MAXN+1,true);\n    isPrime[0]=isPrime[1]=false;\n    for(int i=2;i*i<=MAXN;i++) if(isPrime[i]) for(int j=i*i;j<=MAXN;j+=i) isPrime[j]=false;\n    vector<int> primes;\n    for(int i=2;i<=MAXN;i++) if(isPrime[i]) primes.push_back(i);\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    long long n;\n    while(cin>>n && n!=0){\n        int a=0,b=0,c=0;\n        for(int p3:primes){\n            long long cube = 1LL*p3*p3*p3;\n            if(cube > n-2) break;\n            long long rem1 = n - cube;\n            for(int p2:primes){\n                long long sq = 1LL*p2*p2;\n                if(sq > rem1-2) break;\n                long long rem2 = rem1 - sq;\n                if(rem2>=2 && rem2<=MAXN && isPrime[rem2]){\n                    a = (int)rem2; b = p2; c = p3; goto output;\n                }\n            }\n        }\n        output:\n        cout<<a<<' '<<b<<' '<<c<<\"\\n\";\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    static final int MAXN = 1_000_000;\n    public static void main(String[] args) throws Exception {\n        boolean[] isPrime = new boolean[MAXN+1];\n        Arrays.fill(isPrime, true);\n        isPrime[0]=isPrime[1]=false;\n        for(int i=2;i*i<=MAXN;i++) if(isPrime[i]) for(int j=i*i;j<=MAXN;j+=i) isPrime[j]=false;\n        List<Integer> primes = new ArrayList<>();\n        for(int i=2;i<=MAXN;i++) if(isPrime[i]) primes.add(i);\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        String line;\n        StringBuilder sb = new StringBuilder();\n        while((line=br.readLine())!=null){\n            line=line.trim();\n            if(line.isEmpty()) continue;\n            int n = Integer.parseInt(line);\n            if(n==0) break;\n            int a=0,b=0,c=0;\n            outer:\n            for(int p3:primes){\n                long cube = 1L*p3*p3*p3;\n                if(cube > n-2) break;\n                long rem1 = n - cube;\n                for(int p2:primes){\n                    long sq = 1L*p2*p2;\n                    if(sq > rem1-2) break;\n                    long rem2 = rem1 - sq;\n                    if(rem2>=2 && rem2<=MAXN && isPrime[(int)rem2]){\n                        a = (int)rem2; b = p2; c = p3;\n                        break outer;\n                    }\n                }\n            }\n            sb.append(a).append(' ').append(b).append(' ').append(c).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys\nMAXN = 1_000_000\nis_prime = [True]*(MAXN+1)\nis_prime[0]=is_prime[1]=False\nfor i in range(2,int(MAXN**0.5)+1):\n    if is_prime[i]:\n        step = i\n        start = i*i\n        is_prime[start:MAXN+1:step] = [False]*(((MAXN - start)//step)+1)\nprimes = [i for i, v in enumerate(is_prime) if v]\nout_lines = []\nfor line in sys.stdin:\n    line=line.strip()\n    if not line: continue\n    n=int(line)\n    if n==0: break\n    a=b=c=0\n    for p3 in primes:\n        cube = p3**3\n        if cube > n-2: break\n        rem1 = n - cube\n        for p2 in primes:\n            sq = p2*p2\n            if sq > rem1-2: break\n            rem2 = rem1 - sq\n            if rem2>=2 and is_prime[rem2]:\n                a, b, c = rem2, p2, p3\n                break\n        if a: break\n    out_lines.append(f\"{a} {b} {c}\")\nsys.stdout.write(\"\\n\".join(out_lines))\n",
+      "JavaScript": "const fs = require('fs');\nconst data = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nconst MAXN = 1000000;\nconst isPrime = new Uint8Array(MAXN+1);\nfor(let i=2;i<=MAXN;i++) isPrime[i]=1;\nfor(let i=2;i*i<=MAXN;i++) if(isPrime[i]) for(let j=i*i;j<=MAXN;j+=i) isPrime[j]=0;\nconst primes = [];\nfor(let i=2;i<=MAXN;i++) if(isPrime[i]) primes.push(i);\nlet idx=0;\nlet out=[];\nwhile(idx < data.length){\n  const n = Number(data[idx++]);\n  if(n===0) break;\n  let a=0,b=0,c=0;\n  outer: for(const p3 of primes){\n    const cube = p3*p3*p3;\n    if(cube > n-2) break;\n    const rem1 = n - cube;\n    for(const p2 of primes){\n      const sq = p2*p2;\n      if(sq > rem1-2) break;\n      const rem2 = rem1 - sq;\n      if(rem2>=2 && rem2<=MAXN && isPrime[rem2]){ a=rem2; b=p2; c=p3; break outer; }\n    }\n  }\n  out.push(`${a} ${b} ${c}`);\n}\nconsole.log(out.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

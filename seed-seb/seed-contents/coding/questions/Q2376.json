@@ -1,0 +1,128 @@
+{
+  "questionId": "Q2376",
+  "title": "Target Practice",
+  "slug": "target-practice",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Probability",
+      "Expected Value",
+      "Dynamic Programming"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ]
+  },
+  "content": {
+    "problemStatement": "Chef has recently taken up marksmanship, but he's not very good at it.\nChef has set up a number of targets in a line.\nWhen Chef shoots at a target, he may hit the target, but he may instead hit\nthe target to the left, or the target to the right\n(or if there is no such target, miss completely).\nChef knows the probability of his shot going straight, left, or right,\nand wants to hit each target at least once using as few shots as possible.\n\nHelp Chef determine the expected number of shots required, provided an optimal strategy is followed.\nNote that Chef may only shoot at targets, but may shoot at a target that's already been hit.\n\n\nInput Format\nInput will begin with an integer T, the number of test cases.\nEach test case will consist of 4 integers:\nN, the number of targets,\nL, the probability of the shot veering to the left,\nS, the probability of the shot going straight,\nand R, the probability of the shot veering to the right.\nL, S, and R are given as percents.\n\n\n\nOutput Format\nFor each test case, output the expected number of shots to hit all targets, rounded to 6 decimal places.",
+    "constraints": [
+      "1 <= T <= 30",
+      "1 <= N <= 18",
+      "0 <= L, S, R <= 100",
+      "L + S + R = 100"
+    ],
+    "inputFormat": "First line contains T, the number of test cases. Each test case contains four integers: N, the number of targets, L, the probability of the shot veering to the left, S, the probability of the shot going straight, and R, the probability of the shot veering to the right. L, S, and R are given as percents.",
+    "outputFormat": "For each test case, output the expected number of shots to hit all targets, rounded to 6 decimal places.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4\n3 25 50 25\n3 10 10 80\n5 25 50 25\n8 30 35 35",
+        "output": "4.666667\n10.361111\n7.541667\n13.107725",
+        "explanation": "Explanation:\nIn the first example, Chef shoots at the center target until any 2 targets have been hit,\nthen he shoots at the remaining target."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n1 0 100 0",
+        "output": "1.000000",
+        "explanation": "Explanation:\nIn this example, Chef shoots at the only target and hits it with probability 1."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n2 50 0 50",
+        "output": "4.000000",
+        "explanation": "Explanation:\nIn this example, Chef shoots at one of the targets and hits it with probability 0.5.\nThen he shoots at the other target and hits it with probability 0.5."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 0 100 0",
+        "expectedOutput": "1.000000",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n18 0 100 0",
+        "expectedOutput": "18.000000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n5 25 50 25",
+        "expectedOutput": "7.541667",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n3 10 10 80",
+        "expectedOutput": "10.361111",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "4\n3 25 50 25\n3 10 10 80\n5 25 50 25\n8 30 35 35",
+        "expectedOutput": "4.666667\n10.361111\n7.541667\n13.107725",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved using dynamic programming. We can calculate the expected number of shots required to hit each target, given that we have already hit the previous targets. The key insight is that the expected number of shots required to hit a target is the reciprocal of the probability of hitting that target, plus the expected number of shots required to hit the previous targets, weighted by the probabilities of missing the current target and hitting the previous targets.",
+    "timeComplexity": "O(T * N) per test case, O(T * N) total. No precomputation is done.",
+    "spaceComplexity": "O(N) \u2014 the dominant structure is the dp array.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <math.h>\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int N, L, S, R;\n        scanf(\"%d %d %d %d\", &N, &L, &S, &R);\n        double dp[N + 1];\n        dp[0] = 0;\n        for (int i = 1; i <= N; i++) {\n            dp[i] = 1 / (S / 100.0);\n            if (i > 1) {\n                dp[i] += (L / 100.0) * dp[i - 1];\n            }\n            if (i < N) {\n                dp[i] += (R / 100.0) * dp[i + 1];\n            }\n        }\n        printf(\"%.6f\\n\", dp[N]);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <cmath>\nusing namespace std;\n\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        int N, L, S, R;\n        cin >> N >> L >> S >> R;\n        double dp[N + 1];\n        dp[0] = 0;\n        for (int i = 1; i <= N; i++) {\n            dp[i] = 1 / (S / 100.0);\n            if (i > 1) {\n                dp[i] += (L / 100.0) * dp[i - 1];\n            }\n            if (i < N) {\n                dp[i] += (R / 100.0) * dp[i + 1];\n            }\n        }\n        cout << fixed;\n        cout.precision(6);\n        cout << dp[N] << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n        while (T-- > 0) {\n            int N = sc.nextInt();\n            int L = sc.nextInt();\n            int S = sc.nextInt();\n            int R = sc.nextInt();\n            double[] dp = new double[N + 1];\n            dp[0] = 0;\n            for (int i = 1; i <= N; i++) {\n                dp[i] = 1 / (S / 100.0);\n                if (i > 1) {\n                    dp[i] += (L / 100.0) * dp[i - 1];\n                }\n                if (i < N) {\n                    dp[i] += (R / 100.0) * dp[i + 1];\n                }\n            }\n            System.out.printf(\"%.6f\\n\", dp[N]);\n        }\n    }\n}",
+      "Python3": "import sys\n\nT = int(input())\nfor _ in range(T):\n    N, L, S, R = map(int, input().split())\n    dp = [0] * (N + 1)\n    dp[0] = 0\n    for i in range(1, N + 1):\n        dp[i] = 1 / (S / 100.0)\n        if i > 1:\n            dp[i] += (L / 100.0) * dp[i - 1]\n        if i < N:\n            dp[i] += (R / 100.0) * dp[i + 1]\n    print(\"{:.6f}\".format(dp[N]))",
+      "JavaScript": "const lines = require('fs').readFileSync(0, 'utf-8').trim().split('\\n');\nlet i = 0;\nconst readline = () => lines[i++];\n\nconst T = parseInt(readline());\nfor (let i = 0; i < T; i++) {\n    const [N, L, S, R] = readline().split(' ').map(Number);\n    const dp = new Array(N + 1).fill(0);\n    dp[0] = 0;\n    for (let j = 1; j <= N; j++) {\n        dp[j] = 1 / (S / 100.0);\n        if (j > 1) {\n            dp[j] += (L / 100.0) * dp[j - 1];\n        }\n        if (j < N) {\n            dp[j] += (R / 100.0) * dp[j + 1];\n        }\n    }\n    console.log(dp[N].toFixed(6));\n}"
+    }
+  }
+}

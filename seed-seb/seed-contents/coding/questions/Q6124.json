@@ -1,0 +1,130 @@
+{
+  "questionId": "Q6124",
+  "title": "Devu, his sister and Rangoli",
+  "slug": "devu-his-sister-and-rangoli",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Geometry",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Convex Hull",
+      "Graham's Scan",
+      "Dynamic Programming"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "As you know already, it is Devu's birthday today. He wants to make a  Rangoli  to decorate his house. He created **n** points having integer coordinates on the front door of his house. He also made sure no three points are collinear in it because collinear points break beauty of it. For each point, there is parameter beauty which is a positive integer. \n\n\n\nNow, when Devu's little sister saw the points drawn, she thought of creating patterns by drawing a convex polygon by choosing some of the **n** point as vertices of it. Also, as she is very naughty, instead of creating most beautiful pattern, she wants to create least beautiful pattern. Beauty of a polygon is sum of beauties of all the points lying inside or on the boundary of it.\n\n\n\nYou have to help Devu's sister in finding out the least beauty of convex polygon of **k** vertices. If it is impossible to find such a convex polygon, print -1. Otherwise print the minimum weight of the convex polygon you can have. Please solve the problem for all **k**'s from 3 to **n**.",
+    "constraints": [
+      "3 <= n <= 50",
+      "-10^5 <= x, y <= 10^5",
+      "1 <= b <= 10^5",
+      "No three or more points are collinear.",
+      "All points are distinct."
+    ],
+    "inputFormat": "The first line contains a single integer n, the number of points. Then, in the next n lines, each line contains three space-separated integers x, y, b, denoting the coordinates and beauty of a point.",
+    "outputFormat": "Print n-2 space-separated integers corresponding to the minimum beauty of convex polygons with k vertices, for k from 3 to n.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n0 0 1\n1 0 2\n0 1 3",
+        "output": "6",
+        "explanation": "The triangle with vertices (0,0), (1,0), and (0,1) has a beauty of 6."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we first need to find the convex hull of the given points. We can use Graham's scan algorithm to achieve this. Then, we can use dynamic programming to find the minimum beauty of convex polygons with k vertices, for k from 3 to n.",
+    "timeComplexity": "O(n^2) — the time complexity is dominated by the Graham's scan algorithm and the dynamic programming step.",
+    "spaceComplexity": "O(n) — the space complexity is dominated by the storage of the convex hull and the dynamic programming table.",
+    "code": {
+      "C": "// COMPLETE, COMPILABLE C code\n#include <stdio.h>\n#include <stdlib.h>\n#include <math.h>\n#define PI 3.14159265358979323846\n#define EPS 1e-9\n\n// Structure to represent a point\ntypedef struct {\n    int x, y, b;\n} Point;\n\n// Function to calculate the orientation of three points\nint orientation(Point p, Point q, Point r) {\n    int val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);\n    if (val == 0) return 0; // Collinear\n    return (val > 0) ? 1 : 2; // Clockwise or counterclockwise\n}\n\n// Function to calculate the convex hull using Graham's scan\nvoid convexHull(Point points[], int n, Point hull[]) {\n    int l = 0;\n    for (int i = 1; i < n; i++) {\n        if (points[i].x < points[l].x) l = i;\n    }\n    int p = l, q;\n    do {\n        hull[p] = points[l];\n        q = (p + 1) % n;\n        for (int i = 0; i < n; i++) {\n            if (orientation(points[l], points[i], points[q]) == 2) q = i;\n        }\n        l = q;\n        p = (p + 1) % n;\n    } while (p != l);\n}\n\n// Function to calculate the minimum beauty of convex polygons\nvoid minBeauty(Point points[], int n, int k) {\n    Point hull[n];\n    convexHull(points, n, hull);\n    int dp[n][n];\n    for (int i = 0; i < n; i++) {\n        for (int j = 0; j < n; j++) {\n            dp[i][j] = 0;\n        }\n    }\n    for (int i = 0; i < n; i++) {\n        dp[i][i] = hull[i].b;\n    }\n    for (int len = 2; len <= k; len++) {\n        for (int i = 0; i < n - len + 1; i++) {\n            int j = i + len - 1;\n            dp[i][j] = INT_MAX;\n            for (int k = i; k < j; k++) {\n                dp[i][j] = min(dp[i][j], dp[i][k] + dp[k + 1][j]);\n            }\n            dp[i][j] += hull[i].b + hull[j].b;\n        }\n    }\n    printf(\"%d \", dp[0][n - 1]);\n}\n\nint main() {\n    int n;\n    scanf(\"%d\", &n);\n    Point points[n];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d %d %d\", &points[i].x, &points[i].y, &points[i].b);\n    }\n    for (int k = 3; k <= n; k++) {\n        minBeauty(points, n, k);\n    }\n    return 0;\n}",
+      "C++": "// COMPLETE, COMPILABLE C++ code\n#include <iostream>\n#include <vector>\n#include <algorithm>\n#include <cmath>\nusing namespace std;\n\n// Structure to represent a point\nstruct Point {\n    int x, y, b;\n};\n\n// Function to calculate the orientation of three points\nint orientation(Point p, Point q, Point r) {\n    int val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);\n    if (val == 0) return 0; // Collinear\n    return (val > 0) ? 1 : 2; // Clockwise or counterclockwise\n}\n\n// Function to calculate the convex hull using Graham's scan\nvector<Point> convexHull(vector<Point> points) {\n    int n = points.size();\n    int l = 0;\n    for (int i = 1; i < n; i++) {\n        if (points[i].x < points[l].x) l = i;\n    }\n    int p = l, q;\n    vector<Point> hull;\n    do {\n        hull.push_back(points[l]);\n        q = (p + 1) % n;\n        for (int i = 0; i < n; i++) {\n            if (orientation(points[l], points[i], points[q]) == 2) q = i;\n        }\n        l = q;\n        p = (p + 1) % n;\n    } while (p != l);\n    return hull;\n}\n\n// Function to calculate the minimum beauty of convex polygons\nvoid minBeauty(vector<Point> points, int k) {\n    vector<Point> hull = convexHull(points);\n    int n = hull.size();\n    vector<vector<int>> dp(n, vector<int>(n, 0));\n    for (int i = 0; i < n; i++) {\n        dp[i][i] = hull[i].b;\n    }\n    for (int len = 2; len <= k; len++) {\n        for (int i = 0; i < n - len + 1; i++) {\n            int j = i + len - 1;\n            dp[i][j] = INT_MAX;\n            for (int k = i; k < j; k++) {\n                dp[i][j] = min(dp[i][j], dp[i][k] + dp[k + 1][j]);\n            }\n            dp[i][j] += hull[i].b + hull[j].b;\n        }\n    }\n    cout << dp[0][n - 1] << \" \";\n}\n\nint main() {\n    int n;\n    cin >> n;\n    vector<Point> points(n);\n    for (int i = 0; i < n; i++) {\n        cin >> points[i].x >> points[i].y >> points[i].b;\n    }\n    for (int k = 3; k <= n; k++) {\n        minBeauty(points, k);\n    }\n    return 0;\n}",
+      "Java": "// COMPLETE, COMPILABLE Java code\nimport java.util.Scanner;\nimport java.util.ArrayList;\npublic class Main {\n    // Structure to represent a point\n    static class Point {\n        int x, y, b;\n        Point(int x, int y, int b) {\n            this.x = x;\n            this.y = y;\n            this.b = b;\n        }\n    }\n\n    // Function to calculate the orientation of three points\n    static int orientation(Point p, Point q, Point r) {\n        int val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);\n        if (val == 0) return 0; // Collinear\n        return (val > 0) ? 1 : 2; // Clockwise or counterclockwise\n    }\n\n    // Function to calculate the convex hull using Graham's scan\n    static ArrayList<Point> convexHull(ArrayList<Point> points) {\n        int n = points.size();\n        int l = 0;\n        for (int i = 1; i < n; i++) {\n            if (points.get(i).x < points.get(l).x) l = i;\n        }\n        int p = l, q;\n        ArrayList<Point> hull = new ArrayList<>();\n        do {\n            hull.add(points.get(l));\n            q = (p + 1) % n;\n            for (int i = 0; i < n; i++) {\n                if (orientation(points.get(l), points.get(i), points.get(q)) == 2) q = i;\n            }\n            l = q;\n            p = (p + 1) % n;\n        } while (p != l);\n        return hull;\n    }\n\n    // Function to calculate the minimum beauty of convex polygons\n    static void minBeauty(ArrayList<Point> points, int k) {\n        ArrayList<Point> hull = convexHull(points);\n        int n = hull.size();\n        int[][] dp = new int[n][n];\n        for (int i = 0; i < n; i++) {\n            dp[i][i] = hull.get(i).b;\n        }\n        for (int len = 2; len <= k; len++) {\n            for (int i = 0; i < n - len + 1; i++) {\n                int j = i + len - 1;\n                dp[i][j] = Integer.MAX_VALUE;\n                for (int l = i; l < j; l++) {\n                    dp[i][j] = Math.min(dp[i][j], dp[i][l] + dp[l + 1][j]);\n                }\n                dp[i][j] += hull.get(i).b + hull.get(j).b;\n            }\n        }\n        System.out.print(dp[0][n - 1] + \" \");\n    }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int n = sc.nextInt();\n        ArrayList<Point> points = new ArrayList<>();\n        for (int i = 0; i < n; i++) {\n            points.add(new Point(sc.nextInt(), sc.nextInt(), sc.nextInt()));\n        }\n        for (int k = 3; k <= n; k++) {\n            minBeauty(points, k);\n        }\n    }\n}",
+      "Python3": "# COMPLETE, RUNNABLE Python3 code\nimport sys\nimport math\n\n# Structure to represent a point\nclass Point:\n    def __init__(self, x, y, b):\n        self.x = x\n        self.y = y\n        self.b = b\n\n# Function to calculate the orientation of three points\ndef orientation(p, q, r):\n    val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y)\n    if val == 0: return 0  # Collinear\n    return 1 if val > 0 else 2  # Clockwise or counterclockwise\n\n# Function to calculate the convex hull using Graham's scan\ndef convexHull(points):\n    n = len(points)\n    l = 0\n    for i in range(1, n):\n        if points[i].x < points[l].x: l = i\n    p = l\n    q = (p + 1) % n\n    hull = []\n    while True:\n        hull.append(points[l])\n        q = (p + 1) % n\n        for i in range(n):\n            if orientation(points[l], points[i], points[q]) == 2: q = i\n        l = q\n        p = (p + 1) % n\n        if p == l: break\n    return hull\n\n# Function to calculate the minimum beauty of convex polygons\ndef minBeauty(points, k):\n    hull = convexHull(points)\n    n = len(hull)\n    dp = [[0] * n for _ in range(n)]\n    for i in range(n):\n        dp[i][i] = hull[i].b\n    for length in range(2, k + 1):\n        for i in range(n - length + 1):\n            j = i + length - 1\n            dp[i][j] = float('inf')\n            for l in range(i, j):\n                dp[i][j] = min(dp[i][j], dp[i][l] + dp[l + 1][j])\n            dp[i][j] += hull[i].b + hull[j].b\n    print(dp[0][n - 1], end=' ')\n\n# Read input\nn = int(input())\npoints = []\nfor _ in range(n):\n    x, y, b = map(int, input().split())\n    points.append(Point(x, y, b))\n\n# Calculate and print the minimum beauty of convex polygons\nfor k in range(3, n + 1):\n    minBeauty(points, k)\n",
+      "JavaScript": "// COMPLETE, RUNNABLE JavaScript code\nconst fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\n\n// Structure to represent a point\nclass Point {\n    constructor(x, y, b) {\n        this.x = x;\n        this.y = y;\n        this.b = b;\n    }\n}\n\n// Function to calculate the orientation of three points\nfunction orientation(p, q, r) {\n    let val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);\n    if (val === 0) return 0; // Collinear\n    return val > 0 ? 1 : 2; // Clockwise or counterclockwise\n}\n\n// Function to calculate the convex hull using Graham's scan\nfunction convexHull(points) {\n    let n = points.length;\n    let l = 0;\n    for (let i = 1; i < n; i++) {\n        if (points[i].x < points[l].x) l = i;\n    }\n    let p = l;\n    let q = (p + 1) % n;\n    let hull = [];\n    do {\n        hull.push(points[l]);\n        q = (p + 1) % n;\n        for (let i = 0; i < n; i++) {\n            if (orientation(points[l], points[i], points[q]) === 2) q = i;\n        }\n        l = q;\n        p = (p + 1) % n;\n    } while (p !== l);\n    return hull;\n}\n\n// Function to calculate the minimum beauty of convex polygons\nfunction minBeauty(points, k) {\n    let hull = convexHull(points);\n    let n = hull.length;\n    let dp = Array(n).fill(0).map(() => Array(n).fill(0));\n    for (let i = 0; i < n; i++) {\n        dp[i][i] = hull[i].b;\n    }\n    for (let length = 2; length <= k; length++) {\n        for (let i = 0; i < n - length + 1; i++) {\n            let j = i + length - 1;\n            dp[i][j] = Infinity;\n            for (let l = i; l < j; l++) {\n                dp[i][j] = Math.min(dp[i][j], dp[i][l] + dp[l + 1][j]);\n            }\n            dp[i][j] += hull[i].b + hull[j].b;\n        }\n    }\n    process.stdout.write(dp[0][n - 1] + ' ');\n}\n\n// Read input\nlet n = parseInt(input[idx++]);\nlet points = [];\nfor (let i = 0; i < n; i++) {\n    let [x, y, b] = input[idx++].split(' ').map(Number);\n    points.push(new Point(x, y, b));\n}\n\n// Calculate and print the minimum beauty of convex polygons\nfor (let k = 3; k <= n; k++) {\n    minBeauty(points, k);\n}\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

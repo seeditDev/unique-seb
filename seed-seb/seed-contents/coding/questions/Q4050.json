@@ -1,0 +1,140 @@
+{
+  "questionId": "Q4050",
+  "title": "Sum of Primes",
+  "slug": "sum-of-primes",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-07",
+  "metadata": {
+    "category": "Number Theory",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Sieve of Eratosthenes",
+      "Goldbach's conjecture",
+      "Prime checking"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Mathematics"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Write a program to check whether a number can be express as sum of two prime numbers.\n\n\nInput Format\n\nThe first line contains an integer, TTT, denoting the number of test cases.\nEach test contain a single positive integer NNN - the number that needs to be checked.\n\n\nOutput Format\n\nFor each test case, print:\n\n`YES` if NNN can be expressed as sum of two primes.\n`NO` if not.",
+    "constraints": [
+      "1 <= T <= 100",
+      "1 <= N <= 1000000",
+      "All values are integers"
+    ],
+    "inputFormat": "First line contains an integer T, the number of test cases. Each of the next T lines contains a single integer N.",
+    "outputFormat": "For each test case, print YES if N can be expressed as the sum of two prime numbers, otherwise print NO. Each answer on its own line.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n7\n19\n11",
+        "output": "YES\nYES\nNO",
+        "explanation": "7 = 2 + 5 (both prime) → YES. 19 = 2 + 17 → YES. 11 cannot be written as sum of two primes → NO."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n8",
+        "output": "YES",
+        "explanation": "8 = 3 + 5, both are prime."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n14",
+        "output": "YES",
+        "explanation": "14 = 3 + 11, both are prime."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1",
+        "expectedOutput": "NO",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "3\n1000000\n2\n999983",
+        "expectedOutput": "YES\nNO\nNO",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "5\n4\n4\n4\n4\n4",
+        "expectedOutput": "YES\nYES\nYES\nYES\nYES",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "5\n9\n7\n5\n3\n1",
+        "expectedOutput": "YES\nYES\nYES\nNO\nNO",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "10\n11\n12\n17\n18\n20\n23\n24\n25\n26\n27",
+        "expectedOutput": "NO\nYES\nNO\nYES\nYES\nNO\nYES\nYES\nYES\nNO",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Pre‑compute primality of all numbers up to the maximum N among the test cases using the Sieve of Eratosthenes (O(maxN log log maxN)). For each N: • If N < 4, no two primes can sum to N → answer NO. • If N is even, Goldbach's conjecture has been verified for all even numbers up to 10^6, so answer YES. • If N is odd, the only possible representation is 2 + (N‑2). Check if N‑2 is prime using the pre‑computed table; if yes answer YES, otherwise NO. This yields O(1) per query after the sieve.",
+    "timeComplexity": "O(maxN log log maxN) for the sieve plus O(T) for answering queries.",
+    "spaceComplexity": "O(maxN) for the boolean array storing primality.",
+    "code": {
+      "C": "",
+      "C++": "",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st = new StringTokenizer(br.readLine());\n        int T = Integer.parseInt(st.nextToken());\n        int[] Ns = new int[T];\n        int maxN = 0;\n        for (int i = 0; i < T; i++) {\n            Ns[i] = Integer.parseInt(br.readLine().trim());\n            if (Ns[i] > maxN) maxN = Ns[i];\n        }\n        if (maxN < 2) maxN = 2;\n        boolean[] isPrime = new boolean[maxN + 1];\n        Arrays.fill(isPrime, true);\n        isPrime[0] = isPrime[1] = false;\n        for (int i = 2; i * i <= maxN; i++) {\n            if (isPrime[i]) {\n                for (int j = i * i; j <= maxN; j += i) {\n                    isPrime[j] = false;\n                }\n            }\n        }\n        StringBuilder sb = new StringBuilder();\n        for (int i = 0; i < T; i++) {\n            int N = Ns[i];\n            String ans;\n            if (N < 4) {\n                ans = \"NO\";\n            } else if (N % 2 == 0) {\n                ans = \"YES\"; // Goldbach holds for N <= 1e6\n            } else {\n                ans = isPrime[N - 2] ? \"YES\" : \"NO\";\n            }\n            sb.append(ans);\n            if (i + 1 < T) sb.append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "",
+      "JavaScript": ""
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

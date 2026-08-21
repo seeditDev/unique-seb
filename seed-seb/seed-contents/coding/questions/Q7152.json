@@ -1,0 +1,129 @@
+{
+  "questionId": "Q7152",
+  "title": "Robots Again",
+  "slug": "robots-again",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings | Graph | Greedy",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Robots",
+      "Collision Detection",
+      "Graph Theory"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Graphs"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given a string sss with length NNN describing a row of cells numbered 111 through NNN. Each character of this string is either a digit ('0' through '9', inclusive) or a dot ('.'). For each iii (1≤i≤N1 \\le i \\le N1≤i≤N), if the iii-th character of sss is '.', the iii-th cell is empty; if this character is the digit ddd, the iii-th cell contains a robot that is able to move in a fixed range — between cells max(1,i−d)\\mathrm{max}(1, i-d)max(1,i−d) and min(N,i+d)\\mathrm{min}(N, i+d)min(N,i+d) inclusive.\n\nWhen you start a robot and provide it with a direction (left or right), it starts moving in that direction. In one step, a robot can move one cell to the left or right. The robot keeps moving in the chosen direction until it reaches the last cell in its range, at which point it starts moving in the opposite direction (this may happen before the robot's first step, in which case it immediately starts moving in the opposite direction) until it reaches the other end of its range, when it again reverses direction and keeps moving, etc. This way, a lone robot would move forever. Assume that a robot can turn around instantly.\n\nYou are a robot operator. You want to determine an initial direction for each robot (either to the left or to the right, not necessarily the same for each robot) in such a way that after they are all started at the same time, a collision between two robots never happens, no matter how long they keep moving. A collision between two robots happens if they occupy the same cell in some step. Note that the robots are allowed to cross each other's paths, i.e. a collision does not happen if there are two robots in cells xxx and x+1x+1x+1 in some step, but in the next step, the robot from cell xxx moves to cell x+1x+1x+1 and the robot from cell x+1x+1x+1 moves to cell xxx.\n\nFind out if it is possible to assign initial directions to robots in such a way.",
+    "constraints": [
+      "1 <= T <= 5 * 10^4",
+      "1 <= N <= 5 * 10^4",
+      "s contains only characters '.' and '0' through '9'",
+      "The sum of N over all test cases does not exceed 3 * 10^5"
+    ],
+    "inputFormat": "The first line of the input contains a single integer T denoting the number of test cases. The description of T test cases follows. The first and only line of each test case contains a single string s.",
+    "outputFormat": "For each test case, print a single line containing the string \"safe\" if a valid assignment of directions exists or \"unsafe\" otherwise.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n1.1\n2..1.\n1..2",
+        "output": "unsafe\nsafe\nsafe",
+        "explanation": "Explanation:\nExample case 1: Whatever directions you provide to the robots, they will both move to cell 2 in the first step.\nExample case 2: If both robots are directed to the right, they will never collide with each other.\nExample case 3: Whatever directions you provide to the robots, they will keep crossing each other's paths, but will never collide."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1",
+        "expectedOutput": "safe",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n99999",
+        "expectedOutput": "safe",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n1.1",
+        "expectedOutput": "unsafe",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n1..1",
+        "expectedOutput": "safe",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n1..2",
+        "expectedOutput": "safe",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a greedy approach. We iterate over the string s and for each robot, we check if it can move to the left or right without colliding with other robots. If a robot can move to the left, we assign it to move to the left. If it can move to the right, we assign it to move to the right. If a robot cannot move to either side without colliding, we return \"unsafe\". We use a set to keep track of the positions of the robots and their assigned directions.",
+    "timeComplexity": "O(T * N) — where T is the number of test cases and N is the length of the string s",
+    "spaceComplexity": "O(N) — where N is the length of the string s",
+    "code": {
+      "C": "// COMPLETE, COMPILABLE C code\n#include <stdio.h>\n#include <string.h>\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        char s[50001];\n        scanf(\"%s\", s);\n        int n = strlen(s);\n        int left[n], right[n];\n        int l = 0, r = 0;\n        for (int i = 0; i < n; i++) {\n            if (s[i] == '.') continue;\n            int d = s[i] - '0';\n            int L = i - d, R = i + d;\n            L = L < 0 ? 0 : L;\n            R = R >= n ? n - 1 : R;\n            int ok = 1;\n            for (int j = L; j <= R; j++) {\n                if (j == i) continue;\n                if (s[j] != '.') {\n                    ok = 0;\n                    break;\n                }\n            }\n            if (ok) left[l++] = i;\n            else {\n                ok = 1;\n                for (int j = L; j <= R; j++) {\n                    if (j == i) continue;\n                    if (s[j] != '.') {\n                        ok = 0;\n                        break;\n                    }\n                }\n                if (ok) right[r++] = i;\n                else {\n                    printf(\"unsafe\\n\");\n                    goto next;\n                }\n            }\n        }\n        printf(\"safe\\n\");\n        next:\n        continue;\n    }\n    return 0;\n}",
+      "C++": "// COMPLETE, COMPILABLE C++ code\n#include <iostream>\n#include <string>\nusing namespace std;\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        string s;\n        cin >> s;\n        int n = s.size();\n        int left[n], right[n];\n        int l = 0, r = 0;\n        for (int i = 0; i < n; i++) {\n            if (s[i] == '.') continue;\n            int d = s[i] - '0';\n            int L = i - d, R = i + d;\n            L = L < 0 ? 0 : L;\n            R = R >= n ? n - 1 : R;\n            int ok = 1;\n            for (int j = L; j <= R; j++) {\n                if (j == i) continue;\n                if (s[j] != '.') {\n                    ok = 0;\n                    break;\n                }\n            }\n            if (ok) left[l++] = i;\n            else {\n                ok = 1;\n                for (int j = L; j <= R; j++) {\n                    if (j == i) continue;\n                    if (s[j] != '.') {\n                        ok = 0;\n                        break;\n                    }\n                }\n                if (ok) right[r++] = i;\n                else {\n                    cout << \"unsafe\" << endl;\n                    goto next;\n                }\n            }\n        }\n        cout << \"safe\" << endl;\n        next:\n        continue;\n    }\n    return 0;\n}",
+      "Java": "// COMPLETE, COMPILABLE Java code\nimport java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n        while (T-- > 0) {\n            String s = sc.next();\n            int n = s.length();\n            int[] left = new int[n], right = new int[n];\n            int l = 0, r = 0;\n            for (int i = 0; i < n; i++) {\n                if (s.charAt(i) == '.') continue;\n                int d = s.charAt(i) - '0';\n                int L = i - d, R = i + d;\n                L = L < 0 ? 0 : L;\n                R = R >= n ? n - 1 : R;\n                int ok = 1;\n                for (int j = L; j <= R; j++) {\n                    if (j == i) continue;\n                    if (s.charAt(j) != '.') {\n                        ok = 0;\n                        break;\n                    }\n                }\n                if (ok) left[l++] = i;\n                else {\n                    ok = 1;\n                    for (int j = L; j <= R; j++) {\n                        if (j == i) continue;\n                        if (s.charAt(j) != '.') {\n                            ok = 0;\n                            break;\n                        }\n                    }\n                    if (ok) right[r++] = i;\n                    else {\n                        System.out.println(\"unsafe\");\n                        continue;\n                    }\n                }\n            }\n            System.out.println(\"safe\");\n        }\n    }\n}",
+      "Python3": "# COMPLETE, RUNNABLE Python3 code\nimport sys\ninput = sys.stdin.readline\nT = int(input())\nfor _ in range(T):\n    s = input().rstrip()\n    n = len(s)\n    left = [0] * n\n    right = [0] * n\n    l = 0\n    r = 0\n    for i in range(n):\n        if s[i] == '.':\n            continue\n        d = int(s[i])\n        L = i - d\n        R = i + d\n        L = max(L, 0)\n        R = min(R, n - 1)\n        ok = 1\n        for j in range(L, R + 1):\n            if j == i:\n                continue\n            if s[j] != '.':\n                ok = 0\n                break\n        if ok:\n            left[l] = i\n            l += 1\n        else:\n            ok = 1\n            for j in range(L, R + 1):\n                if j == i:\n                    continue\n                if s[j] != '.':\n                    ok = 0\n                    break\n            if ok:\n                right[r] = i\n                r += 1\n            else:\n                print('unsafe')\n                break\n    else:\n        print('safe')",
+      "JavaScript": "// COMPLETE, RUNNABLE JavaScript code\nconst fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst readline = () => input[idx++];\nconst T = parseInt(readline());\nfor (let i = 0; i < T; i++) {\n    const s = readline();\n    const n = s.length;\n    const left = new Array(n).fill(0);\n    const right = new Array(n).fill(0);\n    let l = 0;\n    let r = 0;\n    for (let j = 0; j < n; j++) {\n        if (s[j] === '.') continue;\n        const d = parseInt(s[j]);\n        let L = j - d;\n        let R = j + d;\n        L = Math.max(L, 0);\n        R = Math.min(R, n - 1);\n        let ok = 1;\n        for (let k = L; k <= R; k++) {\n            if (k === j) continue;\n            if (s[k] !== '.') {\n                ok = 0;\n                break;\n            }\n        }\n        if (ok) {\n            left[l] = j;\n            l++;\n        } else {\n            ok = 1;\n            for (let k = L; k <= R; k++) {\n                if (k === j) continue;\n                if (s[k] !== '.') {\n                    ok = 0;\n                    break;\n                }\n            }\n            if (ok) {\n                right[r] = j;\n                r++;\n            } else {\n                console.log('unsafe');\n                break;\n            }\n        }\n    }\n    if (i === T - 1 || idx === input.length) console.log('safe');\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

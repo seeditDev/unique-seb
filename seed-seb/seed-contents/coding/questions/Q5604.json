@@ -1,0 +1,142 @@
+{
+  "questionId": "Q5604",
+  "title": "Making Change",
+  "slug": "making-change",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Unbounded Knapsack",
+      "Coin Change",
+      "Modulo Arithmetic"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef recently visited a strange land with strange currency.  One day Chef needed to make change to pay for an item with coins, and wondered how many ways it could be done, assuming an infinite supply of each type of coins.  Two ways are considered different if there is some coin that appears a different number of times in each sum.  The answer may be very large, so Chef only needs to know the remainder when the answer is divided by **1000000007** (**109 + 7**).\n\nChef noticed something curious about the currency in question: not only do all coins have different denominations, but no two denominations of coin share any common factor other than 1.",
+    "constraints": [
+      "1 ≤ T ≤ 5",
+      "1 ≤ N ≤ 50",
+      "1 ≤ C ≤ 100000 (the intended limit for an O(N·C) DP solution)",
+      "1 ≤ Di ≤ 500",
+      "All Di are distinct and pairwise coprime"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case consists of two lines. The first line contains two space‑separated integers N and C, where N is the number of different coin types and C is the desired total amount. The second line contains N space‑separated integers D1, D2, ..., DN – the distinct denominations of the coins. All denominations are pairwise relatively prime.",
+    "outputFormat": "For each test case output a single line containing the number of different ways to obtain exactly C units of money using an unlimited supply of the given coin types. Since the answer can be huge, output it modulo 1000000007.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n3 16\n3 4 5\n2 2000000014\n1 2\n3 380134\n23 5 2",
+        "output": "4\\n1\\n314159265",
+        "explanation": "First test case: ways to make 16 are (4+4+4+4), (3+4+4+5), (3+3+5+5) and (3+3+3+3+4). Second test case: only one way (2000000014 copies of coin 2). Third test case: the DP yields 314159265 modulo 1e9+7."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n2 10\n2 5",
+        "output": "2",
+        "explanation": "Two ways: five 2‑coins or two 5‑coins."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n1 10\n10",
+        "output": "1",
+        "explanation": "Only one way: a single 10‑coin."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1\n2",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "small general case",
+        "input": "1\\n3 20\\n3 5 7",
+        "expectedOutput": "4",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "1\n1 1\n2",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "1\n1 1\n2",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "1\n1 1\n2",
+        "expectedOutput": "0",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem is the classic unbounded‑coin‑change counting problem. Because the order of coins does not matter, we can use a one‑dimensional DP where dp[x] stores the number of ways to obtain amount x using the already processed coin types. Initialise dp[0] = 1 (empty set). For each coin value d, iterate x from d to C and update dp[x] = (dp[x] + dp[x‑d]) mod MOD. After all coins are processed, dp[C] is the required answer. The pairwise‑coprime property guarantees that a solution exists for sufficiently large C, but it is not needed for the DP algorithm.\n\nComplexity analysis: The outer loop runs N times and the inner loop runs at most C iterations, giving O(N·C) time. The DP array of size C+1 dominates the memory usage, i.e. O(C) space.",
+    "timeComplexity": "O(N · C)",
+    "spaceComplexity": "O(C)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#define MOD 1000000007\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        int N, C;\n        scanf(\"%d %d\", &N, &C);\n        int *coins = (int *)malloc(N * sizeof(int));\n        for (int i = 0; i < N; ++i) scanf(\"%d\", &coins[i]);\n        long long *dp = (long long *)calloc(C + 1, sizeof(long long));\n        dp[0] = 1;\n        for (int i = 0; i < N; ++i) {\n            int d = coins[i];\n            for (int x = d; x <= C; ++x) {\n                dp[x] += dp[x - d];\n                if (dp[x] >= MOD) dp[x] -= MOD;\n            }\n        }\n        printf(\"%lld\\n\", dp[C] % MOD);\n        free(coins);\n        free(dp);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nconst long long MOD = 1000000007LL;\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--) {\n        int N, C; cin >> N >> C;\n        vector<int> coin(N);\n        for(int &x: coin) cin >> x;\n        vector<long long> dp(C+1,0);\n        dp[0]=1;\n        for(int d: coin){\n            for(int x=d;x<=C;++x){\n                dp[x] += dp[x-d];\n                if(dp[x]>=MOD) dp[x]-=MOD;\n            }\n        }\n        cout << dp[C]%MOD << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    static final long MOD = 1_000_000_007L;\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st = new StringTokenizer(br.readLine());\n        int T = Integer.parseInt(st.nextToken());\n        StringBuilder out = new StringBuilder();\n        while (T-- > 0) {\n            st = new StringTokenizer(br.readLine());\n            int N = Integer.parseInt(st.nextToken());\n            int C = Integer.parseInt(st.nextToken());\n            int[] coins = new int[N];\n            st = new StringTokenizer(br.readLine());\n            for (int i = 0; i < N; i++) coins[i] = Integer.parseInt(st.nextToken());\n            long[] dp = new long[C+1];\n            dp[0] = 1;\n            for (int d : coins) {\n                for (int x = d; x <= C; x++) {\n                    dp[x] += dp[x-d];\n                    if (dp[x] >= MOD) dp[x] -= MOD;\n                }\n            }\n            out.append(dp[C] % MOD).append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "import sys\nMOD = 1000000007\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it)); C = int(next(it))\n        coins = [int(next(it)) for _ in range(N)]\n        dp = [0] * (C + 1)\n        dp[0] = 1\n        for d in coins:\n            for x in range(d, C + 1):\n                dp[x] = (dp[x] + dp[x - d]) % MOD\n        out_lines.append(str(dp[C]))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()",
+      "JavaScript": "const fs = require('fs');\nconst MOD = 1000000007n;\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/).map(BigInt);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet outputs = [];\nfor (let t = 0; t < T; ++t) {\n  const N = Number(input[idx++]);\n  const C = Number(input[idx++]);\n  let coins = [];\n  for (let i = 0; i < N; ++i) coins.push(Number(input[idx++]));\n  let dp = new Array(C + 1).fill(0n);\n  dp[0] = 1n;\n  for (let d of coins) {\n    for (let x = d; x <= C; ++x) {\n      dp[x] = (dp[x] + dp[x - d]) % MOD;\n    }\n  }\n  outputs.push((dp[C] % MOD).toString());\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

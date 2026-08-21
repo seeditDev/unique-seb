@@ -1,0 +1,119 @@
+{
+  "questionId": "Q11584",
+  "title": "Cyclic Components",
+  "slug": "E",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Graph Theory",
+    "difficulty": "$undefined",
+    "isPremium": true,
+    "tags": [
+      "Graph",
+      "Cycle Detection",
+      "DFS"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Write a program for the coding challenge \"Cyclic Components\". Refer to SEED-IT description: https://codeforces.com/problemset/problem/977/E",
+    "constraints": [
+      "1 <= n <= 10^5",
+      "1 <= m <= 10^5",
+      "1 <= u, v <= n"
+    ],
+    "inputFormat": "The first line contains an integer n, the number of nodes in the graph. The next n lines contain the adjacency list of the graph, where each line contains the node and its neighbors separated by spaces.",
+    "outputFormat": "The number of cyclic components in the graph.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "1\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "10\n1 2\n2 3\n3 4\n4 5\n5 6\n6 7\n7 8\n8 9\n9 10\n10 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": "5\n1 2\n2 3\n3 4\n4 5\n5 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case / empty-like / negative if allowed",
+        "input": "5\n1\n2\n3\n4\n5",
+        "expectedOutput": "5",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": "7\n1 2\n2 3\n3 1\n4 5\n5 6\n6 7\n7 4",
+        "expectedOutput": "2",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Use Depth-First Search (DFS) to detect cycles in the graph and count the number of cyclic components.",
+    "timeComplexity": "O(n + m)",
+    "spaceComplexity": "O(n + m)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#define MAX 100001\nint visited[MAX];\nint recStack[MAX];\nint adj[MAX][MAX];\nint n;\n\nvoid dfs(int node) {\n    visited[node] = 1;\n    recStack[node] = 1;\n    for (int i = 0; i < n; i++) {\n        if (adj[node][i] && !visited[i]) {\n            dfs(i);\n        } else if (adj[node][i] && recStack[i]) {\n            // cycle detected\n        }\n    }\n    recStack[node] = 0;\n}\n\nint main() {\n    scanf(\"%d\", &n);\n    for (int i = 0; i < n; i++) {\n        int node, neighbor;\n        scanf(\"%d\", &node);\n        while (scanf(\"%d\", &neighbor) == 1) {\n            adj[node - 1][neighbor - 1] = 1;\n        }\n    }\n    int count = 0;\n    for (int i = 0; i < n; i++) {\n        if (!visited[i]) {\n            dfs(i);\n            count++;\n        }\n    }\n    printf(\"%d\\n\", count);\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\nusing namespace std;\nconst int MAX = 100001;\nvector<int> adj[MAX];\nint visited[MAX];\nint recStack[MAX];\nint n;\n\nvoid dfs(int node) {\n    visited[node] = 1;\n    recStack[node] = 1;\n    for (int i = 0; i < adj[node].size(); i++) {\n        if (!visited[adj[node][i]]) {\n            dfs(adj[node][i]);\n        } else if (recStack[adj[node][i]]) {\n            // cycle detected\n        }\n    }\n    recStack[node] = 0;\n}\n\nint main() {\n    cin >> n;\n    for (int i = 0; i < n; i++) {\n        int node, neighbor;\n        cin >> node;\n        while (cin >> neighbor) {\n            adj[node - 1].push_back(neighbor - 1);\n            if (cin.peek() == '\\n') break;\n        }\n    }\n    int count = 0;\n    for (int i = 0; i < n; i++) {\n        if (!visited[i]) {\n            dfs(i);\n            count++;\n        }\n    }\n    cout << count << endl;\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\nimport java.util.ArrayList;\npublic class Main {\n    static final int MAX = 100001;\n    static int n;\n    static int[] visited = new int[MAX];\n    static int[] recStack = new int[MAX];\n    static ArrayList<Integer>[] adj = new ArrayList[MAX];\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        n = scanner.nextInt();\n        for (int i = 0; i < MAX; i++) {\n            adj[i] = new ArrayList<>();\n        }\n        for (int i = 0; i < n; i++) {\n            int node = scanner.nextInt();\n            while (scanner.hasNextInt()) {\n                int neighbor = scanner.nextInt();\n                adj[node - 1].add(neighbor - 1);\n                if (!scanner.hasNextInt()) break;\n            }\n        }\n        int count = 0;\n        for (int i = 0; i < n; i++) {\n            if (visited[i] == 0) {\n                dfs(i);\n                count++;\n            }\n        }\n        System.out.println(count);\n    }\n    public static void dfs(int node) {\n        visited[node] = 1;\n        recStack[node] = 1;\n        for (int i = 0; i < adj[node].size(); i++) {\n            if (visited[adj[node].get(i)] == 0) {\n                dfs(adj[node].get(i));\n            } else if (recStack[adj[node].get(i)] == 1) {\n                // cycle detected\n            }\n        }\n        recStack[node] = 0;\n    }\n}",
+      "Python3": "import sys\nMAX = 100001\nn = int(input())\nadj = [[] for _ in range(n)]\nvisited = [0] * n\nrecStack = [0] * n\ndef dfs(node):\n    visited[node] = 1\n    recStack[node] = 1\n    for neighbor in adj[node]:\n        if visited[neighbor] == 0:\n            dfs(neighbor)\n        elif recStack[neighbor] == 1:\n            # cycle detected\n            pass\n    recStack[node] = 0\nfor i in range(n):\n    node = int(input().split()[0]) - 1\n    neighbors = list(map(lambda x: int(x) - 1, input().split()[1:]))\n    adj[node] = neighbors\ncount = 0\nfor i in range(n):\n    if visited[i] == 0:\n        dfs(i)\n        count += 1\nprint(count)",
+      "JavaScript": "const readline = require('readline');\nconst rl = readline.createInterface({\n    input: process.stdin,\n    output: process.stdout\n});\nlet input = [];\nrl.on('line', function(line) {\n    input.push(line);\n}).on('close', function() {\n    let n = parseInt(input.shift());\n    let adj = Array(n).fill(0).map(() => []);\n    let visited = Array(n).fill(0);\n    let recStack = Array(n).fill(0);\n    for (let i = 0; i < n; i++) {\n        let node = parseInt(input[i].split(' ')[0]) - 1;\n        let neighbors = input[i].split(' ').slice(1).map(x => parseInt(x) - 1);\n        adj[node] = neighbors;\n    }\n    let count = 0;\n    function dfs(node) {\n        visited[node] = 1;\n        recStack[node] = 1;\n        for (let neighbor of adj[node]) {\n            if (visited[neighbor] == 0) {\n                dfs(neighbor);\n            } else if (recStack[neighbor] == 1) {\n                // cycle detected\n            }\n        }\n        recStack[node] = 0;\n    }\n    for (let i = 0; i < n; i++) {\n        if (visited[i] == 0) {\n            dfs(i);\n            count++;\n        }\n    }\n    console.log(count);\n});"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

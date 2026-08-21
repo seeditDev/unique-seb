@@ -1,0 +1,128 @@
+{
+  "questionId": "Q2699",
+  "title": "Counting The Acute Triangles",
+  "slug": "counting-the-acute-triangles",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Angle Sorting",
+      "O(N^2 log N)",
+      "Acute Triangle",
+      "Math",
+      "Two\u2011Pointer"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Geometry"
+    ]
+  },
+  "content": {
+    "problemStatement": "A triangle is **acute** if all its internal angles are acute (&lt; 90o). You are given a set of **N** points on a 2D plane. Calculate the number of acute triangles that can be formed using points from the set as vertices. \n\nTwo triangles are different if the set of three vertices of one triangle is not equal to the set of three vertices of the other triangle.",
+    "constraints": [
+      "1 \u2264 T \u2264 10",
+      "3 \u2264 N \u2264 2000",
+      "0 \u2264 x, y \u2264 10000",
+      "All points are distinct"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, the first line contains an integer N (3 \u2264 N \u2264 2000) \u2013 the number of points. The next N lines each contain two integers x and y (0 \u2264 x, y \u2264 10000) \u2013 the coordinates of a point. All points in a test case are distinct.",
+    "outputFormat": "For each test case output a single line containing the number of acute triangles that can be formed using the given points as vertices.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n0 0\n2 2\n0 3",
+        "output": "1",
+        "explanation": "The triangle formed by points (0, 0), (2, 2), and (0, 3) is acute."
+      },
+      {
+        "id": "sample_2",
+        "input": "3\n0 0\n2 2\n0 5",
+        "output": "0",
+        "explanation": "There are no acute triangles that can be formed using the given points."
+      },
+      {
+        "id": "sample_3",
+        "input": "4\n1 1\n3 2\n1 3\n3 4",
+        "output": "2",
+        "explanation": "The triangles formed by points (1, 1), (3, 2), (1, 3) and (3, 2), (1, 3), (3, 4) are acute."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "A triangle is acute iff none of its three interior angles is \u2265 90\u00b0. Instead of checking every triple (O(N^3)), we count the complementary set \u2013 triangles that have at least one right or obtuse angle \u2013 and subtract from the total number of triples C(N,3).\n\nFor a fixed vertex i, consider the vectors from i to all other points. The angle between two vectors v_j and v_k is \u2265 90\u00b0 exactly when their dot product \u2264 0, i.e. the directed angle difference lies in [\u03c0/2, 3\u03c0/2].\n\nAlgorithm for each i:\n1. Build an array A of the polar angles (atan2) of the N\u20111 vectors from i.\n2. Sort A and duplicate it with each angle + 2\u03c0 to handle circular wrap\u2011around.\n3. Using two pointers p and q, for each start index a (0 \u2026 N\u20112) find:\n   - p = first index where angle[p] - angle[a] \u2265 \u03c0/2\n   - q = first index where angle[q] - angle[a] > 3\u03c0/2\n   All indices in [p, q) give a pair (j,k) whose angle at i is \u2265 90\u00b0.\n   Add (q\u2011p) to a running sum.\n4. Each unordered pair (j,k) is counted twice (once from a=j, once from a=k), so divide the sum by 2 to obtain the number of non\u2011acute triangles having i as the vertex of the obtuse/right angle.\n5. Accumulate this value over all i. Let nonAcute be the total number of triangles with at least one angle \u2265 90\u00b0.\n6. The answer is totalTriangles \u2013 nonAcute, where totalTriangles = N\u00b7(N\u20111)\u00b7(N\u20112)/6.\n\nComplexities: Sorting per vertex costs O((N\u20111) log N), the two\u2011pointer scan is O(N). Over all vertices the time is O(N^2 log N) and memory O(N). This easily fits the limits (N \u2264 2000).",
+    "timeComplexity": "O(N^2 log N) per test case",
+    "spaceComplexity": "O(N) per test case",
+    "code": {
+      "C": "// COMPLETE, COMPILABLE C code\n// Handles multiple test cases as described.\n#include <stdio.h>\n#include <stdlib.h>\n#include <math.h>\n\n#define MAXN 2000\n#define PI acos(-1.0)\n\nint cmp_double(const void *a, const void *b) {\n    double da = *(const double *)a;\n    double db = *(const double *)b;\n    if (da < db) return -1;\n    if (da > db) return 1;\n    return 0;\n}\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        int N;\n        scanf(\"%d\", &N);\n        int xs[MAXN];\n        int ys[MAXN];\n        for (int i = 0; i < N; ++i) {\n            scanf(\"%d %d\", &xs[i], &ys[i]);\n        }\n        long long totalTriangles = (long long)N * (N - 1) * (N - 2) / 6;\n        long long nonAcute = 0;\n        double angles[MAXN * 2];\n        for (int i = 0; i < N; ++i) {\n            int m = 0;\n            for (int j = 0; j < N; ++j) if (j != i) {\n                angles[m++] = atan2((double)(ys[j] - ys[i]), (double)(xs[j] - xs[i]));\n            }\n            qsort(angles, m, sizeof(double), cmp_double);\n            for (int k = 0; k < m; ++k) {\n                angles[m + k] = angles[k] + 2 * PI;\n            }\n            long long cnt = 0;\n            int p = 0, q = 0;\n            for (int a = 0; a < m; ++a) {\n                while (p < a + m && angles[p] - angles[a] < PI / 2 - 1e-12) ++p;\n                while (q < a + m && angles[q] - angles[a] <= 3 * PI / 2 + 1e-12) ++q;\n                cnt += (q - p);\n            }\n            nonAcute += cnt / 2; // each pair counted twice\n        }\n        long long acute = totalTriangles - nonAcute;\n        printf(\"%lld\\n\", acute);\n    }\n    return 0;\n}",
+      "C++": "// COMPLETE, COMPILABLE C++ code\n// Handles multiple test cases.\n#include <bits/stdc++.h>\nusing namespace std;\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    const double PI = acos(-1.0);\n    while(T--) {\n        int N; cin>>N;\n        vector<long long> xs(N), ys(N);\n        for(int i=0;i<N;++i) cin>>xs[i]>>ys[i];\n        long long total = 1LL*N*(N-1)*(N-2)/6;\n        long long nonAcute = 0;\n        vector<double> ang;\n        ang.reserve(2*N);\n        for(int i=0;i<N;++i){\n            ang.clear();\n            for(int j=0;j<N;++j) if(j!=i){\n                ang.push_back(atan2((double)(ys[j]-ys[i]), (double)(xs[j]-xs[i])));\n            }\n            sort(ang.begin(), ang.end());\n            int m = N-1;\n            for(int k=0;k<m;++k) ang.push_back(ang[k]+2*PI);\n            long long cnt=0;\n            int p=0,q=0;\n            for(int a=0;a<m;++a){\n                while(p<a+m && ang[p]-ang[a] < PI/2 - 1e-12) ++p;\n                while(q<a+m && ang[q]-ang[a] <= 3*PI/2 + 1e-12) ++q;\n                cnt += (q-p);\n            }\n            nonAcute += cnt/2;\n        }\n        cout << (total - nonAcute) << '\\n';\n    }\n    return 0;\n}",
+      "Java": ""
+    }
+  }
+}

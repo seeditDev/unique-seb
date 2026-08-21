@@ -1,0 +1,139 @@
+{
+  "questionId": "Q5137",
+  "title": "Prime Generator",
+  "slug": "prime-generator",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Easy",
+    "isPremium": true,
+    "tags": [
+      "Sieve of Eratosthenes",
+      "Prime Numbers"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Mathematics"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Ram wants to generate some prime numbers for his cryptosystem. Help him please!\nYour task is to generate all prime numbers between two given numbers.\n\n\n**Warning: large Input/Output data, be careful with certain languages (though most should be OK if the algorithm is well designed)**\nInput Format\n\nThe first line contains t, the number of test cases (less then or equal to 10). \n\n\nFollowed by t lines which contain two numbers m and n (1 &lt;= m &lt;= n &lt;= 1000000000, n-m&lt;=100000) separated by a space.\n\n\n\n\n\n\nOutput Format\nFor every test case print all prime numbers p such that m &lt;= p &lt;= n,\none number per line.  Separate the answers for each test case by an empty line.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= m <= n <= 1,000,000,000",
+      "n - m <= 100,000"
+    ],
+    "inputFormat": "The first line contains T, the number of test cases. Each test case contains two integers m and n (1 <= m <= n <= 1,000,000,000, n-m <= 100,000) separated by a space.",
+    "outputFormat": "For every test case, print all prime numbers p such that m <= p <= n, one number per line. Separate the answers for each test case by an empty line.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n1 10\n3 5",
+        "output": "2\n3\n5\n7\n\n3\n5",
+        "explanation": "First test case: primes between 1 and 10 are 2,3,5,7. Blank line separates test cases. Second test case: primes between 3 and 5 are 3 and 5."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n1 100",
+        "output": "2\n3\n5\n7\n11\n13\n17\n19\n23\n29\n31\n37\n41\n43\n47\n53\n59\n61\n67\n71\n73\n79\n83\n89\n97",
+        "explanation": "Primes between 1 and 100."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n100 100",
+        "output": "",
+        "explanation": "No primes between 100 and 100."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n1000000000 1000000000",
+        "expectedOutput": "1000000000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n2 2",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n1 2",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "2\n1 10\n3 5",
+        "expectedOutput": "2\n3\n5\n7\n\n3\n5",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved using the Sieve of Eratosthenes algorithm to generate prime numbers. First, we pre-compute the base primes up to the square root of 1,000,000,000. Then, for each test case, we use these base primes to mark the non-prime numbers in the range [m, n]. Finally, we print the remaining prime numbers in the range.",
+    "timeComplexity": "O(T * (n - m + 1) / log(n - m + 1)) per test case, O(T * (n - m + 1) / log(n - m + 1)) total. Precomputation is done once.",
+    "spaceComplexity": "O(n - m + 1) — the dominant structure is the boolean array isPrime.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <math.h>\n#include <stdbool.h>\n\n// generate primes up to limit using simple sieve\nstatic int *basePrimes; // dynamic array of base primes\nstatic int baseCount;\n\nvoid simpleSieve(int limit) {\n    bool *mark = (bool *)malloc((limit + 1) * sizeof(bool));\n    for (int i = 0; i <= limit; ++i) mark[i] = true;\n    mark[0] = mark[1] = false;\n    for (int p = 2; p * p <= limit; ++p) {\n        if (mark[p]) {\n            for (int i = p * p; i <= limit; i += p)\n                mark[i] = false;\n        }\n    }\n    // count primes\n    baseCount = 0;\n    for (int i = 2; i <= limit; ++i) if (mark[i]) ++baseCount;\n    basePrimes = (int *)malloc(baseCount * sizeof(int));\n    int idx = 0;\n    for (int i = 2; i <= limit; ++i) if (mark[i]) basePrimes[idx++] = i;\n    free(mark);\n}\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    // pre‑compute base primes up to sqrt(1e9)\n    int limit = (int)sqrt(1000000000.0) + 1;\n    simpleSieve(limit);\n    for (int tc = 0; tc < T; ++tc) {\n        long long m, n;\n        scanf(\"%lld %lld\", &m, &n);\n        int size = (int)(n - m + 1);\n        bool *isPrime = (bool *)malloc(size * sizeof(bool));\n        for (int i = 0; i < size; ++i) isPrime[i] = true;\n        for (int i = 0; i < baseCount; ++i) {\n            long long p = basePrimes[i];\n            long long start = p * p;\n            if (start < m) start = ((m + p - 1) / p) * p;\n            for (long long j = start; j <= n; j += p) {\n                isPrime[j - m] = false;\n            }\n        }\n        if (m == 1) isPrime[0] = false;\n        for (int i = 0; i < size; ++i) {\n            if (isPrime[i]) {\n                printf(\"%lld\\n\", m + i);\n            }\n        }\n        if (tc != T - 1) printf(\"\\n\");\n        free(isPrime);\n    }\n    free(basePrimes);\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(NULL);\n    int T; if(!(cin>>T)) return 0;\n    const int LIMIT = (int)sqrt(1e9) + 1;\n    vector<int> base;\n    vector<bool> mark(LIMIT+1,true);\n    mark[0]=mark[1]=false;\n    for(int p=2;p*p<=LIMIT;++p) if(mark[p]) for(int i=p*p;i<=LIMIT;i+=p) mark[i]=false;\n    for(int i=2;i<=LIMIT;++i) if(mark[i]) base.push_back(i);\n    for(int tc=0; tc<T; ++tc){\n        long long m,n; cin>>m>>n;\n        int sz = (int)(n-m+1);\n        vector<bool> isPrime(sz,true);\n        for(int p:base){\n            long long start = 1LL*p*p;\n            if(start < m) start = ((m + p - 1)/p)*p;\n            for(long long j=start; j<=n; j+=p) isPrime[j-m]=false;\n        }\n        if(m==1) isPrime[0]=false;\n        for(int i=0;i<sz;++i) if(isPrime[i]) cout<< (m+i) <<'\\n';\n        if(tc!=T-1) cout<<'\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder out = new StringBuilder();\n        int T = Integer.parseInt(br.readLine().trim());\n        int limit = (int)Math.sqrt(1000000000L) + 1;\n        boolean[] mark = new boolean[limit + 1];\n        Arrays.fill(mark, true);\n        mark[0] = mark[1] = false;\n        for (int p = 2; p * p <= limit; ++p) {\n            if (mark[p]) {\n                for (int i = p * p; i <= limit; i += p) mark[i] = false;\n            }\n        }\n        List<Integer> base = new ArrayList<>();\n        for (int i = 2; i <= limit; ++i) if (mark[i]) base.add(i);\n        for (int tc = 0; tc < T; ++tc) {\n            StringTokenizer st = new StringTokenizer(br.readLine());\n            long m = Long.parseLong(st.nextToken());\n            long n = Long.parseLong(st.nextToken());\n            int size = (int)(n - m + 1);\n            boolean[] isPrime = new boolean[size];\n            Arrays.fill(isPrime, true);\n            for (int p : base) {\n                long start = 1L * p * p;\n                if (start < m) start = ((m + p - 1) / p) * p;\n                for (long j = start; j <= n; j += p) {\n                    isPrime[(int)(j - m)] = false;\n                }\n            }\n            if (m == 1) isPrime[0] = false;\n            for (int i = 0; i < size; ++i) {\n                if (isPrime[i]) out.append(m + i).append('\\n');\n            }\n            if (tc != T - 1) out.append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "import sys, math\n\ndef segmented_primes(m, n, base):\n    size = n - m + 1\n    is_prime = [True] * size\n    for p in base:\n        start = p * p\n        if start < m:\n            start = ((m + p - 1) // p) * p\n        for j in range(start, n + 1, p):\n            is_prime[j - m] = False\n    if m == 1:\n        is_prime[0] = False\n    return [str(m + i) for i, val in enumerate(is_prime) if val]\n\ndef main():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    # pre‑compute base primes up to sqrt(1e9)\n    limit = int(math.isqrt(1000000000)) + 1\n    sieve = [True] * (limit + 1)\n    sieve[0] = sieve[1] = False\n    for i in range(2, int(limit ** 0.5) + 1):\n        if sieve[i]:\n            step = i\n            start = i * i\n            sieve[start:limit+1:step] = [False] * ((limit - start) // step + 1)\n    base = [i for i, v in enumerate(sieve) if v]\n    out_lines = []\n    for tc in range(T):\n        m = int(next(it)); n = int(next(it))\n        out_lines.extend(segmented_primes(m, n, base))\n        if tc != T - 1:\n            out_lines.append('')\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    main()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\n// pre‑compute base primes up to sqrt(1e9)\nconst limit = Math.floor(Math.sqrt(1_000_000_000)) + 1;\nconst mark = new Array(limit + 1).fill(true);\nmark[0] = mark[1] = false;\nfor (let p = 2; p * p <= limit; ++p) {\n  if (mark[p]) {\n    for (let i = p * p; i <= limit; i += p) mark[i] = false;\n  }\n}\nconst base = [];\nfor (let i = 2; i <= limit; ++i) if (mark[i]) base.push(i);\nlet output = [];\nfor (let tc = 0; tc < T; ++tc) {\n  const m = Number(input[idx++]);\n  const n = Number(input[idx++]);\n  const size = n - m + 1;\n  const isPrime = new Array(size).fill(true);\n  for (const p of base) {\n    let start = p * p;\n    if (start < m) start = Math.ceil(m / p) * p;\n    for (let j = start; j <= n; j += p) {\n      isPrime[j - m] = false;\n    }\n  }\n  if (m === 1) isPrime[0] = false;\n  for (let i = 0; i < size; ++i) {\n    if (isPrime[i]) output.push(String(m + i));\n  }\n  if (tc !== T - 1) output.push('');\n}\nconsole.log(output.join('\\n'));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

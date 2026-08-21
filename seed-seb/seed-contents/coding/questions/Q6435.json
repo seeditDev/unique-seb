@@ -1,0 +1,128 @@
+{
+  "questionId": "Q6435",
+  "title": "Queen of Hearts",
+  "slug": "queen-of-hearts",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Graph",
+      "Union-Find",
+      "Disjoint-Set"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Graphs"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Wonderland is a wonderful world inhabited by **N** strange creatures, for simplicity all creatures are numbered from **1** to **N**. Every creature has exactly one best friend (it could be himself too). Note that, the friendship relationship is not bidirectional, meaning that it might be the case person x is best friend of y, but y is  not best friend of x. Besides that, there is a very intricate admiration relationship among the creatures. Every creature admires himself and to all the creatures admired by his best friend.\n\n\n\nWonderland is divided in many guilds, each creature belonging to exactly one guild, also each guild contains at least one creature. A guild is defined as the largest set of creatures in which if we take any two creatures **i**, **j**, then there exists a creature **k** such that both **i** and **j** admire **k**. For given best friend relationship for all persons, the guilds formed will be uniquely defined.\n\n\n\nThe queen of hearts is very angry because someone stole her tarts, so she is going to perform many executions. After the executions some of the creatures will lose his best friend, and will stop admiring all the creatures admired by his best friend, in consequence the number of guilds could change.\n\n\n\nAlice have **Q** queries of the form **L, R**, and she asks you to determine the number of guilds after the executions if the only survivors are the creatures numbered from **L** to **R**.",
+    "constraints": [
+      "1 <= N, Q <= 10^5",
+      "1 <= L <= R <= N",
+      "1 <= ai <= N"
+    ],
+    "inputFormat": "The first line contains two integers N and Q, where N is the number of creatures and Q is the number of queries. The second line contains N space-separated integers, where the i-th integer represents the best friend of the i-th creature. Then, Q lines follow, each containing two integers L and R, representing a query.",
+    "outputFormat": "For each query, output the number of guilds after the execution.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "9 3\n2 8 4 3 9 9 8 3 3\n1 6\n7 9\n3 6",
+        "output": "4\n2\n3",
+        "explanation": "Initially, there is just one guild. After the executions of the first query, the guilds will be {{1, 2}, {3, 4}, {5},{6}}. After the executions of the second query, the guilds will be {{7, 8}, {9}}. After the executions of the third query, the guilds will be {{3,4}, {5},{6}}."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1 1\n1\n1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "100000 1\n1 1 1 1 1 1 1 1 1 1\n1 100000",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "5 1\n2 3 4 5 1\n1 5",
+        "expectedOutput": "5",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "10 2\n2 3 4 5 6 7 8 9 10 1\n1 5\n6 10",
+        "expectedOutput": "5\n5",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "15 3\n2 3 4 5 6 7 8 9 10 11 12 13 14 15 1\n1 10\n6 15\n11 15",
+        "expectedOutput": "10\n10\n5",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a Union-Find data structure to keep track of the guilds. We first initialize each creature as its own guild. Then, for each creature, we find its best friend and union their guilds. After that, for each query, we find the number of guilds that the creatures in the query range belong to.",
+    "timeComplexity": "O(Q * N * alpha(N))",
+    "spaceComplexity": "O(N)",
+    "code": {
+      "C": "// COMPLETE, COMPILABLE C code\n#include <stdio.h>\n#include <stdlib.h>\n\nint find(int* parent, int x) {\n    if (parent[x] != x) {\n        parent[x] = find(parent, parent[x]);\n    }\n    return parent[x];\n}\n\nvoid unionSet(int* parent, int* rank, int x, int y) {\n    int rootX = find(parent, x);\n    int rootY = find(parent, y);\n    if (rootX != rootY) {\n        if (rank[rootX] < rank[rootY]) {\n            parent[rootX] = rootY;\n        } else if (rank[rootX] > rank[rootY]) {\n            parent[rootY] = rootX;\n        } else {\n            parent[rootY] = rootX;\n            rank[rootX]++;\n        }\n    }\n}\n\nint main() {\n    int N, Q;\n    scanf(\"%d %d\", &N, &Q);\n    int* bestFriend = (int*)malloc(N * sizeof(int));\n    for (int i = 0; i < N; i++) {\n        scanf(\"%d\", &bestFriend[i]);\n        bestFriend[i]--;\n    }\n    int* parent = (int*)malloc(N * sizeof(int));\n    int* rank = (int*)malloc(N * sizeof(int));\n    for (int i = 0; i < N; i++) {\n        parent[i] = i;\n        rank[i] = 0;\n    }\n    for (int i = 0; i < N; i++) {\n        unionSet(parent, rank, i, bestFriend[i]);\n    }\n    for (int i = 0; i < Q; i++) {\n        int L, R;\n        scanf(\"%d %d\", &L, &R);\n        L--;\n        R--;\n        int* tempParent = (int*)malloc(N * sizeof(int));\n        int* tempRank = (int*)malloc(N * sizeof(int));\n        for (int j = 0; j < N; j++) {\n            tempParent[j] = parent[j];\n            tempRank[j] = rank[j];\n        }\n        for (int j = 0; j < N; j++) {\n            if (j < L || j > R) {\n                tempParent[j] = j;\n                tempRank[j] = 0;\n            }\n        }\n        for (int j = L; j <= R; j++) {\n            if (bestFriend[j] < L || bestFriend[j] > R) {\n                tempParent[j] = j;\n                tempRank[j] = 0;\n            } else {\n                unionSet(tempParent, tempRank, j, bestFriend[j]);\n            }\n        }\n        int count = 0;\n        for (int j = L; j <= R; j++) {\n            if (tempParent[j] == j) {\n                count++;\n            }\n        }\n        printf(\"%d\\n\", count);\n        free(tempParent);\n        free(tempRank);\n    }\n    free(bestFriend);\n    free(parent);\n    free(rank);\n    return 0;\n}",
+      "C++": "// COMPLETE, COMPILABLE C++ code\n#include <iostream>\n#include <vector>\nusing namespace std;\n\nint find(vector<int>& parent, int x) {\n    if (parent[x] != x) {\n        parent[x] = find(parent, parent[x]);\n    }\n    return parent[x];\n}\n\nvoid unionSet(vector<int>& parent, vector<int>& rank, int x, int y) {\n    int rootX = find(parent, x);\n    int rootY = find(parent, y);\n    if (rootX != rootY) {\n        if (rank[rootX] < rank[rootY]) {\n            parent[rootX] = rootY;\n        } else if (rank[rootX] > rank[rootY]) {\n            parent[rootY] = rootX;\n        } else {\n            parent[rootY] = rootX;\n            rank[rootX]++;\n        }\n    }\n}\n\nint main() {\n    int N, Q;\n    cin >> N >> Q;\n    vector<int> bestFriend(N);\n    for (int i = 0; i < N; i++) {\n        cin >> bestFriend[i];\n        bestFriend[i]--;\n    }\n    vector<int> parent(N);\n    vector<int> rank(N);\n    for (int i = 0; i < N; i++) {\n        parent[i] = i;\n        rank[i] = 0;\n    }\n    for (int i = 0; i < N; i++) {\n        unionSet(parent, rank, i, bestFriend[i]);\n    }\n    for (int i = 0; i < Q; i++) {\n        int L, R;\n        cin >> L >> R;\n        L--;\n        R--;\n        vector<int> tempParent = parent;\n        vector<int> tempRank = rank;\n        for (int j = 0; j < N; j++) {\n            if (j < L || j > R) {\n                tempParent[j] = j;\n                tempRank[j] = 0;\n            }\n        }\n        for (int j = L; j <= R; j++) {\n            if (bestFriend[j] < L || bestFriend[j] > R) {\n                tempParent[j] = j;\n                tempRank[j] = 0;\n            } else {\n                unionSet(tempParent, tempRank, j, bestFriend[j]);\n            }\n        }\n        int count = 0;\n        for (int j = L; j <= R; j++) {\n            if (tempParent[j] == j) {\n                count++;\n            }\n        }\n        cout << count << endl;\n    }\n    return 0;\n}",
+      "Java": "// COMPLETE, COMPILABLE Java code\nimport java.util.Scanner;\npublic class Main {\n    public static int find(int[] parent, int x) {\n        if (parent[x] != x) {\n            parent[x] = find(parent, parent[x]);\n        }\n        return parent[x];\n    }\n\n    public static void unionSet(int[] parent, int[] rank, int x, int y) {\n        int rootX = find(parent, x);\n        int rootY = find(parent, y);\n        if (rootX != rootY) {\n            if (rank[rootX] < rank[rootY]) {\n                parent[rootX] = rootY;\n            } else if (rank[rootX] > rank[rootY]) {\n                parent[rootY] = rootX;\n            } else {\n                parent[rootY] = rootX;\n                rank[rootX]++;\n            }\n        }\n    }\n\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int N = scanner.nextInt();\n        int Q = scanner.nextInt();\n        int[] bestFriend = new int[N];\n        for (int i = 0; i < N; i++) {\n            bestFriend[i] = scanner.nextInt() - 1;\n        }\n        int[] parent = new int[N];\n        int[] rank = new int[N];\n        for (int i = 0; i < N; i++) {\n            parent[i] = i;\n            rank[i] = 0;\n        }\n        for (int i = 0; i < N; i++) {\n            unionSet(parent, rank, i, bestFriend[i]);\n        }\n        for (int i = 0; i < Q; i++) {\n            int L = scanner.nextInt() - 1;\n            int R = scanner.nextInt() - 1;\n            int[] tempParent = parent.clone();\n            int[] tempRank = rank.clone();\n            for (int j = 0; j < N; j++) {\n                if (j < L || j > R) {\n                    tempParent[j] = j;\n                    tempRank[j] = 0;\n                }\n            }\n            for (int j = L; j <= R; j++) {\n                if (bestFriend[j] < L || bestFriend[j] > R) {\n                    tempParent[j] = j;\n                    tempRank[j] = 0;\n                } else {\n                    unionSet(tempParent, tempRank, j, bestFriend[j]);\n                }\n            }\n            int count = 0;\n            for (int j = L; j <= R; j++) {\n                if (tempParent[j] == j) {\n                    count++;\n                }\n            }\n            System.out.println(count);\n        }\n    }\n}",
+      "Python3": "# COMPLETE, RUNNABLE Python3 code\nimport sys\n\ndef find(parent, x):\n    if parent[x] != x:\n        parent[x] = find(parent, parent[x])\n    return parent[x]\n\ndef unionSet(parent, rank, x, y):\n    rootX = find(parent, x)\n    rootY = find(parent, y)\n    if rootX != rootY:\n        if rank[rootX] < rank[rootY]:\n            parent[rootX] = rootY\n        elif rank[rootX] > rank[rootY]:\n            parent[rootY] = rootX\n        else:\n            parent[rootY] = rootX\n            rank[rootX] += 1\n\ndef main():\n    N, Q = map(int, sys.stdin.readline().split())\n    bestFriend = list(map(lambda x: int(x) - 1, sys.stdin.readline().split()))\n    parent = list(range(N))\n    rank = [0] * N\n    for i in range(N):\n        unionSet(parent, rank, i, bestFriend[i])\n    for _ in range(Q):\n        L, R = map(int, sys.stdin.readline().split())\n        L -= 1\n        R -= 1\n        tempParent = parent[:]\n        tempRank = rank[:]\n        for j in range(N):\n            if j < L or j > R:\n                tempParent[j] = j\n                tempRank[j] = 0\n        for j in range(L, R + 1):\n            if bestFriend[j] < L or bestFriend[j] > R:\n                tempParent[j] = j\n                tempRank[j] = 0\n            else:\n                unionSet(tempParent, tempRank, j, bestFriend[j])\n        count = 0\n        for j in range(L, R + 1):\n            if tempParent[j] == j:\n                count += 1\n        print(count)\n\nif __name__ == '__main__':\n    main()",
+      "JavaScript": "// COMPLETE, RUNNABLE JavaScript code\nconst fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\n\nfunction find(parent, x) {\n    if (parent[x] !== x) {\n        parent[x] = find(parent, parent[x]);\n    }\n    return parent[x];\n}\n\nfunction unionSet(parent, rank, x, y) {\n    let rootX = find(parent, x);\n    let rootY = find(parent, y);\n    if (rootX !== rootY) {\n        if (rank[rootX] < rank[rootY]) {\n            parent[rootX] = rootY;\n        } else if (rank[rootX] > rank[rootY]) {\n            parent[rootY] = rootX;\n        } else {\n            parent[rootY] = rootX;\n            rank[rootX]++;\n        }\n    }\n}\n\nfunction main() {\n    let [N, Q] = lines[idx++].trim().split(' ').map(Number);\n    let bestFriend = lines[idx++].trim().split(' ').map(Number).map(x => x - 1);\n    let parent = Array(N).fill(0).map((_, i) => i);\n    let rank = Array(N).fill(0);\n    for (let i = 0; i < N; i++) {\n        unionSet(parent, rank, i, bestFriend[i]);\n    }\n    for (let i = 0; i < Q; i++) {\n        let [L, R] = lines[idx++].trim().split(' ').map(Number);\n        L--;\n        R--;\n        let tempParent = parent.slice();\n        let tempRank = rank.slice();\n        for (let j = 0; j < N; j++) {\n            if (j < L || j > R) {\n                tempParent[j] = j;\n                tempRank[j] = 0;\n            }\n        }\n        for (let j = L; j <= R; j++) {\n            if (bestFriend[j] < L || bestFriend[j] > R) {\n                tempParent[j] = j;\n                tempRank[j] = 0;\n            } else {\n                unionSet(tempParent, tempRank, j, bestFriend[j]);\n            }\n        }\n        let count = 0;\n        for (let j = L; j <= R; j++) {\n            if (tempParent[j] === j) {\n                count++;\n            }\n        }\n        console.log(count);\n    }\n}\n\nmain();"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

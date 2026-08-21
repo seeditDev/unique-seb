@@ -1,0 +1,142 @@
+{
+  "questionId": "Q5025",
+  "title": "Counting Element Occurrences in a Tuple",
+  "slug": "counting-element-occurrences-in-a-tuple",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Easy",
+    "isPremium": true,
+    "tags": [
+      "String Parsing",
+      "Counting",
+      "Trim",
+      "Tokenization"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Python Built-in Types"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Imagine you are developing a data analysis tool that helps users find how many times a specific element appears in a tuple. Instead of manually searching, the program will take user input to create a tuple and a specific element to count, then use Python’s count() method to determine its occurrences.",
+    "constraints": [
+      "1 <= T <= 10",
+      "Each tuple contains at most 15 elements",
+      "Each element string length after trimming is at most 100 characters",
+      "Elements are compared case‑sensitively"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case there are two lines: the first line is a comma‑separated list of elements (each element may contain spaces which should be trimmed), the second line is the element whose occurrences need to be counted.",
+    "outputFormat": "For each test case output a single line in the exact format: The element '<element>' appears X time(s) in the tuple.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\napple, banana, apple, mango, banana, apple\napple",
+        "output": "The element 'apple' appears 3 time(s) in the tuple.",
+        "explanation": "The tuple after trimming is [apple, banana, apple, mango, banana, apple]; 'apple' occurs 3 times."
+      },
+      {
+        "id": "sample_2",
+        "input": "2\nred, blue, green, red, yellow\nred\ncat, dog, mouse, cat, cat, rabbit\ndog",
+        "output": "The element 'red' appears 2 time(s) in the tuple.\nThe element 'dog' appears 1 time(s) in the tuple.",
+        "explanation": "First test case: 'red' appears twice. Second test case: 'dog' appears once."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\nhello\nhello",
+        "output": "The element 'hello' appears 1 time(s) in the tuple.",
+        "explanation": "Single element tuple matches the search element."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n\n\n",
+        "expectedOutput": "The element '' appears 0 time(s) in the tuple.",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\nelem1, elem2, elem3, elem4, elem5, elem6, elem7, elem8, elem9, elem10, elem11, elem12, elem13, elem14, elem15\nelem10",
+        "expectedOutput": "The element 'elem10' appears 1 time(s) in the tuple.",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case with spaces",
+        "input": "1\n  foo  ,bar ,  foo,foo   , bar ,foo\nfoo",
+        "expectedOutput": "The element 'foo' appears 4 time(s) in the tuple.",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1 (two test cases)",
+        "input": "2\napple, banana, apple, mango, banana, apple\napple\nred, blue, green, red, yellow\nred",
+        "expectedOutput": "The element 'apple' appears 3 time(s) in the tuple.\nThe element 'red' appears 2 time(s) in the tuple.",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "case sensitivity",
+        "input": "1\nApple, apple, APPLE, apple\napple",
+        "expectedOutput": "The element 'apple' appears 2 time(s) in the tuple.",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each test case read the whole line containing the tuple and split it by commas. Trim leading and trailing spaces from each token and from the search element. Compare the trimmed token with the trimmed search element and increase a counter when they are equal. Finally print the required sentence. The algorithm is linear in the number of elements of the tuple.",
+    "timeComplexity": "O(T * N) where N is the number of elements in a tuple (N ≤ 15).",
+    "spaceComplexity": "O(1) extra space besides the input strings.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n#include <stdlib.h>\n\n#define MAX_LINE 1024\n#define MAX_ELEM 256\n\n// trim leading and trailing spaces in place\nstatic void trim(char *s) {\n    // leading\n    while (*s == ' ') s++;\n    memmove(s - (s - (char *)s), s, strlen(s) + 1); // shift to original pointer start\n    // trailing\n    char *end = s + strlen(s) - 1;\n    while (end >= s && *end == ' ') {\n        *end = '\\0';\n        end--;\n    }\n}\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    getchar(); // consume newline after T\n    for (int tc = 0; tc < T; ++tc) {\n        char line[MAX_LINE];\n        char search[MAX_ELEM];\n        if (!fgets(line, sizeof(line), stdin)) break;\n        line[strcspn(line, \"\\n\")] = '\\0';\n        if (!fgets(search, sizeof(search), stdin)) break;\n        search[strcspn(search, \"\\n\")] = '\\0';\n        // trim search\n        char *p = search;\n        while (*p == ' ') p++;\n        memmove(search, p, strlen(p) + 1);\n        // trailing spaces of search\n        char *end = search + strlen(search) - 1;\n        while (end >= search && *end == ' ') {\n            *end = '\\0';\n            end--;\n        }\n        int count = 0;\n        char *token = strtok(line, \",\");\n        while (token) {\n            // trim token\n            while (*token == ' ') token++;\n            char *e = token + strlen(token) - 1;\n            while (e >= token && *e == ' ') {\n                *e = '\\0';\n                e--;\n            }\n            if (strcmp(token, search) == 0) ++count;\n            token = strtok(NULL, \",\");\n        }\n        printf(\"The element '%s' appears %d time(s) in the tuple.\\n\", search, count);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nstatic inline void trim(string &s) {\n    size_t start = s.find_first_not_of(' ');\n    size_t end = s.find_last_not_of(' ');\n    if (start == string::npos) { s.clear(); return; }\n    s = s.substr(start, end - start + 1);\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T;\n    if (!(cin >> T)) return 0;\n    string dummy; getline(cin, dummy); // consume endline after T\n    for (int tc = 0; tc < T; ++tc) {\n        string line, search;\n        getline(cin, line);\n        getline(cin, search);\n        trim(search);\n        int cnt = 0;\n        string token;\n        stringstream ss(line);\n        while (getline(ss, token, ',')) {\n            trim(token);\n            if (token == search) ++cnt;\n        }\n        cout << \"The element '\" << search << \"' appears \" << cnt << \" time(s) in the tuple.\" << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    private static String trim(String s) {\n        return s.strip();\n    }\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        String line = br.readLine();\n        if (line == null) return;\n        int T = Integer.parseInt(line.trim());\n        for (int tc = 0; tc < T; ++tc) {\n            String tupleLine = br.readLine();\n            String search = br.readLine();\n            if (search == null) search = \"\";\n            search = trim(search);\n            int cnt = 0;\n            if (tupleLine != null && !tupleLine.isEmpty()) {\n                String[] parts = tupleLine.split(\",\");\n                for (String part : parts) {\n                    String elem = trim(part);\n                    if (elem.equals(search)) cnt++;\n                }\n            }\n            System.out.println(\"The element '\" + search + \"' appears \" + cnt + \" time(s) in the tuple.\");\n        }\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys\n\ndef trim(s: str) -> str:\n    return s.strip()\n\ndef main():\n    data = sys.stdin.read().splitlines()\n    if not data:\n        return\n    T = int(data[0].strip())\n    idx = 1\n    out = []\n    for _ in range(T):\n        tuple_line = data[idx] if idx < len(data) else ''\n        idx += 1\n        search = data[idx] if idx < len(data) else ''\n        idx += 1\n        search = trim(search)\n        cnt = 0\n        if tuple_line:\n            for token in tuple_line.split(','):\n                if trim(token) == search:\n                    cnt += 1\n        out.append(f\"The element '{search}' appears {cnt} time(s) in the tuple.\")\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    main()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').split('\\n');\nlet idx = 0;\nconst T = parseInt((input[idx] || '').trim(), 10);\nidx++;\nfunction trim(str) { return str.replace(/^\\s+|\\s+$/g, ''); }\nlet outputs = [];\nfor (let t = 0; t < T; t++) {\n  const tupleLine = input[idx] !== undefined ? input[idx] : '';\n  idx++;\n  const searchRaw = input[idx] !== undefined ? input[idx] : '';\n  idx++;\n  const search = trim(searchRaw);\n  let count = 0;\n  if (tupleLine.length > 0) {\n    const parts = tupleLine.split(',');\n    for (let p of parts) {\n      if (trim(p) === search) count++;\n    }\n  }\n  outputs.push(`The element '${search}' appears ${count} time(s) in the tuple.`);\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

@@ -1,0 +1,118 @@
+{
+  "questionId": "Q3806",
+  "title": "Killjee and k-th letter",
+  "slug": "killjee-and-k-th-letter",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Substring Generation",
+      "Sorting",
+      "String Manipulation",
+      "Strings"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Strings"
+    ]
+  },
+  "content": {
+    "problemStatement": "Killjee is trying to unlock a treasure. The key to the treasure is encrypted using a string **S** and **Q** queries. In each query, you need to find the **K**-th letter of a hidden string which is formed from the string **S**.\n\nTo form the hidden string, you should sort all substrings of **S** in lexicographical order and concatenate them. For example, if **S** = \"abc\", the hidden string would be \"aababcbbcc\". (See the sample explanation for details.)\n\nIn each query, the value of **K** is encoded in the following way:\n\n\n\nYou're given two integers **P** and **M**.\nLet's define **G** as the sum of ASCII values of answers to all previous queries (therefore, **G** = 0 for the first query).\nThe value of **K** for the current query is **( P \u00b7  G ) % M + 1**, where **%** denotes the modulo operator.",
+    "constraints": [
+      "1 \u2264 |S| \u2264 2 \u00b7 10^5",
+      "1 \u2264 Q \u2264 2 \u00b7 10^5",
+      "1 \u2264 K,M \u2264 length of hidden string",
+      "1 \u2264 P \u2264 10^9",
+      "S will consist only of lowercase English letters"
+    ],
+    "inputFormat": "The first line of the input contains a single string S. The second line contains a single integer Q. Q lines follow. Each of these lines contains two space-separated integers P and M.",
+    "outputFormat": "For each query, print a single line containing one character \u2014 the K-th letter of the hidden string.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "abc\n3\n1 1\n2 3\n5 6",
+        "output": "a\nb\na",
+        "explanation": "Explanation: The substrings of S are \"a\", \"b\", \"c\", \"ab\", \"abc\", \"bc\". The lexicographical order of these strings is \"a\", \"ab\", \"abc\", \"b\", \"bc\", \"c\", so the hidden string is \"a\"+\"ab\"+\"abc\"+\"b\"+\"bc\"+\"c\" = \"aababcbbcc\"."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "a\n1\n1 1",
+        "expectedOutput": "a",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "abcdefghijklmnopqrstuvwxyz\n1\n1 1",
+        "expectedOutput": "a",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "ab\n1\n1 1",
+        "expectedOutput": "a",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "a\n1\n1 1",
+        "expectedOutput": "a",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "a\n1\n1 1",
+        "expectedOutput": "a",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we first generate all substrings of the given string S and sort them lexicographically. Then, we concatenate these sorted substrings to form the hidden string. For each query, we calculate the value of K using the given formula and output the K-th character of the hidden string.",
+    "timeComplexity": "O(|S|^2 log |S|) \u2014 due to generating all substrings and sorting them. The time complexity for each query is O(1) since we just need to access the K-th character of the hidden string.",
+    "spaceComplexity": "O(|S|^2) \u2014 for storing all substrings and the hidden string.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n#include <stdlib.h>\n#define MAX 200005\nchar s[MAX];\nchar hidden[MAX * MAX];\nint compare(const void *a, const void *b) {\n    return strcmp(*(char **)a, *(char **)b);\n}\nint main() {\n    int q, p, m, g = 0, k;\n    scanf(\"%s\", s);\n    int len = strlen(s);\n    char **subs = (char **)malloc(len * len * sizeof(char *));\n    int idx = 0;\n    for (int i = 0; i < len; i++) {\n        for (int j = i + 1; j <= len; j++) {\n            subs[idx] = (char *)malloc((j - i + 1) * sizeof(char));\n            strncpy(subs[idx], s + i, j - i);\n            subs[idx][j - i] = '\\0';\n            idx++;\n        }\n    }\n    qsort(subs, idx, sizeof(char *), compare);\n    int hid_idx = 0;\n    for (int i = 0; i < idx; i++) {\n        for (int j = 0; subs[i][j]; j++) {\n            hidden[hid_idx++] = subs[i][j];\n        }\n    }\n    scanf(\"%d\", &q);\n    while (q--) {\n        scanf(\"%d %d\", &p, &m);\n        k = (p * g) % m + 1;\n        printf(\"%c\\n\", hidden[k - 1]);\n        g += hidden[k - 1];\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <string>\n#include <vector>\n#include <algorithm>\nusing namespace std;\nint main() {\n    string s;\n    getline(cin, s);\n    int q;\n    cin >> q;\n    cin.ignore();\n    vector<string> subs;\n    for (int i = 0; i < s.length(); i++) {\n        for (int j = i + 1; j <= s.length(); j++) {\n            subs.push_back(s.substr(i, j - i));\n        }\n    }\n    sort(subs.begin(), subs.end());\n    string hidden;\n    for (auto &sub : subs) {\n        hidden += sub;\n    }\n    int g = 0;\n    while (q--) {\n        int p, m;\n        cin >> p >> m;\n        int k = (p * g) % m + 1;\n        cout << hidden[k - 1] << endl;\n        g += hidden[k - 1];\n    }\n    return 0;\n}",
+      "Java": "import java.util.Arrays;\nimport java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        String s = sc.nextLine();\n        int q = sc.nextInt();\n        sc.nextLine();\n        String[] subs = new String[s.length() * s.length()];\n        int idx = 0;\n        for (int i = 0; i < s.length(); i++) {\n            for (int j = i + 1; j <= s.length(); j++) {\n                subs[idx++] = s.substring(i, j);\n            }\n        }\n        Arrays.sort(subs);\n        StringBuilder hidden = new StringBuilder();\n        for (int i = 0; i < idx; i++) {\n            hidden.append(subs[i]);\n        }\n        int g = 0;\n        while (q-- > 0) {\n            int p = sc.nextInt();\n            int m = sc.nextInt();\n            int k = (p * g) % m + 1;\n            System.out.println(hidden.charAt(k - 1));\n            g += hidden.charAt(k - 1);\n        }\n    }\n}",
+      "Python3": "import sys\ns = input()\nq = int(input())\nsubs = [s[i:j] for i in range(len(s)) for j in range(i + 1, len(s) + 1)]\nsubs.sort()\nhidden = ''.join(subs)\ng = 0\nfor _ in range(q):\n    p, m = map(int, input().split())\n    k = (p * g) % m + 1\n    print(hidden[k - 1])\n    g += ord(hidden[k - 1])\n",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nfunction nextLine() {\n    return lines[idx++];\n}\nlet s = nextLine();\nlet q = parseInt(nextLine());\nlet subs = [];\nfor (let i = 0; i < s.length; i++) {\n    for (let j = i + 1; j <= s.length; j++) {\n        subs.push(s.substring(i, j));\n    }\n}\nsubs.sort();\nlet hidden = subs.join('');\nlet g = 0;\nwhile (q-- > 0) {\n    let [p, m] = nextLine().split(' ').map(Number);\n    let k = (p * g) % m + 1;\n    console.log(hidden[k - 1]);\n    g += hidden.charCodeAt(k - 1);\n}"
+    }
+  }
+}

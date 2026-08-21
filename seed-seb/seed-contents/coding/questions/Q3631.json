@@ -1,0 +1,128 @@
+{
+  "questionId": "Q3631",
+  "title": "The query problem",
+  "slug": "the-query-problem",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Edit Distance",
+      "Levenshtein Distance",
+      "Strings"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Strings"
+    ]
+  },
+  "content": {
+    "problemStatement": "Given a (multi)set of **N** strings, each 8 characters long. (Note that the set may contain duplicate strings). Answer **M** queries. Each query has two parameters: **S** and **d**, where **S** is a 8 characters long string. You have to find how many strings from the original set are at  edit distance of exactly **d** from **S**.\n\nInformally, the Levenshtein distance between two words is the minimum number of single-character edits (insertions, deletions or substitutions) required to change one word into the other.",
+    "constraints": [
+      "0 \u2264 d \u2264 2",
+      "1 \u2264 N \u2264 10^5",
+      "1 \u2264 M \u2264 10^5",
+      "Each input string contains English alphabet (lower and upper case) and/or digits 0 to 9 and is exactly 8 characters long."
+    ],
+    "inputFormat": "The first line contains two integers M and N, where M is the number of queries and N is the number of strings. The following N lines contain one string each, and these are followed by M lines, each having two space-separated query parameters S and d.",
+    "outputFormat": "For each query, output the number of strings from the original set that are at an edit distance of exactly d from the corresponding query string S.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1 3\nabcdefgh\nabcdefgi\nyyyyyyyy\nabcdefgq 1",
+        "output": "2",
+        "explanation": "Both 'abcdefgh' and 'abcdefgi' are at an edit distance of 1 from 'abcdefgq'."
+      },
+      {
+        "id": "sample_2",
+        "input": "1 2\nabcde\nabcdf\nabcde 1",
+        "output": "1",
+        "explanation": "'abcdf' is at an edit distance of 1 from 'abcde'."
+      },
+      {
+        "id": "sample_3",
+        "input": "1 1\nabcde\nabcde 0",
+        "output": "1",
+        "explanation": "'abcde' is at an edit distance of 0 from itself."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1 1\na\na 0",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1 1\nabcdefgh\nabcdefgh 2",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1 2\nabcde\nabcdf\nabcde 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1 3\nabcde\nabcdf\nabcdd\nabcde 1",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1 3\nabcdefgh\nabcdefgi\nyyyyyyyy\nabcdefgq 1",
+        "expectedOutput": "2",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use dynamic programming to calculate the edit distance between two strings. We will store the given set of strings and then for each query, we will calculate the edit distance between the query string and each string in the set. We will count the number of strings that have an edit distance equal to d and output this count.",
+    "timeComplexity": "O(M * N * 8^2) \u2014 because for each query, we are calculating the edit distance with each string in the set, and the edit distance calculation itself takes O(8^2) time due to the dynamic programming table size being 8x8.",
+    "spaceComplexity": "O(N + M) \u2014 because we need to store the given set of strings and the queries.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n#define MAX 100005\n#define LEN 8\n\nint editDistance(char *s1, char *s2) {\n    int dp[LEN + 1][LEN + 1];\n    for (int i = 0; i <= LEN; i++) {\n        dp[i][0] = i;\n        dp[0][i] = i;\n    }\n    for (int i = 1; i <= LEN; i++) {\n        for (int j = 1; j <= LEN; j++) {\n            if (s1[i - 1] == s2[j - 1]) {\n                dp[i][j] = dp[i - 1][j - 1];\n            } else {\n                dp[i][j] = 1 + (dp[i - 1][j] < dp[i][j - 1] ? dp[i - 1][j] : dp[i][j - 1]) < dp[i - 1][j - 1] ? (dp[i - 1][j] < dp[i][j - 1] ? dp[i - 1][j] : dp[i][j - 1]) : dp[i - 1][j - 1];\n            }\n        }\n    }\n    return dp[LEN][LEN];\n}\n\nint main() {\n    int M, N;\n    scanf(\"%d %d\", &M, &N);\n    char strings[N][LEN + 1];\n    for (int i = 0; i < N; i++) {\n        scanf(\"%s\", strings[i]);\n    }\n    for (int i = 0; i < M; i++) {\n        char query[LEN + 1];\n        int d;\n        scanf(\"%s %d\", query, &d);\n        int count = 0;\n        for (int j = 0; j < N; j++) {\n            if (editDistance(query, strings[j]) == d) {\n                count++;\n            }\n        }\n        printf(\"%d\\n\", count);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <string>\nusing namespace std;\n#define MAX 100005\n#define LEN 8\n\nint editDistance(string s1, string s2) {\n    int dp[LEN + 1][LEN + 1];\n    for (int i = 0; i <= LEN; i++) {\n        dp[i][0] = i;\n        dp[0][i] = i;\n    }\n    for (int i = 1; i <= LEN; i++) {\n        for (int j = 1; j <= LEN; j++) {\n            if (s1[i - 1] == s2[j - 1]) {\n                dp[i][j] = dp[i - 1][j - 1];\n            } else {\n                dp[i][j] = 1 + min(min(dp[i - 1][j], dp[i][j - 1]), dp[i - 1][j - 1]);\n            }\n        }\n    }\n    return dp[LEN][LEN];\n}\n\nint main() {\n    int M, N;\n    cin >> M >> N;\n    string strings[N];\n    for (int i = 0; i < N; i++) {\n        cin >> strings[i];\n    }\n    for (int i = 0; i < M; i++) {\n        string query;\n        int d;\n        cin >> query >> d;\n        int count = 0;\n        for (int j = 0; j < N; j++) {\n            if (editDistance(query, strings[j]) == d) {\n                count++;\n            }\n        }\n        cout << count << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int M = scanner.nextInt();\n        int N = scanner.nextInt();\n        String[] strings = new String[N];\n        for (int i = 0; i < N; i++) {\n            strings[i] = scanner.next();\n        }\n        for (int i = 0; i < M; i++) {\n            String query = scanner.next();\n            int d = scanner.nextInt();\n            int count = 0;\n            for (int j = 0; j < N; j++) {\n                if (editDistance(query, strings[j]) == d) {\n                    count++;\n                }\n            }\n            System.out.println(count);\n        }\n    }\n\n    public static int editDistance(String s1, String s2) {\n        int[][] dp = new int[9][9];\n        for (int i = 0; i <= 8; i++) {\n            dp[i][0] = i;\n            dp[0][i] = i;\n        }\n        for (int i = 1; i <= 8; i++) {\n            for (int j = 1; j <= 8; j++) {\n                if (s1.charAt(i - 1) == s2.charAt(j - 1)) {\n                    dp[i][j] = dp[i - 1][j - 1];\n                } else {\n                    dp[i][j] = 1 + Math.min(Math.min(dp[i - 1][j], dp[i][j - 1]), dp[i - 1][j - 1]);\n                }\n            }\n        }\n        return dp[8][8];\n    }\n}",
+      "Python3": "def edit_distance(s1, s2):\n    dp = [[0 for _ in range(9)] for _ in range(9)]\n    for i in range(9):\n        dp[i][0] = i\n        dp[0][i] = i\n    for i in range(1, 9):\n        for j in range(1, 9):\n            if s1[i - 1] == s2[j - 1]:\n                dp[i][j] = dp[i - 1][j - 1]\n            else:\n                dp[i][j] = 1 + min(min(dp[i - 1][j], dp[i][j - 1]), dp[i - 1][j - 1])\n    return dp[8][8]\n\nM, N = map(int, input().split())\nstrings = [input() for _ in range(N)]\nfor _ in range(M):\n    query, d = input().split()\n    d = int(d)\n    count = 0\n    for s in strings:\n        if edit_distance(query, s) == d:\n            count += 1\n    print(count)",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst readline = () => input[idx++];\n\nfunction editDistance(s1, s2) {\n    const dp = Array(9).fill(0).map(() => Array(9).fill(0));\n    for (let i = 0; i <= 8; i++) {\n        dp[i][0] = i;\n        dp[0][i] = i;\n    }\n    for (let i = 1; i <= 8; i++) {\n        for (let j = 1; j <= 8; j++) {\n            if (s1[i - 1] === s2[j - 1]) {\n                dp[i][j] = dp[i - 1][j - 1];\n            } else {\n                dp[i][j] = 1 + Math.min(Math.min(dp[i - 1][j], dp[i][j - 1]), dp[i - 1][j - 1]);\n            }\n        }\n    }\n    return dp[8][8];\n}\n\nconst [M, N] = readline().split(' ').map(Number);\nconst strings = [];\nfor (let i = 0; i < N; i++) {\n    strings.push(readline());\n}\nfor (let i = 0; i < M; i++) {\n    const [query, d] = readline().split(' ');\n    let count = 0;\n    for (const s of strings) {\n        if (editDistance(query, s) === Number(d)) {\n            count++;\n        }\n    }\n    console.log(count);\n}"
+    }
+  }
+}

@@ -1,0 +1,126 @@
+{
+  "questionId": "Q7779",
+  "title": "Banned Quotient",
+  "slug": "banned-quotient",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math | Number Theory | Combinatorics",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Divisor counting",
+      "Pollard‑Rho factorisation",
+      "Miller‑Rabin primality test",
+      "Independent set in a matching",
+      "Modular exponentiation"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef wants to select a subset SSS of the set {1,2,…,N}\\{1, 2, \\ldots, N\\}{1,2,…,N} such that there are no two integers x,y∈Sx, y \\in Sx,y∈S which satisfy xy=M\\frac{x}{y} = Myx​=M.\n\nHelp Chef find the maximum size of a subset SSS he can choose and the number of ways in which he can choose a subset SSS with this maximum size. Since the number of ways to choose SSS can be very large, calculate it modulo 998,244,353998,244,353998,244,353.",
+    "constraints": [
+      "1 ≤ T ≤ 10 000",
+      "2 ≤ M ≤ N ≤ 10^18",
+      "All calculations are to be performed modulo MOD = 998244353"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains two space‑separated integers N and M (2 ≤ M ≤ N ≤ 10^18).",
+    "outputFormat": "For each test case output two space‑separated integers on a single line: the maximum possible size of a subset S of {1,…,N} that contains no two distinct elements whose product equals M, and the number of different subsets of that maximum size modulo 998244353.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n5 2\n10 2\n100 3",
+        "output": "4 1\n6 12\n76 49152",
+        "explanation": "Explanation:\nExample case 1: The only subset SSS with the maximum size which Chef can choose is {1,3,4,5}\\{1, 3, 4, 5\\}{1,3,4,5}."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For every integer x (1 ≤ x ≤ N) the only possible partner that creates a forbidden pair is y = M / x, because the condition is x·y = M. Hence each integer can belong to at most one forbidden pair – the graph formed by the forbidden pairs is a collection of disjoint edges (and possibly a vertex that would be paired with itself when M is a perfect square, which does not create a restriction because the two numbers must be distinct).\\n\\nFor an unordered factor pair (d, M/d) with d < M/d we are forced to drop at least one of the two numbers from the subset. All numbers that are not part of any such pair can be taken freely. Consequently:\\n    • Let E be the number of unordered factor pairs (d, M/d) such that both d and M/d are ≤ N.\\n    • The maximum size of a valid subset is N – E (we lose exactly one element from each edge).\\n    • For each edge we have two independent choices (keep the smaller or keep the larger), therefore the number of optimal subsets is 2^E (mod MOD).\\n\\nThus the whole problem reduces to counting E. A divisor d of M belongs to a valid edge iff:\\n    1. d < M/d (to avoid counting the same pair twice),\\n    2. d ≤ N and M/d ≤ N.\\nBecause d ≤ sqrt(M), condition 2 is equivalent to d ≥ ceil(M / N). Hence E is the number of divisors d of M satisfying\\n    ceil(M / N) ≤ d ≤ floor(sqrt(M)) and d | M.\\nIf N < sqrt(M) (i.e., N·N < M) the interval is empty and E = 0.\\n\\nThe only remaining difficulty is counting divisors of a 64‑bit integer up to 10^18. This is done by factorising M with Pollard‑Rho (fast enough for 10^4 test cases) and then enumerating all divisors from the prime factorisation. While enumerating we simply count those that lie in the required interval.\\n\\nAlgorithm for each test case:\\n1. If N·N < M → E = 0.\\n2. Otherwise factorise M into primes p_i^a_i using deterministic Miller‑Rabin + Pollard‑Rho.\\n3. Recursively generate all divisors of M. For each divisor d: if d < M/d and d ≤ N and M/d ≤ N, increment E.\\n4. maxSize = N – E.\\n5. ways = powmod(2, E, MOD).\\n6. Output maxSize and ways.\\n\\nAll operations are O(log M) for primality testing and roughly O(number of divisors) for enumeration (the maximum number of divisors of a 64‑bit integer is < 10^5, well within limits).",
+    "timeComplexity": "O(T * (log M + D)) where D is the number of divisors of M (worst‑case < 10^5).",
+    "spaceComplexity": "O(D) for storing the list of divisors of a single test case.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdint.h>\n#include <inttypes.h>\n\nstatic const uint64_t MOD = 998244353ULL;\n\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

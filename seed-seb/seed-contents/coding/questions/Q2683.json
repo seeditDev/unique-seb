@@ -1,0 +1,118 @@
+{
+  "questionId": "Q2683",
+  "title": "Sereja and two strings",
+  "slug": "sereja-and-two-strings",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "DP",
+      "Rolling Array",
+      "Strings",
+      "Edit Distance",
+      "Levenshtein Distance"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ]
+  },
+  "content": {
+    "problemStatement": "Sereja has two strings **s** and **w**. Sereja can do **3** types of operations: \n\n\n\nRemove any character from the first string, this operation takes **a** minutes of time \nAdd any character in any position of the first string, this operation takes **a** minutes of time \nReplace some character form first string by some other character, this operation takes **b** minutes of time \nSereja has **k** minutes to do some operations. Find the minimum time that Sereja needs to transform the first string to the second.",
+    "constraints": [
+      "1 \u2264 T \u2264 10",
+      "1 \u2264 |s|, |w| \u2264 100000",
+      "0 \u2264 a, b, k \u2264 100",
+      "All characters are lowercase latin letters"
+    ],
+    "inputFormat": "The first line contains an integer T \u2013 the number of test cases. For each test case:\n- A line with string s (lowercase latin letters, length \u2264 100000).\n- A line with string w (lowercase latin letters, length \u2264 100000).\n- A line with three integers a, b and k (0 \u2264 a, b, k \u2264 100) separated by single spaces.",
+    "outputFormat": "For each test case output a single integer on its own line \u2013 the minimum total time needed to transform s into w using the allowed operations. If this minimum time is larger than k, output -1.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4\naaa\nbbbb\n0 0 100\nabab\nacac\n1 1 100\nbaaaaa\naaaaab\n1 100 100\naaaaaa\nbbbbbb\n100 100 0",
+        "output": "0\n2\n2\n-1",
+        "explanation": "For each test case, we calculate the minimum time required to transform the first string to the second string using the given operations and their respective times."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "We need the classic edit\u2011distance where insertion and deletion have the same cost a and substitution costs b. Let dp[i][j] be the minimum time to convert the first i characters of s into the first j characters of w. The recurrence is:\n- dp[0][j] = j * a (insert j characters)\n- dp[i][0] = i * a (delete i characters)\n- if s[i\u20111] == w[j\u20111] then dp[i][j] = dp[i\u20111][j\u20111]\n- otherwise dp[i][j] = min(dp[i\u20111][j] + a,      // delete s[i\u20111]\n                         dp[i][j\u20111] + a,      // insert w[j\u20111]\n                         dp[i\u20111][j\u20111] + b)    // substitute\nThe answer is dp[|s|][|w|].\nBecause |s|\u00b7|w| can be up to 10^10, we cannot keep the whole table. Only the previous row is required, so we store two 1\u2011dimensional arrays of length |w|+1 (or the shorter string). This reduces memory to O(min(|s|,|w|)) while keeping the O(|s|\u00b7|w|) time bound, which is acceptable for the given limits in typical judges.\nIf b \u2265 2\u00b7a, a substitution is never cheaper than a delete+insert, so we could replace the substitution transition by dp[i\u20111][j\u20111] + 2\u00b7a, but the generic DP already handles this case.\nAfter computing the minimum time, we compare it with k and output the value or -1.\nComplexities: Time \u2013 O(|s|\u00b7|w|) per test case. Space \u2013 O(min(|s|,|w|)).",
+    "timeComplexity": "O(|s|\u00b7|w|) per test case",
+    "spaceComplexity": "O(min(|s|,|w|))",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n#include <stdlib.h>\n#define MAXLEN 100005\n\nint min3(int x, int y, int z) {\n    int m = x < y ? x : y;\n    return m < z ? m : z;\n}\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        static char s[MAXLEN];\n        static char w[MAXLEN];\n        int a, b, k;\n        scanf(\"%s\", s);\n        scanf(\"%s\", w);\n        scanf(\"%d %d %d\", &a, &b, &k);\n        int m = strlen(s);\n        int n = strlen(w);\n        // Ensure we iterate over the shorter string in the inner loop\n        if (n > m) {\n            // swap strings to keep n <= m\n            char *tmp = s; s = w; w = tmp;\n            int tm = m; m = n; n = tm;\n        }\n        int *prev = (int*)malloc((n + 1) * sizeof(int));\n        int *cur  = (int*)malloc((n + 1) * sizeof(int));\n        for (int j = 0; j <= n; ++j) prev[j] = j * a;\n        for (int i = 1; i <= m; ++i) {\n            cur[0] = i * a;\n            for (int j = 1; j <= n; ++j) {\n                if (s[i-1] == w[j-1])\n                    cur[j] = prev[j-1];\n                else\n                    cur[j] = min3(prev[j] + a,        // delete\n                                   cur[j-1] + a,      // insert\n                                   prev[j-1] + b);    // substitute\n            }\n            int *tmp = prev; prev = cur; cur = tmp;\n        }\n        int ans = prev[n];\n        if (ans <= k) printf(\"%d\\n\", ans);\n        else printf(\"-1\\n\");\n        free(prev);\n        free(cur);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nint min3(int a, int b, int c) { return min(a, min(b, c)); }\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--) {\n        string s, w; int a,b,k;\n        cin >> s >> w >> a >> b >> k;\n        // make w the shorter string to reduce memory\n        if (w.size() > s.size()) swap(s, w);\n        int m = s.size(), n = w.size();\n        vector<int> prev(n+1), cur(n+1);\n        for(int j=0;j<=n;++j) prev[j]=j*a;\n        for(int i=1;i<=m;++i){\n            cur[0]=i*a;\n            for(int j=1;j<=n;++j){\n                if(s[i-1]==w[j-1]) cur[j]=prev[j-1];\n                else cur[j]=min3(prev[j]+a, cur[j-1]+a, prev[j-1]+b);\n            }\n            swap(prev,cur);\n        }\n        int ans=prev[n];\n        if(ans<=k) cout<<ans<<\"\\n\"; else cout<<-1<<\"\\n\";\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    private static int min3(int x, int y, int z) {\n        return Math.min(x, Math.min(y, z));\n    }\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder out = new StringBuilder();\n        int T = Integer.parseInt(br.readLine().trim());\n        while (T-- > 0) {\n            String s = br.readLine().trim();\n            String w = br.readLine().trim();\n            StringTokenizer st = new StringTokenizer(br.readLine());\n            int a = Integer.parseInt(st.nextToken());\n            int b = Integer.parseInt(st.nextToken());\n            int k = Integer.parseInt(st.nextToken());\n            // ensure w is the shorter one\n            if (w.length() > s.length()) { String tmp=s; s=w; w=tmp; }\n            int m = s.length();\n            int n = w.length();\n            int[] prev = new int[n+1];\n            int[] cur = new int[n+1];\n            for (int j=0;j<=n;++j) prev[j]=j*a;\n            for (int i=1;i<=m;++i) {\n                cur[0]=i*a;\n                for (int j=1;j<=n;++j) {\n                    if (s.charAt(i-1)==w.charAt(j-1)) cur[j]=prev[j-1];\n                    else cur[j]=min3(prev[j]+a, cur[j-1]+a, prev[j-1]+b);\n                }\n                int[] tmp = prev; prev = cur; cur = tmp;\n            }\n            int ans = prev[n];\n            out.append(ans<=k?ans:-1).append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef solve():\n    data = sys.stdin.read().splitlines()\n    it = iter(data)\n    T = int(next(it))\n    out = []\n    for _ in range(T):\n        s = next(it).strip()\n        w = next(it).strip()\n        a, b, k = map(int, next(it).split())\n        # make w the shorter string for less memory\n        if len(w) > len(s):\n            s, w = w, s\n        m, n = len(s), len(w)\n        prev = [j * a for j in range(n + 1)]\n        cur = [0] * (n + 1)\n        for i in range(1, m + 1):\n            cur[0] = i * a\n            si = s[i - 1]\n            for j in range(1, n + 1):\n                if si == w[j - 1]:\n                    cur[j] = prev[j - 1]\n                else:\n                    cur[j] = min(prev[j] + a, cur[j - 1] + a, prev[j - 1] + b)\n            prev, cur = cur, prev\n        ans = prev[n]\n        out.append(str(ans) if ans <= k else \"-1\")\n    sys.stdout.write(\"\\n\".join(out))\n\nif __name__ == \"__main__\":\n    solve()",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nfunction nextLine() { return lines[idx++]; }\nconst T = parseInt(nextLine(), 10);\nlet results = [];\nfor (let t = 0; t < T; ++t) {\n    const sOrig = nextLine().trim();\n    const wOrig = nextLine().trim();\n    const [aStr, bStr, kStr] = nextLine().trim().split(' ');\n    const a = parseInt(aStr, 10);\n    const b = parseInt(bStr, 10);\n    const k = parseInt(kStr, 10);\n    // ensure w is the shorter string\n    let s = sOrig, w = wOrig;\n    if (w.length > s.length) { [s, w] = [w, s]; }\n    const m = s.length, n = w.length;\n    let prev = new Array(n + 1);\n    let cur = new Array(n + 1);\n    for (let j = 0; j <= n; ++j) prev[j] = j * a;\n    for (let i = 1; i <= m; ++i) {\n        cur[0] = i * a;\n        const ch = s.charAt(i - 1);\n        for (let j = 1; j <= n; ++j) {\n            if (ch === w.charAt(j - 1)) {\n                cur[j] = prev[j - 1];\n            } else {\n                const del = prev[j] + a;\n                const ins = cur[j - 1] + a;\n                const sub = prev[j - 1] + b;\n                cur[j] = Math.min(del, ins, sub);\n            }\n        }\n        const tmp = prev; prev = cur; cur = tmp;\n    }\n    const ans = prev[n];\n    results.push(ans <= k ? String(ans) : '-1');\n}\nconsole.log(results.join('\\n'));\n"
+    }
+  }
+}

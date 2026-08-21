@@ -1,0 +1,139 @@
+{
+  "questionId": "Q9212",
+  "title": "Hello Equation",
+  "slug": "hello-equation",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math | Number Theory",
+    "difficulty": "Easy",
+    "isPremium": true,
+    "tags": [
+      "Diophantine Equation",
+      "Factorization",
+      "Divisor Enumeration"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Ad-hoc & Implementation"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given a positive integer XXX. Your task is to tell whether there exist two **positive** integers aaa and bbb (a&gt;0,b&gt;0)(a \\gt 0, b \\gt 0)(a&gt;0,b&gt;0) such that\n\n2⋅a+2⋅b+a⋅b=X2\\cdot a + 2\\cdot b + a\\cdot b = X2⋅a+2⋅b+a⋅b=XIf there exist positive integers aaa and bbb satisfying the above condition print `YES`, otherwise print `NO`.\n\n\nInput Format\n\nThe first line of input will contain a single integer TTT, denoting the number of test cases.\nEach test case consists of single line containing a positive integer XXX.\n\n\nOutput Format\nFor each test case, output on a new line `YES` or `NO`.\n\n\nYou may print each character of the string in either uppercase or lowercase (for example, the strings `yes`, `YES`, `Yes`, and `yeS` will all be treated as identical).",
+    "constraints": [
+      "1 <= T <= 100",
+      "1 <= X <= 10^9"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains a single positive integer X.",
+    "outputFormat": "For each test case output on a separate line \"YES\" if there exist positive integers a and b such that 2*a + 2*b + a*b = X, otherwise output \"NO\".",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4\\n2\\n5\\n6\\n12",
+        "output": "NO\\nYES\\nNO\\nYES",
+        "explanation": "For X=2, N=6 (<9) and the only factorisation 2*3 has a factor <3 → NO.\\nX=5 gives N=9=3*3, both factors ≥3 → YES (a=1,b=1).\\nX=6 gives N=10=2*5, factor 2 <3 → NO.\\nX=12 gives N=16=4*4, both ≥3 → YES (a=2,b=2)."
+      },
+      {
+        "id": "sample_2",
+        "input": "3\\n9\\n20\\n30",
+        "output": "NO\\nYES\\nNO",
+        "explanation": "X=9 → N=13 (prime) → NO.\\nX=20 → N=24=3*8, both ≥3 → YES (a=1,b=6).\\nX=30 → N=34=2*17, factor 2 <3 → NO."
+      },
+      {
+        "id": "sample_3",
+        "input": "2\\n1\\n1000000000",
+        "output": "NO\\nYES",
+        "explanation": "X=1 → N=5 (<9) → NO.\\nX=10^9 → N=1000000004=4*250000001, both ≥3 → YES."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\\n1",
+        "expectedOutput": "NO",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\\n1000000000",
+        "expectedOutput": "YES",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\\n4",
+        "expectedOutput": "NO",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\\n30",
+        "expectedOutput": "NO",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\\n35",
+        "expectedOutput": "YES",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Rewrite the equation: 2a + 2b + a*b = X ⇒ a*b + 2a + 2b + 4 = X + 4 ⇒ (a+2)*(b+2) = X + 4. Let p = a+2 and q = b+2. Since a,b are positive, p,q ≥ 3. Therefore we need to check whether X+4 can be expressed as a product of two integers both at least 3. For each X compute N = X+4. If N < 9 (i.e., X ≤ 4) answer is NO. Otherwise iterate d from 3 to √N; if d divides N and N/d ≥ 3, answer is YES. If no such divisor exists, answer is NO.",
+    "timeComplexity": "O(T * sqrt(X)) – for each test case we enumerate divisors up to √(X+4).",
+    "spaceComplexity": "O(1) – only a few integer variables are used.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdbool.h>\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    while(T--){\n        long long X; scanf(\"%lld\", &X);\n        long long N = X + 4;\n        bool ok = false;\n        if(N >= 9){\n            for(long long d = 3; d * d <= N; ++d){\n                if(N % d == 0 && N / d >= 3){\n                    ok = true; break;\n                }\n            }\n        }\n        printf(ok ? \"YES\\n\" : \"NO\\n\");\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        long long X; cin>>X;\n        long long N = X + 4;\n        bool ok = false;\n        if(N >= 9){\n            for(long long d=3; d*d<=N; ++d){\n                if(N % d == 0 && N/d >= 3){\n                    ok = true; break;\n                }\n            }\n        }\n        cout << (ok?\"YES\":\"NO\") << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder sb = new StringBuilder();\n        for(int t=0; t<T; ++t){\n            long X = Long.parseLong(br.readLine().trim());\n            long N = X + 4;\n            boolean ok = false;\n            if(N >= 9){\n                for(long d=3; d*d<=N; ++d){\n                    if(N % d == 0 && N/d >= 3){\n                        ok = true; break;\n                    }\n                }\n            }\n            sb.append(ok?\"YES\":\"NO\");\n            if(t+1<T) sb.append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out = []\n    for _ in range(T):\n        X = int(next(it))\n        N = X + 4\n        ok = False\n        if N >= 9:\n            d = 3\n            while d * d <= N:\n                if N % d == 0 and N // d >= 3:\n                    ok = True\n                    break\n                d += 1\n        out.append('YES' if ok else 'NO')\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    solve()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet res = [];\nfor(let t=0; t<T; ++t){\n  const X = Number(input[idx++]);\n  const N = X + 4;\n  let ok = false;\n  if(N >= 9){\n    for(let d=3; d*d<=N; ++d){\n      if(N % d === 0 && N / d >= 3){\n        ok = true; break;\n      }\n    }\n  }\n  res.push(ok ? 'YES' : 'NO');\n}\nconsole.log(res.join('\\n'));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

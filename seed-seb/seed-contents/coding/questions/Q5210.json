@@ -1,0 +1,90 @@
+{
+  "questionId": "Q5210",
+  "title": "K-important Strings",
+  "slug": "k-important-strings",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-01",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "strings",
+      "competitive programming"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Strings"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given a set of N strings S0, S1, …, SN-1. These strings consist of only lower case characters a..z and have the same length L. \n\n\nA string H is said to be K-important if there are at least K strings in the given set of N strings appearing at K different positions in H. These K strings need not to be distinct.\n\n\nYour task is to find the shortest K-important string. If there are more than one possible solution, your program can output any of them.",
+    "constraints": [
+      "1 ≤ N ≤ 150",
+      "1 ≤ L ≤ 300",
+      "1 ≤ K ≤ 500"
+    ],
+    "inputFormat": "The first line contains a number t (about 10) which is the number of test cases.\n\n\nEach test case has the following form.\n\n\nThe first line contains three integers N, L and K. The next N lines contain the strings in the given set.\n\n\nEach test case's input is separated by a blank line.",
+    "outputFormat": "For each test case, output the following information. \n\nThe first line contains the length of the shortest K-important strings. \n\n\nThe second line contains H, one of the K-important strings. \n\n\nEach line in the next K lines contains the index of one string in the given set that appears in H and the corresponding position (0-based) in H.\n\n\nPrint a blank line after each test case's output.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n3 3 1\nabc\ncde\nbcf\n3 3 2\nabc\ncde\nbcf\n3 3 3\nabc\ncde\nbcf",
+        "output": "3\nabc\n0 0\n4\nabcf\n0 0\n2 1\n7\nabcfabc\n0 0\n2 1\n0 4",
+        "explanation": ""
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "input": "3\n3 3 1\nabc\ncde\nbcf\n3 3 2\nabc\ncde\nbcf\n3 3 3\nabc\ncde\nbcf",
+        "expectedOutput": "3\nabc\n0 0\n4\nabcf\n0 0\n2 1\n7\nabcfabc\n0 0\n2 1\n0 4",
+        "weight": 100
+      }
+    ],
+    "totalTestCases": 1,
+    "totalWeight": 100
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      100
+    ],
+    "maxScore": 100
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The solution involves calculating overlaps and using dynamic programming (DP) to find the shortest concatenated string.\n\n\n\nCalculate the overlap between every pair of strings using the overlap function, which determines how much of one string aligns with the end of another. Store the results in the `olap` matrix.\n\n\n\n\nInitialize the `DP` table bf[i][j], where bf[i][j] represents the shortest length of a K- important string using i+1 strings and ending with string j. Set bf[0][j]=L for all strings j.\n\n\n\n\nFor each i from 1 to K−1, compute bf[i][j] by iterating over all possible previous strings k. Calculate the new length by adding L−olap[k][j] to bf[i−1][k]. Update bf[i][j] with the minimum value and store the previous string k in the previous table for reconstruction.\n\n\n\n\nFind the string index with the shortest length in bf[K−1][j]. Backtrack through the previous table to reconstruct the sequence of strings forming the shortest $K-$important string.\n\n\n\n\nCompute the final concatenated string by appending parts of strings based on the overlap and print the result. Additionally, print the sequence of indices and their positions in the concatenated string.",
+    "timeComplexity": "O(N)",
+    "spaceComplexity": "O(1)",
+    "code": {
+      "C++": "#include <iostream>\n#include <algorithm>\n#include <cstring>\n\nconst int MAXN = 160;\nconst int MAXL = 310;\nconst int MAXK = 510;\n\nchar str[MAXN][MAXL + 1];\nint olap[MAXN][MAXN], bf[MAXK][MAXN], previous[MAXK][MAXN], final[MAXK];\n\nusing namespace std;\n\nint overlap(char* a, char* b, int l) {\n    for (int k = 1; k <= l; ++k) {\n        bool match = true;\n        for (int i = k; i < l && match; ++i)\n            match &= (a[i] == b[i - k]);\n        if (match) return l - k;\n    }\n    return 0; // Added return statement for no overlap case\n}\n\nint main() {\n    int t, n, l, k;\n    cin >> t;\n\n    while (t--) {\n        cin >> n >> l >> k;\n        for (int i = 0; i < n; ++i) cin >> str[i];\n        for (int i = 0; i < n; ++i)\n            for (int j = 0; j < n; ++j)\n                olap[i][j] = overlap(str[i], str[j], l);\n\n        for (int i = 0; i < n; ++i)\n            bf[0][i] = l;\n\n        for (int i = 1; i < k; ++i) {\n            for (int j = 0; j < n; ++j) {\n                bf[i][j] = 1000000000;\n                for (int kk = 0; kk < n; ++kk) {\n                    int nl = bf[i - 1][kk] + l - olap[kk][j];\n                    if (nl < bf[i][j]) {\n                        bf[i][j] = nl;\n                        previous[i][j] = kk;\n                    }\n                }\n            }\n        }\n\n        int best = 0;\n        for (int i = 1; i < n; ++i)\n            if (bf[k - 1][i] < bf[k - 1][best])\n                best = i;\n\n        for (int i = k - 1; i >= 0; --i) {\n            final[i] = best;\n            best = previous[i][best];\n        }\n\n        int length = k * l;\n        for (int i = 0; i + 1 < k; ++i)\n            length -= olap[final[i]][final[i + 1]];\n        cout << length << endl;\n\n        cout << str[final[0]];\n        for (int i = 1; i < k; ++i)\n            cout << (str[final[i]] + olap[final[i - 1]][final[i]]);\n        cout << endl;\n\n        int at = 0;\n        for (int i = 0; i + 1 < k; ++i) {\n            cout << final[i] << ' ' << at << endl;\n            at += l - olap[final[i]][final[i + 1]];\n        }\n        cout << final[k - 1] << ' ' << at << endl;\n        if (t) cout << endl; // Print a blank line after each test case except the last one\n    }\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

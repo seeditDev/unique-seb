@@ -1,0 +1,140 @@
+{
+  "questionId": "Q5613",
+  "title": "The Glittering Caves of Aglarond",
+  "slug": "the-glittering-caves-of-aglarond",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Bit Manipulation",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Bit Manipulation",
+      "Brute Force"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "The Glittering Caves of AglarondWhile these caves are by and large natural, there is one place where the Men of Rohan have chiseled into the rock to create a magnificent exhibit. You have a wall of the cave consisting of 'lighted diamonds' arranged in a **N** by **M** grid (basically, you have a light behind each diamond which can be turned on or off). Further, you have a switch corresponding to each **row** of this diamond-grid. When you operate a switch, it will toggle (flip) the lights corresponding to that row.\n\nYou are given the current configuration of the lighted diamonds. Gimli challenges Legolas to turn on as many diamonds as possible using EXACTLY **K** on/off operations of the switches. Since Legolas is an Elf of the Wood and doesn't care much for things that glitter, he instead asks for your help. Note that the same switch (i.e. row) can be chosen multiple times.\n\n\nInput Format\nThe first line contains the number of test cases **T**. Each test case contains **N**, **M** and **K** on the first line followed by **N** lines containing **M** characters each. The ith line denotes the state of the diamonds in the ith row, where '*' denotes a diamond which is on and '.' denotes a diamond which is off.\n\n\n\nOutput Format\nOutput **T** lines containing the answer for the corresponding case. Between successive test cases, there should not be any blank lines in the output.",
+    "constraints": [
+      "1 <= T <= 100",
+      "1 <= N <= 50",
+      "1 <= M <= 50",
+      "1 <= K <= 100"
+    ],
+    "inputFormat": "The first line contains T, the number of test cases. Each test case contains three integers N, M, and K on the first line, followed by N lines containing M characters each.",
+    "outputFormat": "For each test case, print the maximum number of diamonds that can be turned on using exactly K on/off operations.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n2 2 1\n..\n**\n2 2 2\n..\n**",
+        "output": "4\n2",
+        "explanation": "Explanation: In the first test case, row 1 can be toggled hence leaving all 4 lights to be in the ON state. In the second test case, row 1 (or row 2) can be toggled twice, hence maintaining the state of the initial configuration."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n3 3 2\n.*.\n.*.\n.*.",
+        "output": "6",
+        "explanation": "Explanation: In this test case, we can toggle any two rows to turn on all the diamonds."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n1 1 1\n.",
+        "output": "1",
+        "explanation": "Explanation: In this test case, we can toggle the only row to turn on the diamond."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1 1\n.",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n50 50 100\n",
+        "expectedOutput": "2500",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n5 5 5\n*****\n*****\n*****\n*****\n*****",
+        "expectedOutput": "25",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n5 5 3\n.....\n.....\n.....\n.....\n.....",
+        "expectedOutput": "10",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "5\n10 10 10\n.........\n.........\n.........\n.........\n.........\n.........\n.........\n.........\n.........\n.........",
+        "expectedOutput": "50",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved by iterating over all possible combinations of row toggles and counting the number of diamonds that are turned on. The key insight is to use bit manipulation to generate all possible combinations of row toggles.",
+    "timeComplexity": "O(T * 2^N * N * M) per test case, O(T * 2^N * N * M) total.",
+    "spaceComplexity": "O(N * M) — for storing the diamond grid.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int N, M, K;\n        scanf(\"%d %d %d\", &N, &M, &K);\n        char diamonds[N][M];\n        for (int i = 0; i < N; i++) {\n            scanf(\"%s\", diamonds[i]);\n        }\n        int maxOn = 0;\n        for (int mask = 0; mask < (1 << N); mask++) {\n            int on = 0;\n            for (int i = 0; i < N; i++) {\n                for (int j = 0; j < M; j++) {\n                    if (((mask >> i) & 1) == 0) {\n                        if (diamonds[i][j] == '*') {\n                            on++;\n                        }\n                    } else {\n                        if (diamonds[i][j] == '.') {\n                            on++;\n                        }\n                    }\n                }\n            }\n            if (__builtin_popcount(mask) <= K) {\n                maxOn = (on > maxOn) ? on : maxOn;\n            }\n        }\n        printf(\"%d\\n\", maxOn);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(NULL);\n    int T;\n    cin >> T;\n    while (T--) {\n        int N, M, K;\n        cin >> N >> M >> K;\n        string diamonds[N];\n        for (int i = 0; i < N; i++) {\n            cin >> diamonds[i];\n        }\n        int maxOn = 0;\n        for (int mask = 0; mask < (1 << N); mask++) {\n            int on = 0;\n            for (int i = 0; i < N; i++) {\n                for (int j = 0; j < M; j++) {\n                    if (((mask >> i) & 1) == 0) {\n                        if (diamonds[i][j] == '*') {\n                            on++;\n                        }\n                    } else {\n                        if (diamonds[i][j] == '.') {\n                            on++;\n                        }\n                    }\n                }\n            }\n            if (__builtin_popcount(mask) <= K) {\n                maxOn = (on > maxOn) ? on : maxOn;\n            }\n        }\n        cout << maxOn << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n        while (T-- > 0) {\n            int N = sc.nextInt();\n            int M = sc.nextInt();\n            int K = sc.nextInt();\n            char[][] diamonds = new char[N][M];\n            for (int i = 0; i < N; i++) {\n                diamonds[i] = sc.next().toCharArray();\n            }\n            int maxOn = 0;\n            for (int mask = 0; mask < (1 << N); mask++) {\n                int on = 0;\n                for (int i = 0; i < N; i++) {\n                    for (int j = 0; j < M; j++) {\n                        if (((mask >> i) & 1) == 0) {\n                            if (diamonds[i][j] == '*') {\n                                on++;\n                            }\n                        } else {\n                            if (diamonds[i][j] == '.') {\n                                on++;\n                            }\n                        }\n                    }\n                }\n                if (Integer.bitCount(mask) <= K) {\n                    maxOn = (on > maxOn) ? on : maxOn;\n                }\n            }\n            System.out.println(maxOn);\n        }\n    }\n}",
+      "Python3": "import sys\ninput = sys.stdin.readline\n\nfor _ in range(int(input())):\n    N, M, K = map(int, input().split())\n    diamonds = [list(input().rstrip()) for _ in range(N)]\n    maxOn = 0\n    for mask in range(1 << N):\n        on = 0\n        for i in range(N):\n            for j in range(M):\n                if (mask >> i) & 1 == 0:\n                    if diamonds[i][j] == '*':\n                        on += 1\n                else:\n                    if diamonds[i][j] == '.':\n                        on += 1\n        if bin(mask).count('1') <= K:\n            maxOn = max(on, maxOn)\n    print(maxOn)",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst input = () => lines[idx++];\n\nfor (let i = 0; i < +input(); i++) {\n    let [N, M, K] = input().split(' ').map(Number);\n    let diamonds = [];\n    for (let j = 0; j < N; j++) {\n        diamonds.push(input().split(''));\n    }\n    let maxOn = 0;\n    for (let mask = 0; mask < (1 << N); mask++) {\n        let on = 0;\n        for (let j = 0; j < N; j++) {\n            for (let k = 0; k < M; k++) {\n                if (((mask >> j) & 1) === 0) {\n                    if (diamonds[j][k] === '*') {\n                        on++;\n                    }\n                } else {\n                    if (diamonds[j][k] === '.') {\n                        on++;\n                    }\n                }\n            }\n        }\n        if (countBits(mask) <= K) {\n            maxOn = Math.max(on, maxOn);\n        }\n    }\n    console.log(maxOn);\n}\n\nfunction countBits(n) {\n    let count = 0;\n    while (n) {\n        count += n & 1;\n        n >>= 1;\n    }\n    return count;\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

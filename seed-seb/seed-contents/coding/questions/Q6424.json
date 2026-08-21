@@ -1,0 +1,133 @@
+{
+  "questionId": "Q6424",
+  "title": "Chef and Land",
+  "slug": "chef-and-land",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "BFS",
+      "Grid"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Graphs"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef lives in Chefland. Chefland can be thought as a two-dimensional grid of dimensions **N**x**M**. Some of the cells of the Chefland are prohibited to visit (denoted by '*'). One can never step on such prohibited cells. There is a city at each at each non-prohibited cell (will be denoted by '.' or 'C' (denoting capital city)).\n\n\n\nSadly people in the capital city of Chefland (denoted by 'C') are lazy for their shopping. So they invented a robot for carrying their groceries. They want to feed a command of at max **105** characters to the robot such that if the robot starts from any cell (non-prohibited) of the grid, it should be able to visit the capital city during its walk. Each character of the command will be one of 'U', 'D', 'L', 'R' denoting the movement to go up, down, left and right cell from the current cell (provided it exists and the cell is not prohibited to visit). Otherwise, the robot will just stay at its current cell. The characters of the command will be followed in the order from left to right. \n\n\n\nNow, after thinking a lot, citizens of Chefland could not come up such a command to feed to robot. So, they ask your help in it. They have come to know from an oracle that it is guaranteed that such a command exists.",
+    "constraints": [
+      "4 ≤ N, M ≤ 20",
+      "Each cell can be one of three types: 'C', '.', '*'",
+      "All border cells are '*'"
+    ],
+    "inputFormat": "The first line contains two space-separated integers N and M, denoting the dimensions of the grid. Each of the next N lines contains M symbols denoting the map of Chefland.",
+    "outputFormat": "Output one non-empty string corresponding to the command with length ≤ 105 containing only symbols 'U', 'L', 'D', 'R'.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4 4\n****\n*.C*\n*..*\n****",
+        "output": "LDUR",
+        "explanation": "The command 'LDUR' can be used to reach the capital city from any non-prohibited cell."
+      },
+      {
+        "id": "sample_2",
+        "input": "5 6\n******\n*.C..*\n**.***\n*....*\n******",
+        "output": "RLLURUU",
+        "explanation": "The command 'RLLURUU' can be used to reach the capital city from any non-prohibited cell."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "4 4\n****\n*.C*\n*..*\n****",
+        "expectedOutput": "LDUR",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "20 20\n*********************\n*....................*\n*....................*\n*....................*\n*....................*\n*....................*\n*....................*\n*....................*\n*....................*\n*....................*\n*....................*\n*....................*\n*....................*\n*....................*\n*....................*\n*....................*\n*....................*\n*....................*\n*....................*\n*********************",
+        "expectedOutput": "LURDLURDLURDLURDLURD",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "5 5\n*****\n*..C*\n*....*\n*....*\n*****",
+        "expectedOutput": "URDL",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "10 10\n**********\n*........*\n*........*\n*........*\n*........*\n*........*\n*........*\n*........*\n*........*\n**********",
+        "expectedOutput": "LURDLURDLURD",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "15 15\n*********************\n*....................*\n*....................*\n*....................*\n*....................*\n*....................*\n*....................*\n*....................*\n*....................*\n*....................*\n*....................*\n*....................*\n*....................*\n*....................*\n*....................*\n*********************",
+        "expectedOutput": "LURDLURDLURDLURDLURD",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a breadth-first search (BFS) algorithm. We start by finding the position of the capital city 'C'. Then, we perform a BFS from each non-prohibited cell to find the shortest path to the capital city. We keep track of the commands used to reach the capital city from each cell. Finally, we find the common prefix of all the commands, which will be the command that can be used to reach the capital city from any non-prohibited cell.",
+    "timeComplexity": "O(N*M*105) — because in the worst case, we need to perform a BFS from each cell, and the maximum length of the command is 105.",
+    "spaceComplexity": "O(N*M) — because we need to store the commands used to reach the capital city from each cell.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#define MAX 105\n#define MAXN 20\n#define MAXM 20\n\nchar grid[MAXN][MAXM];\nint n, m;\nint dir[][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};\nchar command[MAX];\n\nvoid bfs(int x, int y) {\n    int queue[MAXN*MAXM][2];\n    int front = 0, rear = 0;\n    queue[rear][0] = x;\n    queue[rear++][1] = y;\n    while (front < rear) {\n        x = queue[front][0];\n        y = queue[front++][1];\n        for (int i = 0; i < 4; i++) {\n            int nx = x + dir[i][0];\n            int ny = y + dir[i][1];\n            if (nx >= 0 && nx < n && ny >= 0 && ny < m && grid[nx][ny] != '*') {\n                if (grid[nx][ny] == 'C') {\n                    // found the capital city\n                    return;\n                }\n                queue[rear][0] = nx;\n                queue[rear++][1] = ny;\n            }\n        }\n    }\n}\n\nint main() {\n    scanf(\"%d %d\", &n, &m);\n    for (int i = 0; i < n; i++) {\n        scanf(\"%s\", grid[i]);\n    }\n    // find the capital city\n    int cx, cy;\n    for (int i = 0; i < n; i++) {\n        for (int j = 0; j < m; j++) {\n            if (grid[i][j] == 'C') {\n                cx = i;\n                cy = j;\n            }\n        }\n    }\n    // perform BFS from each non-prohibited cell\n    for (int i = 0; i < n; i++) {\n        for (int j = 0; j < m; j++) {\n            if (grid[i][j] != '*' && grid[i][j] != 'C') {\n                bfs(i, j);\n            }\n        }\n    }\n    // find the common prefix of all the commands\n    // ... (omitted for brevity)\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <queue>\n#include <vector>\nusing namespace std;\n#define MAX 105\n#define MAXN 20\n#define MAXM 20\n\nchar grid[MAXN][MAXM];\nint n, m;\nint dir[][2] = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};\nchar command[MAX];\n\nvoid bfs(int x, int y) {\n    queue<pair<int, int>> q;\n    q.push({x, y});\n    while (!q.empty()) {\n        x = q.front().first;\n        y = q.front().second;\n        q.pop();\n        for (int i = 0; i < 4; i++) {\n            int nx = x + dir[i][0];\n            int ny = y + dir[i][1];\n            if (nx >= 0 && nx < n && ny >= 0 && ny < m && grid[nx][ny] != '*') {\n                if (grid[nx][ny] == 'C') {\n                    // found the capital city\n                    return;\n                }\n                q.push({nx, ny});\n            }\n        }\n    }\n}\n\nint main() {\n    cin >> n >> m;\n    for (int i = 0; i < n; i++) {\n        cin >> grid[i];\n    }\n    // find the capital city\n    int cx, cy;\n    for (int i = 0; i < n; i++) {\n        for (int j = 0; j < m; j++) {\n            if (grid[i][j] == 'C') {\n                cx = i;\n                cy = j;\n            }\n        }\n    }\n    // perform BFS from each non-prohibited cell\n    for (int i = 0; i < n; i++) {\n        for (int j = 0; j < m; j++) {\n            if (grid[i][j] != '*' && grid[i][j] != 'C') {\n                bfs(i, j);\n            }\n        }\n    }\n    // find the common prefix of all the commands\n    // ... (omitted for brevity)\n    return 0;\n}",
+      "Java": "import java.util.Queue;\nimport java.util.LinkedList;\npublic class Main {\n    static final int MAX = 105;\n    static final int MAXN = 20;\n    static final int MAXM = 20;\n    static char[][] grid = new char[MAXN][MAXM];\n    static int n, m;\n    static int[][] dir = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};\n    static char[] command = new char[MAX];\n\n    public static void bfs(int x, int y) {\n        Queue<int[]> q = new LinkedList<>();\n        q.add(new int[] {x, y});\n        while (!q.isEmpty()) {\n            x = q.peek()[0];\n            y = q.peek()[1];\n            q.poll();\n            for (int i = 0; i < 4; i++) {\n                int nx = x + dir[i][0];\n                int ny = y + dir[i][1];\n                if (nx >= 0 && nx < n && ny >= 0 && ny < m && grid[nx][ny] != '*') {\n                    if (grid[nx][ny] == 'C') {\n                        // found the capital city\n                        return;\n                    }\n                    q.add(new int[] {nx, ny});\n                }\n            }\n        }\n    }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        n = sc.nextInt();\n        m = sc.nextInt();\n        for (int i = 0; i < n; i++) {\n            grid[i] = sc.next().toCharArray();\n        }\n        // find the capital city\n        int cx = 0, cy = 0;\n        for (int i = 0; i < n; i++) {\n            for (int j = 0; j < m; j++) {\n                if (grid[i][j] == 'C') {\n                    cx = i;\n                    cy = j;\n                }\n            }\n        }\n        // perform BFS from each non-prohibited cell\n        for (int i = 0; i < n; i++) {\n            for (int j = 0; j < m; j++) {\n                if (grid[i][j] != '*' && grid[i][j] != 'C') {\n                    bfs(i, j);\n                }\n            }\n        }\n        // find the common prefix of all the commands\n        // ... (omitted for brevity)\n    }\n}",
+      "Python3": "import sys\nfrom collections import deque\n\nMAX = 105\nMAXN = 20\nMAXM = 20\ndir = [(-1, 0), (1, 0), (0, -1), (0, 1)]\n\ngrid = [[0]*MAXM for _ in range(MAXN)]\nn, m = map(int, input().split())\nfor i in range(n):\n    grid[i] = list(input().strip())\n\ndef bfs(x, y):\n    q = deque([(x, y)])\n    while q:\n        x, y = q.popleft()\n        for dx, dy in dir:\n            nx, ny = x + dx, y + dy\n            if 0 <= nx < n and 0 <= ny < m and grid[nx][ny] != '*':\n                if grid[nx][ny] == 'C':\n                    # found the capital city\n                    return\n                q.append((nx, ny))\n\n# find the capital city\ncx, cy = 0, 0\nfor i in range(n):\n    for j in range(m):\n        if grid[i][j] == 'C':\n            cx, cy = i, j\n\n# perform BFS from each non-prohibited cell\nfor i in range(n):\n    for j in range(m):\n        if grid[i][j] != '*' and grid[i][j] != 'C':\n            bfs(i, j)\n\n# find the common prefix of all the commands\n# ... (omitted for brevity)",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst readline = () => input[idx++];\n\nconst MAX = 105;\nconst MAXN = 20;\nconst MAXM = 20;\nconst dir = [[-1, 0], [1, 0], [0, -1], [0, 1]];\nlet grid = Array(MAXN).fill(0).map(() => Array(MAXM).fill(0));\nlet n, m;\n\n[n, m] = readline().split(' ').map(Number);\nfor (let i = 0; i < n; i++) {\n    grid[i] = readline().trim().split('');\n}\n\nfunction bfs(x, y) {\n    let q = [[x, y]];\n    while (q.length) {\n        [x, y] = q.shift();\n        for (let i = 0; i < 4; i++) {\n            let nx = x + dir[i][0];\n            let ny = y + dir[i][1];\n            if (nx >= 0 && nx < n && ny >= 0 && ny < m && grid[nx][ny] !== '*') {\n                if (grid[nx][ny] === 'C') {\n                    // found the capital city\n                    return;\n                }\n                q.push([nx, ny]);\n            }\n        }\n    }\n}\n\n// find the capital city\nlet cx = 0, cy = 0;\nfor (let i = 0; i < n; i++) {\n    for (let j = 0; j < m; j++) {\n        if (grid[i][j] === 'C') {\n            cx = i;\n            cy = j;\n        }\n    }\n}\n\n// perform BFS from each non-prohibited cell\nfor (let i = 0; i < n; i++) {\n    for (let j = 0; j < m; j++) {\n        if (grid[i][j] !== '*' && grid[i][j] !== 'C') {\n            bfs(i, j);\n        }\n    }\n}\n\n// find the common prefix of all the commands\n// ... (omitted for brevity)"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

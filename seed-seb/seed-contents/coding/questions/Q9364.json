@@ -1,0 +1,131 @@
+{
+  "questionId": "Q9364",
+  "title": "Hashing - Points on Line",
+  "slug": "hashing-points-on-line",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Geometry",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Hashing",
+      "Slopes",
+      "GCD",
+      "Hash Map",
+      "Collinear Points"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Hashing"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Given NNN points of the form (xi,yi)(x_i, y_i)(xi​,yi​) on a 222-D plane. Find the **maximum** number of points that lie on the same straight line.\n\n\nInput Format\n\nThe first line of input will contain a single integer TTT, denoting the number of test cases.\nThe first line of each test case contains an integer NNN  — the number of points.\nThe next NNN lines contain two space-separated integers xix_ixi​, yiy_iyi​ — the coordinate of the ithi^{th}ith point.\n\n\nOutput Format\nFor each test case, output on a new line the **maximum** number of points that lie on the same straight line.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 15",
+      "-10^9 <= xi, yi <= 10^9",
+      "The sum of N over all test cases does not exceed 2000"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, the first line contains an integer N, the number of points. The next N lines each contain two space‑separated integers xi and yi, the coordinates of a point.",
+    "outputFormat": "For each test case output a single line containing the maximum number of points that lie on the same straight line.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n5\n3 6\n5 8\n10 15\n1 4\n12 15\n2\n5 5\n5 5\n4\n1 2\n5 2\n10 5\n10 15",
+        "output": "4\n2\n2",
+        "explanation": "Test case 1: points (3,6), (5,8), (1,4) and (12,15) are collinear, giving 4 points on the same line.\\nTest case 2: both points are identical, so the line through them contains 2 points.\\nTest case 3: any two points form a line, maximum is 2."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each point i treat it as an anchor. For every other point j compute the direction vector (dx, dy) = (xj‑xi, yj‑yi). Reduce the vector by dividing both components by their greatest common divisor and enforce a unique sign (make dx non‑negative; if dx==0 make dy positive). Use a hash map to count how many points share the same reduced direction from i. Keep track of duplicate points that have exactly the same coordinates as i. For the current anchor the best line contains maxCount (the highest frequency in the map) + duplicates + 1 (the anchor itself). The answer for the test case is the maximum over all anchors. The algorithm runs in O(N^2) time and O(N) extra space per test case.",
+    "timeComplexity": "O(N^2) per test case, where N ≤ 15, easily fits the limits.",
+    "spaceComplexity": "O(N) for the hash map used for each anchor.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nlong long gcd_ll(long long a, long long b) {\n    if (a < 0) a = -a;\n    if (b < 0) b = -b;\n    while (b) { long long t = a % b; a = b; b = t; }\n    return a;\n}\n\ntypedef struct { long long dx, dy; } Pair;\n\nint pair_cmp(const void *a, const void *b) {\n    const Pair *p = a, *q = b;\n    if (p->dx != q->dx) return p->dx < q->dx ? -1 : 1;\n    if (p->dy != q->dy) return p->dy < q->dy ? -1 : 1;\n    return 0;\n}\n\nint main() {\n    int T; if (scanf(\"%d\", &T)!=1) return 0;\n    while (T--) {\n        int N; scanf(\"%d\", &N);\n        long long *x = malloc(N * sizeof(long long));\n        long long *y = malloc(N * sizeof(long long));\n        for (int i = 0; i < N; ++i) scanf(\"%lld %lld\", &x[i], &y[i]);\n        int best = 1;\n        for (int i = 0; i < N; ++i) {\n            int dup = 0;\n            Pair *arr = malloc((N-1) * sizeof(Pair));\n            int cnt = 0;\n            for (int j = 0; j < N; ++j) if (j != i) {\n                long long dx = x[j] - x[i];\n                long long dy = y[j] - y[i];\n                if (dx == 0 && dy == 0) { dup++; continue; }\n                long long g = gcd_ll(dx, dy);\n                dx /= g; dy /= g;\n                if (dx < 0 || (dx == 0 && dy < 0)) { dx = -dx; dy = -dy; }\n                arr[cnt].dx = dx; arr[cnt].dy = dy; cnt++;\n            }\n            if (cnt > 0) {\n                qsort(arr, cnt, sizeof(Pair), pair_cmp);\n                int cur = 1, localMax = 1;\n                for (int k = 1; k < cnt; ++k) {\n                    if (arr[k].dx == arr[k-1].dx && arr[k].dy == arr[k-1].dy) {\n                        cur++;\n                    } else {\n                        if (cur > localMax) localMax = cur;\n                        cur = 1;\n                    }\n                }\n                if (cur > localMax) localMax = cur;\n                if (localMax + dup + 1 > best) best = localMax + dup + 1;\n            } else {\n                if (dup + 1 > best) best = dup + 1;\n            }\n            free(arr);\n        }\n        printf(\"%d\\n\", best);\n        free(x); free(y);\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nlong long gcd_ll(long long a, long long b){\n    if(a<0) a=-a; if(b<0) b=-b;\n    while(b){ long long t=a%b; a=b; b=t; }\n    return a;\n}\n\nstruct PairHash{\n    size_t operator()(const pair<long long,long long>&p) const noexcept{\n        return hash<long long>()(p.first*1000003LL ^ p.second);\n    }\n};\n\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N; cin>>N;\n        vector<long long> x(N), y(N);\n        for(int i=0;i<N;++i) cin>>x[i]>>y[i];\n        int answer = 1;\n        for(int i=0;i<N;++i){\n            unordered_map<pair<long long,long long>, int, PairHash> mp;\n            int dup = 0;\n            int localMax = 0;\n            for(int j=0;j<N;++j) if(j!=i){\n                long long dx = x[j]-x[i];\n                long long dy = y[j]-y[i];\n                if(dx==0 && dy==0){ dup++; continue; }\n                long long g = gcd_ll(dx, dy);\n                dx/=g; dy/=g;\n                if(dx<0 || (dx==0 && dy<0)){ dx=-dx; dy=-dy; }\n                pair<long long,long long> key = {dx,dy};\n                int cnt = ++mp[key];\n                localMax = max(localMax, cnt);\n            }\n            answer = max(answer, localMax + dup + 1);\n        }\n        cout<<answer<<\"\\n\";\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    static long gcd(long a, long b) {\n        if (a < 0) a = -a;\n        if (b < 0) b = -b;\n        while (b != 0) {\n            long t = a % b;\n            a = b;\n            b = t;\n        }\n        return a;\n    }\n    static class Pair {\n        long dx, dy;\n        Pair(long dx, long dy){ this.dx=dx; this.dy=dy; }\n        @Override public int hashCode(){ return Objects.hash(dx, dy); }\n        @Override public boolean equals(Object o){\n            if(!(o instanceof Pair)) return false;\n            Pair p=(Pair)o; return dx==p.dx && dy==p.dy;\n        }\n    }\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st;\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder out = new StringBuilder();\n        while (T-- > 0) {\n            int N = Integer.parseInt(br.readLine().trim());\n            long[] x = new long[N];\n            long[] y = new long[N];\n            for (int i = 0; i < N; i++) {\n                st = new StringTokenizer(br.readLine());\n                x[i] = Long.parseLong(st.nextToken());\n                y[i] = Long.parseLong(st.nextToken());\n            }\n            int answer = 1;\n            for (int i = 0; i < N; i++) {\n                Map<Pair,Integer> map = new HashMap<>();\n                int dup = 0;\n                int localMax = 0;\n                for (int j = 0; j < N; j++) if (j != i) {\n                    long dx = x[j] - x[i];\n                    long dy = y[j] - y[i];\n                    if (dx == 0 && dy == 0) { dup++; continue; }\n                    long g = gcd(dx, dy);\n                    dx /= g; dy /= g;\n                    if (dx < 0 || (dx == 0 && dy < 0)) { dx = -dx; dy = -dy; }\n                    Pair p = new Pair(dx, dy);\n                    int cnt = map.getOrDefault(p, 0) + 1;\n                    map.put(p, cnt);\n                    localMax = Math.max(localMax, cnt);\n                }\n                answer = Math.max(answer, localMax + dup + 1);\n            }\n            out.append(answer).append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}\n",
+      "Python3": "import sys, math\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it))\n        points = [(int(next(it)), int(next(it))) for __ in range(N)]\n        best = 1\n        for i in range(N):\n            slopes = {}\n            dup = 0\n            local_max = 0\n            xi, yi = points[i]\n            for j in range(N):\n                if i == j:\n                    continue\n                xj, yj = points[j]\n                dx = xj - xi\n                dy = yj - yi\n                if dx == 0 and dy == 0:\n                    dup += 1\n                    continue\n                g = math.gcd(dx, dy)\n                dx //= g\n                dy //= g\n                if dx < 0 or (dx == 0 and dy < 0):\n                    dx = -dx\n                    dy = -dy\n                cnt = slopes.get((dx, dy), 0) + 1\n                slopes[(dx, dy)] = cnt\n                if cnt > local_max:\n                    local_max = cnt\n            best = max(best, local_max + dup + 1)\n        out_lines.append(str(best))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/).map(Number);\nlet idx = 0;\nconst T = input[idx++];\nlet outputs = [];\nfunction gcd(a, b) {\n  a = Math.abs(a); b = Math.abs(b);\n  while (b !== 0) { const t = a % b; a = b; b = t; }\n  return a;\n}\nfor (let t = 0; t < T; ++t) {\n  const N = input[idx++];\n  const points = [];\n  for (let i = 0; i < N; ++i) {\n    const x = input[idx++];\n    const y = input[idx++];\n    points.push([x, y]);\n  }\n  let best = 1;\n  for (let i = 0; i < N; ++i) {\n    const map = new Map();\n    let dup = 0;\n    let localMax = 0;\n    const [xi, yi] = points[i];\n    for (let j = 0; j < N; ++j) {\n      if (i === j) continue;\n      const [xj, yj] = points[j];\n      let dx = xj - xi;\n      let dy = yj - yi;\n      if (dx === 0 && dy === 0) { dup++; continue; }\n      const g = gcd(dx, dy);\n      dx /= g; dy /= g;\n      if (dx < 0 || (dx === 0 && dy < 0)) { dx = -dx; dy = -dy; }\n      const key = dx + ',' + dy;\n      const cnt = (map.get(key) || 0) + 1;\n      map.set(key, cnt);\n      if (cnt > localMax) localMax = cnt;\n    }\n    best = Math.max(best, localMax + dup + 1);\n  }\n  outputs.push(String(best));\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

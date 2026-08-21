@@ -1,0 +1,111 @@
+{
+  "questionId": "Q2289",
+  "title": "Buying Land",
+  "slug": "buying-land",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Arrays",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Sliding Window",
+      "Correlation",
+      "2D Convolution",
+      "Prefix Sum",
+      "FFT",
+      "Arrays"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Divide & Conquer"
+    ]
+  },
+  "content": {
+    "problemStatement": "After recent success of cooking reality shows, Chef decided to borrow the idea and host his own \"Devil's Kitchen\" show. But his ambitions are even bigger. He plans to build a whole complex of hotels, gyms and other entertainment facilities along with one main restaurant where he'll host the show. But first of all, he needs to purhase some land to build on. The country is divided into a grid with R rows and C columns of smaller parcels. Chef wants to buy a rectangular piece of land H parcels high and W parcels wide. He also has a preferred layout in mind. The restaurant will be located at (i,j). For every parcel he defined its preferred height relative to the height of the restaurant parcel. For a particular piece of land, he computes height differences relative to the restaurant and compares them to the preferred layout. This comparison is done as a sum of squared differences over all H*W parcels. Given the map of the country, help him out by finding the K most suitable pieces of land.",
+    "constraints": [
+      "1 \u2264 T \u2264 10",
+      "1 \u2264 R, C \u2264 666",
+      "1 \u2264 H \u2264 (R+1)/2",
+      "1 \u2264 W \u2264 (C+1)/2",
+      "|height| \u2264 30",
+      "The restaurant cell inside the layout always contains 0",
+      "1 \u2264 K \u2264 1000 and at least K placements exist"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case:\n1. Two integers R and C (1 \u2264 R, C \u2264 666) \u2013 dimensions of the country map.\n2. R lines follow, each with C integers \u2013 the heights of the parcels (|height| \u2264 30).\n3. Two integers H and W (1 \u2264 H \u2264 (R+1)/2, 1 \u2264 W \u2264 (C+1)/2) \u2013 dimensions of the preferred layout.\n4. H lines follow, each with W integers \u2013 the preferred height differences. The value at the restaurant position is always 0.\n5. Two integers i and j (1\u2011based, 1 \u2264 i \u2264 H, 1 \u2264 j \u2264 W) \u2013 the restaurant\u2019s coordinates inside the layout.\n6. An integer K (1 \u2264 K \u2264 1000) \u2013 the number of best positions to output. It is guaranteed that at least K different placements exist.\nAll numbers are separated by whitespace.",
+    "outputFormat": "For each test case output exactly K lines. Each line contains three integers BR, BC, S separated by a single space, where (BR,BC) is the 1\u2011based upper\u2011left corner of a feasible H\u00d7W rectangle and S is its score (the sum of squared differences). Lines must be ordered by increasing S; ties are broken by smaller BR, then smaller BC.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For a placement with upper\u2011left corner (r,c) let b be the height of the restaurant cell (grid[r+i\u20111][c+j\u20111]). The score is\nS = \u03a3 ( (a \u2013 b \u2013 p)\u00b2 ) over all cells of the layout,\nwhere a is the height of the current parcel and p is the preferred difference.\nExpanding the square gives\nS = \u03a3 a\u00b2 + (H\u00b7W)\u00b7b\u00b2 + \u03a3 p\u00b2 \u2013 2\u00b7b\u00b7\u03a3 a \u2013 2\u00b7\u03a3 (a\u00b7p) + 2\u00b7b\u00b7\u03a3 p.\nAll terms except \u03a3 (a\u00b7p) can be obtained in O(1) with 2\u2011D prefix sums of the grid, of the grid squares and with the constant sums of the layout (\u03a3 p, \u03a3 p\u00b2). The term \u03a3 (a\u00b7p) is a 2\u2011D correlation between the grid and the layout. It can be computed for all placements at once using a 2\u2011D Fast Fourier Transform (FFT):\n1. Build matrix A of size R\u00d7C with the grid values.\n2. Build matrix B of size H\u00d7W with the layout values, reverse both dimensions (so correlation becomes convolution).\n3. Pad both matrices to the next power\u2011of\u2011two size (R+H, C+W) and run a 2\u2011D FFT on each.\n4. Multiply point\u2011wise, inverse\u2011FFT, and round to the nearest integer \u2013 the result at position (r+H\u20111, c+W\u20111) equals \u03a3 a\u00b7p for the placement (r,c).\nAfter obtaining S for every feasible placement we keep the K smallest using a min\u2011heap or simply sort the list (the number of placements is at most (R\u2011H+1)*(C\u2011W+1) \u2264 110\u202fk, easily sortable). Finally we output the K best placements respecting the required tie\u2011break order.\nThe overall complexity is O(N\u00b2 log N) where N is the next power of two \u2265 max(R+H, C+W) (\u2264 2048). Memory consumption is O(N\u00b2).",
+    "timeComplexity": "O(N\u00b2 log N) per test case, where N = next power of two \u2265 max(R+H, C+W) (\u2264 2048). Sorting the at most 110\u202fk placements adds O(P log P) with P \u2264 110\u202fk, negligible compared to the FFT.",
+    "spaceComplexity": "O(N\u00b2) for the padded matrices and FFT buffers (\u2264 2048\u00b2 \u2248 4\u202fM complex numbers).",
+    "code": {
+      "C": ""
+    }
+  }
+}

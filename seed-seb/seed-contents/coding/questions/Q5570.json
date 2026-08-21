@@ -1,0 +1,132 @@
+{
+  "questionId": "Q5570",
+  "title": "Tree Fun",
+  "slug": "tree-fun",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-03",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Tree",
+      "Connected Components",
+      "Graph Traversal"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Trees"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "David is a computer science student who loves his future profession. He is one of those who think that trees grow down, not up.\n\nDavid likes connected undirected acyclic graphs, also known as trees. He especially likes solving problems about trees. Recently David found a piece of paper with a tree with **N** vertices drawn on it. He also found **M** queries on the same piece of paper, where each query was a non-empty list of some vertices of this tree. For each query, it was asked to find the number of vertices in the tree (which didn't belong to the list) such that if you removed this vertex and all edges incident to it from the tree, then all vertices from the list would belong to pairwise different connected components.\n\nDavid spent seven unhappy days and six sleepless nights trying to solve this problem efficiently. He is still trying. As you're known to be a good problem solver, David's friend asked for your help. David won't sleep until he knows the answer to each query. Write a program which answers all the queries correctly.",
+    "constraints": [
+      "1 <= T <= 5",
+      "2 <= N <= 50000",
+      "1 <= M <= 50000",
+      "1 <= Xi, Yi <= N",
+      "Xi != Yi",
+      "2 <= Ki <= N",
+      "1 <= Ai, j <= N"
+    ],
+    "inputFormat": "The first line of the input contains a single integer T, the number of test cases. Each test case is described as follows. The first line contains two integers N and M, the number of vertices in the tree and the number of queries, respectively. N-1 lines follow, describing the edges of the tree. The ith line contains two integers Xi and Yi, the indices of the vertices connected by the ith edge. Then M lines follow, describing the queries. The ith line contains an integer Ki followed by Ki distinct integers Ai, j, the indices of the vertices in the ith query.",
+    "outputFormat": "For each test case output M lines containing a single integer each -- the answer to the corresponding query from the input.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "",
+        "output": "Input:\n1\n5 3\n1 2\n1 3\n1 4\n4 5\n2 2 5\n3 2 3 4\n3 1 3 5\nOutput:\r\n2\r\n1\r\n0",
+        "explanation": ""
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a graph traversal approach. We will first build the tree using the given edges. Then, for each query, we will traverse the tree and count the number of vertices that, when removed, will result in all vertices from the query being in separate connected components.",
+    "timeComplexity": "O(T * (N + M * K))",
+    "spaceComplexity": "O(N + M * K)",
+    "code": {
+      "C": "// COMPLETE, COMPILABLE C code\n// Uses correct I/O\n// Handles all T test cases\n#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#define MAX_N 50000\n#define MAX_M 50000\n#define MAX_K 100000\n\n// Define the structure for a tree node\ntypedef struct Node {\n    int id;\n    struct Node** neighbors;\n    int numNeighbors;\n} Node;\n\n// Function to create a new node\nNode* createNode(int id) {\n    Node* node = (Node*) malloc(sizeof(Node));\n    node->id = id;\n    node->neighbors = NULL;\n    node->numNeighbors = 0;\n    return node;\n}\n\n// Function to add a neighbor to a node\nvoid addNeighbor(Node* node, Node* neighbor) {\n    node->numNeighbors++;\n    node->neighbors = (Node**) realloc(node->neighbors, node->numNeighbors * sizeof(Node*));\n    node->neighbors[node->numNeighbors - 1] = neighbor;\n}\n\n// Function to traverse the tree and count the number of vertices that, when removed, will result in all vertices from the query being in separate connected components\nint traverse(Node* node, int* query, int numQuery) {\n    int count = 0;\n    // Traverse the tree using DFS\n    int* visited = (int*) calloc(MAX_N, sizeof(int));\n    int* stack = (int*) malloc(MAX_N * sizeof(int));\n    int top = 0;\n    stack[top++] = node->id;\n    while (top > 0) {\n        int current = stack[--top];\n        visited[current] = 1;\n        // Check if the current node is in the query\n        int inQuery = 0;\n        for (int i = 0; i < numQuery; i++) {\n            if (query[i] == current) {\n                inQuery = 1;\n                break;\n            }\n        }\n        // If the current node is not in the query, check its neighbors\n        if (!inQuery) {\n            for (int i = 0; i < node->numNeighbors; i++) {\n                Node* neighbor = node->neighbors[i];\n                if (!visited[neighbor->id]) {\n                    stack[top++] = neighbor->id;\n                }\n            }\n        }\n        // If the current node is in the query, check if its removal will result in all vertices from the query being in separate connected components\n        else {\n            int separate = 1;\n            for (int i = 0; i < numQuery; i++) {\n                if (query[i] != current && !visited[query[i]]) {\n                    separate = 0;\n                    break;\n                }\n            }\n            if (separate) {\n                count++;\n            }\n        }\n    }\n    free(visited);\n    free(stack);\n    return count;\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int N, M;\n        scanf(\"%d %d\", &N, &M);\n        Node** nodes = (Node**) malloc(N * sizeof(Node*));\n        for (int i = 0; i < N; i++) {\n            nodes[i] = createNode(i + 1);\n        }\n        for (int i = 0; i < N - 1; i++) {\n            int Xi, Yi;\n            scanf(\"%d %d\", &Xi, &Yi);\n            addNeighbor(nodes[Xi - 1], nodes[Yi - 1]);\n            addNeighbor(nodes[Yi - 1], nodes[Xi - 1]);\n        }\n        for (int i = 0; i < M; i++) {\n            int Ki;\n            scanf(\"%d\", &Ki);\n            int* query = (int*) malloc(Ki * sizeof(int));\n            for (int j = 0; j < Ki; j++) {\n                scanf(\"%d\", &query[j]);\n            }\n            int count = traverse(nodes[0], query, Ki);\n            printf(\"%d\\n\", count);\n            free(query);\n        }\n        for (int i = 0; i < N; i++) {\n            free(nodes[i]->neighbors);\n            free(nodes[i]);\n        }\n        free(nodes);\n    }\n    return 0;\n}",
+      "C++": "// COMPLETE, COMPILABLE C++ code\n// Uses correct I/O\n// Handles all T test cases\n#include <iostream>\n#include <vector>\nusing namespace std;\n#define MAX_N 50000\n#define MAX_M 50000\n#define MAX_K 100000\n\n// Define the structure for a tree node\nstruct Node {\n    int id;\n    vector<Node*> neighbors;\n};\n\n// Function to create a new node\nNode* createNode(int id) {\n    Node* node = new Node;\n    node->id = id;\n    return node;\n}\n\n// Function to add a neighbor to a node\nvoid addNeighbor(Node* node, Node* neighbor) {\n    node->neighbors.push_back(neighbor);\n}\n\n// Function to traverse the tree and count the number of vertices that, when removed, will result in all vertices from the query being in separate connected components\nint traverse(Node* node, int* query, int numQuery) {\n    int count = 0;\n    // Traverse the tree using DFS\n    bool* visited = new bool[MAX_N];\n    int* stack = new int[MAX_N];\n    int top = 0;\n    stack[top++] = node->id;\n    while (top > 0) {\n        int current = stack[--top];\n        visited[current] = true;\n        // Check if the current node is in the query\n        bool inQuery = false;\n        for (int i = 0; i < numQuery; i++) {\n            if (query[i] == current) {\n                inQuery = true;\n                break;\n            }\n        }\n        // If the current node is not in the query, check its neighbors\n        if (!inQuery) {\n            for (int i = 0; i < node->neighbors.size(); i++) {\n                Node* neighbor = node->neighbors[i];\n                if (!visited[neighbor->id]) {\n                    stack[top++] = neighbor->id;\n                }\n            }\n        }\n        // If the current node is in the query, check if its removal will result in all vertices from the query being in separate connected components\n        else {\n            bool separate = true;\n            for (int i = 0; i < numQuery; i++) {\n                if (query[i] != current && !visited[query[i]]) {\n                    separate = false;\n                    break;\n                }\n            }\n            if (separate) {\n                count++;\n            }\n        }\n    }\n    delete[] visited;\n    delete[] stack;\n    return count;\n}\n\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        int N, M;\n        cin >> N >> M;\n        Node** nodes = new Node*[N];\n        for (int i = 0; i < N; i++) {\n            nodes[i] = createNode(i + 1);\n        }\n        for (int i = 0; i < N - 1; i++) {\n            int Xi, Yi;\n            cin >> Xi >> Yi;\n            addNeighbor(nodes[Xi - 1], nodes[Yi - 1]);\n            addNeighbor(nodes[Yi - 1], nodes[Xi - 1]);\n        }\n        for (int i = 0; i < M; i++) {\n            int Ki;\n            cin >> Ki;\n            int* query = new int[Ki];\n            for (int j = 0; j < Ki; j++) {\n                cin >> query[j];\n            }\n            int count = traverse(nodes[0], query, Ki);\n            cout << count << endl;\n            delete[] query;\n        }\n        for (int i = 0; i < N; i++) {\n            delete nodes[i];\n        }\n        delete[] nodes;\n    }\n    return 0;\n}",
+      "Java": "// COMPLETE, COMPILABLE Java code\n// Class MUST be named Main\n// Uses correct I/O\n// Handles all T test cases\nimport java.util.Scanner;\nimport java.util.ArrayList;\npublic class Main {\n    static class Node {\n        int id;\n        ArrayList<Node> neighbors;\n        public Node(int id) {\n            this.id = id;\n            this.neighbors = new ArrayList<>();\n        }\n    }\n\n    // Function to add a neighbor to a node\n    public static void addNeighbor(Node node, Node neighbor) {\n        node.neighbors.add(neighbor);\n    }\n\n    // Function to traverse the tree and count the number of vertices that, when removed, will result in all vertices from the query being in separate connected components\n    public static int traverse(Node node, int[] query, int numQuery) {\n        int count = 0;\n        // Traverse the tree using DFS\n        boolean[] visited = new boolean[50000];\n        int[] stack = new int[50000];\n        int top = 0;\n        stack[top++] = node.id;\n        while (top > 0) {\n            int current = stack[--top];\n            visited[current] = true;\n            // Check if the current node is in the query\n            boolean inQuery = false;\n            for (int i = 0; i < numQuery; i++) {\n                if (query[i] == current) {\n                    inQuery = true;\n                    break;\n                }\n            }\n            // If the current node is not in the query, check its neighbors\n            if (!inQuery) {\n                for (Node neighbor : node.neighbors) {\n                    if (!visited[neighbor.id]) {\n                        stack[top++] = neighbor.id;\n                    }\n                }\n            }\n            // If the current node is in the query, check if its removal will result in all vertices from the query being in separate connected components\n            else {\n                boolean separate = true;\n                for (int i = 0; i < numQuery; i++) {\n                    if (query[i] != current && !visited[query[i]]) {\n                        separate = false;\n                        break;\n                    }\n                }\n                if (separate) {\n                    count++;\n                }\n            }\n        }\n        return count;\n    }\n\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int T = scanner.nextInt();\n        while (T-- > 0) {\n            int N = scanner.nextInt();\n            int M = scanner.nextInt();\n            Node[] nodes = new Node[N];\n            for (int i = 0; i < N; i++) {\n                nodes[i] = new Node(i + 1);\n            }\n            for (int i = 0; i < N - 1; i++) {\n                int Xi = scanner.nextInt();\n                int Yi = scanner.nextInt();\n                addNeighbor(nodes[Xi - 1], nodes[Yi - 1]);\n                addNeighbor(nodes[Yi - 1], nodes[Xi - 1]);\n            }\n            for (int i = 0; i < M; i++) {\n                int Ki = scanner.nextInt();\n                int[] query = new int[Ki];\n                for (int j = 0; j < Ki; j++) {\n                    query[j] = scanner.nextInt();\n                }\n                int count = traverse(nodes[0], query, Ki);\n                System.out.println(count);\n            }\n        }\n    }\n}",
+      "Python3": "# COMPLETE, RUNNABLE Python3 code\n# Uses input() or sys.stdin\n# Handles all T test cases\nimport sys\ninput = sys.stdin.readline\n\n# Define the structure for a tree node\nclass Node:\n    def __init__(self, id):\n        self.id = id\n        self.neighbors = []\n\n# Function to add a neighbor to a node\ndef addNeighbor(node, neighbor):\n    node.neighbors.append(neighbor)\n\n# Function to traverse the tree and count the number of vertices that, when removed, will result in all vertices from the query being in separate connected components\ndef traverse(node, query, numQuery):\n    count = 0\n    # Traverse the tree using DFS\n    visited = [False] * 50000\n    stack = [node.id]\n    while stack:\n        current = stack.pop()\n        visited[current] = True\n        # Check if the current node is in the query\n        inQuery = False\n        for i in range(numQuery):\n            if query[i] == current:\n                inQuery = True\n                break\n        # If the current node is not in the query, check its neighbors\n        if not inQuery:\n            for neighbor in node.neighbors:\n                if not visited[neighbor.id]:\n                    stack.append(neighbor.id)\n        # If the current node is in the query, check if its removal will result in all vertices from the query being in separate connected components\n        else:\n            separate = True\n            for i in range(numQuery):\n                if query[i] != current and not visited[query[i]]:\n                    separate = False\n                    break\n            if separate:\n                count += 1\n    return count\n\nT = int(input())\nwhile T > 0:\n    N, M = map(int, input().split())\n    nodes = [Node(i + 1) for i in range(N)]\n    for i in range(N - 1):\n        Xi, Yi = map(int, input().split())\n        addNeighbor(nodes[Xi - 1], nodes[Yi - 1])\n        addNeighbor(nodes[Yi - 1], nodes[Xi - 1])\n    for i in range(M):\n        Ki, *query = map(int, input().split())\n        count = traverse(nodes[0], query, Ki)\n        print(count)\n    T -= 1",
+      "JavaScript": ""
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

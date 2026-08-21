@@ -1,0 +1,129 @@
+{
+  "questionId": "Q2262",
+  "title": "The Hungry Bear",
+  "slug": "the-hungry-bear",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Arrays",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "Prefix Sum",
+      "Arrays"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ]
+  },
+  "content": {
+    "problemStatement": "Little Bear had just come back from school. He was very hungry that time and wanted at least K units of honey to satisfy his hunger. He immediately went to a rectangular field of size N x M to collect some honey. He wanted to collect honey only\nin a special sub-rectangle which has size S x T where S&lt;=A and T&lt;=B, for some fixed A and B. He has Q queries, each query contains A, B. For each query, he wanted to know how many special sub-rectangles contain at least K units of honey.",
+    "constraints": [
+      "1 <= N <= 300",
+      "1 <= M <= 300",
+      "1 <= K <= N*M",
+      "1 <= Q <= 100000",
+      "1 <= A <= N",
+      "1 <= B <= M"
+    ],
+    "inputFormat": "First line contains three integers N, M, and K. The next N lines contain M characters ('H' or '.'). The next line contains an integer Q. The next Q lines contain two integers A and B.",
+    "outputFormat": "For each query, print the number of special sub-rectangles which contain at least K units of honey.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "5 5 4\nH.H..\n..H..\nH...H\nHHHH.\nHH..H\n2\n1 1\n2 3",
+        "output": "0\n4",
+        "explanation": "Explanation for 2nd query: The possibilities are: 1. Size 2 x 3, 2. Size 2 x 3, 3. Size 2 x 3, 4. Size 2 x 2"
+      },
+      {
+        "id": "sample_2",
+        "input": "3 3 2\nH.H\n.H.\nH.H\n1\n2 2",
+        "output": "2",
+        "explanation": "Explanation for query: The possibilities are: 1. Size 2 x 2, 2. Size 2 x 2"
+      },
+      {
+        "id": "sample_3",
+        "input": "2 2 1\nH.\n.H\n1\n1 1",
+        "output": "2",
+        "explanation": "Explanation for query: The possibilities are: 1. Size 1 x 1, 2. Size 1 x 1"
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1 1 1\nH\n1\n1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "300 300 90000\n",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "5 5 25\nH.H..\n..H..\nH...H\nHHHH.\nHH..H\n1\n5 5",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "10 10 50\n",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "100 100 10000\n",
+        "expectedOutput": "0",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved by using a prefix sum array to store the cumulative sum of honey in the field. For each query, we iterate over all possible sub-rectangles of size A x B and check if the sum of honey in the sub-rectangle is greater than or equal to K. We use the prefix sum array to calculate the sum of honey in each sub-rectangle in O(1) time.",
+    "timeComplexity": "O(Q * N * M) per test case, O(T * Q * N * M) total. Precomputation is done once to calculate the prefix sum array.",
+    "spaceComplexity": "O(N * M) \u2014 the dominant structure is the prefix sum array.",
+    "code": {
+      "C": "#include <stdio.h>\nint main() {\n    int N, M, K, Q, A, B;\n    scanf(\"%d %d %d\", &N, &M, &K);\n    int grid[N][M];\n    for (int i = 0; i < N; i++) {\n        for (int j = 0; j < M; j++) {\n            char c;\n            scanf(\" %c\", &c);\n            grid[i][j] = (c == 'H') ? 1 : 0;\n        }\n    }\n    int prefixSum[N + 1][M + 1];\n    for (int i = 0; i <= N; i++) {\n        for (int j = 0; j <= M; j++) {\n            prefixSum[i][j] = 0;\n        }\n    }\n    for (int i = 1; i <= N; i++) {\n        for (int j = 1; j <= M; j++) {\n            prefixSum[i][j] = prefixSum[i - 1][j] + prefixSum[i][j - 1] - prefixSum[i - 1][j - 1] + grid[i - 1][j - 1];\n        }\n    }\n    scanf(\"%d\", &Q);\n    for (int i = 0; i < Q; i++) {\n        scanf(\"%d %d\", &A, &B);\n        int count = 0;\n        for (int x = 0; x <= N - A; x++) {\n            for (int y = 0; y <= M - B; y++) {\n                int sum = prefixSum[x + A][y + B] - prefixSum[x + A][y] - prefixSum[x][y + B] + prefixSum[x][y];\n                if (sum >= K) {\n                    count++;\n                }\n            }\n        }\n        printf(\"%d\\n\", count);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\nusing namespace std;\nint main() {\n    int N, M, K, Q, A, B;\n    cin >> N >> M >> K;\n    int grid[N][M];\n    for (int i = 0; i < N; i++) {\n        for (int j = 0; j < M; j++) {\n            char c;\n            cin >> c;\n            grid[i][j] = (c == 'H') ? 1 : 0;\n        }\n    }\n    int prefixSum[N + 1][M + 1];\n    for (int i = 0; i <= N; i++) {\n        for (int j = 0; j <= M; j++) {\n            prefixSum[i][j] = 0;\n        }\n    }\n    for (int i = 1; i <= N; i++) {\n        for (int j = 1; j <= M; j++) {\n            prefixSum[i][j] = prefixSum[i - 1][j] + prefixSum[i][j - 1] - prefixSum[i - 1][j - 1] + grid[i - 1][j - 1];\n        }\n    }\n    cin >> Q;\n    for (int i = 0; i < Q; i++) {\n        cin >> A >> B;\n        int count = 0;\n        for (int x = 0; x <= N - A; x++) {\n            for (int y = 0; y <= M - B; y++) {\n                int sum = prefixSum[x + A][y + B] - prefixSum[x + A][y] - prefixSum[x][y + B] + prefixSum[x][y];\n                if (sum >= K) {\n                    count++;\n                }\n            }\n        }\n        cout << count << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int N = sc.nextInt();\n        int M = sc.nextInt();\n        int K = sc.nextInt();\n        int[][] grid = new int[N][M];\n        for (int i = 0; i < N; i++) {\n            String s = sc.next();\n            for (int j = 0; j < M; j++) {\n                grid[i][j] = (s.charAt(j) == 'H') ? 1 : 0;\n            }\n        }\n        int[][] prefixSum = new int[N + 1][M + 1];\n        for (int i = 1; i <= N; i++) {\n            for (int j = 1; j <= M; j++) {\n                prefixSum[i][j] = prefixSum[i - 1][j] + prefixSum[i][j - 1] - prefixSum[i - 1][j - 1] + grid[i - 1][j - 1];\n            }\n        }\n        int Q = sc.nextInt();\n        for (int i = 0; i < Q; i++) {\n            int A = sc.nextInt();\n            int B = sc.nextInt();\n            int count = 0;\n            for (int x = 0; x <= N - A; x++) {\n                for (int y = 0; y <= M - B; y++) {\n                    int sum = prefixSum[x + A][y + B] - prefixSum[x + A][y] - prefixSum[x][y + B] + prefixSum[x][y];\n                    if (sum >= K) {\n                        count++;\n                    }\n                }\n            }\n            System.out.println(count);\n        }\n    }\n}",
+      "Python3": "import sys\ninput = sys.stdin.readline\nN, M, K = map(int, input().split())\ngrid = [[1 if c == 'H' else 0 for c in input().rstrip()] for _ in range(N)]\nprefixSum = [[0] * (M + 1) for _ in range(N + 1)]\nfor i in range(1, N + 1):\n    for j in range(1, M + 1):\n        prefixSum[i][j] = prefixSum[i - 1][j] + prefixSum[i][j - 1] - prefixSum[i - 1][j - 1] + grid[i - 1][j - 1]\nQ = int(input())\nfor _ in range(Q):\n    A, B = map(int, input().split())\n    count = 0\n    for x in range(N - A + 1):\n        for y in range(M - B + 1):\n            sum = prefixSum[x + A][y + B] - prefixSum[x + A][y] - prefixSum[x][y + B] + prefixSum[x][y]\n            if sum >= K:\n                count += 1\n    print(count)",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst readline = () => lines[idx++];\nconst [N, M, K] = readline().split(' ').map(Number);\nconst grid = [];\nfor (let i = 0; i < N; i++) {\n    const s = readline();\n    grid.push([]);\n    for (let j = 0; j < M; j++) {\n        grid[i].push(s[j] === 'H' ? 1 : 0);\n    }\n}\nconst prefixSum = Array(N + 1).fill(0).map(() => Array(M + 1).fill(0));\nfor (let i = 1; i <= N; i++) {\n    for (let j = 1; j <= M; j++) {\n        prefixSum[i][j] = prefixSum[i - 1][j] + prefixSum[i][j - 1] - prefixSum[i - 1][j - 1] + grid[i - 1][j - 1];\n    }\n}\nconst Q = Number(readline());\nfor (let i = 0; i < Q; i++) {\n    const [A, B] = readline().split(' ').map(Number);\n    let count = 0;\n    for (let x = 0; x <= N - A; x++) {\n        for (let y = 0; y <= M - B; y++) {\n            const sum = prefixSum[x + A][y + B] - prefixSum[x + A][y] - prefixSum[x][y + B] + prefixSum[x][y];\n            if (sum >= K) {\n                count++;\n            }\n        }\n    }\n    console.log(count);\n}"
+    }
+  }
+}

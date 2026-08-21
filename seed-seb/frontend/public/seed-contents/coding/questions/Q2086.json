@@ -1,0 +1,128 @@
+{
+  "questionId": "Q2086",
+  "title": "Longest Common Subsequence",
+  "slug": "longest-common-subsequence",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Easy",
+    "isPremium": false,
+    "tags": [
+      "DP",
+      "String Matching",
+      "Longest Common Subsequence",
+      "Strings"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ]
+  },
+  "content": {
+    "problemStatement": "You are given two strings SSS and TTT. \n\nFind the length of the largest string KKK such that is subsequence of both SSS and TTT.\n\n\nInput Format\n\nFirst line of the input contains the string SSS.\nSecond line of the input contains the string TTT.\n\n\nOutput Format\nFor each test case, output on a new line the maximum size of the subsequence that is common in SSS and TTT.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= |S|, |T| <= 1000",
+      "S and T consist of lowercase English letters only"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case consists of two lines: the first line is the string S, the second line is the string T. Both strings contain only lowercase English letters.",
+    "outputFormat": "For each test case output a single line containing the length of the longest common subsequence of S and T.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\ncode\nchef",
+        "output": "2",
+        "explanation": "The longest common subsequence between \"code\" and \"chef\" can be \"ce\" (or \"co\"), giving length 2."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\nabc\ndef",
+        "output": "0",
+        "explanation": "The two strings share no common characters, so the LCS length is 0."
+      },
+      {
+        "id": "sample_3",
+        "input": "2\naggtab\ngxtxayb\nabcdgh\naedfhr",
+        "output": "4\n3",
+        "explanation": "First pair: LCS length is 4 (e.g., \"gtab\"). Second pair: LCS length is 3 (e.g., \"adh\")."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\na\na",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\naaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "expectedOutput": "100",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\nabc\ndef",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\naggtab\ngxtxayb",
+        "expectedOutput": "4",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\nabcde\nace",
+        "expectedOutput": "3",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "We use classic DP. Let dp[i][j] be the LCS length of the prefixes S[0..i-1] and T[0..j-1]. Transition: if S[i-1]==T[j-1] then dp[i][j]=dp[i-1][j-1]+1 else dp[i][j]=max(dp[i-1][j], dp[i][j-1]). Initialise first row and column with 0. The answer for a test case is dp[|S|][|T|].",
+    "timeComplexity": "O(|S| * |T|) per test case.",
+    "spaceComplexity": "O(|S| * |T|) integers (can be reduced to O(min(|S|,|T|)) but full table is used for clarity).",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n\nint max(int a, int b) { return a > b ? a : b; }\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    char s[1005], t[1005];\n    while (T--) {\n        scanf(\"%s %s\", s, t);\n        int n = strlen(s), m = strlen(t);\n        static int dp[1005][1005];\n        for (int i = 0; i <= n; ++i) dp[i][0] = 0;\n        for (int j = 0; j <= m; ++j) dp[0][j] = 0;\n        for (int i = 1; i <= n; ++i) {\n            for (int j = 1; j <= m; ++j) {\n                if (s[i-1] == t[j-1])\n                    dp[i][j] = dp[i-1][j-1] + 1;\n                else\n                    dp[i][j] = max(dp[i-1][j], dp[i][j-1]);\n            }\n        }\n        printf(\"%d\\n\", dp[n][m]);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T;\n    if (!(cin >> T)) return 0;\n    while (T--) {\n        string s, t;\n        cin >> s >> t;\n        int n = s.size(), m = t.size();\n        vector<vector<int>> dp(n + 1, vector<int>(m + 1, 0));\n        for (int i = 1; i <= n; ++i) {\n            for (int j = 1; j <= m; ++j) {\n                if (s[i-1] == t[j-1])\n                    dp[i][j] = dp[i-1][j-1] + 1;\n                else\n                    dp[i][j] = max(dp[i-1][j], dp[i][j-1]);\n            }\n        }\n        cout << dp[n][m] << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        String line = br.readLine();\n        if (line == null || line.isEmpty()) return;\n        int T = Integer.parseInt(line.trim());\n        StringBuilder sb = new StringBuilder();\n        for (int tc = 0; tc < T; ++tc) {\n            String s = br.readLine();\n            String t = br.readLine();\n            int n = s.length();\n            int m = t.length();\n            int[][] dp = new int[n + 1][m + 1];\n            for (int i = 1; i <= n; ++i) {\n                for (int j = 1; j <= m; ++j) {\n                    if (s.charAt(i - 1) == t.charAt(j - 1))\n                        dp[i][j] = dp[i - 1][j - 1] + 1;\n                    else\n                        dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);\n                }\n            }\n            sb.append(dp[n][m]).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef lcs_len(s: str, t: str) -> int:\n    n, m = len(s), len(t)\n    dp = [[0] * (m + 1) for _ in range(n + 1)]\n    for i in range(1, n + 1):\n        si = s[i - 1]\n        for j in range(1, m + 1):\n            if si == t[j - 1]:\n                dp[i][j] = dp[i - 1][j - 1] + 1\n            else:\n                dp[i][j] = dp[i - 1][j] if dp[i - 1][j] >= dp[i][j - 1] else dp[i][j - 1]\n    return dp[n][m]\n\ndef main():\n    data = sys.stdin.read().splitlines()\n    if not data:\n        return\n    T = int(data[0].strip())\n    out = []\n    idx = 1\n    for _ in range(T):\n        s = data[idx].strip(); idx += 1\n        t = data[idx].strip(); idx += 1\n        out.append(str(lcs_len(s, t)))\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    main()",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet ptr = 0;\nconst T = parseInt(lines[ptr++].trim(), 10);\nlet results = [];\nfor (let tc = 0; tc < T; ++tc) {\n  const s = lines[ptr++].trim();\n  const t = lines[ptr++].trim();\n  const n = s.length;\n  const m = t.length;\n  const dp = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));\n  for (let i = 1; i <= n; ++i) {\n    for (let j = 1; j <= m; ++j) {\n      if (s[i - 1] === t[j - 1]) dp[i][j] = dp[i - 1][j - 1] + 1;\n      else dp[i][j] = dp[i - 1][j] >= dp[i][j - 1] ? dp[i - 1][j] : dp[i][j - 1];\n    }\n  }\n  results.push(String(dp[n][m]));\n}\nconsole.log(results.join('\\n'));\n"
+    }
+  }
+}

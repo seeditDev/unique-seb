@@ -1,0 +1,118 @@
+{
+  "questionId": "Q2391",
+  "title": "Chef Travel Routes",
+  "slug": "chef-travel-routes",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graphs",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "Graphs",
+      "Graph Traversal",
+      "Route Validation"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Data Structures"
+    ]
+  },
+  "content": {
+    "problemStatement": "Chef likes to travel very much. He plans some travel routes and wants to know their lengths. He hired you to make these calculations. But be careful, some of the routes are incorrect. There may be some misspelling in city names or there will be no road between some two consecutive cities in the route. Also note that Chef hates to visit the same city twice during his travel. Even the last city should differ from the first. Two consecutive cities in the route should also be different. So you need to check these conditions for the given routes too.\n\n\n\nYou will be given the list of all cities and all roads between them with their lengths. All roads are one-way. Also you will be given the list of all travel routes that Chef plans. For each route you should check whether it is correct and find its length in this case.",
+    "constraints": [
+      "1 <= N <= 50",
+      "0 <= M <= N * (N - 1)",
+      "1 <= length <= 20000",
+      "1 <= T <= 50",
+      "1 <= K <= 50",
+      "1 <= length of each city name <= 20"
+    ],
+    "inputFormat": "First line contains the number of cities N. Second line contains N space-separated city names. Third line contains the number of roads M. Each of the next M lines contains a road description in the format 'city1 city2 length'. Fifth line contains the number of travel routes T. Each of the next T lines contains a route description in the format 'K city1 city2 ... cityK'.",
+    "outputFormat": "For each travel route, print its length if it is valid, otherwise print 'ERROR'.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "5\nDonetsk Kiev New-York Miami Hollywood\n9\nDonetsk Kiev 560\nKiev New-York 7507\nNew-York Miami 1764\nMiami Hollywood 28\nHollywood Miami 30\nMiami New-York 1764\nKiev Donetsk 550\nHollywood New-York 1736\nNew-York Hollywood 1738\n13\n5 Donetsk Kiev New-York Miami Hollywood\n5 Hollywood Miami New-York Kiev Donetsk\n3 Donetsk Kiev Donetsk\n2 Kyiv New-York\n3 New-York Hollywood Miami\n2 New-York Miami\n3 Hollywood New-York Miami\n4 Donetsk Kiev Miami Hollywood\n2 Donetsk Hollywood\n1 Donetsk\n2 Mumbai Deli\n6 Donetsk Kiev New-York Miami Hollywood New-York\n2 Miami Miami",
+        "output": "9859\nERROR\nERROR\nERROR\n1768\n1764\n3500\nERROR\nERROR\n0\nERROR\nERROR\nERROR",
+        "explanation": "Explanation:\nThe 2nd route is incorrect since there is no road from New-York to Kiev. Note however that inverse road from Kiev to New-York exists. \nThe 3rd route is incorrect since the first city coincides with the last one. \nThe 4th route is incorrect since there is no city with name Kyiv (Probably Chef means Kiev but he misspells this word). \nThe 8th route is incorrect since there is no road from Miami to Kiev. \nThe 9th route is incorrect since there is no road from Donetsk to  Hollywood. \nThe 10th route is correct. Note that a route composed of exactly one city is always correct provided that city name is written correctly. \nThe 11th route is incorrect since there is no cities with names Mumbai and Deli. (Probably Chef is not so good in geography :)) \nThe 12th route is incorrect since city New-York is visited twice. \nFinally the 13th route is incorrect since we have equal consecutive cities."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Create a graph with the given cities and roads. Then, for each travel route, check if it is valid by traversing the graph and verifying that each city in the route is connected to the next one. If a route is valid, calculate its length by summing the lengths of the roads between the cities.",
+    "timeComplexity": "O(M + T * K) per test case, where M is the number of roads and K is the maximum length of a travel route.",
+    "spaceComplexity": "O(N + M) for storing the graph, where N is the number of cities.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#define MAX_CITIES 50\n#define MAX_ROADS 2500\n#define MAX_ROUTE_LENGTH 50\n#define MAX_CITY_NAME_LENGTH 20\n\n// Structure to represent a road\ntypedef struct {\n    char city1[MAX_CITY_NAME_LENGTH];\n    char city2[MAX_CITY_NAME_LENGTH];\n    int length;\n} Road;\n\n// Structure to represent a graph\ntypedef struct {\n    char cities[MAX_CITIES][MAX_CITY_NAME_LENGTH];\n    Road roads[MAX_ROADS];\n    int numCities;\n    int numRoads;\n} Graph;\n\n// Function to create a new graph\nGraph createGraph() {\n    Graph graph;\n    graph.numCities = 0;\n    graph.numRoads = 0;\n    return graph;\n}\n\n// Function to add a city to the graph\nvoid addCity(Graph *graph, char *cityName) {\n    strcpy(graph->cities[graph->numCities], cityName);\n    graph->numCities++;\n}\n\n// Function to add a road to the graph\nvoid addRoad(Graph *graph, char *city1, char *city2, int length) {\n    strcpy(graph->roads[graph->numRoads].city1, city1);\n    strcpy(graph->roads[graph->numRoads].city2, city2);\n    graph->roads[graph->numRoads].length = length;\n    graph->numRoads++;\n}\n\n// Function to check if a route is valid and calculate its length\nint calculateRouteLength(Graph *graph, char *route[], int routeLength) {\n    int length = 0;\n    for (int i = 0; i < routeLength - 1; i++) {\n        int found = 0;\n        for (int j = 0; j < graph->numRoads; j++) {\n            if (strcmp(graph->roads[j].city1, route[i]) == 0 && strcmp(graph->roads[j].city2, route[i + 1]) == 0) {\n                length += graph->roads[j].length;\n                found = 1;\n                break;\n            }\n        }\n        if (!found) {\n            return -1;\n        }\n        if (i > 0 && strcmp(route[i], route[i - 1]) == 0) {\n            return -1;\n        }\n    }\n    if (strcmp(route[0], route[routeLength - 1]) == 0) {\n        return -1;\n    }\n    return length;\n}\n\nint main() {\n    int numCities;\n    scanf(\"%d\", &numCities);\n    getchar(); // Consume newline character\n    Graph graph = createGraph();\n    for (int i = 0; i < numCities; i++) {\n        char cityName[MAX_CITY_NAME_LENGTH];\n        fgets(cityName, MAX_CITY_NAME_LENGTH, stdin);\n        cityName[strcspn(cityName, \"\\n\")] = 0; // Remove newline character\n        addCity(&graph, cityName);\n    }\n    int numRoads;\n    scanf(\"%d\", &numRoads);\n    getchar(); // Consume newline character\n    for (int i = 0; i < numRoads; i++) {\n        char city1[MAX_CITY_NAME_LENGTH], city2[MAX_CITY_NAME_LENGTH];\n        int length;\n        scanf(\"%s %s %d\", city1, city2, &length);\n        getchar(); // Consume newline character\n        addRoad(&graph, city1, city2, length);\n    }\n    int numRoutes;\n    scanf(\"%d\", &numRoutes);\n    getchar(); // Consume newline character\n    for (int i = 0; i < numRoutes; i++) {\n        int routeLength;\n        scanf(\"%d\", &routeLength);\n        getchar(); // Consume newline character\n        char *route[routeLength];\n        for (int j = 0; j < routeLength; j++) {\n            route[j] = (char *)malloc(MAX_CITY_NAME_LENGTH * sizeof(char));\n            fgets(route[j], MAX_CITY_NAME_LENGTH, stdin);\n            route[j][strcspn(route[j], \"\\n\")] = 0; // Remove newline character\n        }\n        int length = calculateRouteLength(&graph, route, routeLength);\n        if (length == -1) {\n            printf(\"ERROR\\n\");\n        } else {\n            printf(\"%d\\n\", length);\n        }\n        for (int j = 0; j < routeLength; j++) {\n            free(route[j]);\n        }\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\n#include <string>\n#include <unordered_map>\nusing namespace std;\n\n// Structure to represent a road\nstruct Road {\n    string city1;\n    string city2;\n    int length;\n};\n\n// Structure to represent a graph\nstruct Graph {\n    vector<string> cities;\n    vector<Road> roads;\n};\n\n// Function to create a new graph\nGraph createGraph() {\n    Graph graph;\n    return graph;\n}\n\n// Function to add a city to the graph\nvoid addCity(Graph &graph, string cityName) {\n    graph.cities.push_back(cityName);\n}\n\n// Function to add a road to the graph\nvoid addRoad(Graph &graph, string city1, string city2, int length) {\n    Road road;\n    road.city1 = city1;\n    road.city2 = city2;\n    road.length = length;\n    graph.roads.push_back(road);\n}\n\n// Function to check if a route is valid and calculate its length\nint calculateRouteLength(Graph &graph, vector<string> route) {\n    int length = 0;\n    for (int i = 0; i < route.size() - 1; i++) {\n        for (Road road : graph.roads) {\n            if (road.city1 == route[i] && road.city2 == route[i + 1]) {\n                length += road.length;\n                break;\n            }\n        }\n        if (length == 0) {\n            return -1;\n        }\n        if (i > 0 && route[i] == route[i - 1]) {\n            return -1;\n        }\n    }\n    if (route[0] == route[route.size() - 1]) {\n        return -1;\n    }\n    return length;\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(NULL);\n    int numCities;\n    cin >> numCities;\n    cin.ignore();\n    Graph graph = createGraph();\n    for (int i = 0; i < numCities; i++) {\n        string cityName;\n        getline(cin, cityName);\n        addCity(graph, cityName);\n    }\n    int numRoads;\n    cin >> numRoads;\n    cin.ignore();\n    for (int i = 0; i < numRoads; i++) {\n        string city1, city2;\n        int length;\n        cin >> city1 >> city2 >> length;\n        cin.ignore();\n        addRoad(graph, city1, city2, length);\n    }\n    int numRoutes;\n    cin >> numRoutes;\n    cin.ignore();\n    for (int i = 0; i < numRoutes; i++) {\n        int routeLength;\n        cin >> routeLength;\n        cin.ignore();\n        vector<string> route(routeLength);\n        for (int j = 0; j < routeLength; j++) {\n            getline(cin, route[j]);\n        }\n        int length = calculateRouteLength(graph, route);\n        if (length == -1) {\n            cout << \"ERROR\" << endl;\n        } else {\n            cout << length << endl;\n        }\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\nimport java.util.ArrayList;\nimport java.util.HashMap;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int numCities = scanner.nextInt();\n        scanner.nextLine();\n        ArrayList<String> cities = new ArrayList<>();\n        for (int i = 0; i < numCities; i++) {\n            cities.add(scanner.nextLine());\n        }\n        int numRoads = scanner.nextInt();\n        scanner.nextLine();\n        HashMap<String, HashMap<String, Integer>> roads = new HashMap<>();\n        for (int i = 0; i < numRoads; i++) {\n            String city1 = scanner.next();\n            String city2 = scanner.next();\n            int length = scanner.nextInt();\n            scanner.nextLine();\n            if (!roads.containsKey(city1)) {\n                roads.put(city1, new HashMap<>());\n            }\n            roads.get(city1).put(city2, length);\n        }\n        int numRoutes = scanner.nextInt();\n        scanner.nextLine();\n        for (int i = 0; i < numRoutes; i++) {\n            int routeLength = scanner.nextInt();\n            scanner.nextLine();\n            String[] route = new String[routeLength];\n            for (int j = 0; j < routeLength; j++) {\n                route[j] = scanner.nextLine();\n            }\n            int length = calculateRouteLength(roads, route);\n            if (length == -1) {\n                System.out.println(\"ERROR\");\n            } else {\n                System.out.println(length);\n            }\n        }\n    }\n\n    public static int calculateRouteLength(HashMap<String, HashMap<String, Integer>> roads, String[] route) {\n        int length = 0;\n        for (int i = 0; i < route.length - 1; i++) {\n            if (roads.containsKey(route[i]) && roads.get(route[i]).containsKey(route[i + 1])) {\n                length += roads.get(route[i]).get(route[i + 1]);\n            } else {\n                return -1;\n            }\n            if (i > 0 && route[i].equals(route[i - 1])) {\n                return -1;\n            }\n        }\n        if (route[0].equals(route[route.length - 1])) {\n            return -1;\n        }\n        return length;\n    }\n}",
+      "Python3": "import sys\n\n# Structure to represent a road\nclass Road:\n    def __init__(self, city1, city2, length):\n        self.city1 = city1\n        self.city2 = city2\n        self.length = length\n\n# Structure to represent a graph\nclass Graph:\n    def __init__(self):\n        self.cities = []\n        self.roads = {}\n\n    def addCity(self, city):\n        self.cities.append(city)\n\n    def addRoad(self, city1, city2, length):\n        if city1 not in self.roads:\n            self.roads[city1] = {}\n        self.roads[city1][city2] = length\n\n# Function to check if a route is valid and calculate its length\ndef calculateRouteLength(graph, route):\n    length = 0\n    for i in range(len(route) - 1):\n        if route[i] in graph.roads and route[i + 1] in graph.roads[route[i]]:\n            length += graph.roads[route[i]][route[i + 1]]\n        else:\n            return -1\n        if i > 0 and route[i] == route[i - 1]:\n            return -1\n    if route[0] == route[-1]:\n        return -1\n    return length\n\n# Read input\nnumCities = int(input())\ngraph = Graph()\nfor _ in range(numCities):\n    graph.addCity(input().strip())\nnumRoads = int(input())\nfor _ in range(numRoads):\n    city1, city2, length = input().split()\n    graph.addRoad(city1, city2, int(length))\nnumRoutes = int(input())\nfor _ in range(numRoutes):\n    routeLength = int(input())\n    route = [input().strip() for _ in range(routeLength)]\n    length = calculateRouteLength(graph, route)\n    if length == -1:\n        print(\"ERROR\")\n    else:\n        print(length)",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\n\n// Structure to represent a road\nclass Road {\n    constructor(city1, city2, length) {\n        this.city1 = city1;\n        this.city2 = city2;\n        this.length = length;\n    }\n}\n\n// Structure to represent a graph\nclass Graph {\n    constructor() {\n        this.cities = [];\n        this.roads = {};\n    }\n\n    addCity(city) {\n        this.cities.push(city);\n    }\n\n    addRoad(city1, city2, length) {\n        if (!(city1 in this.roads)) {\n            this.roads[city1] = {};\n        }\n        this.roads[city1][city2] = length;\n    }\n}\n\n// Function to check if a route is valid and calculate its length\nfunction calculateRouteLength(graph, route) {\n    let length = 0;\n    for (let i = 0; i < route.length - 1; i++) {\n        if (route[i] in graph.roads && route[i + 1] in graph.roads[route[i]]) {\n            length += graph.roads[route[i]][route[i + 1]];\n        } else {\n            return -1;\n        }\n        if (i > 0 && route[i] === route[i - 1]) {\n            return -1;\n        }\n    }\n    if (route[0] === route[route.length - 1]) {\n        return -1;\n    }\n    return length;\n}\n\n// Read input\nlet numCities = parseInt(input[idx++]);\nlet graph = new Graph();\nfor (let i = 0; i < numCities; i++) {\n    graph.addCity(input[idx++]);\n}\nlet numRoads = parseInt(input[idx++]);\nfor (let i = 0; i < numRoads; i++) {\n    let [city1, city2, length] = input[idx++].split(' ');\n    graph.addRoad(city1, city2, parseInt(length));\n}\nlet numRoutes = parseInt(input[idx++]);\nfor (let i = 0; i < numRoutes; i++) {\n    let routeLength = parseInt(input[idx++]);\n    let route = [];\n    for (let j = 0; j < routeLength; j++) {\n        route.push(input[idx++]);\n    }\n    let length = calculateRouteLength(graph, route);\n    if (length === -1) {\n        console.log('ERROR');\n    } else {\n        console.log(length);\n    }\n}"
+    }
+  }
+}

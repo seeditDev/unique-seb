@@ -1,0 +1,139 @@
+{
+  "questionId": "Q8542",
+  "title": "Count Number of Peaks",
+  "slug": "count-number-of-peaks",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Combinatorics | Math | Expected Value",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Combinatorics",
+      "Linearity of Expectation",
+      "Counting"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Ad-hoc & Implementation"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given an integer NNN where N≤10N \\le 10N≤10. Consider any array AAA with length NNN where each element can either be 000, 111, or 222, we define f(A)f(A)f(A) as the number of extrema in AAA. You need to find the sum of f(A)f(A)f(A) over **all** possible arrays AAA.\n\n**Note**:\n\n\nIn an array AAA, we consider AiA_iAi​ as an extremum if it is strictly greater than both of its neighbors (i.e. Ai&gt;Ai−1A_i \\gt A_{i - 1}Ai​&gt;Ai−1​ **and** Ai&gt;Ai+1A_i \\gt A_{i + 1}Ai​&gt;Ai+1​), or if it is strictly smaller than both of its neighbors (i.e. Ai&lt;Ai−1A_i \\lt A_{i - 1}Ai​&lt;Ai−1​ **and** Ai&lt;Ai+1A_i \\lt A_{i + 1}Ai​&lt;Ai+1​). Note that first and last elements are not counted as extremum.\nExtrema is the plural of extremum.\n\nInput Format\n\nThe first line of the input contains an integer TTT - the number of test cases. The test cases then follow.\nThe only line of each test case contains one integer NNN.\n\n\nOutput Format\nFor each test case, output on a single the sum of f(A)f(A)f(A) over all possible arrays AAA.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 10"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains a single integer N (1 ≤ N ≤ 10).",
+    "outputFormat": "For each test case output a single line with the sum of f(A) over all possible arrays A of length N whose elements are 0, 1 or 2.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n1\n3\n5",
+        "output": "0\n10\n270",
+        "explanation": "For N=1 and N=2 there are no interior positions, so the sum is 0. For N=3 the formula gives (3-2)*10*3^{0}=10. For N=5 it gives (5-2)*10*3^{2}=3*10*9=270."
+      },
+      {
+        "id": "sample_2",
+        "input": "2\n2\n4",
+        "output": "0\n60",
+        "explanation": "N=2 → 0 (no interior). N=4 → (4-2)*10*3^{1}=2*10*3=60."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n6",
+        "output": "1080",
+        "explanation": "N=6 → (6-2)*10*3^{3}=4*10*27=1080."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n10",
+        "expectedOutput": "174960",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n3",
+        "expectedOutput": "10",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n6",
+        "expectedOutput": "1080",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n7",
+        "expectedOutput": "4050",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For a fixed interior position i (2 ≤ i ≤ N‑1) the contribution of that position to the total sum equals the number of arrays where A_i is an extremum. By linearity of expectation we can sum contributions of each position independently. The three values (A_{i-1}, A_i, A_{i+1}) determine whether i is an extremum; the remaining N‑3 positions can be filled arbitrarily (3^{N‑3} ways). Enumerating all 3^3 = 27 triples of {0,1,2} gives 10 triples where the middle element is strictly larger than both neighbours (peak) or strictly smaller (valley). Hence for each interior i the count is 10·3^{N‑3}. There are (N‑2) interior positions, so the answer is:\n    S(N) = 0                     if N < 3\n    S(N) = (N‑2) * 10 * 3^{N‑3}  otherwise.\nThe formula is evaluated with 64‑bit integers (or Python's arbitrary precision).",
+    "timeComplexity": "O(T * log N) for fast exponentiation, but with N ≤ 10 a simple loop O(N) is sufficient.",
+    "spaceComplexity": "O(1) additional space.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdint.h>\n\nstatic uint64_t pow3(int exp) {\n    uint64_t res = 1;\n    for (int i = 0; i < exp; ++i) res *= 3ULL;\n    return res;\n}\n\nint main() {\n    int T; if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        int N; scanf(\"%d\", &N);\n        if (N < 3) {\n            printf(\"0\\n\");\n        } else {\n            uint64_t term = pow3(N - 3);\n            uint64_t ans = (uint64_t)(N - 2) * 10ULL * term;\n            printf(\"%llu\\n\", ans);\n        }\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nunsigned long long pow3(int e){\n    unsigned long long r=1;\n    while(e--) r*=3ULL;\n    return r;\n}\n\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N; cin>>N;\n        if(N<3) cout<<0<<\"\\n\";\n        else{\n            unsigned long long ans = (unsigned long long)(N-2) * 10ULL * pow3(N-3);\n            cout<<ans<<\"\\n\";\n        }\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    private static long pow3(int e) {\n        long r = 1;\n        for (int i = 0; i < e; i++) r *= 3L;\n        return r;\n    }\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder sb = new StringBuilder();\n        for (int t = 0; t < T; t++) {\n            int N = Integer.parseInt(br.readLine().trim());\n            if (N < 3) sb.append(0);\n            else {\n                long ans = (long)(N - 2) * 10L * pow3(N - 3);\n                sb.append(ans);\n            }\n            if (t + 1 < T) sb.append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys\n\ndef pow3(e: int) -> int:\n    return 3 ** e\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out = []\n    for _ in range(T):\n        N = int(next(it))\n        if N < 3:\n            out.append('0')\n        else:\n            ans = (N - 2) * 10 * pow3(N - 3)\n            out.append(str(ans))\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet out = [];\nfunction pow3(e) {\n  let r = 1n;\n  const base = 3n;\n  for (let i = 0; i < e; i++) r *= base;\n  return r;\n}\nfor (let t = 0; t < T; t++) {\n  const N = Number(input[idx++]);\n  if (N < 3) {\n    out.push('0');\n  } else {\n    const ans = BigInt(N - 2) * 10n * pow3(N - 3);\n    out.push(ans.toString());\n  }\n}\nconsole.log(out.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

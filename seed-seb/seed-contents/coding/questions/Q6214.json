@@ -1,0 +1,129 @@
+{
+  "questionId": "Q6214",
+  "title": "Second LIS",
+  "slug": "second-lis",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Increasing Subsequences",
+      "Dynamic Programming",
+      "Modular Arithmetic"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Given a sequence of **n** numbers **A**[**1**..**n**], a length-**k** increasing subsequence (IS) is **A**[**i**1], **A**[**i**2], ..., **A**[**i**k] such that both the indices **i** and values are strictly increasing. Among all possible IS's, denote the maximum length as **L**. Now we are interested in finding how many length-**(L-1)** IS's are there.\n\n\n\nTwo IS's are different if and only if their indices are different.\n\n\n\nSince the answer could be very large, you are just required to output its remainder with **10^9 + 7**.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= n <= 10^5",
+      "1 <= A[i] <= 10^9",
+      "1 < L"
+    ],
+    "inputFormat": "The first line contains an integer T denoting the total number of test cases. For each test case, the first line contains a single integer n, and the second line contains the space-separated sequence A[1..n].",
+    "outputFormat": "For each test case, output the answer per line, which is the number of length-(L-1) increasing subsequences modulo 10^9 + 7.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n3\n1 1 2\n5\n6 8 1 2 3\n5\n2 3 1 6 8",
+        "output": "3\n4\n5",
+        "explanation": "Explanation: Example case 1. L = 2. There are 3 different length-1 IS's."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n100000\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15",
+        "expectedOutput": "14",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n5\n1 1 1 1 1",
+        "expectedOutput": "5",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n10\n1 2 3 4 5 6 7 8 9 10",
+        "expectedOutput": "9",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n10\n10 9 8 7 6 5 4 3 2 1",
+        "expectedOutput": "1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we will first find the length of the longest increasing subsequence (LIS) in the given sequence. Then, we will find the number of length-(L-1) increasing subsequences. We will use dynamic programming to store the lengths of the longest increasing subsequences ending at each position and the number of such subsequences.",
+    "timeComplexity": "O(T * n^2) — where T is the number of test cases and n is the length of the sequence. The outer loop runs T times, and for each test case, we have two nested loops, each running n times.",
+    "spaceComplexity": "O(n) — we need to store the lengths of the longest increasing subsequences and the number of such subsequences for each position in the sequence.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#define MOD 1000000007\n\nint compare(const void *a, const void *b) {\n    return (*(int*)a - *(int*)b);\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int n;\n        scanf(\"%d\", &n);\n        int A[n];\n        for (int i = 0; i < n; i++) {\n            scanf(\"%d\", &A[i]);\n        }\n        int L = 1;\n        int *lengths = (int*)malloc(n * sizeof(int));\n        int *counts = (int*)malloc(n * sizeof(int));\n        for (int i = 0; i < n; i++) {\n            lengths[i] = 1;\n            counts[i] = 1;\n        }\n        for (int i = 1; i < n; i++) {\n            for (int j = 0; j < i; j++) {\n                if (A[i] > A[j] && lengths[i] < lengths[j] + 1) {\n                    lengths[i] = lengths[j] + 1;\n                    counts[i] = counts[j];\n                } else if (A[i] > A[j] && lengths[i] == lengths[j] + 1) {\n                    counts[i] = (counts[i] + counts[j]) % MOD;\n                }\n            }\n            L = (L > lengths[i]) ? L : lengths[i];\n        }\n        int answer = 0;\n        for (int i = 0; i < n; i++) {\n            if (lengths[i] == L - 1) {\n                answer = (answer + counts[i]) % MOD;\n            }\n        }\n        printf(\"%d\\n\", answer);\n        free(lengths);\n        free(counts);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\n#include <algorithm>\nusing namespace std;\n#define MOD 1000000007\n\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        int n;\n        cin >> n;\n        vector<int> A(n);\n        for (int i = 0; i < n; i++) {\n            cin >> A[i];\n        }\n        int L = 1;\n        vector<int> lengths(n, 1);\n        vector<int> counts(n, 1);\n        for (int i = 1; i < n; i++) {\n            for (int j = 0; j < i; j++) {\n                if (A[i] > A[j] && lengths[i] < lengths[j] + 1) {\n                    lengths[i] = lengths[j] + 1;\n                    counts[i] = counts[j];\n                } else if (A[i] > A[j] && lengths[i] == lengths[j] + 1) {\n                    counts[i] = (counts[i] + counts[j]) % MOD;\n                }\n            }\n            L = max(L, lengths[i]);\n        }\n        int answer = 0;\n        for (int i = 0; i < n; i++) {\n            if (lengths[i] == L - 1) {\n                answer = (answer + counts[i]) % MOD;\n            }\n        }\n        cout << answer << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n        while (T-- > 0) {\n            int n = sc.nextInt();\n            int[] A = new int[n];\n            for (int i = 0; i < n; i++) {\n                A[i] = sc.nextInt();\n            }\n            int L = 1;\n            int[] lengths = new int[n];\n            int[] counts = new int[n];\n            for (int i = 0; i < n; i++) {\n                lengths[i] = 1;\n                counts[i] = 1;\n            }\n            for (int i = 1; i < n; i++) {\n                for (int j = 0; j < i; j++) {\n                    if (A[i] > A[j] && lengths[i] < lengths[j] + 1) {\n                        lengths[i] = lengths[j] + 1;\n                        counts[i] = counts[j];\n                    } else if (A[i] > A[j] && lengths[i] == lengths[j] + 1) {\n                        counts[i] = (counts[i] + counts[j]) % 1000000007;\n                    }\n                }\n                L = Math.max(L, lengths[i]);\n            }\n            int answer = 0;\n            for (int i = 0; i < n; i++) {\n                if (lengths[i] == L - 1) {\n                    answer = (answer + counts[i]) % 1000000007;\n                }\n            }\n            System.out.println(answer);\n        }\n    }\n}",
+      "Python3": "import sys\nMOD = 1000000007\n\nfor _ in range(int(input())):\n    n = int(input())\n    A = list(map(int, input().split()))\n    L = 1\n    lengths = [1] * n\n    counts = [1] * n\n    for i in range(1, n):\n        for j in range(i):\n            if A[i] > A[j] and lengths[i] < lengths[j] + 1:\n                lengths[i] = lengths[j] + 1\n                counts[i] = counts[j]\n            elif A[i] > A[j] and lengths[i] == lengths[j] + 1:\n                counts[i] = (counts[i] + counts[j]) % MOD\n        L = max(L, lengths[i])\n    answer = 0\n    for i in range(n):\n        if lengths[i] == L - 1:\n            answer = (answer + counts[i]) % MOD\n    print(answer)",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst MOD = 1000000007;\n\nfunction nextInt() {\n    return parseInt(lines[idx++]);\n}\n\nfunction nextIntArray() {\n    return lines[idx++].split(' ').map(x => parseInt(x));\n}\n\nlet T = nextInt();\nwhile (T-- > 0) {\n    let n = nextInt();\n    let A = nextIntArray();\n    let L = 1;\n    let lengths = new Array(n).fill(1);\n    let counts = new Array(n).fill(1);\n    for (let i = 1; i < n; i++) {\n        for (let j = 0; j < i; j++) {\n            if (A[i] > A[j] && lengths[i] < lengths[j] + 1) {\n                lengths[i] = lengths[j] + 1;\n                counts[i] = counts[j];\n            } else if (A[i] > A[j] && lengths[i] == lengths[j] + 1) {\n                counts[i] = (counts[i] + counts[j]) % MOD;\n            }\n        }\n        L = Math.max(L, lengths[i]);\n    }\n    let answer = 0;\n    for (let i = 0; i < n; i++) {\n        if (lengths[i] == L - 1) {\n            answer = (answer + counts[i]) % MOD;\n        }\n    }\n    console.log(answer);\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

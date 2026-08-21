@@ -1,0 +1,95 @@
+{
+  "questionId": "Q11314",
+  "title": "Full Path Eraser",
+  "slug": "full-path-eraser",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Trees",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "trees",
+      "competitive programming"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Trees"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "There is a rooted tree of NNN vertices rooted at vertex 111. Each vertex vvv has a value AvA_vAv\u200b associated with it.\n\nYou choose a vertex vvv (possibly the root) from the tree and remove all vertices on the path from the root to the vertex vvv, also including vvv. This will result in a forest of zero or more connected components.\n\nThe beauty of a connected component is the GCD\\mathrm{GCD}GCD of the values of all vertices in the component. Find the maximum value of the sum of beauties of the obtained connected components for any choice of vvv.\n\nHere, GCD\\mathrm{GCD}GCD stands for [Greatest Common Divisor]\n\n\nInput Format\n\nThe first line contains a single integer TTT \u2014 the number of test cases. Then the test cases follow.\nThe first line of each test case contains an integer NNN \u2014 the size of the tree.\nThe second line of each test case contains NNN space-separated integers A1,A2,\u2026,ANA_1, A_2, \\dots, A_NA1\u200b,A2\u200b,\u2026,AN\u200b denoting the values associated with each vertex.\nThe next N\u22121N-1N\u22121 lines contain two space-separated integers uuu and vvv \u2014 denoting an undirected edge between nodes uuu and vvv.\n\nIt is guaranteed that the edges given in the input form a tree.\n\n\n\nOutput Format\nFor each test case output the maximum value of the sum of beauties of the obtained connected components for any choice of vvv.",
+    "constraints": [
+      "1\u2264T\u22642\u22c51041 \\leq T \\leq 2\\cdot10^41\u2264T\u22642\u22c5104",
+      "1\u2264N\u22643\u22c51051 \\leq N \\leq 3\\cdot10^51\u2264N\u22643\u22c5105",
+      "1\u2264Ai\u22641091 \\leq A_i \\leq 10^91\u2264Ai\u200b\u2264109",
+      "1\u2264u,v\u2264N1 \\leq u,v \\leq N1\u2264u,v\u2264N and u\u2260vu \\neq vu\ue020=v",
+      "It is guaranteed that the edges given in the input form a tree.",
+      "The sum of NNN over all test cases does not exceed 3\u22c51053\\cdot10^53\u22c5105"
+    ],
+    "inputFormat": "",
+    "outputFormat": "",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n10\n15 30 15 5 3 15 3 3 5 5\n1 2\n1 5\n2 3\n2 4\n5 6\n5 7\n5 8\n7 9\n7 10",
+        "output": "33",
+        "explanation": "Explanation:\nIf we choose vertex v = 7, the path from the root to this vertex is 1 -> 5 -> 7.\nAll these vertices are removed from the tree.\nThe remaining vertices form the following connected components:\n{8}, {6}, {10}, {9}, {2,3,4}\nThe GCD of values in these components are 3, 15, 5, 5, and 5 respectively.\nThe sum of beauties is:\n3 + 15 + 5 + 5 + 5 = 33\nThus, the maximum possible beauty is 33."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "input": "1\n10\n15 30 15 5 3 15 3 3 5 5\n1 2\n1 5\n2 3\n2 4\n5 6\n5 7\n5 8\n7 9\n7 10",
+        "expectedOutput": "33",
+        "weight": 100
+      }
+    ],
+    "totalTestCases": 1,
+    "totalWeight": 100
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      100
+    ],
+    "maxScore": 100
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "",
+    "timeComplexity": "",
+    "spaceComplexity": "",
+    "code": {
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n\n    int T;\n    cin >> T;\n    while (T--) {\n        int N;\n        cin >> N;\n        vector<long long> A(N + 1);\n        for (int i = 1; i <= N; ++i) cin >> A[i];\n\n        vector<vector<int>> adj(N + 1);\n        for (int i = 0; i < N - 1; ++i) {\n            int u, v;\n            cin >> u >> v;\n            adj[u].push_back(v);\n            adj[v].push_back(u);\n        }\n\n        vector<int> parent(N + 1, 0), order;\n        order.reserve(N);\n        vector<int> st;\n        st.push_back(1);\n        parent[1] = 0;\n\n        while (!st.empty()) {\n            int u = st.back();\n            st.pop_back();\n            order.push_back(u);\n            for (int v : adj[u]) {\n                if (v == parent[u]) continue;\n                parent[v] = u;\n                st.push_back(v);\n            }\n        }\n\n        vector<long long> subG(N + 1, 0);\n        vector<long long> S(N + 1, 0);\n        for (int i = N - 1; i >= 0; --i) {\n            int u = order[i];\n            long long g = A[u];\n            long long s = 0;\n            for (int v : adj[u]) {\n                if (v == parent[u]) continue;\n                g = std::gcd(g, subG[v]);\n                s += subG[v];\n            }\n            subG[u] = g;\n            S[u] = s;\n        }\n\n        vector<long long> prefS(N + 1, 0);\n        vector<long long> prefSub(N + 1, 0);\n\n        prefS[1] = S[1];\n        prefSub[1] = 0;\n\n        for (int u : order) {\n            if (u == 1) continue;\n            int p = parent[u];\n            prefS[u] = prefS[p] + S[u];\n            prefSub[u] = prefSub[p] + subG[u];\n        }\n\n        long long ans = 0;\n        for (int v = 1; v <= N; ++v) {\n            long long cur = prefS[v] - prefSub[v];\n            if (cur > ans) ans = cur;\n        }\n\n        cout << ans << '\\n';\n    }\n\n    return 0;\n}",
+      "Python3": "import sys,threading\nimport math\nsys.setrecursionlimit(10**6)\n# threading.stack_size(10**8)\nclass dsu:\n    def __init__(self):\n        self.parent=defaultdict(int)\n        self.size=[0]*(n+1)\n    \n    def start(self):\n        for i in range(1,n+1):\n            self.parent[i]=i\n\n    def find(self,x):\n        if x!=self.parent[x]:self.parent[x]=self.find(self.parent[x])\n        return self.parent[x]\n    def union(self,u,v):\n        u,v=self.find(u),self.find(v)\n        if u!=v:\n            self.parent[v]=u\n            \n    def treeinput():\n        adj=[[] for i in range(n+1)]\n        for i in range(n-1):\n            u,v=map(int,input().split())\n            adj[u].append(v)\n            adj[v].append(u)\n    def printt(self):\n        print(self.parent)\n            \n\ndef setbit(arr):\n    mask=1;bit=[0]*32\n    for i in range(32):\n        for k in arr:\n            if k&mask:bit[i]+=1\n            \n        mask<<=1\n    return bit\n\ndef prefix_sum(nums):\n    prefix=[0]\n    for i in range(len(nums)):\n        prefix.append(prefix[-1]+nums[i])\n    return prefix\n\ndef mx_lensubarray(nums):           #contains subbary of unique elements max length\n    res=0;j=0                       \n    mp=defaultdict(int)\n    prefix=prefixsum(nums)\n    mxSum=0\n    for i in range(len(nums)):\n        if nums[i] in mp:\n            temp=mp[nums[i]]\n        else:\n            temp=0\n        j=max(temp,j)\n        mp[nums[i]]=i+1\n        res=max(res,i-j+1)\n        mxSum=max(mxSum,prefix[i+1]-prefix[j])    #maxsum of unique subarray\n    return res\n\ndef lenOfLongSubarr (self, A, N, k) :       #longest subarray with sum k\n        mp={}\n        sm=0\n        mxlen=0\n        for i in range(N):\n            sm+=A[i]\n            if sm==k:\n                mxlen=i+1\n            if sm-k in mp:\n                mxlen=max(mxlen,i-mp[sm-k])\n            if sm not in mp:\n                mp[sm]=i\n        return mxlen\n        \n\ndef no_of_factor(s):\n    cnt=0\n    x=int(s**0.5)\n    for i in range(1,x+1):\n        if not s%i:\n            cnt=cnt+1 if s/i==i else cnt+2\n        i+=1\n    return cnt\n\ndef primes(n):\n    arr=[]\n    i=2\n    while i*i<=n:\n        if not n%i:\n            cnt=0\n            while not n%i:\n                cnt+=1;n//=i\n            arr.append([i,cnt])\n        i+=1\n    if n>1:arr.append([n,1])\n    \n    return arr\n\ndef sieve(n):\n    prime=[True for i in range(n+1)]\n    p=2\n    while (p*p<=n):\n        if prime[p]==True:\n            for i in range(p*p,n+1,p):\n                prime[i]=False\n        p+=1\n    res=[]\n    for i in range(2,n+1):\n        if prime[i]:res.append(i)\n    return res\n\ndef treeinput(n):\n    global adj\n    adj=[[] for i in range(n+1)]\n    for i in range(n-1):\n        u,v=map(int,input().split())\n        adj[u].append(v)\n        adj[v].append(u)\n        \ndef dfs(node,parent):\n    sm=0\n    temp=tree[node]\n    for child in adj[node]:\n        if child!=parent:\n            x=dfs(child,node)\n            sm+=x\n            temp=math.gcd(temp,x)\n    gcd_sum[node]=sm\n    gcd_track[node]=temp\n    return temp\n    \ndef dfs1(node,parent,track):\n    track+=gcd_sum[node]\n    global mx\n    mx=max(mx,track)\n    for child in adj[node]:\n        if child!=parent:\n            dfs1(child,node,track-gcd_track[child])\n            \n    \n\n\n# Recusrssion handle\n\n\n\n# def main():\nfor _ in range(int(input())):\n    n=int(input())\n    global gcd_sum,gcd_track\n    gcd_sum=[0]*(n+1)\n    gcd_track=[0]*(n+1)\n    tree=list(map(int,input().split()))\n    tree=[0]+tree\n    treeinput(n)\n    mx=0\n    dfs(1,-1)\n    dfs1(1,-1,0)\n    print(mx)\n    # arrb=list(map(int,input().split()))\n    # a,b,c=map(int,input().split())\n    # for i in range(n)\n",
+      "Java": "import java.io.BufferedReader;\nimport java.io.InputStreamReader;\nimport java.util.ArrayList;\n\nclass Seedit{\n    public static void main(String[] args) throws Exception{\n        BufferedReader bu = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder sb = new StringBuilder();\n        String[] s = bu.readLine().split(\" \");\n        int tt = Integer.parseInt(s[0]);\n        for(int t=0; t<tt; ++t) {\n            s = bu.readLine().split(\" \");\n            int n = Integer.parseInt(s[0]);\n            int[] a =new int[n];\n            s = bu.readLine().split(\" \");\n            for(int i=0; i<n; ++i) a[i] = Integer.parseInt(s[i]);\n            ArrayList<Integer>[] g = new ArrayList[n];\n            for(int i=0; i<n; ++i) g[i] = new ArrayList<>();\n            for(int i=1; i<n; ++i) {\n                s = bu.readLine().split(\" \");\n                int u = Integer.parseInt(s[0]) - 1, v = Integer.parseInt(s[1]) - 1;\n                g[u].add(v);\n                g[v].add(u);\n            }\n            long[] sum = new long[n];\n            int[] gcdOfSubtree = new int[n];\n            calculateGCD(g,0,-1,a,sum,gcdOfSubtree);\n            long[] ans = new long[1];\n            dfs(g,0,-1,sum,gcdOfSubtree,ans,0);\n            sb.append(ans[0]+\"\\n\");\n        }\n        System.out.println(sb);\n    }\n\n    private static void dfs(ArrayList<Integer>[] g, int n, int p, long[] sum, int[] gcdOfSubtree, long[] ans, long sumTillNow) {\n        // Keep the node\n        ans[0] = Math.max(ans[0],sumTillNow+gcdOfSubtree[n]);\n        //Remove the node\n        for(int c: g[n]) if(c!=p)\n            dfs(g,c,n,sum,gcdOfSubtree,ans,sumTillNow+sum[n]-gcdOfSubtree[c]);\n    }\n\n    private static void calculateGCD(ArrayList<Integer>[] g, int n, int p, int[] a, long[] sum, int[] gcdOfSubtree) {\n        gcdOfSubtree[n] = a[n];\n        for(int c: g[n]) if(c!=p){\n            calculateGCD(g,c,n,a,sum,gcdOfSubtree);\n            gcdOfSubtree[n] = gcd(gcdOfSubtree[n],gcdOfSubtree[c]);\n            sum[n] += gcdOfSubtree[c];\n        }\n    }\n\n    private static int gcd(int a, int b) {\n        return b==0?a:gcd(b,a%b);\n    }\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

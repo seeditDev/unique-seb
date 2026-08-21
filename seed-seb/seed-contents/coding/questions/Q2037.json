@@ -1,0 +1,127 @@
+{
+  "questionId": "Q2037",
+  "title": "Auto-Correct Your Sentence",
+  "slug": "auto-correct-your-sentence",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Easy",
+    "isPremium": false,
+    "tags": [
+      "Trimming",
+      "Find and replace",
+      "String manipulation",
+      "Strings"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Strings in Python"
+    ]
+  },
+  "content": {
+    "problemStatement": "In this task, we will create a program that automatically cleans and corrects a sentence by removing extra spaces and replacing \"cats\" with \"cars\" for proper formatting.",
+    "constraints": [
+      "1 <= T <= 10",
+      "Length of each sentence after stripping <= 100"
+    ],
+    "inputFormat": "The first line contains an integer T (1\u202f\u2264\u202fT\u202f\u2264\u202f10) \u2013 the number of sentences. Each of the next T lines contains a sentence which may have leading or trailing spaces. The length of each sentence after stripping spaces does not exceed 100 characters.",
+    "outputFormat": "For each of the T sentences output two lines:\\nOriginal sentence: <sentence after stripping leading/trailing spaces>\\nAuto-Corrected sentence: <sentence after stripping and replacing every occurrence of \"cats\" with \"cars\">",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\\nI love cats so much!",
+        "output": "Original sentence: I love cats so much!\\nAuto-Corrected sentence: I love cars so much!",
+        "explanation": "The input contains one sentence. After stripping (no change) and replacing \"cats\" with \"cars\" we obtain the corrected sentence."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\\nI would like to have 2 cats",
+        "output": "Original sentence: I would like to have 2 cats\\nAuto-Corrected sentence: I would like to have 2 cars",
+        "explanation": "Single occurrence of the word \"cats\" is replaced by \"cars\"."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\\n  cats and cats  ",
+        "output": "Original sentence: cats and cats\\nAuto-Corrected sentence: cars and cars",
+        "explanation": "Leading and trailing spaces are removed by strip, then each \"cats\" becomes \"cars\"."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\\n   ",
+        "expectedOutput": "Original sentence: \\nAuto-Corrected sentence: ",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\\ncatscatscatscatscatscatscatscatscatscatscatscatscatscatscatscatscatscatscatscatscatscatscatscats",
+        "expectedOutput": "Original sentence: catscatscatscatscatscatscatscatscatscatscatscatscatscatscatscatscatscatscatscatscatscatscatscats\\nAuto-Corrected sentence: carscarscarscarscarscarscarscarscarscarscarscarscarscarscarscarscarscarscarscarscarscarscarscars",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\\ncatss",
+        "expectedOutput": "Original sentence: catss\\nAuto-Corrected sentence: carss",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "2\\n  I have cats and cats.\\nNo cats here",
+        "expectedOutput": "Original sentence: I have cats and cats.\\nAuto-Corrected sentence: I have cars and cars.\\nOriginal sentence: No cats here\\nAuto-Corrected sentence: No cars here",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\\nconcatsen",
+        "expectedOutput": "Original sentence: concatsen\\nAuto-Corrected sentence: concarsen",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each test case read the whole line, remove leading and trailing whitespace (trim), then replace every non\u2011overlapping occurrence of the substring \"cats\" with \"cars\". The replacement can be done by scanning the string and copying characters to a new buffer, or by using built\u2011in replace functions in high\u2011level languages. Finally print the original trimmed sentence and the corrected one.",
+    "timeComplexity": "O(L) per sentence, where L is the length of the trimmed sentence (L \u2264 100). Overall O(T\u00b7L).",
+    "spaceComplexity": "O(L) auxiliary space for the corrected string.",
+    "code": {
+      "C": "#include <stdio.h>\\n#include <string.h>\\n#include <ctype.h>\\n\\nvoid trim(char *s){\\n    int start=0; while(s[start] && isspace((unsigned char)s[start])) start++;\\n    int end=strlen(s)-1; while(end>=0 && isspace((unsigned char)s[end])) end--;\\n    int len=end-start+1;\\n    memmove(s,s+start,len);\\n    s[len]='\\0';\\n}\\n\\nvoid replaceCats(const char *src, char *dst){\\n    const char *pat=\"cats\";\\n    const char *rep=\"cars\";\\n    while(*src){\\n        if(strncmp(src,pat,4)==0){\\n            strcpy(dst,rep);\\n            src+=4; dst+=4;\\n        }else{\\n            *dst=*src; src++; dst++;\\n        }\\n    }\\n    *dst='\\0';\\n}\\n\\nint main(){\\n    int T; if(scanf(\"%d\",&T)!=1) return 0; getchar();\\n    char line[256];\\n    for(int i=0;i<T;i++){\\n        if(!fgets(line, sizeof(line), stdin)) break;\\n        line[strcspn(line,\"\\\\n\")]='\\0';\\n        trim(line);\\n        char original[256]; strcpy(original,line);\\n        char corrected[256]; replaceCats(line, corrected);\\n        printf(\"Original sentence: %s\\\\n\", original);\\n        printf(\"Auto-Corrected sentence: %s\\\\n\", corrected);\\n    }\\n    return 0;\\n}",
+      "C++": "#include <bits/stdc++.h>\\nusing namespace std;\\n\\nstring trim(const string &s){\\n    size_t start = s.find_first_not_of(\" \\t\\n\\r\\f\\v\");\\n    if(start==string::npos) return \\\"\\\";\\n    size_t end = s.find_last_not_of(\" \\t\\n\\r\\f\\v\");\\n    return s.substr(start, end-start+1);\\n}\\n\\nint main(){\\n    ios::sync_with_stdio(false);\\n    cin.tie(nullptr);\\n    int T; if(!(cin>>T)) return 0; string dummy; getline(cin,dummy);\\n    for(int i=0;i<T;i++) {\\n        string line; getline(cin,line);\\n        string original = trim(line);\\n        string corrected = original;\\n        size_t pos=0;\\n        while((pos=corrected.find(\\\"cats\\\",pos))!=string::npos){\\n            corrected.replace(pos,4,\\\"cars\\\");\\n            pos+=4;\\n        }\\n        cout << \\\"Original sentence: \\\" << original << '\\\\n';\\n        cout << \\\"Auto-Corrected sentence: \\\" << corrected << '\\\\n';\\n    }\\n    return 0;\\n}",
+      "Java": "import java.io.*;\\n\\npublic class Main {\\n    public static void main(String[] args) throws IOException {\\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\\n        int T = Integer.parseInt(br.readLine().trim());\\n        for(int t=0; t<T; t++) {\\n            String line = br.readLine();\\n            if(line == null) line = \\\"\\\";\\n            String original = line.strip();\\n            String corrected = original.replace(\\\"cats\\\",\\\"cars\\\");\\n            System.out.println(\\\"Original sentence: \\\" + original);\\n            System.out.println(\\\"Auto-Corrected sentence: \\\" + corrected);\\n        }\\n    }\\n}",
+      "Python3": "import sys\\n\\ndef main():\\n    data = sys.stdin.read().splitlines()\\n    if not data:\\n        return\\n    T = int(data[0].strip())\\n    out = []\\n    for i in range(1, T+1):\\n        line = data[i] if i < len(data) else ''\\n        original = line.strip()\\n        corrected = original.replace('cats', 'cars')\\n        out.append(f'Original sentence: {original}')\\n        out.append(f'Auto-Corrected sentence: {corrected}')\\n    sys.stdout.write('\\n'.join(out))\\n\\nif __name__ == '__main__':\\n    main()",
+      "JavaScript": "const fs = require('fs');\\nconst input = fs.readFileSync(0, 'utf-8').split('\\n');\\nlet idx = 0;\\nconst T = parseInt(input[idx].trim(), 10);\\nidx++;\\nlet output = [];\\nfor(let t=0; t<T; t++) {\\n    let line = input[idx] !== undefined ? input[idx] : '';\\n    idx++;\\n    let original = line.trim();\\n    let corrected = original.split('cats').join('cars');\\n    output.push(`Original sentence: ${original}`);\\n    output.push(`Auto-Corrected sentence: ${corrected}`);\\n}\\nconsole.log(output.join('\\n'));"
+    }
+  }
+}

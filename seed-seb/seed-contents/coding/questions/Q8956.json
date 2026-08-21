@@ -1,0 +1,141 @@
+{
+  "questionId": "Q8956",
+  "title": "Array Equality",
+  "slug": "array-equality",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Greedy | Sorting",
+    "difficulty": "Easy",
+    "isPremium": true,
+    "tags": [
+      "Frequency Count",
+      "Greedy",
+      "Rearrangement"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Constructive Algorithms"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef has an array of NNN integers. Chef can rearrange this array in any manner.\n\nChef doesn’t like the array if any two **adjacent** elements are equal. Determine whether there exists a rearrangement of the array that Chef likes.\n\n\nInput Format\n\nThe first line will contain TTT - the number of test cases. Then the test cases follow.\nFirst line of each test case contains a single integer NNN - size of the array AAA.\nSecond line of each test case contains NNN space-separated integers - denoting the elements of array AAA.\n\n\nOutput Format\nFor each test case, if Chef can like any rearrangement of the array print `YES`, otherwise print `NO`.\n\n\nYou may print each character of the string in uppercase or lowercase (for example, the strings `yes`, `yEs`, `YeS`, and `YES` will all be treated as identical).",
+    "constraints": [
+      "1 <= T <= 10^5",
+      "2 <= N <= 10^5",
+      "−10^9 <= Ai <= 10^9",
+      "Sum of N over all test cases does not exceed 2·10^5"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, the first line contains an integer N, the size of the array. The second line contains N space‑separated integers denoting the array elements.",
+    "outputFormat": "For each test case output a single line containing \"YES\" if the array can be rearranged so that no two adjacent elements are equal, otherwise output \"NO\".",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n5\n1 1 1 1 1\n3\n3 3 4",
+        "output": "No\nYes",
+        "explanation": "Test case 1: All elements are identical, so any arrangement will have adjacent equal elements → NO.\\nTest case 2: A possible arrangement is [3,4,3]; no two adjacent are equal → YES."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n4\n1 2 1 2",
+        "output": "Yes",
+        "explanation": "The frequencies are 1→2, 2→2. Max frequency = 2 and ceil(4/2)=2, condition holds, so a valid rearrangement exists (e.g., 1 2 1 2)."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n6\n5 5 5 5 5 6",
+        "output": "No",
+        "explanation": "Number 5 appears 5 times, N=6, ceil(6/2)=3. Since 5 > 3, it is impossible to avoid adjacent 5s."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n2\n7 7",
+        "expectedOutput": "No",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n15\n1 1 1 1 1 1 1 1 2 3 4 5 6 7 8",
+        "expectedOutput": "Yes",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n3\n9 9 10",
+        "expectedOutput": "Yes",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n7\n4 4 4 4 1 2 3",
+        "expectedOutput": "Yes",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n8\n2 2 2 2 2 3 4 5",
+        "expectedOutput": "No",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each test case count how many times each distinct value appears. Let maxFreq be the largest of these counts. A rearrangement without equal adjacent elements exists iff maxFreq <= ceil(N/2). This condition is both necessary (otherwise the most frequent element would have to occupy two adjacent positions) and sufficient (we can place the most frequent element at positions 0,2,4,… and fill the gaps with the remaining numbers). The algorithm therefore:\n1. Read N and the array.\n2. Count frequencies using a hash map.\n3. Determine maxFreq.\n4. If maxFreq <= (N+1)/2 output YES, else NO.",
+    "timeComplexity": "O(N) per test case for counting frequencies; overall O(total N) across all test cases.",
+    "spaceComplexity": "O(K) where K is the number of distinct values in the current test case (at most N).",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nint cmp(const void *a, const void *b) {\n    long long x = *(const long long *)a;\n    long long y = *(const long long *)b;\n    return (x > y) - (x < y);\n}\n\nint main() {\n    int T; if (scanf(\"%d\", &T)!=1) return 0;\n    while (T--) {\n        int N; scanf(\"%d\", &N);\n        long long *arr = (long long*)malloc(N * sizeof(long long));\n        for (int i = 0; i < N; ++i) scanf(\"%lld\", &arr[i]);\n        qsort(arr, N, sizeof(long long), cmp);\n        int maxFreq = 1, cur = 1;\n        for (int i = 1; i < N; ++i) {\n            if (arr[i] == arr[i-1]) cur++; else cur = 1;\n            if (cur > maxFreq) maxFreq = cur;\n        }\n        free(arr);\n        if (maxFreq <= (N + 1) / 2) printf(\"YES\\n\");\n        else printf(\"NO\\n\");\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N; cin>>N;\n        unordered_map<long long,int> freq;\n        freq.reserve(N*2);\n        long long x; int maxFreq=0;\n        for(int i=0;i<N;++i){\n            cin>>x;\n            int f = ++freq[x];\n            if(f>maxFreq) maxFreq=f;\n        }\n        if(maxFreq <= (N+1)/2) cout<<\"YES\\n\";\n        else cout<<\"NO\\n\";\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner(System.in);\n        int T = fs.nextInt();\n        StringBuilder sb = new StringBuilder();\n        while (T-- > 0) {\n            int N = fs.nextInt();\n            HashMap<Long,Integer> map = new HashMap<>(N*2);\n            int maxFreq = 0;\n            for (int i = 0; i < N; i++) {\n                long v = fs.nextLong();\n                int f = map.getOrDefault(v, 0) + 1;\n                map.put(v, f);\n                if (f > maxFreq) maxFreq = f;\n            }\n            if (maxFreq <= (N + 1) / 2) sb.append(\"YES\\n\");\n            else sb.append(\"NO\\n\");\n        }\n        System.out.print(sb.toString());\n    }\n    // Fast scanner for large input\n    static class FastScanner {\n        private final InputStream in;\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        FastScanner(InputStream in) { this.in = in; }\n        private int readByte() throws IOException {\n            if (ptr >= len) {\n                len = in.read(buffer);\n                ptr = 0;\n                if (len <= 0) return -1;\n            }\n            return buffer[ptr++];\n        }\n        long nextLong() throws IOException {\n            int c; do { c = readByte(); } while (c <= ' ');\n            boolean neg = false;\n            if (c == '-') { neg = true; c = readByte(); }\n            long val = 0;\n            while (c > ' ') {\n                val = val * 10 + (c - '0');\n                c = readByte();\n            }\n            return neg ? -val : val;\n        }\n        int nextInt() throws IOException { return (int) nextLong(); }\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys\nfrom collections import Counter\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out = []\n    for _ in range(T):\n        N = int(next(it))\n        arr = [int(next(it)) for _ in range(N)]\n        freq = Counter(arr)\n        max_freq = max(freq.values())\n        out.append(\"YES\" if max_freq <= (N + 1)//2 else \"NO\")\n    sys.stdout.write(\"\\n\".join(out))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet out = [];\nfor (let t = 0; t < T; ++t) {\n  const N = Number(input[idx++]);\n  const freq = new Map();\n  let maxFreq = 0;\n  for (let i = 0; i < N; ++i) {\n    const val = Number(input[idx++]);\n    const f = (freq.get(val) || 0) + 1;\n    freq.set(val, f);\n    if (f > maxFreq) maxFreq = f;\n  }\n  out.push(maxFreq <= Math.floor((N + 1) / 2) ? 'YES' : 'NO');\n}\nconsole.log(out.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

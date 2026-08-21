@@ -1,0 +1,127 @@
+{
+  "questionId": "Q2680",
+  "title": "Count K-Primes",
+  "slug": "count-k-primes",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Prime Numbers",
+      "Math",
+      "Sieve of Eratosthenes"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Mathematics"
+    ]
+  },
+  "content": {
+    "problemStatement": "Alice and Bob are studying for their class test together. The topic of the test is **Prime Numbers**. The preparation is getting too boring for their liking. To make it interesting, they turn it into a game. The winner will get an ice-cream treat from the other.\n\nThe game is called **Count K-Primes**. A number is a KKK-prime if it has exactly KKK **distinct** prime factors. The game is quite simple. Alice will give three numbers AAA, BBB &amp; KKK to Bob. Bob needs to tell Alice the number of KKK-prime numbers between AAA &amp; BBB (both inclusive). If Bob gives the correct answer, he gets a point. If not, Alice gets a point. They play this game TTT times.\n\nBob hasn't prepared so well. But he really wants to win the game. He wants you to tell him the correct answer.",
+    "constraints": [
+      "1 <= T <= 10000",
+      "2 <= A <= B <= 100000",
+      "1 <= K <= 5"
+    ],
+    "inputFormat": "First line contains T, the number of test cases. Each test case contains three integers A, B, and K.",
+    "outputFormat": "For each test case, print the number of K-primes between A and B (inclusive).",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4\n2 5 1\n4 10 2\n14 15 2\n2 20 3",
+        "output": "4\n2\n2\n0",
+        "explanation": "Explanation: The range includes 4 integers {2,3,4,5}. We need to find the number of integers in this range having only 1 distinct prime factor."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n10 20 2",
+        "output": "2",
+        "explanation": "Explanation: The only K-primes in the given range are 14 and 15. This is because 14=2\u00d77 and 15=3\u00d75. Thus both these integers have 2 distinct prime factors."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n2 10 1",
+        "output": "4",
+        "explanation": "Explanation: The K-primes in the given range are 2, 3, 5, and 7. All these integers have 1 distinct prime factor."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n2 2 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n99999 100000 5",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n4 4 2",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n6 6 2",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "5\n2 10 1\n4 10 2\n14 15 2\n2 20 3\n10 20 2",
+        "expectedOutput": "4\n2\n2\n0\n2",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use the Sieve of Eratosthenes algorithm to generate all prime numbers up to 100000. Then, for each test case, we can iterate over the range [A, B] and count the number of K-primes by checking the number of distinct prime factors for each number.",
+    "timeComplexity": "O(T * (B - A + 1) * sqrt(B)) per test case, O(T * (B - A + 1) * sqrt(B)) total. Precomputation is done once for the Sieve of Eratosthenes.",
+    "spaceComplexity": "O(100000) for the Sieve of Eratosthenes, O(1) for the rest of the algorithm.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdbool.h>\n#define MAX 100000\nbool isPrime[MAX + 1];\nint primeFactors[MAX + 1];\nint countKPrimes(int A, int B, int K) {\n    int count = 0;\n    for (int i = A; i <= B; i++) {\n        int factors = 0;\n        int num = i;\n        for (int j = 2; j * j <= num; j++) {\n            if (isPrime[j] && num % j == 0) {\n                factors++;\n                while (num % j == 0) num /= j;\n            }\n        }\n        if (num > 1) factors++;\n        if (factors == K) count++;\n    }\n    return count;\n}\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int A, B, K;\n        scanf(\"%d %d %d\", &A, &B, &K);\n        for (int i = 0; i <= MAX; i++) isPrime[i] = true;\n        isPrime[0] = isPrime[1] = false;\n        for (int i = 2; i * i <= MAX; i++) {\n            if (isPrime[i]) {\n                for (int j = i * i; j <= MAX; j += i) isPrime[j] = false;\n            }\n        }\n        printf(\"%d\\n\", countKPrimes(A, B, K));\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\nusing namespace std;\nconst int MAX = 100000;\nbool isPrime[MAX + 1];\nint countKPrimes(int A, int B, int K) {\n    int count = 0;\n    for (int i = A; i <= B; i++) {\n        int factors = 0;\n        int num = i;\n        for (int j = 2; j * j <= num; j++) {\n            if (isPrime[j] && num % j == 0) {\n                factors++;\n                while (num % j == 0) num /= j;\n            }\n        }\n        if (num > 1) factors++;\n        if (factors == K) count++;\n    }\n    return count;\n}\nint main() {\n    int T;\n    cin >> T;\n    ios::sync_with_stdio(false);\n    cin.tie(NULL);\n    while (T--) {\n        int A, B, K;\n        cin >> A >> B >> K;\n        for (int i = 0; i <= MAX; i++) isPrime[i] = true;\n        isPrime[0] = isPrime[1] = false;\n        for (int i = 2; i * i <= MAX; i++) {\n            if (isPrime[i]) {\n                for (int j = i * i; j <= MAX; j += i) isPrime[j] = false;\n            }\n        }\n        cout << countKPrimes(A, B, K) << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    static final int MAX = 100000;\n    static boolean[] isPrime = new boolean[MAX + 1];\n    public static int countKPrimes(int A, int B, int K) {\n        int count = 0;\n        for (int i = A; i <= B; i++) {\n            int factors = 0;\n            int num = i;\n            for (int j = 2; j * j <= num; j++) {\n                if (isPrime[j] && num % j == 0) {\n                    factors++;\n                    while (num % j == 0) num /= j;\n                }\n            }\n            if (num > 1) factors++;\n            if (factors == K) count++;\n        }\n        return count;\n    }\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int T = scanner.nextInt();\n        while (T-- > 0) {\n            int A = scanner.nextInt();\n            int B = scanner.nextInt();\n            int K = scanner.nextInt();\n            for (int i = 0; i <= MAX; i++) isPrime[i] = true;\n            isPrime[0] = isPrime[1] = false;\n            for (int i = 2; i * i <= MAX; i++) {\n                if (isPrime[i]) {\n                    for (int j = i * i; j <= MAX; j += i) isPrime[j] = false;\n                }\n            }\n            System.out.println(countKPrimes(A, B, K));\n        }\n    }\n}",
+      "Python3": "def count_k_primes(A, B, K):\n    is_prime = [True] * (B + 1)\n    is_prime[0] = is_prime[1] = False\n    for i in range(2, int(B ** 0.5) + 1):\n        if is_prime[i]:\n            for j in range(i * i, B + 1, i):\n                is_prime[j] = False\n    count = 0\n    for i in range(A, B + 1):\n        factors = 0\n        num = i\n        for j in range(2, int(i ** 0.5) + 1):\n            if is_prime[j] and num % j == 0:\n                factors += 1\n                while num % j == 0:\n                    num //= j\n        if num > 1:\n            factors += 1\n        if factors == K:\n            count += 1\n    return count\n\nt = int(input())\nfor _ in range(t):\n    A, B, K = map(int, input().split())\n    print(count_k_primes(A, B, K))",
+      "JavaScript": "const lines = require('fs').readFileSync(0, 'utf-8').trim().split('\\n');\nlet i = 0;\nfunction countKPrimes(A, B, K) {\n    let isPrime = new Array(B + 1).fill(true);\n    isPrime[0] = isPrime[1] = false;\n    for (let i = 2; i * i <= B; i++) {\n        if (isPrime[i]) {\n            for (let j = i * i; j <= B; j += i) isPrime[j] = false;\n        }\n    }\n    let count = 0;\n    for (let i = A; i <= B; i++) {\n        let factors = 0;\n        let num = i;\n        for (let j = 2; j * j <= num; j++) {\n            if (isPrime[j] && num % j == 0) {\n                factors++;\n                while (num % j == 0) num /= j;\n            }\n        }\n        if (num > 1) factors++;\n        if (factors == K) count++;\n    }\n    return count;\n}\nlet T = parseInt(lines[i++]);\nwhile (T-- > 0) {\n    let [A, B, K] = lines[i++].split(' ').map(Number);\n    console.log(countKPrimes(A, B, K));\n}"
+    }
+  }
+}

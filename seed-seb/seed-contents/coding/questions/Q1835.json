@@ -1,0 +1,130 @@
+{
+  "questionId": "Q1835",
+  "title": "Subarray sum divisible by K",
+  "slug": "subarray-sum-divisible-by-k",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Arrays",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Counting",
+      "Modulo",
+      "Hash Map",
+      "Prefix Sum",
+      "Arrays"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Prefix Sums & Difference Arrays"
+    ]
+  },
+  "content": {
+    "problemStatement": "You are given an array of NNN integers and an integer KKK.\n\nYour task is to determine the number of subarrays whose sum is divisible by KKK.\n\nFormally, count the number of pairs (L,R)(L, R)(L,R) such that\n\n(AL+AL+1+\u22ef+AR)\u200amod\u200aK=0(A_L + A_{L+1} + \\dots + A_R) \\bmod K = 0(AL\u200b+AL+1\u200b+\u22ef+AR\u200b)modK=0for 1\u2264L\u2264R\u2264N1 \\le L \\le R \\le N1\u2264L\u2264R\u2264N.\n\n\nInput Format\n\nThe first line contains two space-separated integers NNN and KKK.\nThe second line contains NNN space-separated integers A1,A2,\u2026,ANA_1, A_2, \\dots, A_NA1\u200b,A2\u200b,\u2026,AN\u200b.\n\n\nOutput Format\nPrint a single integer, the number of subarrays whose sum is divisible by KKK.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 100000",
+      "1 <= K <= 100000",
+      "-10000 <= Ai <= 10000"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case consists of two lines: the first line contains two space\u2011separated integers N and K. The second line contains N space\u2011separated integers A1, A2, \u2026, AN.",
+    "outputFormat": "For each test case, output a single line containing the number of subarrays whose sum is divisible by K.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n6 5\n4 5 0 -2 -3 1",
+        "output": "7",
+        "explanation": "The 7 subarrays with sum divisible by 5 are: [4], [5], [0], [4,5,0], [5,0], [0,-2,-3], [-2,-3,1]."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n5 3\n1 2 3 4 5",
+        "output": "2",
+        "explanation": "The subarrays are [1,2,3] and [4,5]; each sums to a multiple of 3."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n4 2\n1 3 5 7",
+        "output": "2",
+        "explanation": "The subarrays are [1,3,5] and [3,5,7]; both sums are even."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1\n0",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n15 100000\n0 0 0 0 0 0 0 0 0 0 0 0 0 0 0",
+        "expectedOutput": "120",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case with negatives",
+        "input": "1\n3 5\n-5 5 -10",
+        "expectedOutput": "6",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n5 4\n1 2 3 4 5",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n6 7\n6 1 2 3 4 5",
+        "expectedOutput": "4",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each test case we compute prefix sums modulo K. If two prefix sums have the same remainder, the subarray between them has sum divisible by K. We keep a frequency array (or hashmap) of remainders. Initialise freq[0] = 1 for the empty prefix. While scanning the array, update the running prefix modulo K (adjusting negative values), add freq[prefix] to the answer (all previous positions with the same remainder), then increment freq[prefix]. This runs in O(N) time per test case and O(K) extra space.",
+    "timeComplexity": "O(N) per test case, overall O(T\u00b7N).",
+    "spaceComplexity": "O(K) for the frequency array (or O(min(K,N)) if a hashmap is used).",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        int N, K;\n        scanf(\"%d %d\", &N, &K);\n        long long *freq = (long long *)calloc(K, sizeof(long long));\n        if (!freq) return 0;\n        freq[0] = 1; // empty prefix\n        long long prefix = 0, ans = 0;\n        for (int i = 0; i < N; ++i) {\n            long long x;\n            scanf(\"%lld\", &x);\n            prefix = (prefix + x) % K;\n            if (prefix < 0) prefix += K;\n            ans += freq[prefix];\n            ++freq[prefix];\n        }\n        printf(\"%lld\\n\", ans);\n        free(freq);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n\n    int T;\n    if (!(cin >> T)) return 0;\n    while (T--) {\n        int N, K;\n        cin >> N >> K;\n        vector<long long> freq(K, 0);\n        freq[0] = 1; // empty prefix\n        long long prefix = 0, ans = 0;\n        for (int i = 0; i < N; ++i) {\n            long long x;\n            cin >> x;\n            prefix = (prefix + x) % K;\n            if (prefix < 0) prefix += K;\n            ans += freq[prefix];\n            ++freq[prefix];\n        }\n        cout << ans << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st = new StringTokenizer(br.readLine());\n        int T = Integer.parseInt(st.nextToken());\n        StringBuilder sb = new StringBuilder();\n        while (T-- > 0) {\n            st = new StringTokenizer(br.readLine());\n            int N = Integer.parseInt(st.nextToken());\n            int K = Integer.parseInt(st.nextToken());\n            long[] freq = new long[K];\n            freq[0] = 1;\n            long prefix = 0, ans = 0;\n            st = new StringTokenizer(br.readLine());\n            for (int i = 0; i < N; i++) {\n                long x = Long.parseLong(st.nextToken());\n                prefix = (prefix + x) % K;\n                if (prefix < 0) prefix += K;\n                ans += freq[(int) prefix];\n                freq[(int) prefix]++;\n            }\n            sb.append(ans).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef main():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out = []\n    for _ in range(T):\n        N = int(next(it))\n        K = int(next(it))\n        freq = [0] * K\n        freq[0] = 1\n        prefix = 0\n        ans = 0\n        for _ in range(N):\n            x = int(next(it))\n            prefix = (prefix + x) % K\n            if prefix < 0:\n                prefix += K\n            ans += freq[prefix]\n            freq[prefix] += 1\n        out.append(str(ans))\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    main()",
+      "JavaScript": "const fs = require('fs');\nconst data = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nif (data.length === 0) process.exit(0);\nconst T = Number(data[idx++]);\nlet results = [];\nfor (let t = 0; t < T; ++t) {\n  const N = Number(data[idx++]);\n  const K = Number(data[idx++]);\n  const freq = new Array(K).fill(0);\n  freq[0] = 1;\n  let prefix = 0;\n  let ans = 0;\n  for (let i = 0; i < N; ++i) {\n    const x = Number(data[idx++]);\n    prefix = (prefix + x) % K;\n    if (prefix < 0) prefix += K;\n    ans += freq[prefix];\n    freq[prefix]++;\n  }\n  results.push(String(ans));\n}\nconsole.log(results.join('\\n'));\n"
+    }
+  }
+}

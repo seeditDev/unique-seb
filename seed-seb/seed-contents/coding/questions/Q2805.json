@@ -1,0 +1,127 @@
+{
+  "questionId": "Q2805",
+  "title": "Chef and Numbers",
+  "slug": "chef-and-numbers",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Transform to LIS problem",
+      "Dynamic Programming",
+      "Longest Increasing Subsequence"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Greedy Algorithms"
+    ]
+  },
+  "content": {
+    "problemStatement": "Read problems statements in Russian also.Chef plays with the sequence of **N** numbers. During a single move Chef is able to choose a non-decreasing subsequence of the sequence and to remove it from the sequence. Help him to remove all the numbers in the minimal number of moves.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 100000",
+      "1 <= Ai <= 100000"
+    ],
+    "inputFormat": "First line contains T, the number of test cases. Each test case contains two lines. The first line contains an integer N, the length of the sequence. The second line contains N space-separated integers A1, A2, \u2026, AN.",
+    "outputFormat": "For each test case, print the minimal number of moves required to delete the whole sequence.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\\n3\\n1 2 3",
+        "output": "1",
+        "explanation": "The whole sequence is already non-decreasing, so it can be removed in a single move."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\\n4\\n4 1 2 3",
+        "output": "2",
+        "explanation": "One optimal way: first remove subsequence 1 2 3, then remove the remaining element 4."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\\n5\\n5 4 3 2 1",
+        "output": "5",
+        "explanation": "The sequence is strictly decreasing, so each element must be removed in a separate move."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\\n1\\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\\n100000\\n100000 99999 99998 99997 99996",
+        "expectedOutput": "5",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\\n5\\n1 1 1 1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\\n5\\n5 4 3 2 1",
+        "expectedOutput": "5",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "2\\n3\\n1 2 3\\n4\\n4 1 2 3",
+        "expectedOutput": "1\\n2",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be transformed into finding the length of the longest increasing subsequence (LIS) in the given sequence. To do this, we first transform the sequence by negating each element. Then, we use dynamic programming to find the length of the LIS in the transformed sequence, which corresponds to the minimal number of moves required to delete the whole sequence in the original problem.",
+    "timeComplexity": "O(T * N log N) per test case, O(T * N log N) total.",
+    "spaceComplexity": "O(N) \u2014 the dominant structure is the array used to store the tails of the LIS.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nint cmp_int(const void *a, const void *b) {\n    int x = *(const int *)a;\n    int y = *(const int *)b;\n    return (x > y) - (x < y);\n}\n\nint lower_bound(int *arr, int size, int val) {\n    int l = 0, r = size; // [l, r)\n    while (l < r) {\n        int m = l + (r - l) / 2;\n        if (arr[m] >= val) r = m; else l = m + 1;\n    }\n    return l;\n}\n\nint main() {\n    int T; if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        int N; scanf(\"%d\", &N);\n        int *tails = (int *)malloc(N * sizeof(int));\n        int sz = 0;\n        for (int i = 0; i < N; ++i) {\n            int a; scanf(\"%d\", &a);\n            int x = -a; // transform\n            int pos = lower_bound(tails, sz, x);\n            if (pos == sz) {\n                tails[sz++] = x;\n            } else {\n                tails[pos] = x;\n            }\n        }\n        printf(\"%d\\n\", sz);\n        free(tails);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(NULL);\n    int T; if(!(cin>>T)) return 0;\n    while(T--) {\n        int N; cin>>N;\n        vector<int> tails; tails.reserve(N);\n        for(int i=0;i<N;++i){\n            int a; cin>>a;\n            int x = -a; // transform to LIS problem\n            auto it = lower_bound(tails.begin(), tails.end(), x);\n            if(it==tails.end()) tails.push_back(x);\n            else *it = x;\n        }\n        cout << tails.size() << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner(System.in);\n        int T = fs.nextInt();\n        StringBuilder sb = new StringBuilder();\n        while (T-- > 0) {\n            int N = fs.nextInt();\n            int[] tails = new int[N];\n            int sz = 0;\n            for (int i = 0; i < N; i++) {\n                int a = fs.nextInt();\n                int x = -a; // transform\n                int pos = Arrays.binarySearch(tails, 0, sz, x);\n                if (pos < 0) pos = -pos - 1; // insertion point\n                tails[pos] = x;\n                if (pos == sz) sz++;\n            }\n            sb.append(sz).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n\n    // Fast scanner for large input\n    static class FastScanner {\n        private final InputStream in;\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        FastScanner(InputStream in) { this.in = in; }\n        private int readByte() throws IOException {\n            if (ptr >= len) {\n                len = in.read(buffer);\n                ptr = 0;\n                if (len <= 0) return -1;\n            }\n            return buffer[ptr++];\n        }\n        int nextInt() throws IOException {\n            int c, sign = 1, val = 0;\n            do { c = readByte(); } while (c <= ' ' && c != -1);\n            if (c == '-') { sign = -1; c = readByte(); }\n            while (c > ' ') {\n                val = val * 10 + (c - '0');\n                c = readByte();\n            }\n            return val * sign;\n        }\n    }\n}",
+      "Python3": "import sys\n\ndef solve():\n    data = list(map(int, sys.stdin.read().strip().split()))\n    if not data:\n        return\n    it = iter(data)\n    T = next(it)\n    out_lines = []\n    for _ in range(T):\n        N = next(it)\n        tails = []\n        for _ in range(N):\n            a = next(it)\n            x = -a  # transform\n            # binary search lower_bound\n            lo, hi = 0, len(tails)\n            while lo < hi:\n                mid = (lo + hi) // 2\n                if tails[mid] >= x:\n                    hi = mid\n                else:\n                    lo = mid + 1\n            if lo == len(tails):\n                tails.append(x)\n            else:\n                tails[lo] = x\n        out_lines.append(str(len(tails)))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/).map(Number);\nlet idx = 0;\nconst T = input[idx++];\nlet outputs = [];\nfor (let t = 0; t < T; ++t) {\n  const N = input[idx++];\n  const tails = [];\n  for (let i = 0; i < N; ++i) {\n    const a = input[idx++];\n    const x = -a; // transform\n    // lower_bound on tails (sorted increasingly)\n    let l = 0, r = tails.length;\n    while (l < r) {\n      const m = (l + r) >> 1;\n      if (tails[m] >= x) r = m; else l = m + 1;\n    }\n    if (l === tails.length) tails.push(x);\n    else tails[l] = x;\n  }\n  outputs.push(String(tails.length));\n}\nconsole.log(outputs.join('\\n'));"
+    }
+  }
+}

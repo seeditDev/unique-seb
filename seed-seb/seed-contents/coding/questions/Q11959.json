@@ -1,0 +1,124 @@
+{
+  "questionId": "Q11959",
+  "title": "Permutation Sequence",
+  "slug": "permutation-sequence",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Permutations",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Math",
+      "Permutations"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Given **N** and **K**, where N is the sequence of\n    numbers from **1 to N([1,2,3..... N])** find the** Kth permutation sequence**.",
+    "constraints": [
+      "1 <= N <= 9",
+      "1 <= K <= N!"
+    ],
+    "inputFormat": "Two integers N and K",
+    "outputFormat": "The Kth permutation sequence as a string",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "N = 3, K = 3",
+        "output": "“213”",
+        "explanation": "The sequence has 3! permutations as illustrated in the figure above. K = 3 corresponds to the third sequence.\n\n**Example 2:**"
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "N = 1, K = 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "N = 9, K = 362880",
+        "expectedOutput": "987654321",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform case",
+        "input": "N = 3, K = 6",
+        "expectedOutput": "321",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "N = 4, K = 9",
+        "expectedOutput": "2314",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "mixed case",
+        "input": "N = 5, K = 20",
+        "expectedOutput": "31245",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Generate all permutations and sort them",
+    "timeComplexity": "O(N! * log(N!))",
+    "spaceComplexity": "O(N!)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nvoid swap(char *a, char *b) {\n    char temp = *a;\n    *a = *b;\n    *b = temp;\n}\n\nvoid permute(char *str, int left, int right, char ***perms, int *count) {\n    if (left == right) {\n        (*count)++;\n        (*perms) = realloc((*perms), (*count) * sizeof(char *));\n        (*perms)[(*count) - 1] = malloc((right + 1) * sizeof(char));\n        strcpy((*perms)[(*count) - 1], str);\n    } else {\n        for (int i = left; i <= right; i++) {\n            swap((str + left), (str + i));\n            permute(str, left + 1, right, perms, count);\n            swap((str + left), (str + i));\n        }\n    }\n}\n\nchar *getPermutation(int n, int k) {\n    char *str = malloc((n + 1) * sizeof(char));\n    for (int i = 0; i < n; i++) {\n        str[i] = '1' + i;\n    }\n    str[n] = '\\0';\n    char ***perms = NULL;\n    int count = 0;\n    permute(str, 0, n - 1, &perms, &count);\n    for (int i = 0; i < count - 1; i++) {\n        for (int j = i + 1; j < count; j++) {\n            if (strcmp(perms[i], perms[j]) > 0) {\n                char *temp = perms[i];\n                perms[i] = perms[j];\n                perms[j] = temp;\n            }\n        }\n    }\n    char *result = perms[k - 1];\n    for (int i = 0; i < count; i++) {\n        free(perms[i]);\n    }\n    free(perms);\n    free(str);\n    return result;\n}\n\nint main() {\n    int n = 3, k = 3;\n    char *ans = getPermutation(n, k);\n    printf(\"The Kth permutation sequence is %s\\n\", ans);\n    free(ans);\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nclass Solution {\npublic:\n    // Function to generate all possible permutations of a string\n    void permutationHelper(string &s, int index, vector<string> &res) {\n        if (index == s.size()) {\n            res.push_back(s);\n            return;\n        }\n        for (int i = index; i < s.size(); i++) {\n            swap(s[i], s[index]);\n            permutationHelper(s, index + 1, res);\n            swap(s[i], s[index]);\n        }\n    }\n\n    string getPermutation(int n, int k) {\n        string s;\n        vector<string> res;\n        \n        // Create string with characters '1' to 'n'\n        for (int i = 1; i <= n; i++) {\n            s.push_back(i + '0');\n        }\n\n        permutationHelper(s, 0, res);  // Generate all permutations\n        sort(res.begin(), res.end());  // Sort the generated permutations\n        \n        // Make k 0-based indexed to point to kth sequence\n        auto it = res.begin() + (k - 1);\n        return *it;\n    }\n};\n\nint main() {\n    int n = 3, k = 3;\n    Solution obj;\n    string ans = obj.getPermutation(n, k);\n    cout << \"The Kth permutation sequence is \" << ans << endl;\n    return 0;\n}",
+      "Java": "import java.util.*;\n\nclass Solution {\n    // Function to generate all possible permutations of a string\n    private void permutationHelper(StringBuilder s, int index, List<String> res) {\n        if (index == s.length()) {\n            res.add(s.toString());\n            return;\n        }\n        for (int i = index; i < s.length(); i++) {\n            // Swap and recurse\n            s.swap(i, index);\n            permutationHelper(s, index + 1, res);\n            s.swap(i, index);  // backtrack\n        }\n    }\n\n    public String getPermutation(int n, int k) {\n        StringBuilder s = new StringBuilder();\n        List<String> res = new ArrayList<>();\n        \n        // Create string with characters '1' to 'n'\n        for (int i = 1; i <= n; i++) {\n            s.append(i);\n        }\n\n        permutationHelper(s, 0, res);  // Generate all permutations\n        Collections.sort(res);  // Sort the generated permutations\n        \n        // Make k 0-based indexed to point to kth sequence\n        return res.get(k - 1);\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        int n = 3, k = 3;\n        Solution obj = new Solution();\n        String ans = obj.getPermutation(n, k);\n        System.out.println(\"The Kth permutation sequence is \" + ans);\n    }\n}",
+      "Python3": "class Solution:\n    # Function to generate all possible permutations of a string\n    def permutationHelper(self, s, index, res):\n        if index == len(s):\n            res.append(\"\".join(s))\n            return\n        for i in range(index, len(s)):\n            # Swap and recurse\n            s[i], s[index] = s[index], s[i]\n            self.permutationHelper(s, index + 1, res)\n            s[i], s[index] = s[index], s[i]  # backtrack\n\n    def getPermutation(self, n, k):\n        s = [str(i + 1) for i in range(n)]\n        res = []\n        \n        self.permutationHelper(s, 0, res)  # Generate all permutations\n        res.sort()  # Sort the generated permutations\n        \n        # Make k 0-based indexed to point to kth sequence\n        return res[k - 1]\n\n# Driver code\nn, k = 3, 3\nobj = Solution()\nans = obj.getPermutation(n, k)\nprint(f\"The Kth permutation sequence is {ans}\")",
+      "JavaScript": "class Solution {\n    // Function to generate all possible permutations of a string\n    permutationHelper(s, index, res) {\n        if (index === s.length) {\n            res.push(s.join(''));\n            return;\n        }\n        for (let i = index; i < s.length; i++) {\n            // Swap and recurse\n            [s[i], s[index]] = [s[index], s[i]];\n            this.permutationHelper(s, index + 1, res);\n            [s[i], s[index]] = [s[index], s[i]];  // backtrack\n        }\n    }\n\n    getPermutation(n, k) {\n        let s = Array.from({ length: n }, (_, i) => (i + 1).toString());\n        let res = [];\n        \n        this.permutationHelper(s, 0, res);  // Generate all permutations\n        res.sort();  // Sort the generated permutations\n        \n        // Make k 0-based indexed to point to kth sequence\n        return res[k - 1];\n    }\n}\n\n// Driver code\nlet n = 3, k = 3;\nlet obj = new Solution();\nlet ans = obj.getPermutation(n, k);\nconsole.log(`The Kth permutation sequence is ${ans}`);"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

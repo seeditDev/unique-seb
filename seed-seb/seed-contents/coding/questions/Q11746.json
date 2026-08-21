@@ -1,0 +1,132 @@
+{
+  "questionId": "Q11746",
+  "title": "Unique paths II",
+  "slug": "unique-paths-ii",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Memoization",
+      "Grid",
+      "Obstacles"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Given an m x n 2d array named matrix, where each cell is either 0 or 1. Return the number of unique ways to go from the top-left cell (matrix[0][0]) to the bottom-right cell (matrix[m-1][n-1]). A cell is blocked if its value is 1, and no path is possible through that cell.\n\n\n\nMovement is allowed in only two directions from a cell - right and bottom.",
+    "constraints": [
+      "1 <= m <= 100",
+      "1 <= n <= 100",
+      "matrix[i][j] is either 0 or 1"
+    ],
+    "inputFormat": "A 2D array of integers, where each cell is either 0 or 1, representing the presence or absence of an obstacle.",
+    "outputFormat": "The number of unique paths from the top-left cell to the bottom-right cell.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "matrix = [[0, 0, 0], [0, 1, 0], [0, 0, 0]]",
+        "output": "2",
+        "explanation": "The two possible paths to reach the bottom-right cell are:  \n1) down → down → right → right  \n2) right → right → down → down  \nThus, the number of paths is 2.\n\n**Example 2:**"
+      },
+      {
+        "id": "sample_2",
+        "input": "matrix = [[0, 0, 0], [0, 0, 1], [0, 1, 0]]",
+        "output": "0",
+        "explanation": "There is no valid path to reach the bottom-right cell due to blocked cells (represented by 1).\n        \n    \n\n\n**Disclaimer**: Here is the practice link to help you assess your knowledge better. It's highly recommend trying to solve it before looking at the solution."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "[[0]]",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "[[0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": "[[0, 0], [0, 0]]",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case/empty-like/negative if allowed",
+        "input": "[[1, 0], [0, 0]]",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": "[[0, 0, 0], [0, 1, 0], [0, 0, 0]]",
+        "expectedOutput": "2",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Use dynamic programming with memoization to store the number of unique paths to each cell.",
+    "timeComplexity": "O(m * n)",
+    "spaceComplexity": "O(m * n)",
+    "code": {
+      "C": "#include <stdio.h>\nint uniquePathsWithObstacles(int** obstacleGrid, int obstacleGridSize, int* obstacleGridColSize) {\n    int m = obstacleGridSize;\n    int n = obstacleGridColSize[0];\n    int** dp = (int**)malloc(m * sizeof(int*));\n    for (int i = 0; i < m; i++) {\n        dp[i] = (int*)malloc(n * sizeof(int));\n    }\n    for (int i = 0; i < m; i++) {\n        for (int j = 0; j < n; j++) {\n            if (obstacleGrid[i][j] == 1) {\n                dp[i][j] = 0;\n            } else if (i == 0 && j == 0) {\n                dp[i][j] = 1;\n            } else if (i == 0) {\n                dp[i][j] = dp[i][j - 1];\n            } else if (j == 0) {\n                dp[i][j] = dp[i - 1][j];\n            } else {\n                dp[i][j] = dp[i - 1][j] + dp[i][j - 1];\n            }\n        }\n    }\n    int result = dp[m - 1][n - 1];\n    for (int i = 0; i < m; i++) {\n        free(dp[i]);\n    }\n    free(dp);\n    return result;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nclass Solution {\nprivate:\n    int func(int i, int j, vector<vector<int>>& matrix, vector<vector<int>> &dp){\n        if (i < 0 || j < 0 || matrix[i][j] == 1) return 0;\n        else if(i == 0 && j == 0) return 1;\n        if(dp[i][j] != -1) return dp[i][j];\n        int up = func(i - 1, j, matrix, dp);\n        int left = func(i, j - 1, matrix, dp);\n        return dp[i][j] = up + left;\n    }\npublic:\n    int uniquePathsWithObstacles(vector<vector<int>>& obstacleGrid) {\n        int m = obstacleGrid.size();\n        int n = obstacleGrid[0].size();\n        vector<vector<int>> dp(m, vector<int>(n, -1));\n        return func(m-1, n-1, obstacleGrid, dp);\n    }\n};",
+      "Java": "class Solution {\n    private int func(int i, int j, int[][] matrix, int[][] dp) {\n        if (i < 0 || j < 0 || matrix[i][j] == 1) return 0;\n        else if (i == 0 && j == 0) return 1;\n        if (dp[i][j] != -1) return dp[i][j];\n        int up = func(i - 1, j, matrix, dp);\n        int left = func(i, j - 1, matrix, dp);\n        return dp[i][j] = up + left;\n    }\n    public int uniquePathsWithObstacles(int[][] obstacleGrid) {\n        int m = obstacleGrid.length;\n        int n = obstacleGrid[0].length;\n        int[][] dp = new int[m][n];\n        for (int[] row : dp) Arrays.fill(row, -1);\n        return func(m - 1, n - 1, obstacleGrid, dp);\n    }\n}",
+      "Python3": "class Solution:\n    def func(self, i, j, matrix, dp):\n        if i < 0 or j < 0 or matrix[i][j] == 1:\n            return 0\n        elif i == 0 and j == 0:\n            return 1\n        if dp[i][j] != -1:\n            return dp[i][j]\n        up = self.func(i - 1, j, matrix, dp)\n        left = self.func(i, j - 1, matrix, dp)\n        dp[i][j] = up + left\n        return dp[i][j]\n    def uniquePathsWithObstacles(self, obstacleGrid):\n        m, n = len(obstacleGrid), len(obstacleGrid[0])\n        dp = [[-1] * n for _ in range(m)]\n        return self.func(m - 1, n - 1, obstacleGrid, dp)",
+      "JavaScript": "class Solution {\n    func(i, j, matrix, dp) {\n        if (i < 0 || j < 0 || matrix[i][j] === 1) return 0;\n        else if (i === 0 && j === 0) return 1;\n        if (dp[i][j] !== -1) return dp[i][j];\n        let up = this.func(i - 1, j, matrix, dp);\n        let left = this.func(i, j - 1, matrix, dp);\n        return (dp[i][j] = up + left);\n    }\n    uniquePathsWithObstacles(obstacleGrid) {\n        let m = obstacleGrid.length;\n        let n = obstacleGrid[0].length;\n        let dp = Array.from({ length: m }, () => Array(n).fill(-1));\n        return this.func(m - 1, n - 1, obstacleGrid, dp);\n    }\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

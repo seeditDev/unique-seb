@@ -1,0 +1,131 @@
+{
+  "questionId": "Q11738",
+  "title": "Kth element of 2 sorted arrays",
+  "slug": "kthelementof2sortedarrays",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Sorting and Searching",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Binary Search",
+      "Two Pointers"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Given two sorted arrays a and b of size m and n respectively. Find the kth element of the final sorted array.",
+    "constraints": [
+      "1 <= m, n <= 10^5",
+      "1 <= k <= m + n",
+      "1 <= a[i], b[i] <= 10^9"
+    ],
+    "inputFormat": "Two sorted arrays a and b of size m and n respectively, and an integer k",
+    "outputFormat": "The kth element of the final sorted array",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "a = [2, 3, 6, 7, 9], b = [1, 4, 8, 10], k = 5",
+        "output": "6",
+        "explanation": "The final sorted array would be [1, 2, 3, 4, 6, 7, 8, 9, 10]. The 5th element of this array is 6.\n\n**Example 2:**"
+      },
+      {
+        "id": "sample_2",
+        "input": "a = [100, 112, 256, 349, 770], b = [72, 86, 113, 119, 265, 445, 892], k = 7",
+        "output": "256",
+        "explanation": "The final sorted array is [72, 86, 100, 112, 113, 119, 256, 265, 349, 445, 770, 892]. The 7th element of this array is 256.\n        \n    \n\n\n**Disclaimer**: Here is the practice link to help you assess your knowledge better. It's highly recommend trying to solve it before looking at the solution."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "a = [1], b = [2], k = 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "a = [1, 2, 3, 4, 5], b = [6, 7, 8, 9, 10], k = 10",
+        "expectedOutput": "10",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": "a = [1, 3, 5], b = [2, 4, 6], k = 4",
+        "expectedOutput": "4",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "a = [1, 2, 3], b = [], k = 2",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": "a = [1, 3, 5, 7], b = [2, 4, 6, 8, 9], k = 7",
+        "expectedOutput": "7",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Use binary search to find the kth element in the merged array",
+    "timeComplexity": "O(log(min(m, n)))",
+    "spaceComplexity": "O(1)",
+    "code": {
+      "C": "#include <stdio.h>\nint kthElement(int a[], int m, int b[], int n, int k) {\n    if (m > n) {\n        return kthElement(b, n, a, m, k);\n    }\n    int left = k;\n    int low = (k - n > 0) ? (k - n) : 0;\n    int high = (k < m) ? k : m;\n    while (low <= high) {\n        int mid1 = (low + high) / 2;\n        int mid2 = left - mid1;\n        int l1 = (mid1 > 0) ? a[mid1 - 1] : -1;\n        int l2 = (mid2 > 0) ? b[mid2 - 1] : -1;\n        int r1 = (mid1 < m) ? a[mid1] : 1000000001;\n        int r2 = (mid2 < n) ? b[mid2] : 1000000001;\n        if (l1 <= r2 && l2 <= r1) {\n            return (l1 > l2) ? l1 : l2;\n        } else if (l1 > r2) {\n            high = mid1 - 1;\n        } else {\n            low = mid1 + 1;\n        }\n    }\n    return -1;\n}\nint main() {\n    int a[] = {1, 3, 5, 7};\n    int b[] = {2, 4, 6, 8, 9};\n    int k = 7;\n    printf(\"The %d-th element of two sorted arrays is: %d\\n\", k, kthElement(a, 4, b, 5, k));\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nclass Solution {\npublic:\n    int kthElement(vector<int>& a, vector<int>& b, int k) {\n        int m = a.size();\n        int n = b.size();\n\n        // Ensure a is smaller array for optimization\n        if (m > n) {\n            // Swap a and b\n            return kthElement(b, a, k); \n        }\n        \n        // Length of the left half\n        int left = k; \n\n        // Apply binary search\n        int low = max(0, k - n), high = min(k, m);\n        while (low <= high) {\n            int mid1 = (low + high) >> 1;\n            int mid2 = left - mid1;\n\n            // Initialize l1, l2, r1, r2\n            int l1 = (mid1 > 0) ? a[mid1 - 1] : INT_MIN;\n            int l2 = (mid2 > 0) ? b[mid2 - 1] : INT_MIN;\n            int r1 = (mid1 < m) ? a[mid1] : INT_MAX;\n            int r2 = (mid2 < n) ? b[mid2] : INT_MAX;\n\n            // Check if we have found the answer\n            if (l1 <= r2 && l2 <= r1) {\n                return max(l1, l2);\n            } \n            else if (l1 > r2) {\n                // Eliminate the right half\n                high = mid1 - 1;\n            } \n            else {\n                // Eliminate the left half\n                low = mid1 + 1;\n            }\n        }\n        \n         // Dummy return statement \n        return -1;\n    }\n};\n\nint main() {\n    vector<int> a = {2, 3, 6, 7, 9};\n    vector<int> b = {1, 4, 8, 10};\n    int k = 5;\n    \n    //Create an instance of Solution class\n    Solution solution;\n    \n    //Print the answer\n    cout << \"The \" << k << \"-th element of two sorted arrays is: \"\n         << solution.kthElement(a, b, k) << '\\n';\n\n    return 0;\n}",
+      "Java": "import java.util.*;\n\nclass Solution {\n    public int kthElement(int[] a, int[] b, int k) {\n        int m = a.length;\n        int n = b.length;\n\n        // Ensure 'a' is the smaller array for optimization\n        if (m > n) {\n            return kthElement(b, a, k);\n        }\n\n        int left = k; // Number of elements in the left partition\n        int low = Math.max(0, k - n), high = Math.min(k, m);\n\n        while (low <= high) {\n            int mid1 = (low + high) >> 1;\n            int mid2 = left - mid1;\n\n            int l1 = (mid1 > 0) ? a[mid1 - 1] : Integer.MIN_VALUE;\n            int l2 = (mid2 > 0) ? b[mid2 - 1] : Integer.MIN_VALUE;\n            int r1 = (mid1 < m) ? a[mid1] : Integer.MAX_VALUE;\n            int r2 = (mid2 < n) ? b[mid2] : Integer.MAX_VALUE;\n\n            if (l1 <= r2 && l2 <= r1) {\n                return Math.max(l1, l2);\n            } else if (l1 > r2) {\n                high = mid1 - 1; // Move left\n            } else {\n                low = mid1 + 1; // Move right\n            }\n        }\n\n        return -1; // Should never reach here if inputs are valid\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        int[] a = {2, 3, 6, 7, 9};\n        int[] b = {1, 4, 8, 10};\n        int k = 5;\n\n        Solution solution = new Solution();\n        System.out.println(\"The \" + k + \"-th element of two sorted arrays is: \" +\n                solution.kthElement(a, b, k));\n    }\n}",
+      "Python3": "class Solution:\n    def kthElement(self, a, b, k):\n        m = len(a)\n        n = len(b)\n\n        # Ensure a is smaller array for optimization\n        if m > n:\n            # Swap a and b\n            return self.kthElement(b, a, k)\n        \n        # Length of the left half\n        left = k\n\n        # Apply binary search\n        low = max(0, k - n)\n        high = min(k, m)\n        while low <= high:\n            mid1 = (low + high) >> 1\n            mid2 = left - mid1\n\n            # Initialize l1, l2, r1, r2\n            l1 = a[mid1 - 1] if mid1 > 0 else float('-inf')\n            l2 = b[mid2 - 1] if mid2 > 0 else float('-inf')\n            r1 = a[mid1] if mid1 < m else float('inf')\n            r2 = b[mid2] if mid2 < n else float('inf')\n\n            # Check if we have found the answer\n            if l1 <= r2 and l2 <= r1:\n                return max(l1, l2)\n            elif l1 > r2:\n                # Eliminate the right half\n                high = mid1 - 1\n            else:\n                # Eliminate the left half\n                low = mid1 + 1\n        \n        # Dummy return statement\n        return -1\n\na = [2, 3, 6, 7, 9]\nb = [1, 4, 8, 10]\nk = 5\n\n# Create an instance of Solution class\nsolution = Solution()\n\n# Print the answer\nprint(f\"The {k}-th element of two sorted arrays is: {solution.kthElement(a, b, k)}\")",
+      "JavaScript": "class Solution {\n    kthElement(a, b, k) {\n        let m = a.length;\n        let n = b.length;\n\n        // Ensure a is smaller array for optimization\n        if (m > n) {\n            // Swap a and b\n            return this.kthElement(b, a, k);\n        }\n        \n        // Length of the left half\n        let left = k;\n\n        // Apply binary search\n        let low = Math.max(0, k - n);\n        let high = Math.min(k, m);\n        while (low <= high) {\n            let mid1 = (low + high) >> 1;\n            let mid2 = left - mid1;\n\n            // Initialize l1, l2, r1, r2\n            let l1 = (mid1 > 0) ? a[mid1 - 1] : Number.MIN_SAFE_INTEGER;\n            let l2 = (mid2 > 0) ? b[mid2 - 1] : Number.MIN_SAFE_INTEGER;\n            let r1 = (mid1 < m) ? a[mid1] : Number.MAX_SAFE_INTEGER;\n            let r2 = (mid2 < n) ? b[mid2] : Number.MAX_SAFE_INTEGER;\n\n            // Check if we have found the answer\n            if (l1 <= r2 && l2 <= r1) {\n                return Math.max(l1, l2);\n            } else if (l1 > r2) {\n                // Eliminate the right half\n                high = mid1 - 1;\n            } else {\n                // Eliminate the left half\n                low = mid1 + 1;\n            }\n        }\n        \n        // Dummy return statement \n        return -1;\n    }\n}\n\nlet a = [2, 3, 6, 7, 9];\nlet b = [1, 4, 8, 10];\nlet k = 5\n\n//Create an instance of Solution class\nlet sol = new Solution();\n\n// Print the answer\nconsole.log(`The ${k}-th element of two sorted arrays is: ${sol.kthElement(a, b, k)}`);"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

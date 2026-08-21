@@ -1,0 +1,116 @@
+{
+  "questionId": "Q3671",
+  "title": "Snakes and transition from Capitalism to Socialism",
+  "slug": "snakes-and-transition-from-capitalism-to-socialism",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "BFS",
+      "Grid",
+      "Dynamic Programming",
+      "Transition"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Graphs"
+    ]
+  },
+  "content": {
+    "problemStatement": "After a long duration of the painful, torturous and tumultuous periods of capitalism in Snakeland, now the snakes have decided to adopt socialism. The houses in Snakeland are arranged in a rectangular fashion of dimension **n * m**. The wealth of the snake in the house at cell (i, j) is given by **a**[i][j] rupees.\n\nA bill has been passed for making a smooth transition from capitalism to socialism. At the end of each hour, the wealth of a snake will grow and will become equal to the highest wealth that its neighbor had (at the start of the hour). That is, consider the maximum wealth among its neighbors at the start of the hour, and this snake's wealth will become equal to that at the end of the hour. Note that this increase in wealth will happen simultaneously for each snake. Two houses are said to be neighbors of each other if they share a side or corner with each other. Find out the minimum number of hours required for this transition.",
+    "constraints": [
+      "1 \u2264 T \u2264 4",
+      "1 \u2264 n, m \u2264 500",
+      "1 \u2264 a[i][j] \u2264 10^6"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case starts with a line containing two space-separated integers n and m, representing the dimensions of the grid. This is followed by n lines, each containing m space-separated integers representing the wealth of snakes in the grid.",
+    "outputFormat": "For each test case, output a single integer representing the minimum number of hours required for the transition from capitalism to socialism.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n2 2\n1 1\n1 1\n2 2\n1 1\n1 2\n3 4\n1 2 1 2\n1 1 1 2\n1 1 2 2",
+        "output": "0\n1\n2",
+        "explanation": "Explanation:\nExample 1. The wealth of all the snakes is already equal. So, no time is required for the transition.\nExample 2. At the end of the first hour, the wealth of snakes at cells (1, 1), (2,1) and (1, 2) will change from 1 to 2. Then, the wealth of all the snakes becomes equal, and hence it required a total of 1 hour.\nExample 3. At the end of the first hour, the distribution of wealth of Snakeland will be as given below:\n\n2 2 2 2\n2 2 2 2\n1 2 2 2\n\n\nAfter the end of the second hour, the wealth of all the snakes will be equal. So, the answer is 2."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1\n1",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n500 500\n1000000",
+        "expectedOutput": "499",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n2 2\n1 1\n2 2",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n3 3\n1 1 1\n1 2 1\n1 1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n4 4\n1 1 1 1\n1 2 2 1\n1 2 2 1\n1 1 1 1",
+        "expectedOutput": "2",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a BFS approach. We start by finding the maximum wealth in the grid. Then, we perform BFS from each cell, updating the wealth of neighboring cells if it's less than the maximum wealth. We repeat this process until all cells have the maximum wealth. The number of iterations required to achieve this is the minimum number of hours required for the transition.",
+    "timeComplexity": "O(T * n * m * (n + m)) \u2014 The time complexity is dominated by the BFS traversal for each test case.",
+    "spaceComplexity": "O(n * m) \u2014 The space complexity is dominated by the grid size.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#define MAX 500\n\nint max(int a, int b) { return a > b ? a : b; }\n\nint minHours(int **grid, int n, int m) {\n    int maxWealth = 0;\n    for (int i = 0; i < n; i++) {\n        for (int j = 0; j < m; j++) {\n            maxWealth = max(maxWealth, grid[i][j]);\n        }\n    }\n\n    int hours = 0;\n    int **newGrid = (int **)malloc(n * sizeof(int *));\n    for (int i = 0; i < n; i++) {\n        newGrid[i] = (int *)malloc(m * sizeof(int));\n    }\n\n    while (1) {\n        int changed = 0;\n        for (int i = 0; i < n; i++) {\n            for (int j = 0; j < m; j++) {\n                newGrid[i][j] = grid[i][j];\n                if (grid[i][j] < maxWealth) {\n                    int maxNeighbor = 0;\n                    for (int x = -1; x <= 1; x++) {\n                        for (int y = -1; y <= 1; y++) {\n                            int nx = i + x;\n                            int ny = j + y;\n                            if (nx >= 0 && nx < n && ny >= 0 && ny < m) {\n                                maxNeighbor = max(maxNeighbor, grid[nx][ny]);\n                            }\n                        }\n                    }\n                    if (maxNeighbor > newGrid[i][j]) {\n                        newGrid[i][j] = maxNeighbor;\n                        changed = 1;\n                    }\n                }\n            }\n        }\n\n        if (!changed) break;\n        hours++;\n        for (int i = 0; i < n; i++) {\n            for (int j = 0; j < m; j++) {\n                grid[i][j] = newGrid[i][j];\n            }\n        }\n    }\n\n    for (int i = 0; i < n; i++) {\n        free(newGrid[i]);\n    }\n    free(newGrid);\n\n    return hours;\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int n, m;\n        scanf(\"%d %d\", &n, &m);\n        int **grid = (int **)malloc(n * sizeof(int *));\n        for (int i = 0; i < n; i++) {\n            grid[i] = (int *)malloc(m * sizeof(int));\n        }\n        for (int i = 0; i < n; i++) {\n            for (int j = 0; j < m; j++) {\n                scanf(\"%d\", &grid[i][j]);\n            }\n        }\n        printf(\"%d\\n\", minHours(grid, n, m));\n        for (int i = 0; i < n; i++) {\n            free(grid[i]);\n        }\n        free(grid);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\n#include <algorithm>\nusing namespace std;\n\nint minHours(vector<vector<int>> &grid) {\n    int n = grid.size();\n    int m = grid[0].size();\n    int maxWealth = 0;\n    for (int i = 0; i < n; i++) {\n        for (int j = 0; j < m; j++) {\n            maxWealth = max(maxWealth, grid[i][j]);\n        }\n    }\n\n    int hours = 0;\n    while (1) {\n        bool changed = false;\n        vector<vector<int>> newGrid(n, vector<int>(m));\n        for (int i = 0; i < n; i++) {\n            for (int j = 0; j < m; j++) {\n                newGrid[i][j] = grid[i][j];\n                if (grid[i][j] < maxWealth) {\n                    int maxNeighbor = 0;\n                    for (int x = -1; x <= 1; x++) {\n                        for (int y = -1; y <= 1; y++) {\n                            int nx = i + x;\n                            int ny = j + y;\n                            if (nx >= 0 && nx < n && ny >= 0 && ny < m) {\n                                maxNeighbor = max(maxNeighbor, grid[nx][ny]);\n                            }\n                        }\n                    }\n                    if (maxNeighbor > newGrid[i][j]) {\n                        newGrid[i][j] = maxNeighbor;\n                        changed = true;\n                    }\n                }\n            }\n        }\n\n        if (!changed) break;\n        hours++;\n        grid = newGrid;\n    }\n\n    return hours;\n}\n\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        int n, m;\n        cin >> n >> m;\n        vector<vector<int>> grid(n, vector<int>(m));\n        for (int i = 0; i < n; i++) {\n            for (int j = 0; j < m; j++) {\n                cin >> grid[i][j];\n            }\n        }\n        cout << minHours(grid) << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n        while (T-- > 0) {\n            int n = sc.nextInt();\n            int m = sc.nextInt();\n            int[][] grid = new int[n][m];\n            for (int i = 0; i < n; i++) {\n                for (int j = 0; j < m; j++) {\n                    grid[i][j] = sc.nextInt();\n                }\n            }\n            System.out.println(minHours(grid));\n        }\n    }\n\n    public static int minHours(int[][] grid) {\n        int n = grid.length;\n        int m = grid[0].length;\n        int maxWealth = 0;\n        for (int i = 0; i < n; i++) {\n            for (int j = 0; j < m; j++) {\n                maxWealth = Math.max(maxWealth, grid[i][j]);\n            }\n        }\n\n        int hours = 0;\n        while (true) {\n            boolean changed = false;\n            int[][] newGrid = new int[n][m];\n            for (int i = 0; i < n; i++) {\n                for (int j = 0; j < m; j++) {\n                    newGrid[i][j] = grid[i][j];\n                    if (grid[i][j] < maxWealth) {\n                        int maxNeighbor = 0;\n                        for (int x = -1; x <= 1; x++) {\n                            for (int y = -1; y <= 1; y++) {\n                                int nx = i + x;\n                                int ny = j + y;\n                                if (nx >= 0 && nx < n && ny >= 0 && ny < m) {\n                                    maxNeighbor = Math.max(maxNeighbor, grid[nx][ny]);\n                                }\n                            }\n                        }\n                        if (maxNeighbor > newGrid[i][j]) {\n                            newGrid[i][j] = maxNeighbor;\n                            changed = true;\n                        }\n                    }\n                }\n            }\n\n            if (!changed) break;\n            hours++;\n            grid = newGrid;\n        }\n\n        return hours;\n    }\n}",
+      "Python3": "def min_hours(grid):\n    n = len(grid)\n    m = len(grid[0])\n    max_wealth = max(max(row) for row in grid)\n\n    hours = 0\n    while True:\n        changed = False\n        new_grid = [[cell for cell in row] for row in grid]\n        for i in range(n):\n            for j in range(m):\n                if grid[i][j] < max_wealth:\n                    max_neighbor = 0\n                    for x in range(-1, 2):\n                        for y in range(-1, 2):\n                            nx, ny = i + x, j + y\n                            if 0 <= nx < n and 0 <= ny < m:\n                                max_neighbor = max(max_neighbor, grid[nx][ny])\n                    if max_neighbor > new_grid[i][j]:\n                        new_grid[i][j] = max_neighbor\n                        changed = True\n\n        if not changed:\n            break\n        hours += 1\n        grid = new_grid\n\n    return hours\n\nT = int(input())\nfor _ in range(T):\n    n, m = map(int, input().split())\n    grid = [list(map(int, input().split())) for _ in range(n)]\n    print(min_hours(grid))",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\n\nfunction minHours(grid) {\n    const n = grid.length;\n    const m = grid[0].length;\n    let maxWealth = 0;\n    for (let i = 0; i < n; i++) {\n        for (let j = 0; j < m; j++) {\n            maxWealth = Math.max(maxWealth, grid[i][j]);\n        }\n    }\n\n    let hours = 0;\n    while (true) {\n        let changed = false;\n        const newGrid = grid.map(row => row.slice());\n        for (let i = 0; i < n; i++) {\n            for (let j = 0; j < m; j++) {\n                if (grid[i][j] < maxWealth) {\n                    let maxNeighbor = 0;\n                    for (let x = -1; x <= 1; x++) {\n                        for (let y = -1; y <= 1; y++) {\n                            const nx = i + x;\n                            const ny = j + y;\n                            if (nx >= 0 && nx < n && ny >= 0 && ny < m) {\n                                maxNeighbor = Math.max(maxNeighbor, grid[nx][ny]);\n                            }\n                        }\n                    }\n                    if (maxNeighbor > newGrid[i][j]) {\n                        newGrid[i][j] = maxNeighbor;\n                        changed = true;\n                    }\n                }\n            }\n        }\n\n        if (!changed) break;\n        hours++;\n        grid = newGrid;\n    }\n\n    return hours;\n}\n\nconst T = parseInt(input[idx++]);\nfor (let i = 0; i < T; i++) {\n    const [n, m] = input[idx++].split(' ').map(Number);\n    const grid = [];\n    for (let j = 0; j < n; j++) {\n        grid.push(input[idx++].split(' ').map(Number));\n    }\n    console.log(minHours(grid));\n}"
+    }
+  }
+}

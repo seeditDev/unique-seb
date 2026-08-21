@@ -1,0 +1,119 @@
+{
+  "questionId": "Q11382",
+  "title": "Merge K Sorted Arrays",
+  "slug": "mergeksortedarrays",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Algorithms",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Sorting",
+      "Merge",
+      "Heap"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Write a program for the coding challenge \"Merge K Sorted Arrays\". Refer to SEED-IT description: N/A",
+    "constraints": [
+      "1 <= K <= 10^5",
+      "1 <= N <= 10^5, where N is the total number of elements across all arrays",
+      "All elements in the input arrays are integers in the range [-10^9, 10^9]"
+    ],
+    "inputFormat": "The input will contain an integer K, representing the number of sorted arrays, followed by K lines, each containing a sorted array of integers.",
+    "outputFormat": "The output will be a single sorted array containing all the elements from the input arrays.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "1\n[1]",
+        "expectedOutput": "[1]",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "2\n[100000]\n[100000]",
+        "expectedOutput": "[100000, 100000]",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": "3\n[1, 3, 5]\n[2, 4, 6]\n[0, 7, 8]",
+        "expectedOutput": "[0, 1, 2, 3, 4, 5, 6, 7, 8]",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case / empty-like / negative if allowed",
+        "input": "2\n[-1, 0]\n[]",
+        "expectedOutput": "[-1, 0]",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": "3\n[1, 5, 9]\n[2, 4, 8]\n[3, 6, 7]",
+        "expectedOutput": "[1, 2, 3, 4, 5, 6, 7, 8, 9]",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Use a min-heap to keep track of the smallest unprocessed element from each array",
+    "timeComplexity": "O(N log K)",
+    "spaceComplexity": "O(N + K)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#define MIN(a, b) ((a) < (b) ? (a) : (b))\ntypedef struct { int val, arr, idx; } elem;\nint compare(const void *a, const void *b) { return ((elem *)a)->val - ((elem *)b)->val; }\nvoid mergeKArrays(int **arr, int *sizes, int K) {\n    elem *heap = (elem *)malloc(K * sizeof(elem));\n    for (int i = 0; i < K; i++) {\n        heap[i].val = arr[i][0];\n        heap[i].arr = i;\n        heap[i].idx = 0;\n    }\n    qsort(heap, K, sizeof(elem), compare);\n    int *result = (int *)malloc((sizes[0] + sizes[1] + sizes[2]) * sizeof(int));\n    int idx = 0;\n    while (1) {\n        result[idx++] = heap[0].val;\n        if (++heap[0].idx == sizes[heap[0].arr]) {\n            break;\n        }\n        heap[0].val = arr[heap[0].arr][heap[0].idx];\n        qsort(heap, K, sizeof(elem), compare);\n    }\n    for (int i = 0; i < idx; i++) {\n        printf(\"%d \", result[i]);\n    }\n    printf(\"\\n\");\n    free(heap);\n    free(result);\n}",
+      "C++": "#include <iostream>\n#include <queue>\n#include <vector>\nusing namespace std;\nstruct elem {\n    int val, arr, idx;\n    bool operator<(const elem &other) const {\n        return val > other.val;\n    }\n};\nvoid mergeKArrays(vector<vector<int>> &arr) {\n    priority_queue<elem> heap;\n    for (int i = 0; i < arr.size(); i++) {\n        if (!arr[i].empty()) {\n            heap.push({arr[i][0], i, 0});\n        }\n    }\n    vector<int> result;\n    while (!heap.empty()) {\n        elem top = heap.top();\n        heap.pop();\n        result.push_back(top.val);\n        if (++top.idx < arr[top.arr].size()) {\n            heap.push({arr[top.arr][top.idx], top.arr, top.idx});\n        }\n    }\n    for (int num : result) {\n        cout << num << \" \";\n    }\n    cout << endl;\n}",
+      "Java": "import java.util.PriorityQueue;\nimport java.util.Arrays;\npublic class Main {\n    static class elem implements Comparable<elem> {\n        int val, arr, idx;\n        elem(int val, int arr, int idx) {\n            this.val = val;\n            this.arr = arr;\n            this.idx = idx;\n        }\n        @Override\n        public int compareTo(elem other) {\n            return Integer.compare(val, other.val);\n        }\n    }\n    public static void mergeKArrays(int[][] arr) {\n        PriorityQueue<elem> heap = new PriorityQueue<>();\n        for (int i = 0; i < arr.length; i++) {\n            if (arr[i].length > 0) {\n                heap.add(new elem(arr[i][0], i, 0));\n            }\n        }\n        int[] result = new int[arr[0].length + arr[1].length + arr[2].length];\n        int idx = 0;\n        while (!heap.isEmpty()) {\n            elem top = heap.poll();\n            result[idx++] = top.val;\n            if (++top.idx < arr[top.arr].length) {\n                heap.add(new elem(arr[top.arr][top.idx], top.arr, top.idx));\n            }\n        }\n        for (int num : result) {\n            System.out.print(num + \" \");\n        }\n        System.out.println();\n    }\n    public static void main(String[] args) {\n        int[][] arr = {{1, 5, 9}, {2, 4, 8}, {3, 6, 7}};\n        mergeKArrays(arr);\n    }\n}",
+      "Python3": "import heapq\n\nclass elem:\n    def __init__(self, val, arr, idx):\n        self.val = val\n        self.arr = arr\n        self.idx = idx\n\n    def __lt__(self, other):\n        return self.val < other.val\n\ndef mergeKArrays(arr):\n    heap = []\n    for i, sub_arr in enumerate(arr):\n        if sub_arr:\n            heapq.heappush(heap, elem(sub_arr[0], i, 0))\n    result = []\n    while heap:\n        top = heapq.heappop(heap)\n        result.append(top.val)\n        if top.idx + 1 < len(arr[top.arr]):\n            heapq.heappush(heap, elem(arr[top.arr][top.idx + 1], top.arr, top.idx + 1))\n    print(' '.join(map(str, result)))",
+      "JavaScript": "class elem {\n    constructor(val, arr, idx) {\n        this.val = val;\n        this.arr = arr;\n        this.idx = idx;\n    }\n}\nfunction mergeKArrays(arr) {\n    let heap = [];\n    for (let i = 0; i < arr.length; i++) {\n        if (arr[i].length > 0) {\n            heap.push(new elem(arr[i][0], i, 0));\n        }\n    }\n    heap.sort((a, b) => a.val - b.val);\n    let result = [];\n    while (heap.length > 0) {\n        let top = heap.shift();\n        result.push(top.val);\n        if (top.idx + 1 < arr[top.arr].length) {\n            heap.push(new elem(arr[top.arr][top.idx + 1], top.arr, top.idx + 1));\n            heap.sort((a, b) => a.val - b.val);\n        }\n    }\n    console.log(result.join(' '));\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

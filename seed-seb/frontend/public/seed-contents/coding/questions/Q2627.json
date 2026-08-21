@@ -1,0 +1,129 @@
+{
+  "questionId": "Q2627",
+  "title": "Lack of Logic",
+  "slug": "lack-of-logic",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "Set",
+      "Strings",
+      "Case Insensitive",
+      "Implementation",
+      "Greedy"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Strings"
+    ]
+  },
+  "content": {
+    "problemStatement": "Consider the following dialog.\n\n- Father, what is the lack of logic?\n- Bunny.\n- Where?\n - Day./&gt;/&gt;/&gt;\n\nAs you see, father's answers have no logic demonstrating the son the notion of \"lack of logic\" using live example :D\n\nLet's try to formalize things. Note that both father's answers have no common letters with the corresponding questions. Probably this is the reason. **Let's say that the answer has no logic if it has no common letters with the question.** Your task is to write a bot that will answer annoying comments of contestants at codechef using this definition. Note that letter denotes a lowercase or uppercase English alphabet (ASCII code from 65 to 90 or from 97 to 122).\n\nNamely, you will be given several questions and you need to produce answers to these questions that have no logic. Note that lowercase and uppercase letters are considered the same when treating \"no common letters\" rule. Also note that this rule concerns only letters. **The answer should contain at least one letter.** If it is impossible to produce such answer then output \"~\" (tilde sign, quotes are for clarity).",
+    "constraints": [
+      "1 \u2264 T \u2264 314",
+      "1 \u2264 length of each question \u2264 314",
+      "Each character of a question has ASCII code between 32 and 126 inclusive"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains a non\u2011empty question string. The string may contain any printable ASCII characters (code 32 to 126).",
+    "outputFormat": "For each test case output a single line. If there exists at least one English letter (a\u2011z or A\u2011Z) that does not appear in the question (case\u2011insensitive), output any such letter (a single lower\u2011case letter is sufficient). The answer must contain at least one letter and may contain only spaces and letters, length \u2264 314. If every letter appears in the question, output a single tilde character '~'.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\nHello World!\nABCDEFGHIJKLMNOPQRSTUVWXYZ\nabcXYZ",
+        "output": "a\n~\nd",
+        "explanation": "Test case 1: letters present are h,e,l,o,w,r,d; the smallest missing letter is 'a'.\\nTest case 2: all 26 letters appear, so output '~'.\\nTest case 3: present letters are a,b,c,x,y,z; the smallest missing letter is 'd'."
+      },
+      {
+        "id": "sample_2",
+        "input": "2\n12345!@#$%\nCodeChef",
+        "output": "a\na",
+        "explanation": "First question contains no letters, therefore 'a' is missing.\\nSecond question contains c,o,d,e,h,f; 'a' is still missing."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\nThe quick brown fox jumps over the lazy dog",
+        "output": "~",
+        "explanation": "The pangram contains every English letter, so no letter can be used without sharing a common letter; output '~'."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\na",
+        "expectedOutput": "b",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary (pangram)",
+        "input": "1\nThe quick brown fox jumps over the lazy dog",
+        "expectedOutput": "~",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "no letters at all",
+        "input": "1\n1234567890!@#$%^&*()",
+        "expectedOutput": "a",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\nCodeChef",
+        "expectedOutput": "a",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2 (reverse alphabet)",
+        "input": "1\nZyXwVuTsRqPoNmLkJiHgFeDcBa",
+        "expectedOutput": "~",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each question we build a boolean array present[26] marking which letters (ignoring case) occur in the string. Then we scan the alphabet from 'a' to 'z' and output the first letter whose flag is false. If all 26 flags are true we output '~'. The answer can be a single letter, which satisfies the requirement of containing at least one letter and being \u2264 314 characters.\nThe algorithm is linear in the length of the question and constant in the alphabet size.",
+    "timeComplexity": "O(T * L) where L is the length of a question (\u2264 314). The scan of the 26 letters is O(1).",
+    "spaceComplexity": "O(1) extra space (the 26\u2011element boolean array).",
+    "code": {
+      "C": "// COMPLETE, COMPILABLE C code\n#include <stdio.h>\n#include <string.h>\n#include <ctype.h>\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    getchar(); // consume the newline after T\n    while (T--) {\n        char line[320];\n        if (!fgets(line, sizeof(line), stdin)) break;\n        line[strcspn(line, \"\\n\")] = '\\0'; // remove trailing newline\n        int present[26] = {0};\n        for (int i = 0; line[i]; ++i) {\n            if (isalpha((unsigned char)line[i])) {\n                int idx = tolower((unsigned char)line[i]) - 'a';\n                present[idx] = 1;\n            }\n        }\n        int found = 0;\n        for (int i = 0; i < 26; ++i) {\n            if (!present[i]) {\n                putchar('a' + i);\n                putchar('\\n');\n                found = 1;\n                break;\n            }\n        }\n        if (!found) {\n            puts(\"~\");\n        }\n    }\n    return 0;\n}",
+      "C++": "// COMPLETE, COMPILABLE C++ code\n#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T;\n    if (!(cin >> T)) return 0;\n    string line;\n    getline(cin, line); // consume end\u2011of\u2011line after T\n    while (T--) {\n        getline(cin, line);\n        bool present[26] = {false};\n        for (char c : line) {\n            if (isalpha(static_cast<unsigned char>(c))) {\n                present[tolower(static_cast<unsigned char>(c)) - 'a'] = true;\n            }\n        }\n        bool ok = false;\n        for (int i = 0; i < 26; ++i) {\n            if (!present[i]) {\n                cout << char('a' + i) << '\\n';\n                ok = true;\n                break;\n            }\n        }\n        if (!ok) cout << \"~\\n\";\n    }\n    return 0;\n}",
+      "Java": "// COMPLETE, COMPILABLE Java code\nimport java.io.*;\nimport java.util.*;\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder out = new StringBuilder();\n        for (int t = 0; t < T; ++t) {\n            String line = br.readLine();\n            boolean[] present = new boolean[26];\n            for (int i = 0; i < line.length(); ++i) {\n                char c = line.charAt(i);\n                if (Character.isLetter(c)) {\n                    present[Character.toLowerCase(c) - 'a'] = true;\n                }\n            }\n            boolean found = false;\n            for (int i = 0; i < 26; ++i) {\n                if (!present[i]) {\n                    out.append((char)('a' + i)).append('\\n');\n                    found = true;\n                    break;\n                }\n            }\n            if (!found) out.append(\"~\\n\");\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "# COMPLETE, RUNNABLE Python3 code\nimport sys\n\ndef main():\n    data = sys.stdin.read().splitlines()\n    if not data:\n        return\n    T = int(data[0])\n    out_lines = []\n    for i in range(1, T + 1):\n        line = data[i]\n        present = [False] * 26\n        for ch in line:\n            if ch.isalpha():\n                present[ord(ch.lower()) - ord('a')] = True\n        for idx in range(26):\n            if not present[idx]:\n                out_lines.append(chr(ord('a') + idx))\n                break\n        else:\n            out_lines.append('~')\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    main()",
+      "JavaScript": "// COMPLETE, RUNNABLE JavaScript code\nconst fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').split('\\n');\nlet idx = 0;\nconst T = parseInt(input[idx++].trim(), 10);\nlet result = [];\nfor (let t = 0; t < T; ++t) {\n    const line = (input[idx++] || '').trimEnd();\n    const present = new Array(26).fill(false);\n    for (let ch of line) {\n        const code = ch.charCodeAt(0);\n        if ((code >= 65 && code <= 90) || (code >= 97 && code <= 122)) {\n            const lower = ch.toLowerCase();\n            present[lower.charCodeAt(0) - 97] = true;\n        }\n    }\n    let found = false;\n    for (let i = 0; i < 26; ++i) {\n        if (!present[i]) {\n            result.push(String.fromCharCode(97 + i));\n            found = true;\n            break;\n        }\n    }\n    if (!found) result.push('~');\n}\nconsole.log(result.join('\\n'));\n"
+    }
+  }
+}

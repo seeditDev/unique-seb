@@ -1,0 +1,139 @@
+{
+  "questionId": "Q6278",
+  "title": "Chef and LCS",
+  "slug": "chef-and-lcs",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings | Dynamic Programming",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Longest Common Subsequence",
+      "Lexicographically kth"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Recently, Chef learned how to solve the Longest common subsequence problem. Being a fan of Ekta Kapoor1, he really likes problems which require finding something **k**th. Please help him solve one such problem he encountered.\n\n\n\nChef wants to know the lexicographically **k**th longest common subsequence of any two given strings **A** and **B**. In other words, let **L** be the length of LCS(**A**, **B**), **S** be the sorted **set** of all common sequences of **A** and **B** with length **L**, you should find **Sk**. Keep in mind that all elements of a set are **distinct**.",
+    "constraints": [
+      "1 <= n <= 1000",
+      "1 <= k <= 10^9",
+      "Each character of A and B is a lowercase Latin letter."
+    ],
+    "inputFormat": "The first line contains two integers n and k, where n is the length of the strings A and B, and k is the position of the lexicographically kth longest common subsequence. The next two lines contain the strings A and B.",
+    "outputFormat": "The lexicographically kth longest common subsequence of A and B, or -1 if it does not exist.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3 3\nabc\ncba",
+        "output": "c",
+        "explanation": "The longest common subsequence of 'abc' and 'cba' is 'a', 'b', or 'c'. The lexicographically 3rd longest common subsequence is 'c'."
+      },
+      {
+        "id": "sample_2",
+        "input": "5 5\nabcba\nbacab",
+        "output": "-1",
+        "explanation": "The longest common subsequence of 'abcba' and 'bacab' is 'aba', 'aca', 'acb', or 'bca'. There are only 4 longest common subsequences, so the lexicographically 5th longest common subsequence does not exist."
+      },
+      {
+        "id": "sample_3",
+        "input": "2 2\naa\nab",
+        "output": "-1",
+        "explanation": "The longest common subsequence of 'aa' and 'ab' is 'a'. There is only 1 longest common subsequence, so the lexicographically 2nd longest common subsequence does not exist."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1 1\na\na",
+        "expectedOutput": "a",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1000 1000\nabcdefghijklmnopqrstuvwxyz\nabcdefghijklmnopqrstuvwxyz",
+        "expectedOutput": "abcdefghijklmnopqrstuvwxyz",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "5 3\nabcde\nedcba",
+        "expectedOutput": "c",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "10 5\nabcdefghij\njihgfedcba",
+        "expectedOutput": "f",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "15 10\nabcdefghijklmno\nonmlkjihgfedcba",
+        "expectedOutput": "k",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we first need to find the length of the longest common subsequence (LCS) of A and B. Then, we generate all possible common subsequences of length LCS and sort them lexicographically. Finally, we return the kth subsequence in the sorted list, or -1 if k is larger than the number of subsequences.",
+    "timeComplexity": "O(2^n * n log n) — generating all subsequences takes O(2^n) time, and sorting them takes O(n log n) time.",
+    "spaceComplexity": "O(2^n * n) — storing all subsequences takes O(2^n * n) space.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n#include <stdlib.h>\n#define MAX 1005\n#define MAX_K 1000000005\n\nint compare(const void *a, const void *b) {\n    return strcmp(*(char **)a, *(char **)b);\n}\n\nchar **generate_subsequences(char *A, char *B, int n, int len, int *count) {\n    char **subsequences = (char **)malloc(MAX_K * sizeof(char *));\n    *count = 0;\n    generate_subsequences_recursive(A, B, n, len, 0, 0, subsequences, count, (char *)malloc((len + 1) * sizeof(char)));\n    free((char *)malloc((len + 1) * sizeof(char)));\n    return subsequences;\n}\n\nvoid generate_subsequences_recursive(char *A, char *B, int n, int len, int i, int j, char **subsequences, int *count, char *current) {\n    if (i == n || j == n) return;\n    if (len == 0) {\n        subsequences[(*count)++] = strdup(current);\n        return;\n    }\n    if (A[i] == B[j]) {\n        current[len - 1] = A[i];\n        generate_subsequences_recursive(A, B, n, len - 1, i + 1, j + 1, subsequences, count, current);\n    }\n    generate_subsequences_recursive(A, B, n, len, i + 1, j, subsequences, count, current);\n    generate_subsequences_recursive(A, B, n, len, i, j + 1, subsequences, count, current);\n}\n\nint main() {\n    int n, k;\n    scanf(\"%d %d\", &n, &k);\n    char A[MAX], B[MAX];\n    scanf(\"%s %s\", A, B);\n    int len = 0;\n    for (int i = 0; i < n; i++) {\n        for (int j = 0; j < n; j++) {\n            if (A[i] == B[j]) {\n                len = std::max(len, 1 + lcs(A, i + 1, B, j + 1));\n            }\n        }\n    }\n    int count;\n    char **subsequences = generate_subsequences(A, B, n, len, &count);\n    if (k > count) {\n        printf(\"-1\\n\");\n    } else {\n        qsort(subsequences, count, sizeof(char *), compare);\n        printf(\"%s\\n\", subsequences[k - 1]);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <string>\n#include <vector>\n#include <algorithm>\nusing namespace std;\n\nint lcs(string A, int i, string B, int j) {\n    if (i == A.size() || j == B.size()) return 0;\n    if (A[i] == B[j]) return 1 + lcs(A, i + 1, B, j + 1);\n    return max(lcs(A, i + 1, B, j), lcs(A, i, B, j + 1));\n}\n\nvector<string> generate_subsequences(string A, string B, int n, int len) {\n    vector<string> subsequences;\n    generate_subsequences_recursive(A, B, n, len, 0, 0, \"\", subsequences);\n    return subsequences;\n}\n\nvoid generate_subsequences_recursive(string A, string B, int n, int len, int i, int j, string current, vector<string> &subsequences) {\n    if (i == n || j == n) return;\n    if (len == 0) {\n        subsequences.push_back(current);\n        return;\n    }\n    if (A[i] == B[j]) {\n        generate_subsequences_recursive(A, B, n, len - 1, i + 1, j + 1, current + A[i], subsequences);\n    }\n    generate_subsequences_recursive(A, B, n, len, i + 1, j, current, subsequences);\n    generate_subsequences_recursive(A, B, n, len, i, j + 1, current, subsequences);\n}\n\nint main() {\n    int n, k;\n    cin >> n >> k;\n    string A, B;\n    cin >> A >> B;\n    int len = 0;\n    for (int i = 0; i < n; i++) {\n        for (int j = 0; j < n; j++) {\n            if (A[i] == B[j]) {\n                len = max(len, 1 + lcs(A, i + 1, B, j + 1));\n            }\n        }\n    }\n    vector<string> subsequences = generate_subsequences(A, B, n, len);\n    if (k > subsequences.size()) {\n        cout << -1 << endl;\n    } else {\n        sort(subsequences.begin(), subsequences.end());\n        cout << subsequences[k - 1] << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Arrays;\nimport java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int n = scanner.nextInt();\n        int k = scanner.nextInt();\n        String A = scanner.next();\n        String B = scanner.next();\n        int len = 0;\n        for (int i = 0; i < n; i++) {\n            for (int j = 0; j < n; j++) {\n                if (A.charAt(i) == B.charAt(j)) {\n                    len = Math.max(len, 1 + lcs(A, i + 1, B, j + 1));\n                }\n            }\n        }\n        String[] subsequences = generateSubsequences(A, B, n, len);\n        if (k > subsequences.length) {\n            System.out.println(-1);\n        } else {\n            Arrays.sort(subsequences);\n            System.out.println(subsequences[k - 1]);\n        }\n    }\n\n    public static int lcs(String A, int i, String B, int j) {\n        if (i == A.length() || j == B.length()) return 0;\n        if (A.charAt(i) == B.charAt(j)) return 1 + lcs(A, i + 1, B, j + 1);\n        return Math.max(lcs(A, i + 1, B, j), lcs(A, i, B, j + 1));\n    }\n\n    public static String[] generateSubsequences(String A, String B, int n, int len) {\n        String[] subsequences = new String[1000000];\n        int count = 0;\n        generateSubsequencesRecursive(A, B, n, len, 0, 0, \"\", subsequences, count);\n        return Arrays.copyOf(subsequences, count);\n    }\n\n    public static void generateSubsequencesRecursive(String A, String B, int n, int len, int i, int j, String current, String[] subsequences, int count) {\n        if (i == n || j == n) return;\n        if (len == 0) {\n            subsequences[count++] = current;\n            return;\n        }\n        if (A.charAt(i) == B.charAt(j)) {\n            generateSubsequencesRecursive(A, B, n, len - 1, i + 1, j + 1, current + A.charAt(i), subsequences, count);\n        }\n        generateSubsequencesRecursive(A, B, n, len, i + 1, j, current, subsequences, count);\n        generateSubsequencesRecursive(A, B, n, len, i, j + 1, current, subsequences, count);\n    }\n}",
+      "Python3": "import sys\n\ndef lcs(A, i, B, j):\n    if i == len(A) or j == len(B):\n        return 0\n    if A[i] == B[j]:\n        return 1 + lcs(A, i + 1, B, j + 1)\n    return max(lcs(A, i + 1, B, j), lcs(A, i, B, j + 1))\n\ndef generate_subsequences(A, B, n, len):\n    subsequences = []\n    generate_subsequences_recursive(A, B, n, len, 0, 0, \"\", subsequences)\n    return subsequences\n\ndef generate_subsequences_recursive(A, B, n, len, i, j, current, subsequences):\n    if i == n or j == n:\n        return\n    if len == 0:\n        subsequences.append(current)\n        return\n    if A[i] == B[j]:\n        generate_subsequences_recursive(A, B, n, len - 1, i + 1, j + 1, current + A[i], subsequences)\n    generate_subsequences_recursive(A, B, n, len, i + 1, j, current, subsequences)\n    generate_subsequences_recursive(A, B, n, len, i, j + 1, current, subsequences)\n\nn, k = map(int, input().split())\nA = input()\nB = input()\nlen = 0\nfor i in range(n):\n    for j in range(n):\n        if A[i] == B[j]:\n            len = max(len, 1 + lcs(A, i + 1, B, j + 1))\nsubsequences = generate_subsequences(A, B, n, len)\nif k > len(subsequences):\n    print(-1)\nelse:\n    subsequences.sort()\n    print(subsequences[k - 1])",
+      "JavaScript": "const readline = require('readline');\nconst rl = readline.createInterface({\n    input: process.stdin,\n    output: process.stdout\n});\n\nlet input = [];\nrl.on('line', function(line) {\n    input.push(line);\n}).on('close', function() {\n    let n = +input[0].split(' ')[0];\n    let k = +input[0].split(' ')[1];\n    let A = input[1];\n    let B = input[2];\n    let len = 0;\n    for (let i = 0; i < n; i++) {\n        for (let j = 0; j < n; j++) {\n            if (A[i] == B[j]) {\n                len = Math.max(len, 1 + lcs(A, i + 1, B, j + 1));\n            }\n        }\n    }\n    let subsequences = generateSubsequences(A, B, n, len);\n    if (k > subsequences.length) {\n        console.log(-1);\n    } else {\n        subsequences.sort();\n        console.log(subsequences[k - 1]);\n    }\n});\n\nfunction lcs(A, i, B, j) {\n    if (i == A.length || j == B.length) return 0;\n    if (A[i] == B[j]) return 1 + lcs(A, i + 1, B, j + 1);\n    return Math.max(lcs(A, i + 1, B, j), lcs(A, i, B, j + 1));\n}\n\nfunction generateSubsequences(A, B, n, len) {\n    let subsequences = [];\n    generateSubsequencesRecursive(A, B, n, len, 0, 0, \"\", subsequences);\n    return subsequences;\n}\n\nfunction generateSubsequencesRecursive(A, B, n, len, i, j, current, subsequences) {\n    if (i == n || j == n) return;\n    if (len == 0) {\n        subsequences.push(current);\n        return;\n    }\n    if (A[i] == B[j]) {\n        generateSubsequencesRecursive(A, B, n, len - 1, i + 1, j + 1, current + A[i], subsequences);\n    }\n    generateSubsequencesRecursive(A, B, n, len, i + 1, j, current, subsequences);\n    generateSubsequencesRecursive(A, B, n, len, i, j + 1, current, subsequences);\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

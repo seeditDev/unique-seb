@@ -1,0 +1,114 @@
+{
+  "questionId": "Q2158",
+  "title": "The powerful sum",
+  "slug": "the-powerful-sum",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "Math",
+      "Polynomial sums",
+      "Faulhaber\u2019s formula",
+      "Lagrange interpolation",
+      "Modular arithmetic"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Mathematics"
+    ]
+  },
+  "content": {
+    "problemStatement": "Let us calculate the sum of k-th powers of natural numbers from 1 to n. As the result can be quite large, output the result modulo some integer p.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= n <= 10^9",
+      "1 <= k <= 100",
+      "1 <= p <= 10^9 (p is prime)"
+    ],
+    "inputFormat": "First line contains an integer T, the number of test cases. Each of the next T lines contains three space-separated integers n, k and p.",
+    "outputFormat": "For each test case output a single line containing (1^k + 2^k + \u2026 + n^k) mod p.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4\n10 1 1000000\n10 2 1000000\n10 3 1000000\n10 4 1000000",
+        "output": "55\n385\n3025\n25333",
+        "explanation": ""
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The sum S_k(n)=\\sum_{i=1}^{n} i^k is a polynomial in n of degree k+1 with rational coefficients. For a fixed k we pre\u2011compute y[i]=S_k(i) for i=0..k+1 using fast exponentiation (mod p). Then we evaluate the polynomial at any n using Lagrange interpolation in O(k) time. All operations are performed modulo p; modular inverses are obtained with the extended Euclidean algorithm (which works because p is prime, so every denominator is invertible unless n\\le k+1, in which case we directly return y[n]). This gives O(k) per test case after O(k^2) preprocessing for each distinct k.",
+    "timeComplexity": "O(k) per test case after O(k^2) preprocessing for each distinct k (k \\u2264 100).",
+    "spaceComplexity": "O(k) auxiliary arrays.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdint.h>\n\nstatic int64_t modPow(int64_t a,int64_t e,int64_t mod){int64_t r=1%mod; a%=mod; while(e){if(e&1) r=(r*a)%mod; a=(a*a)%mod; e>>=1;}return r;}\nstatic int64_t egcd(int64_t a,int64_t b,int64_t *x,int64_t *y){if(b==0){*x=1;*y=0;return a;}int64_t x1,y1;int64_t g=egcd(b,a%b,&x1,&y1);*x=y1;*y=x1-(a/b)*y1;return g;}\nstatic int64_t modInv(int64_t a,int64_t mod){int64_t x,y;int64_t g=egcd(a,mod,&x,&y);if(g!=1) return -1; x%=mod; if(x<0) x+=mod; return x;}\n\nint main(){int T; if(scanf(\"%d\",&T)!=1) return 0; while(T--){int64_t n; int k; int64_t p; scanf(\"%lld %d %lld\",&n,&k,&p);\n    int m=k+2; // number of points = k+2\n    int64_t y[m]; y[0]=0; for(int i=1;i<m;i++) y[i]=(y[i-1]+modPow(i,k,p))%p;\n    if(n<=k+1){printf(\"%lld\\n\",y[n]); continue;}\n    int64_t pre[m+1]; int64_t suf[m+1];\n    pre[0]=1; for(int i=0;i<m;i++) pre[i+1]=(pre[i]*(((n - i)%p + p)%p))%p; // pre[i]=prod_{j=0}^{i-1}(n-j)\n    suf[m]=1; for(int i=m-1;i>=0;i--) suf[i]=(suf[i+1]*(((n - i)%p + p)%p))%p; // suf[i]=prod_{j=i}^{m-1}(n-j)\n    int64_t ans=0;\n    for(int i=0;i<m;i++){\n        int64_t num = (pre[i]*suf[i+1])%p; // numerator = product_{j!=i}(n-j)\n        // denominator = i! * (m-1-i)! * (-1)^{m-1-i}\n        int64_t den=1;\n        int64_t fact=1; for(int j=1;j<=i;j++) fact=(fact*j)%p; // i!\n        int64_t fact2=1; for(int j=1;j<=m-1-i;j++) fact2=(fact2*j)%p; // (m-1-i)!\n        den = (fact*fact2)%p;\n        if(((m-1-i)&1)) den = (p - den)%p; // apply (-1)^{m-1-i}\n        int64_t inv = modInv(den,p);\n        int64_t term = y[i]; term = (term * num)%p; term = (term * inv)%p;\n        ans = (ans + term)%p;\n    }\n    printf(\"%lld\\n\",ans);\n }\n return 0; }\n"
+    }
+  }
+}

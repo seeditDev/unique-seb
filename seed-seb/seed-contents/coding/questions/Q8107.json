@@ -1,0 +1,128 @@
+{
+  "questionId": "Q8107",
+  "title": "Bitwise Tuples",
+  "slug": "bitwise-tuples",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Bit Manipulation | Math",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Bitwise AND",
+      "Modular Exponentiation",
+      "Fast Power"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Mathematics"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef has two numbers NNN and MMM. Help Chef to find number of integer NNN-tuples (A1,A2,…,AN)(A_1, A_2, \\ldots, A_N)(A1​,A2​,…,AN​) such that 0≤A1,A2,…,AN≤2M−10 \\leq A_1, A_2, \\ldots, A_N \\leq 2^M - 10≤A1​,A2​,…,AN​≤2M−1 and A1&amp;A2&amp;…&amp;AN=0A_1 \\&amp; A_2 \\&amp; \\ldots \\&amp; A_N = 0A1​&amp;A2​&amp;…&amp;AN​=0, where &amp;\\&amp;&amp; denotes the bitwise AND operator.\n\nSince the number of tuples can be large, output it modulo 109+710^9+7109+7.",
+    "constraints": [
+      "1 <= T <= 100000",
+      "1 <= N <= 1000000",
+      "1 <= M <= 1000000"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains two integers N and M separated by a space.",
+    "outputFormat": "For each test case output a single line containing the number of N‑tuples (A1,…,AN) such that 0 ≤ Ai ≤ 2^M‑1 and (A1 & A2 & … & AN) = 0, modulo 1000000007.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4\n1 2\n2 2\n4 2\n8 4",
+        "output": "1\n9\n225\n228250597",
+        "explanation": "For each test case the answer is (2^N - 1)^M modulo 1e9+7. The computed values are: (2^1-1)^2 = 1, (2^2-1)^2 = 9, (2^4-1)^2 = 225, (2^8-1)^4 = 228250597."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "small N, larger M",
+        "input": "1\n2 3",
+        "expectedOutput": "27",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "moderate values",
+        "input": "1\n3 5",
+        "expectedOutput": "16807",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "equal N and M",
+        "input": "1\n4 4",
+        "expectedOutput": "50625",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "larger N, small M",
+        "input": "1\n5 2",
+        "expectedOutput": "961",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each bit position (0 … M‑1) the N numbers can have any combination of 0/1 except the case where all N numbers have a 1 at that bit, because that would make the overall AND have a 1 at that position. Hence for a single bit there are 2^N – 1 valid assignments. Bits are independent, therefore the total number of tuples is (2^N – 1)^M. The answer is computed modulo MOD = 1 000 000 007 using fast exponentiation:\n1. Compute p = 2^N mod MOD.\n2. a = (p – 1 + MOD) % MOD.\n3. answer = a^M mod MOD.\nBoth exponentiations are performed with binary exponentiation in O(log N + log M) time per test case.",
+    "timeComplexity": "O(T * (log N + log M))",
+    "spaceComplexity": "O(1) besides input storage",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdint.h>\n\nconst int64_t MOD = 1000000007LL;\n\nint64_t modPow(int64_t base, int64_t exp) {\n    int64_t res = 1;\n    base %= MOD;\n    while (exp > 0) {\n        if (exp & 1) res = (res * base) % MOD;\n        base = (base * base) % MOD;\n        exp >>= 1;\n    }\n    return res;\n}\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        long long N, M;\n        scanf(\"%lld %lld\", &N, &M);\n        int64_t pow2N = modPow(2, N);\n        int64_t a = (pow2N - 1 + MOD) % MOD;\n        int64_t ans = modPow(a, M);\n        printf(\"%lld\\n\", ans);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nconst long long MOD = 1000000007LL;\n\nlong long modPow(long long base, long long exp) {\n    long long res = 1;\n    base %= MOD;\n    while (exp) {\n        if (exp & 1) res = res * base % MOD;\n        base = base * base % MOD;\n        exp >>= 1;\n    }\n    return res;\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; cin >> T;\n    while (T--) {\n        long long N, M; cin >> N >> M;\n        long long pow2N = modPow(2, N);\n        long long a = (pow2N - 1 + MOD) % MOD;\n        long long ans = modPow(a, M);\n        cout << ans << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    static final long MOD = 1_000_000_007L;\n    static long modPow(long base, long exp) {\n        long res = 1L;\n        base %= MOD;\n        while (exp > 0) {\n            if ((exp & 1L) == 1L) res = (res * base) % MOD;\n            base = (base * base) % MOD;\n            exp >>= 1;\n        }\n        return res;\n    }\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder sb = new StringBuilder();\n        int T = Integer.parseInt(br.readLine().trim());\n        for (int t = 0; t < T; t++) {\n            StringTokenizer st = new StringTokenizer(br.readLine());\n            long N = Long.parseLong(st.nextToken());\n            long M = Long.parseLong(st.nextToken());\n            long pow2N = modPow(2L, N);\n            long a = (pow2N - 1 + MOD) % MOD;\n            long ans = modPow(a, M);\n            sb.append(ans).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys\nMOD = 1000000007\n\ndef mod_pow(base, exp):\n    return pow(base, exp, MOD)\n\ndef main():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out = []\n    for _ in range(T):\n        N = int(next(it))\n        M = int(next(it))\n        pow2N = mod_pow(2, N)\n        a = (pow2N - 1) % MOD\n        ans = mod_pow(a, M)\n        out.append(str(ans))\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    main()\n",
+      "JavaScript": "const fs = require('fs');\nconst MOD = 1000000007n;\nfunction modPow(base, exp) {\n  base %= MOD;\n  let result = 1n;\n  while (exp > 0n) {\n    if (exp & 1n) result = (result * base) % MOD;\n    base = (base * base) % MOD;\n    exp >>= 1n;\n  }\n  return result;\n}\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet outputs = [];\nfor (let t = 0; t < T; t++) {\n  const N = BigInt(input[idx++]);\n  const M = BigInt(input[idx++]);\n  const pow2N = modPow(2n, N);\n  const a = (pow2N - 1n + MOD) % MOD;\n  const ans = modPow(a, M);\n  outputs.push(ans.toString());\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

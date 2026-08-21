@@ -1,0 +1,135 @@
+{
+  "questionId": "Q6217",
+  "title": "Almost Sorted Permutation",
+  "slug": "almost-sorted-permutation",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Sorting",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Sorting",
+      "Permutation",
+      "Array"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Ad-hoc & Implementation"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Given a sequence of **n** **distinct** numbers **a**[**1**..**n**], we want to sort them in an ascending order.\n\n\n\nAn interesting property of some sequences is that all numbers are almost at their correct position! More formally, the distance between the current position of any value is at most 1 from its correct position in a sorted order.\n\n\n\nNow, you want to verify whether the input sequence has such a property.\n\n\n\nNote that the time limit for this problem is 0.2 seconds. Please try to write a very efficient algorithm and implementation.",
+    "constraints": [
+      "1 ≤ T ≤ 10",
+      "1 ≤ n ≤ 10^6",
+      "All a[i] are distinct",
+      "1 ≤ a[i] ≤ 10^9"
+    ],
+    "inputFormat": "The first line contains an integer T (1 ≤ T ≤ 10), the number of test cases. For each test case, the first line contains an integer n (1 ≤ n ≤ 10^6). The second line contains n distinct integers a[1] … a[n] (1 ≤ a[i] ≤ 10^9) separated by single spaces.",
+    "outputFormat": "For each test case output a single line containing \"YES\" if every element is at most one position away from its position in the sorted order, otherwise output \"NO\".",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n3\n1 2 3\n5\n2 4 1 3 5",
+        "output": "YES\nNO",
+        "explanation": "First test case is already sorted, so every element stays at distance 0. In the second test case the sorted order is [1,2,3,4,5]; element 4 moves from index 2 to index 4 (distance 2) which violates the condition."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n4\n2 1 4 3",
+        "output": "YES",
+        "explanation": "Swapping each adjacent pair moves every element by exactly one position, which satisfies the requirement."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n42",
+        "expectedOutput": "YES",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary (15 elements, YES)",
+        "input": "1\n15\n2 1 4 3 6 5 8 7 10 9 12 11 14 13 15",
+        "expectedOutput": "YES",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case (NO)",
+        "input": "1\n5\n5 1 2 3 4",
+        "expectedOutput": "NO",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1 (YES)",
+        "input": "1\n6\n1 3 2 4 6 5",
+        "expectedOutput": "YES",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2 (NO)",
+        "input": "1\n7\n3 1 2 4 5 6 7",
+        "expectedOutput": "NO",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each test case we store each value together with its original index. After sorting the pairs by value we obtain the position each value would have in the fully sorted array. For the i‑th element in the sorted order we compare its original index with i. If the absolute difference exceeds 1 for any element the property is violated. Otherwise it holds. The algorithm is O(n log n) per test case because of the sort, and O(n) additional memory for the pairs.",
+    "timeComplexity": "O(n log n) per test case due to sorting.",
+    "spaceComplexity": "O(n) for the array of pairs.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\ntypedef struct {int val; int idx;} Pair;\nint cmpPair(const void *a, const void *b) {\n    int va = ((Pair*)a)->val;\n    int vb = ((Pair*)b)->val;\n    return (va > vb) - (va < vb);\n}\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    while(T--){\n        int n; scanf(\"%d\", &n);\n        Pair *p = (Pair*)malloc(n * sizeof(Pair));\n        for(int i=0;i<n;i++){\n            scanf(\"%d\", &p[i].val);\n            p[i].idx = i;\n        }\n        qsort(p, n, sizeof(Pair), cmpPair);\n        int ok = 1;\n        for(int i=0;i<n;i++){\n            if(abs(p[i].idx - i) > 1){ ok = 0; break; }\n        }\n        printf(ok?\"YES\\n\":\"NO\\n\");\n        free(p);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int n; cin>>n;\n        vector<pair<int,int>> v(n);\n        for(int i=0;i<n;++i){\n            cin>>v[i].first;\n            v[i].second=i;\n        }\n        sort(v.begin(), v.end(), [](const auto& a, const auto& b){return a.first<b.first;});\n        bool ok=true;\n        for(int i=0;i<n;++i){\n            if(abs(v[i].second - i) > 1){ ok=false; break; }\n        }\n        cout<<(ok?\"YES\":\"NO\")<<'\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    static class Pair {\n        int val;\n        int idx;\n        Pair(int v, int i){val=v; idx=i;}\n    }\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner(System.in);\n        int T = fs.nextInt();\n        StringBuilder sb = new StringBuilder();\n        while (T-- > 0) {\n            int n = fs.nextInt();\n            Pair[] arr = new Pair[n];\n            for (int i = 0; i < n; i++) {\n                arr[i] = new Pair(fs.nextInt(), i);\n            }\n            Arrays.sort(arr, Comparator.comparingInt(p -> p.val));\n            boolean ok = true;\n            for (int i = 0; i < n; i++) {\n                if (Math.abs(arr[i].idx - i) > 1) { ok = false; break; }\n            }\n            sb.append(ok ? \"YES\" : \"NO\").append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n    // Fast scanner for large input\n    static class FastScanner {\n        private final InputStream in;\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        FastScanner(InputStream in){ this.in = in; }\n        private int readByte() throws IOException {\n            if (ptr >= len) {\n                len = in.read(buffer);\n                ptr = 0;\n                if (len <= 0) return -1;\n            }\n            return buffer[ptr++];\n        }\n        int nextInt() throws IOException {\n            int c, sign = 1, val = 0;\n            do { c = readByte(); } while (c <= ' ');\n            if (c == '-') { sign = -1; c = readByte(); }\n            while (c > ' ') {\n                val = val * 10 + (c - '0');\n                c = readByte();\n            }\n            return val * sign;\n        }\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys\n\ndef solve():\n    data = list(map(int, sys.stdin.buffer.read().split()))\n    it = iter(data)\n    T = next(it)\n    out = []\n    for _ in range(T):\n        n = next(it)\n        pairs = [(next(it), i) for i in range(n)]\n        pairs.sort(key=lambda x: x[0])\n        ok = all(abs(idx - i) <= 1 for i, (_, idx) in enumerate(pairs))\n        out.append('YES' if ok else 'NO')\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst data = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/).map(Number);\nlet pos = 0;\nconst T = data[pos++];\nlet out = [];\nfor (let t = 0; t < T; t++) {\n  const n = data[pos++];\n  let pairs = new Array(n);\n  for (let i = 0; i < n; i++) {\n    pairs[i] = { val: data[pos++], idx: i };\n  }\n  pairs.sort((a, b) => a.val - b.val);\n  let ok = true;\n  for (let i = 0; i < n; i++) {\n    if (Math.abs(pairs[i].idx - i) > 1) { ok = false; break; }\n  }\n  out.push(ok ? 'YES' : 'NO');\n}\nconsole.log(out.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

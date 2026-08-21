@@ -1,0 +1,130 @@
+{
+  "questionId": "Q7971",
+  "title": "Maximise Islands",
+  "slug": "maximise-islands",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graph | Greedy",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Grid",
+      "Connected Components",
+      "Maximum Independent Set",
+      "Greedy",
+      "Parity"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Ad-hoc & Implementation"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given a grid with NNN rows (numbered 111 through NNN) and MMM columns (numbered 111 through MMM). Each cell of this grid contains either water or land. The initial state of the grid is described by strings S1,S2,…,SNS_1, S_2, \\ldots, S_NS1​,S2​,…,SN​; for each valid iii and jjj, the jjj-th character of SiS_iSi​ is '.' if the cell in the iii-th row and jjj-th column initially contains water or '*' if this cell initially contains land.\n\nA maximal group of connected land cells (by moving between side-adjacent land cells) is called an island.\n\nYou may perform any number of operations (including zero). In one operation, you should choose one cell of the grid and convert it either to a land cell or to a water cell. Find the smallest number of operations required to maximise the number of islands in the grid.",
+    "constraints": [
+      "1 ≤ T ≤ 1000",
+      "2 ≤ N, M ≤ 10",
+      "Each grid cell is either '.' or '*'"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case starts with a line containing two integers N and M (2 ≤ N, M ≤ 10) – the number of rows and columns. Then follow N lines, each a string of length M consisting of '.' (water) or '*' (land), describing the initial grid.",
+    "outputFormat": "For each test case output a single integer – the minimum number of cell conversions (water↔land) required to obtain a configuration that has the maximum possible number of islands.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n2 2\n..\n*.\n2 4\n*..*\n*.*.",
+        "output": "1\n2",
+        "explanation": "Explanation:\nExample case 1: The largest number of islands is 222 and it can be achieved by converting one cell from water to land. The resulting grid is\n.*\r\n*."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "An island is a connected component of side‑adjacent land cells. To maximise the number of islands we need every land cell to be isolated, i.e. no two land cells may share a side. The largest set of pairwise non‑adjacent cells in a rectangular grid is a maximum independent set of the grid graph, which is exactly the set of cells of one colour in a chess‑board colouring. Its size is ceil(N·M/2). Therefore the optimal final grid must have land on all cells of one colour (the colour with the larger count when N·M is odd) and water on the opposite colour.\n\nFor each test case we compute the number of mismatches for the two possible colourings:\n- colour 0: cells where (i + j) % 2 == 0 should be land.\n- colour 1: cells where (i + j) % 2 == 1 should be land.\nA mismatch is a water cell that should be land or a land cell that should be water. The required operations for a colouring equal the total mismatches.\nIf N·M is even both colourings give the same maximal island count, so we take the minimum of the two mismatch counts. If N·M is odd only the colour with ceil(N·M/2) cells (the even colour when both N and M are odd) can achieve the maximum, so we consider only that colour.\nThe answer is the minimal number of flips among the allowed colourings.\nThe algorithm scans the grid once, O(N·M) time, O(1) extra space.",
+    "timeComplexity": "O(N·M) per test case, where N and M are at most 10, so well within limits.",
+    "spaceComplexity": "O(1) besides the input storage.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    while(T--){\n        int N,M; scanf(\"%d %d\", &N, &M);\n        char grid[12][12]; // N,M ≤ 10\n        for(int i=0;i<N;i++){\n            scanf(\"%s\", grid[i]);\n        }\n        int flips0=0, flips1=0;\n        for(int i=0;i<N;i++){\n            for(int j=0;j<M;j++){\n                int even = ((i+j)&1)==0; // 0‑based indices, parity same as 1‑based\n                if(even){\n                    if(grid[i][j]=='.') flips0++; // should be land\n                    if(grid[i][j]=='*') flips1++; // should be water for colour1\n                }else{\n                    if(grid[i][j]=='*') flips0++; // should be water\n                    if(grid[i][j]=='.') flips1++; // should be land\n                }\n            }\n        }\n        int total = N*M;\n        int ans;\n        if(total%2==0){\n            ans = flips0 < flips1 ? flips0 : flips1;\n        }else{\n            // when total is odd, the colour with more cells is the even colour (i+j even)\n            ans = flips0;\n        }\n        printf(\"%d\\n\", ans);\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N,M; cin>>N>>M;\n        vector<string> g(N);\n        for(int i=0;i<N;i++) cin>>g[i];\n        int flips0=0, flips1=0;\n        for(int i=0;i<N;i++){\n            for(int j=0;j<M;j++){\n                bool even = ((i+j)&1)==0; // 0‑based parity matches 1‑based\n                if(even){\n                    if(g[i][j]=='.') flips0++; // should be land for colour0\n                    if(g[i][j]=='*') flips1++; // should be water for colour1\n                }else{\n                    if(g[i][j]=='*') flips0++; // should be water for colour0\n                    if(g[i][j]=='.') flips1++; // should be land for colour1\n                }\n            }\n        }\n        int total=N*M;\n        int ans = (total%2==0) ? min(flips0,flips1) : flips0; // even colour is optimal when odd total\n        cout<<ans<<\"\\n\";\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st = new StringTokenizer(br.readLine());\n        int T = Integer.parseInt(st.nextToken());\n        StringBuilder out = new StringBuilder();\n        while (T-- > 0) {\n            st = new StringTokenizer(br.readLine());\n            int N = Integer.parseInt(st.nextToken());\n            int M = Integer.parseInt(st.nextToken());\n            char[][] g = new char[N][M];\n            for (int i = 0; i < N; i++) {\n                String line = br.readLine();\n                g[i] = line.toCharArray();\n            }\n            int flips0 = 0, flips1 = 0;\n            for (int i = 0; i < N; i++) {\n                for (int j = 0; j < M; j++) {\n                    boolean even = ((i + j) & 1) == 0; // 0‑based parity\n                    if (even) {\n                        if (g[i][j] == '.') flips0++; // should be land\n                        if (g[i][j] == '*') flips1++; // should be water for colour1\n                    } else {\n                        if (g[i][j] == '*') flips0++; // should be water\n                        if (g[i][j] == '.') flips1++; // should be land for colour1\n                    }\n                }\n            }\n            int total = N * M;\n            int ans = (total % 2 == 0) ? Math.min(flips0, flips1) : flips0;\n            out.append(ans).append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}\n",
+      "Python3": "import sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it)); M = int(next(it))\n        grid = [list(next(it).strip()) for _ in range(N)]\n        flips0 = flips1 = 0\n        for i in range(N):\n            for j in range(M):\n                even = ((i + j) & 1) == 0\n                if even:\n                    if grid[i][j] == '.':\n                        flips0 += 1\n                    else:  # '*'\n                        flips1 += 1\n                else:\n                    if grid[i][j] == '*':\n                        flips0 += 1\n                    else:\n                        flips1 += 1\n        total = N * M\n        ans = min(flips0, flips1) if total % 2 == 0 else flips0\n        out_lines.append(str(ans))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet results = [];\nfor (let t = 0; t < T; t++) {\n  const N = Number(input[idx++]);\n  const M = Number(input[idx++]);\n  const grid = [];\n  for (let i = 0; i < N; i++) {\n    grid.push(input[idx++]);\n  }\n  let flips0 = 0, flips1 = 0;\n  for (let i = 0; i < N; i++) {\n    for (let j = 0; j < M; j++) {\n      const even = ((i + j) & 1) === 0; // 0‑based parity\n      const cell = grid[i][j];\n      if (even) {\n        if (cell === '.') flips0++; // should be land for colour0\n        else flips1++; // '*', should be water for colour1\n      } else {\n        if (cell === '*') flips0++; // should be water for colour0\n        else flips1++; // '.', should be land for colour1\n      }\n    }\n  }\n  const total = N * M;\n  const ans = (total % 2 === 0) ? Math.min(flips0, flips1) : flips0;\n  results.push(String(ans));\n}\nconsole.log(results.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

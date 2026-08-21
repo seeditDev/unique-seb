@@ -1,0 +1,128 @@
+{
+  "questionId": "Q6398",
+  "title": "Primitive Queries",
+  "slug": "primitive-queries",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Tree",
+      "DFS",
+      "LCA"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Trees"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Given a tree **T** consisting of **N**  nodes and **Q** queries on it. Each node **v** have some value **Cv** assigned to it. The queries can be of two types: \n\n\n**1 u v** - find number of distinct numbers on path between **u** and **v** \n**2 v y** - assign the value **y** to the node with index **v**. \n\nAll the indices in the queries are 1-based.",
+    "constraints": [
+      "1 <= N, Q <= 10^5",
+      "0 <= C_i, y <= 10^9",
+      "1 <= u, v <= N"
+    ],
+    "inputFormat": "The first line contains two integers N and Q denoting the number of elements in the tree and the number of queries to be executed.\nThe second line contains N integers denoting the assigned values to the tree.\nEach of the next N - 1 lines contains two integers u and v denoting nodes connected by an edge.\nEach of the next Q lines contains one query.",
+    "outputFormat": "For each query of type 1, output the answer to the query in a single line.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "6 7\n1 2 3 4 5 6\n1 2\n1 3\n2 4\n2 5\n3 6\n1 5 6\n2 5 6\n1 1 5\n1 5 6\n2 1 6\n1 5 6\n1 2 6",
+        "output": "5\n3\n4\n3\n3",
+        "explanation": ""
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a combination of Depth-First Search (DFS) and Lowest Common Ancestor (LCA) techniques.\nFirst, we build the tree using the given edges and assign the initial values to each node.\nThen, for each query of type 1, we find the LCA of the two nodes and count the number of distinct values on the path from the LCA to each node.\nFor queries of type 2, we simply update the value of the specified node.",
+    "timeComplexity": "O(Q * N) — because in the worst case, we might need to traverse the entire tree for each query.",
+    "spaceComplexity": "O(N) — because we need to store the tree and the values of each node.",
+    "code": {
+      "C": "// COMPLETE, COMPILABLE C code\n#include <stdio.h>\n#include <stdlib.h>\n#define MAX_N 100005\ntypedef struct Node {\n    int value;\n    struct Node* parent;\n    struct Node** children;\n    int numChildren;\n} Node;\nNode* nodes[MAX_N];\nvoid dfs(Node* node, int* values) {\n    node->value = values[node - nodes];\n    for (int i = 0; i < node->numChildren; i++) {\n        dfs(node->children[i], values);\n    }\n}\nint countDistinct(Node* node, Node* lca) {\n    int count = 0;\n    while (node != lca) {\n        count++;\n        node = node->parent;\n    }\n    return count;\n}\nint findLCA(Node* node1, Node* node2) {\n    int depth1 = 0, depth2 = 0;\n    Node* temp1 = node1, *temp2 = node2;\n    while (temp1 != NULL) {\n        depth1++;\n        temp1 = temp1->parent;\n    }\n    while (temp2 != NULL) {\n        depth2++;\n        temp2 = temp2->parent;\n    }\n    if (depth1 > depth2) {\n        while (depth1 > depth2) {\n            node1 = node1->parent;\n            depth1--;\n        }\n    } else {\n        while (depth2 > depth1) {\n            node2 = node2->parent;\n            depth2--;\n        }\n    }\n    while (node1 != node2) {\n        node1 = node1->parent;\n        node2 = node2->parent;\n    }\n    return node1;\n}\nint main() {\n    int N, Q;\n    scanf(\"%d %d\", &N, &Q);\n    int values[N];\n    for (int i = 0; i < N; i++) {\n        scanf(\"%d\", &values[i]);\n    }\n    for (int i = 0; i < N - 1; i++) {\n        int u, v;\n        scanf(\"%d %d\", &u, &v);\n        Node* nodeU = nodes[u - 1];\n        Node* nodeV = nodes[v - 1];\n        nodeU->children[nodeU->numChildren++] = nodeV;\n        nodeV->parent = nodeU;\n    }\n    dfs(nodes[0], values);\n    for (int i = 0; i < Q; i++) {\n        int type;\n        scanf(\"%d\", &type);\n        if (type == 1) {\n            int u, v;\n            scanf(\"%d %d\", &u, &v);\n            Node* nodeU = nodes[u - 1];\n            Node* nodeV = nodes[v - 1];\n            Node* lca = findLCA(nodeU, nodeV);\n            int count = countDistinct(nodeU, lca) + countDistinct(nodeV, lca) + 1;\n            printf(\"%d\\n\", count);\n        } else if (type == 2) {\n            int v, y;\n            scanf(\"%d %d\", &v, &y);\n            nodes[v - 1]->value = y;\n        }\n    }\n    return 0;\n}",
+      "C++": "// COMPLETE, COMPILABLE C++ code\n#include <iostream>\n#include <vector>\nusing namespace std;\nconst int MAX_N = 100005;\nstruct Node {\n    int value;\n    Node* parent;\n    vector<Node*> children;\n};\nNode* nodes[MAX_N];\nvoid dfs(Node* node, int* values) {\n    node->value = values[node - nodes];\n    for (int i = 0; i < node->children.size(); i++) {\n        dfs(node->children[i], values);\n    }\n}\nint countDistinct(Node* node, Node* lca) {\n    int count = 0;\n    while (node != lca) {\n        count++;\n        node = node->parent;\n    }\n    return count;\n}\nNode* findLCA(Node* node1, Node* node2) {\n    int depth1 = 0, depth2 = 0;\n    Node* temp1 = node1, *temp2 = node2;\n    while (temp1 != NULL) {\n        depth1++;\n        temp1 = temp1->parent;\n    }\n    while (temp2 != NULL) {\n        depth2++;\n        temp2 = temp2->parent;\n    }\n    if (depth1 > depth2) {\n        while (depth1 > depth2) {\n            node1 = node1->parent;\n            depth1--;\n        }\n    } else {\n        while (depth2 > depth1) {\n            node2 = node2->parent;\n            depth2--;\n        }\n    }\n    while (node1 != node2) {\n        node1 = node1->parent;\n        node2 = node2->parent;\n    }\n    return node1;\n}\nint main() {\n    int N, Q;\n    cin >> N >> Q;\n    int values[N];\n    for (int i = 0; i < N; i++) {\n        cin >> values[i];\n    }\n    for (int i = 0; i < N - 1; i++) {\n        int u, v;\n        cin >> u >> v;\n        Node* nodeU = nodes[u - 1];\n        Node* nodeV = nodes[v - 1];\n        nodeU->children.push_back(nodeV);\n        nodeV->parent = nodeU;\n    }\n    dfs(nodes[0], values);\n    for (int i = 0; i < Q; i++) {\n        int type;\n        cin >> type;\n        if (type == 1) {\n            int u, v;\n            cin >> u >> v;\n            Node* nodeU = nodes[u - 1];\n            Node* nodeV = nodes[v - 1];\n            Node* lca = findLCA(nodeU, nodeV);\n            int count = countDistinct(nodeU, lca) + countDistinct(nodeV, lca) + 1;\n            cout << count << endl;\n        } else if (type == 2) {\n            int v, y;\n            cin >> v >> y;\n            nodes[v - 1]->value = y;\n        }\n    }\n    return 0;\n}",
+      "Java": "// COMPLETE, COMPILABLE Java code\nimport java.util.ArrayList;\nimport java.util.Scanner;\npublic class Main {\n    static class Node {\n        int value;\n        Node parent;\n        ArrayList<Node> children;\n        public Node() {\n            children = new ArrayList<>();\n        }\n    }\n    static Node[] nodes;\n    public static void dfs(Node node, int[] values) {\n        node.value = values[node.value - 1];\n        for (Node child : node.children) {\n            dfs(child, values);\n        }\n    }\n    public static int countDistinct(Node node, Node lca) {\n        int count = 0;\n        while (node != lca) {\n            count++;\n            node = node.parent;\n        }\n        return count;\n    }\n    public static Node findLCA(Node node1, Node node2) {\n        int depth1 = 0, depth2 = 0;\n        Node temp1 = node1, temp2 = node2;\n        while (temp1 != null) {\n            depth1++;\n            temp1 = temp1.parent;\n        }\n        while (temp2 != null) {\n            depth2++;\n            temp2 = temp2.parent;\n        }\n        if (depth1 > depth2) {\n            while (depth1 > depth2) {\n                node1 = node1.parent;\n                depth1--;\n            }\n        } else {\n            while (depth2 > depth1) {\n                node2 = node2.parent;\n                depth2--;\n            }\n        }\n        while (node1 != node2) {\n            node1 = node1.parent;\n            node2 = node2.parent;\n        }\n        return node1;\n    }\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int N = scanner.nextInt();\n        int Q = scanner.nextInt();\n        int[] values = new int[N];\n        for (int i = 0; i < N; i++) {\n            values[i] = scanner.nextInt();\n        }\n        nodes = new Node[N];\n        for (int i = 0; i < N; i++) {\n            nodes[i] = new Node();\n        }\n        for (int i = 0; i < N - 1; i++) {\n            int u = scanner.nextInt() - 1;\n            int v = scanner.nextInt() - 1;\n            nodes[u].children.add(nodes[v]);\n            nodes[v].parent = nodes[u];\n        }\n        dfs(nodes[0], values);\n        for (int i = 0; i < Q; i++) {\n            int type = scanner.nextInt();\n            if (type == 1) {\n                int u = scanner.nextInt() - 1;\n                int v = scanner.nextInt() - 1;\n                Node nodeU = nodes[u];\n                Node nodeV = nodes[v];\n                Node lca = findLCA(nodeU, nodeV);\n                int count = countDistinct(nodeU, lca) + countDistinct(nodeV, lca) + 1;\n                System.out.println(count);\n            } else if (type == 2) {\n                int v = scanner.nextInt() - 1;\n                int y = scanner.nextInt();\n                nodes[v].value = y;\n            }\n        }\n    }\n}",
+      "Python3": "# COMPLETE, RUNNABLE Python3 code\nimport sys\nclass Node:\n    def __init__(self):\n        self.value = None\n        self.parent = None\n        self.children = []\ndef dfs(node, values):\n    node.value = values[node.value - 1]\n    for child in node.children:\n        dfs(child, values)\ndef count_distinct(node, lca):\n    count = 0\n    while node != lca:\n        count += 1\n        node = node.parent\n    return count\n\ndef find_lca(node1, node2):\n    depth1 = 0\n    depth2 = 0\n    temp1 = node1\n    temp2 = node2\n    while temp1:\n        depth1 += 1\n        temp1 = temp1.parent\n    while temp2:\n        depth2 += 1\n        temp2 = temp2.parent\n    if depth1 > depth2:\n        while depth1 > depth2:\n            node1 = node1.parent\n            depth1 -= 1\n    else:\n        while depth2 > depth1:\n            node2 = node2.parent\n            depth2 -= 1\n    while node1 != node2:\n        node1 = node1.parent\n        node2 = node2.parent\n    return node1\n\ndef main():\n    N, Q = map(int, sys.stdin.readline().split())\n    values = list(map(int, sys.stdin.readline().split()))\n    nodes = [Node() for _ in range(N)]\n    for _ in range(N - 1):\n        u, v = map(int, sys.stdin.readline().split())\n        u -= 1\n        v -= 1\n        nodes[u].children.append(nodes[v])\n        nodes[v].parent = nodes[u]\n    dfs(nodes[0], values)\n    for _ in range(Q):\n        type = int(sys.stdin.readline().split()[0])\n        if type == 1:\n            u, v = map(int, sys.stdin.readline().split())\n            u -= 1\n            v -= 1\n            nodeU = nodes[u]\n            nodeV = nodes[v]\n            lca = find_lca(nodeU, nodeV)\n            count = count_distinct(nodeU, lca) + count_distinct(nodeV, lca) + 1\n            print(count)\n        elif type == 2:\n            v, y = map(int, sys.stdin.readline().split())\n            v -= 1\n            nodes[v].value = y\nif __name__ == '__main__':\n    main()",
+      "JavaScript": "// COMPLETE, RUNNABLE JavaScript code\nconst fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nfunction readline() {\n    return lines[idx++];\n}\nfunction Node() {\n    this.value = null;\n    this.parent = null;\n    this.children = [];\n}\nfunction dfs(node, values) {\n    node.value = values[node.value - 1];\n    for (let child of node.children) {\n        dfs(child, values);\n    }\n}\nfunction countDistinct(node, lca) {\n    let count = 0;\n    while (node !== lca) {\n        count++;\n        node = node.parent;\n    }\n    return count;\n}\nfunction findLCA(node1, node2) {\n    let depth1 = 0, depth2 = 0;\n    let temp1 = node1, temp2 = node2;\n    while (temp1) {\n        depth1++;\n        temp1 = temp1.parent;\n    }\n    while (temp2) {\n        depth2++;\n        temp2 = temp2.parent;\n    }\n    if (depth1 > depth2) {\n        while (depth1 > depth2) {\n            node1 = node1.parent;\n            depth1--;\n        }\n    } else {\n        while (depth2 > depth1) {\n            node2 = node2.parent;\n            depth2--;\n        }\n    }\n    while (node1 !== node2) {\n        node1 = node1.parent;\n        node2 = node2.parent;\n    }\n    return node1;\n}\nfunction main() {\n    let [N, Q] = readline().split(' ').map(Number);\n    let values = readline().split(' ').map(Number);\n    let nodes = Array(N).fill(0).map(() => new Node());\n    for (let i = 0; i < N - 1; i++) {\n        let [u, v] = readline().split(' ').map(Number);\n        u--;\n        v--;\n        nodes[u].children.push(nodes[v]);\n        nodes[v].parent = nodes[u];\n    }\n    dfs(nodes[0], values);\n    for (let i = 0; i < Q; i++) {\n        let type = Number(readline().split(' ')[0]);\n        if (type === 1) {\n            let [u, v] = readline().split(' ').map(Number);\n            u--;\n            v--;\n            let nodeU = nodes[u];\n            let nodeV = nodes[v];\n            let lca = findLCA(nodeU, nodeV);\n            let count = countDistinct(nodeU, lca) + countDistinct(nodeV, lca) + 1;\n            console.log(count);\n        } else if (type === 2) {\n            let [v, y] = readline().split(' ').map(Number);\n            v--;\n            nodes[v].value = y;\n        }\n    }\n}\nmain();"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

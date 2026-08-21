@@ -1,0 +1,128 @@
+{
+  "questionId": "Q1378",
+  "title": "Generate All Possible Pairs of Balanced Parenthese",
+  "slug": "generate-all-possible-pairs-of-balanced-parenthese",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Recursion & Backtracking",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Catalan Numbers",
+      "String Generation",
+      "Backtracking",
+      "Recursion & Backtracking",
+      "Recursion"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Recursion & Backtracking"
+    ]
+  },
+  "content": {
+    "problemStatement": "Given a number nnn, generate all possible nnn pairs of balanced parentheses.  A balanced parentheses string has opening and closing parentheses in a way that every opening parenthesis has a matching closing parenthesis and the pairs are properly nested.\n\nYou simply need to complete the provided function and don\u2019t worry about the main function.\n\n\nInput Format\nThe input contains a single integer nnn.\n\n\n\nOutput Format\nGenerate all combinations of nnn pairs of balanced parentheses. Printing of the brackets will be done by the main function.",
+    "constraints": [
+      "1 \u2264 T \u2264 10",
+      "1 \u2264 n \u2264 13"
+    ],
+    "inputFormat": "The first line contains an integer T (1 \u2264 T \u2264 10), the number of test cases. Each of the next T lines contains a single integer n (1 \u2264 n \u2264 13) representing the number of pairs of parentheses to generate.",
+    "outputFormat": "For each test case output all distinct balanced parentheses strings of length 2\u00b7n on one line, separated by a single space, in the order produced by a standard back\u2011tracking algorithm that always tries to add '(' before ')'. Print a newline after the output of each test case.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n3\n2\n1",
+        "output": "((())) (()()) (())() ()(()) ()()()\n(()) ()()\n()",
+        "explanation": "Three test cases. For n=3 the five balanced strings are printed in back\u2011tracking order, for n=2 the two strings, and for n=1 the single pair."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n4",
+        "output": "(((()))) ((()())) ((())()) ((()))() (()(())) (()()()) (()())() (())(()) (())()() ()((())) ()(()()) ()(())() ()()(()) ()()()()",
+        "explanation": "n=4 yields the 14 Catalan strings; they are listed in the order the algorithm generates them."
+      },
+      {
+        "id": "sample_3",
+        "input": "2\n1\n3",
+        "output": "()\n((())) (()()) (())() ()(()) ()()()",
+        "explanation": "First test case prints the only string for n=1, second test case prints the five strings for n=3."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1",
+        "expectedOutput": "()",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "small n",
+        "input": "1\n2",
+        "expectedOutput": "(()) ()()",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "medium n",
+        "input": "1\n3",
+        "expectedOutput": "((())) (()()) (())() ()(()) ()()()",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "larger n",
+        "input": "1\n4",
+        "expectedOutput": "(((()))) ((()())) ((())()) ((()))() (()(())) (()()()) (()())() (())(()) (())()() ()((())) ()(()()) ()(())() ()()(()) ()()()()",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "multiple test cases",
+        "input": "3\n1\n2\n4",
+        "expectedOutput": "()\n(()) ()()\n(((()))) ((()())) ((())()) ((()))() (()(())) (()()()) (()())() (())(()) (())()() ()((())) ()(()()) ()(())() ()()(()) ()()()()",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "We generate the strings using depth\u2011first backtracking. While building a partial string we keep two counters: the number of '(' placed (open) and the number of ')' placed (close). At any step we may add '(' if open < n, and we may add ')' if close < open (to keep the string valid). When open == n and close == n the current string is complete and is stored. Because we always try '(' before ')', the produced order matches the required back\u2011tracking order. The algorithm runs in O(C_n) time where C_n is the n\u2011th Catalan number (the number of valid strings) and uses O(n) auxiliary stack space for recursion.",
+    "timeComplexity": "O(C_n) where C_n is the n\u2011th Catalan number (\u2248 4^n / (n^{3/2} \u221a\u03c0)).",
+    "spaceComplexity": "O(C_n * n) for storing all results plus O(n) recursion depth.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nvoid backtrack(int n, int open, int close, char *buf, char ***res, int *sz) {\n    if (open == n && close == n) {\n        (*sz)++;\n        *res = realloc(*res, (*sz) * sizeof(char *));\n        (*res)[(*sz) - 1] = strdup(buf);\n        return;\n    }\n    if (open < n) {\n        buf[open + close] = '(';\n        backtrack(n, open + 1, close, buf, res, sz);\n    }\n    if (close < open) {\n        buf[open + close] = ')';\n        backtrack(n, open, close + 1, buf, res, sz);\n    }\n}\n\nchar **generate(int n, int *returnSize) {\n    *returnSize = 0;\n    char **result = NULL;\n    char *buf = malloc(2 * n + 1);\n    buf[2 * n] = '\\0';\n    backtrack(n, 0, 0, buf, &result, returnSize);\n    free(buf);\n    return result;\n}\n\nint main() {\n    int T, n;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        scanf(\"%d\", &n);\n        int sz;\n        char **ans = generate(n, &sz);\n        for (int i = 0; i < sz; ++i) {\n            printf(\"%s\", ans[i]);\n            if (i + 1 < sz) printf(\" \");\n            free(ans[i]);\n        }\n        free(ans);\n        if (T) printf(\"\\n\");\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nvoid backtrack(int n, int open, int close, string &cur, vector<string> &out) {\n    if (open == n && close == n) {\n        out.push_back(cur);\n        return;\n    }\n    if (open < n) {\n        cur.push_back('(');\n        backtrack(n, open + 1, close, cur, out);\n        cur.pop_back();\n    }\n    if (close < open) {\n        cur.push_back(')');\n        backtrack(n, open, close + 1, cur, out);\n        cur.pop_back();\n    }\n}\n\nvector<string> generate(int n) {\n    vector<string> res;\n    string cur;\n    backtrack(n, 0, 0, cur, res);\n    return res;\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T, n;\n    if (!(cin >> T)) return 0;\n    while (T--) {\n        cin >> n;\n        vector<string> ans = generate(n);\n        for (size_t i = 0; i < ans.size(); ++i) {\n            cout << ans[i];\n            if (i + 1 < ans.size()) cout << ' ';\n        }\n        if (T) cout << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    private static void backtrack(int n, int open, int close, StringBuilder sb, List<String> out) {\n        if (open == n && close == n) {\n            out.add(sb.toString());\n            return;\n        }\n        if (open < n) {\n            sb.append('(');\n            backtrack(n, open + 1, close, sb, out);\n            sb.deleteCharAt(sb.length() - 1);\n        }\n        if (close < open) {\n            sb.append(')');\n            backtrack(n, open, close + 1, sb, out);\n            sb.deleteCharAt(sb.length() - 1);\n        }\n    }\n\n    private static List<String> generate(int n) {\n        List<String> res = new ArrayList<>();\n        backtrack(n, 0, 0, new StringBuilder(), res);\n        return res;\n    }\n\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder out = new StringBuilder();\n        for (int tc = 0; tc < T; ++tc) {\n            int n = Integer.parseInt(br.readLine().trim());\n            List<String> ans = generate(n);\n            for (int i = 0; i < ans.size(); ++i) {\n                out.append(ans.get(i));\n                if (i + 1 < ans.size()) out.append(' ');\n            }\n            if (tc + 1 < T) out.append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef generate(n: int):\n    res = []\n    def backtrack(s: str, open_cnt: int, close_cnt: int):\n        if len(s) == 2 * n:\n            res.append(s)\n            return\n        if open_cnt < n:\n            backtrack(s + '(', open_cnt + 1, close_cnt)\n        if close_cnt < open_cnt:\n            backtrack(s + ')', open_cnt, close_cnt + 1)\n    backtrack('', 0, 0)\n    return res\n\ndef main():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    T = int(data[0])\n    idx = 1\n    out_lines = []\n    for _ in range(T):\n        n = int(data[idx]); idx += 1\n        ans = generate(n)\n        out_lines.append(' '.join(ans))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    main()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nif (input.length === 0) process.exit(0);\nlet pos = 0;\nconst T = parseInt(input[pos++], 10);\nlet outputs = [];\nfunction backtrack(n, open, close, cur, arr) {\n    if (open === n && close === n) {\n        arr.push(cur);\n        return;\n    }\n    if (open < n) backtrack(n, open + 1, close, cur + '(', arr);\n    if (close < open) backtrack(n, open, close + 1, cur + ')', arr);\n}\nfor (let t = 0; t < T; ++t) {\n    const n = parseInt(input[pos++], 10);\n    const res = [];\n    backtrack(n, 0, 0, '', res);\n    outputs.push(res.join(' '));\n}\nconsole.log(outputs.join('\\n'));"
+    }
+  }
+}

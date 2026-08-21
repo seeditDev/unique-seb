@@ -1,0 +1,140 @@
+{
+  "questionId": "Q5337",
+  "title": "Correctness of Knight Move",
+  "slug": "correctness-of-knight-move",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Knight Move",
+      "Chess",
+      "String Validation"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Ad-hoc & Implementation"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef develops his own computer program for playing chess. He is at the very beginning. At first he needs to write the module that will receive moves written by the players and analyze it. The module will receive a string and it should report at first whether this string represents the correct pair of cells on the chess board (we call such strings correct) and then report whether it represents the correct move depending on the situation on the chess board. Chef always has troubles with analyzing knight moves. So at first he needs a test program that can say whether a given string is correct and then whether it represents a correct knight move (irregardless of the situation on the chess board). The cell on the chessboard is represented as a string of two characters: first character is a lowercase Latin letter from **a** to **h** and the second character is a digit from **1** to **8**. The string represents the correct pair of cells on the chess board if it composed of 5 characters where first two characters represent the cell where chess figure was, 3rd character is the dash **\"-\"** and the last two characters represent the destination cell.",
+    "constraints": [
+      "1 <= T <= 50000",
+      "Each input line length == 5",
+      "Only ASCII characters 32-126 may appear"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case contains a string of length 5.",
+    "outputFormat": "For each test case, print 'Yes' if the string represents a correct knight move, 'No' if it's an incorrect knight move, and 'Error' if the string is not in the correct format.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4\na1-b3\nd2-h8\na3 c4\nErrorError",
+        "output": "Yes\nNo\nError\nError",
+        "explanation": "a1-b3: (a,1)->(b,3) gives dx=1,dy=2 → knight move → Yes.\nd2-h8: dx=3,dy=6 → not a knight move → No.\na3 c4: missing dash, format invalid → Error.\nErrorError: length !=5 → Error."
+      },
+      {
+        "id": "sample_2",
+        "input": "3\ng8-f6\nb1-c3\nh8-h8",
+        "output": "Yes\nYes\nNo",
+        "explanation": "g8-f6: dx=1,dy=2 → Yes.\nb1-c3: dx=1,dy=2 → Yes.\nh8-h8: same square, not a knight move → No."
+      },
+      {
+        "id": "sample_3",
+        "input": "2\nA1-b2\nc9-d7",
+        "output": "Error\nError",
+        "explanation": "Uppercase letter and digit 9 are outside allowed ranges, so both are format errors."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\na1-a3",
+        "expectedOutput": "Yes",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\nh8-h6",
+        "expectedOutput": "Yes",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\na1-a1",
+        "expectedOutput": "No",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\na1-i9",
+        "expectedOutput": "Error",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "5\na1-b3\nd2-h8\na3 c4\nErrorError\nh8-h6",
+        "expectedOutput": "Yes\nNo\nError\nError\nYes",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The key insight is to validate the input string format and then check if the move is a valid knight move in chess. We use the properties of a knight's move to determine if the move is valid.",
+    "timeComplexity": "O(1) per test case, O(T) total.",
+    "spaceComplexity": "O(1) — constant space used.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n#include <ctype.h>\n\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0; \n    char buf[20];\n    getchar(); // consume newline after T\n    while(T--){\n        if(!fgets(buf, sizeof(buf), stdin)) break;\n        size_t len = strlen(buf);\n        if(len && buf[len-1]=='\\n') buf[--len]='\\0';\n        if(len!=5 || buf[2]!='-'){\n            puts(\"Error\");\n            continue;\n        }\n        char c1=buf[0], r1=buf[1], c2=buf[3], r2=buf[4];\n        if(c1<'a'||c1>'h'||c2<'a'||c2>'h'||r1<'1'||r1>'8'||r2<'1'||r2>'8'){\n            puts(\"Error\");\n            continue;\n        }\n        int col1=c1-'a', col2=c2-'a';\n        int row1=r1-'1', row2=r2-'1';\n        int dx=abs(col2-col1), dy=abs(row2-row1);\n        if((dx==1 && dy==2) || (dx==2 && dy==1)) puts(\"Yes\");\n        else puts(\"No\");\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(NULL);\n    int T; if(!(cin>>T)) return 0; string line; getline(cin,line); // consume endline\n    while(T--){\n        getline(cin,line);\n        if(line.size()!=5 || line[2]!='-'){\n            cout<<\"Error\\n\"; continue;\n        }\n        char c1=line[0], r1=line[1], c2=line[3], r2=line[4];\n        if(c1<'a'||c1>'h'||c2<'a'||c2>'h'||r1<'1'||r1>'8'||r2<'1'||r2>'8'){\n            cout<<\"Error\\n\"; continue;\n        }\n        int col1=c1-'a', col2=c2-'a';\n        int row1=r1-'1', row2=r2-'1';\n        int dx=abs(col2-col1), dy=abs(row2-row1);\n        if((dx==1 && dy==2) || (dx==2 && dy==1)) cout<<\"Yes\\n\";\n        else cout<<\"No\\n\";\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder out = new StringBuilder();\n        for(int i=0;i<T;i++){\n            String s = br.readLine();\n            if(s.length()!=5 || s.charAt(2)!='-'){\n                out.append(\"Error\\n\");\n                continue;\n            }\n            char c1=s.charAt(0), r1=s.charAt(1), c2=s.charAt(3), r2=s.charAt(4);\n            if(c1<'a'||c1>'h'||c2<'a'||c2>'h'||r1<'1'||r1>'8'||r2<'1'||r2>'8'){\n                out.append(\"Error\\n\");\n                continue;\n            }\n            int col1=c1-'a', col2=c2-'a';\n            int row1=r1-'1', row2=r2-'1';\n            int dx=Math.abs(col2-col1), dy=Math.abs(row2-row1);\n            if((dx==1 && dy==2) || (dx==2 && dy==1)) out.append(\"Yes\\n\");\n            else out.append(\"No\\n\");\n        }\n        System.out.print(out.toString());\n    }\n}\n",
+      "Python3": "import sys\n\ndef is_knight(c1,r1,c2,r2):\n    dx=abs(ord(c2)-ord(c1))\n    dy=abs(int(r2)-int(r1))\n    return (dx==1 and dy==2) or (dx==2 and dy==1)\n\ndef solve():\n    data=sys.stdin.read().splitlines()\n    if not data: return\n    T=int(data[0].strip())\n    out=[]\n    for i in range(1,T+1):\n        s=data[i]\n        if len(s)!=5 or s[2]!='-':\n            out.append('Error')\n            continue\n        c1,r1,c2,r2=s[0],s[1],s[3],s[4]\n        if not('a'<=c1<='h' and 'a'<=c2<='h' and '1'<=r1<='8' and '1'<=r2<='8'):\n            out.append('Error')\n            continue\n        out.append('Yes' if is_knight(c1,r1,c2,r2) else 'No')\n    sys.stdout.write('\\n'.join(out))\n\nif __name__=='__main__':\n    solve()\n",
+      "JavaScript": "const lines = require('fs').readFileSync(0,'utf-8').trim().split('\\n');\nlet i=0;\nconst T = parseInt(lines[i++].trim(), 10);\nlet result = [];\nfor(let t=0; t<T; t++){\n  const s = lines[i++] || '';\n  if(s.length!==5 || s[2]!=='-'){\n    result.push('Error');\n    continue;\n  }\n  const c1=s[0], r1=s[1], c2=s[3], r2=s[4];\n  if(c1<'a'||c1>'h'||c2<'a'||c2>'h'||r1<'1'||r1>'8'||r2<'1'||r2>'8'){\n    result.push('Error');\n    continue;\n  }\n  const dx = Math.abs(c2.charCodeAt(0)-c1.charCodeAt(0));\n  const dy = Math.abs(r2.charCodeAt(0)-r1.charCodeAt(0));\n  if((dx===1 && dy===2) || (dx===2 && dy===1)) result.push('Yes');\n  else result.push('No');\n}\nconsole.log(result.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

@@ -1,0 +1,130 @@
+{
+  "questionId": "Q3397",
+  "title": "Akhil And Random String",
+  "slug": "akhil-and-random-string",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-03",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Stack",
+      "Lexicographical Order",
+      "Strings",
+      "Subsequence",
+      "Greedy"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Greedy Algorithms"
+    ]
+  },
+  "content": {
+    "problemStatement": "Akhil comes across a string **S** of length **N**. He started wondering about the smallest lexicographical subsequence of string **S** of length **K**.\n\nA subsequence of a string is formed by deleting some characters (possibly none) from it's original string.\n\nA string **A** is said to be lexicographically smaller than the string **B** of the same length if at the first position where **A** and **B** differ, **A** contains a letter which appears earlier in the dictionary than the corresponding letter in **B**.",
+    "constraints": [
+      "1 \u2264 T \u2264 5",
+      "1 \u2264 |S| \u2264 10^5 (overall sum of lengths across test cases fits in memory)",
+      "1 \u2264 K \u2264 |S|",
+      "S consists only of characters 'a'\u2011'z'"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case: the first line contains the string S (lowercase letters only). The second line contains the integer K (1 \u2264 K \u2264 |S|).",
+    "outputFormat": "For each test case output a single line \u2013 the lexicographically smallest subsequence of S having length exactly K.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\nabdc\n3\nbacb\n2",
+        "output": "abc\nab",
+        "explanation": "For the first test case the smallest subsequence of length 3 is \"abc\". For the second test case it is \"ab\"."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\nabcde\n2",
+        "output": "ab",
+        "explanation": "All subsequences of length 2 are: ab, ac, ad, ae, bc, bd, be, cd, ce, de. The lexicographically smallest is \"ab\"."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\ncba\n2",
+        "output": "ba",
+        "explanation": "Possible subsequences of length 2: cb, ca, ba. The smallest is \"ba\"."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\na\n1",
+        "expectedOutput": "a",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "1\na\n1",
+        "expectedOutput": "a",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "1\na\n1",
+        "expectedOutput": "a",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "1\na\n1",
+        "expectedOutput": "a",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "1\na\n1",
+        "expectedOutput": "a",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "We scan the string from left to right while maintaining a stack that stores the currently built subsequence. For each character c at position i we try to pop larger characters from the top of the stack as long as:\n1) The top character > c (popping makes the result lexicographically smaller).\n2) After popping we still have enough characters left to reach length K (i.e., stackSize\u20111 + (N\u2011i\u20111) \u2265 K).\nAfter possible pops we push c if the stack size is still less than K. At the end the stack contains the answer (its first K characters). This is O(N) per test case and uses O(K) extra memory.",
+    "timeComplexity": "O(N) per test case, where N = |S|. Overall O(T\u00b7N).",
+    "spaceComplexity": "O(K) auxiliary space for the stack (worst\u2011case O(N) if K = N).",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n\nint main() {\n    int T; \n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        char s[100005];\n        int K;\n        scanf(\"%s\", s);\n        scanf(\"%d\", &K);\n        int n = strlen(s);\n        char st[100005];\n        int top = 0; // size of stack\n        for (int i = 0; i < n; ++i) {\n            char c = s[i];\n            while (top > 0 && st[top-1] > c && (top - 1 + (n - i - 1) >= K)) {\n                --top; // pop\n            }\n            if (top < K) {\n                st[top++] = c; // push\n            }\n        }\n        st[top] = '\\0';\n        printf(\"%s\\n\", st);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; \n    if(!(cin >> T)) return 0;\n    while (T--) {\n        string s; int K;\n        cin >> s >> K;\n        int n = s.size();\n        vector<char> st;\n        st.reserve(K);\n        for (int i = 0; i < n; ++i) {\n            char c = s[i];\n            while (!st.empty() && st.back() > c && (int)st.size() - 1 + (n - i - 1) >= K) {\n                st.pop_back();\n            }\n            if ((int)st.size() < K) st.push_back(c);\n        }\n        for (char c : st) cout << c;\n        cout << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder out = new StringBuilder();\n        while (T-- > 0) {\n            String s = br.readLine().trim();\n            int K = Integer.parseInt(br.readLine().trim());\n            int n = s.length();\n            char[] stack = new char[K];\n            int top = 0;\n            for (int i = 0; i < n; ++i) {\n                char c = s.charAt(i);\n                while (top > 0 && stack[top-1] > c && (top - 1 + (n - i - 1) >= K)) {\n                    top--; // pop\n                }\n                if (top < K) {\n                    stack[top++] = c; // push\n                }\n            }\n            out.append(new String(stack, 0, top)).append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys\n\ndef smallest_subseq(s, k):\n    n = len(s)\n    stack = []\n    for i, c in enumerate(s):\n        while stack and stack[-1] > c and (len(stack) - 1 + (n - i - 1) >= k):\n            stack.pop()\n        if len(stack) < k:\n            stack.append(c)\n    return ''.join(stack)\n\ndef main():\n    data = sys.stdin.read().splitlines()\n    t = int(data[0])\n    idx = 1\n    out_lines = []\n    for _ in range(t):\n        s = data[idx].strip(); idx += 1\n        k = int(data[idx]); idx += 1\n        out_lines.append(smallest_subseq(s, k))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    main()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst T = parseInt(input[idx++], 10);\nlet results = [];\nfor (let t = 0; t < T; ++t) {\n  const s = input[idx++].trim();\n  const K = parseInt(input[idx++], 10);\n  const n = s.length;\n  const stack = [];\n  for (let i = 0; i < n; ++i) {\n    const c = s[i];\n    while (stack.length && stack[stack.length - 1] > c && (stack.length - 1 + (n - i - 1) >= K)) {\n      stack.pop();\n    }\n    if (stack.length < K) stack.push(c);\n  }\n  results.push(stack.join(''));\n}\nconsole.log(results.join('\\n'));\n"
+    }
+  }
+}

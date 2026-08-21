@@ -1,0 +1,119 @@
+{
+  "questionId": "Q11771",
+  "title": "Best time to buy and sell stock with transaction fees",
+  "slug": "best-time-to-buy-and-sell-stock-with-transaction-fee",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Stocks",
+      "Transaction Fee",
+      "Buy and Sell"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "We are given an array Arr[] of length n. It represents the price of a stock on ‘n’ days. The following guidelines need to be followed:\n\n\n\n\nWe can buy and sell the stock any number of times.In order to sell the stock, we need to first buy it on the same or any previous day.We can’t buy a stock again after buying it once. In other words, we first buy a stock and then sell it. After selling we can buy and sell again. But we can’t sell before buying and can’t buy before selling any previously bought stock.After every transaction, there is a transaction fee (‘fee’) associated with it.\n\n\n\n<!--<img width=\"624\" height=\"339\" src=\"https://lh6.googleusercontent.com/866cL-zsSTzd",
+    "constraints": [
+      "1 <= n <= 10^5",
+      "1 <= Arr[i] <= 10^5",
+      "0 <= fee <= 10^5"
+    ],
+    "inputFormat": "The first line contains an integer 'n' representing the number of days. The second line contains 'n' space-separated integers representing the stock prices for each day. The third line contains an integer 'fee' representing the transaction fee.",
+    "outputFormat": "The maximum possible profit after a series of transactions.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "1\n10\n0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "9\n100000 100000 100000 100000 100000 100000 100000 100000 100000\n100000",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": "5\n10 10 10 10 10\n0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case / empty-like / negative if allowed",
+        "input": "0\n\n0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": "6\n1 3 2 8 4 9\n2",
+        "expectedOutput": "8",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Use dynamic programming to track the maximum profit at each day, considering whether we have a stock or not.",
+    "timeComplexity": "O(n)",
+    "spaceComplexity": "O(n)",
+    "code": {
+      "C": "#include <stdio.h>\nint max(int a, int b) { return a > b ? a : b; }\nint min(int a, int b) { return a < b ? a : b; }\nint dp[100005][2];\nint getAns(int* Arr, int ind, int buy, int n, int fee) {\n    if (ind == n) return 0;\n    if (dp[ind][buy] != -1) return dp[ind][buy];\n    int profit;\n    if (buy == 0) profit = max(0 + getAns(Arr, ind + 1, 0, n, fee), -Arr[ind] + getAns(Arr, ind + 1, 1, n, fee));\n    if (buy == 1) profit = max(0 + getAns(Arr, ind + 1, 1, n, fee), Arr[ind] - fee + getAns(Arr, ind + 1, 0, n, fee));\n    return dp[ind][buy] = profit;\n}\nint maximumProfit(int n, int fee, int* Arr) {\n    for (int i = 0; i < n; i++) for (int j = 0; j < 2; j++) dp[i][j] = -1;\n    if (n == 0) return 0;\n    return getAns(Arr, 0, 0, n, fee);\n}\nint main() {\n    int n, fee;\n    scanf(\"%d\", &n);\n    int Arr[n];\n    for (int i = 0; i < n; i++) scanf(\"%d\", &Arr[i]);\n    scanf(\"%d\", &fee);\n    printf(\"%d\\n\", maximumProfit(n, fee, Arr));\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nclass Solution{\npublic:\n    int getAns(vector<int>& Arr, int ind, int buy, int n, int fee, vector<vector<int>>& dp) {\n        if (ind == n) return 0;\n        if (dp[ind][buy] != -1) return dp[ind][buy];\n        int profit;\n        if (buy == 0) profit = max(0 + getAns(Arr, ind + 1, 0, n, fee, dp), -Arr[ind] + getAns(Arr, ind + 1, 1, n, fee, dp));\n        if (buy == 1) profit = max(0 + getAns(Arr, ind + 1, 1, n, fee, dp), Arr[ind] - fee + getAns(Arr, ind + 1, 0, n, fee, dp));\n        return dp[ind][buy] = profit;\n    }\n    int maximumProfit(int n, int fee, vector<int>& Arr) {\n        vector<vector<int>> dp(n, vector<int>(2, -1));\n        if (n == 0) return 0;\n        return getAns(Arr, 0, 0, n, fee, dp);\n    }\n};\nint main() {\n    int n, fee;\n    cin >> n;\n    vector<int> Arr(n);\n    for (int i = 0; i < n; i++) cin >> Arr[i];\n    cin >> fee;\n    Solution solution;\n    cout << solution.maximumProfit(n, fee, Arr) << endl;\n    return 0;\n}",
+      "Java": "import java.util.*;\npublic class Solution {\n    public int getAns(int[] Arr, int ind, int buy, int n, int fee, int[][] dp) {\n        if (ind == n) return 0;\n        if (dp[ind][buy] != -1) return dp[ind][buy];\n        int profit;\n        if (buy == 0) profit = Math.max(0 + getAns(Arr, ind + 1, 0, n, fee, dp), -Arr[ind] + getAns(Arr, ind + 1, 1, n, fee, dp));\n        if (buy == 1) profit = Math.max(0 + getAns(Arr, ind + 1, 1, n, fee, dp), Arr[ind] - fee + getAns(Arr, ind + 1, 0, n, fee, dp));\n        return dp[ind][buy] = profit;\n    }\n    public int maximumProfit(int n, int fee, int[] Arr) {\n        int[][] dp = new int[n][2];\n        for (int i = 0; i < n; i++) for (int j = 0; j < 2; j++) dp[i][j] = -1;\n        if (n == 0) return 0;\n        return getAns(Arr, 0, 0, n, fee, dp);\n    }\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int n = scanner.nextInt();\n        int[] Arr = new int[n];\n        for (int i = 0; i < n; i++) Arr[i] = scanner.nextInt();\n        int fee = scanner.nextInt();\n        Solution solution = new Solution();\n        System.out.println(solution.maximumProfit(n, fee, Arr));\n    }\n}",
+      "Python3": "class Solution:\n    def getAns(self, Arr, ind, buy, n, fee, dp):\n        if ind == n: return 0\n        if dp[ind][buy] != -1: return dp[ind][buy]\n        profit = 0\n        if buy == 0: profit = max(0 + self.getAns(Arr, ind + 1, 0, n, fee, dp), -Arr[ind] + self.getAns(Arr, ind + 1, 1, n, fee, dp))\n        if buy == 1: profit = max(0 + self.getAns(Arr, ind + 1, 1, n, fee, dp), Arr[ind] - fee + self.getAns(Arr, ind + 1, 0, n, fee, dp))\n        return dp[ind][buy] = profit\n    def maximumProfit(self, n, fee, Arr):\n        dp = [[-1 for _ in range(2)] for _ in range(n)]\n        if n == 0: return 0\n        return self.getAns(Arr, 0, 0, n, fee, dp)\n\nif __name__ == '__main__':\n    n = int(input())\n    Arr = list(map(int, input().split()))\n    fee = int(input())\n    solution = Solution()\n    print(solution.maximumProfit(n, fee, Arr))",
+      "JavaScript": "class Solution {\n    getAns(Arr, ind, buy, n, fee, dp) {\n        if (ind == n) return 0;\n        if (dp[ind][buy] != -1) return dp[ind][buy];\n        let profit;\n        if (buy == 0) profit = Math.max(0 + this.getAns(Arr, ind + 1, 0, n, fee, dp), -Arr[ind] + this.getAns(Arr, ind + 1, 1, n, fee, dp));\n        if (buy == 1) profit = Math.max(0 + this.getAns(Arr, ind + 1, 1, n, fee, dp), Arr[ind] - fee + this.getAns(Arr, ind + 1, 0, n, fee, dp));\n        return dp[ind][buy] = profit;\n    }\n    maximumProfit(n, fee, Arr) {\n        let dp = new Array(n).fill().map(() => new Array(2).fill(-1));\n        if (n == 0) return 0;\n        return this.getAns(Arr, 0, 0, n, fee, dp);\n    }\n}\nconst readline = require('readline').createInterface({\n    input: process.stdin,\n    output: process.stdout\n});\nlet i = 0;\nlet n, fee, Arr;\nreadline.on('line', line => {\n    if (i == 0) n = parseInt(line);\n    else if (i == 1) Arr = line.split(' ').map(num => parseInt(num));\n    else if (i == 2) {\n        fee = parseInt(line);\n        let solution = new Solution();\n        console.log(solution.maximumProfit(n, fee, Arr));\n        readline.close();\n    }\n    i++;\n});"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

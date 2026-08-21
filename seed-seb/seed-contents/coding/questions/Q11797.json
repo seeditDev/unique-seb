@@ -1,0 +1,118 @@
+{
+  "questionId": "Q11797",
+  "title": "Surrounded Regions",
+  "slug": "surrounded-regions",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Depth-First Search",
+      "Boundary Detection"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Given a matrix mat of size N x M where every element is either ‘O’ or ‘X’.\n    Replace all ‘O’ with ‘X’ that is surrounded by ‘X’. An ‘O’ (or a set of ‘O’) is considered to be surrounded by ‘X’\n    if there are ‘X’ at locations just below, just above just left, and just right of it.",
+    "constraints": [
+      "1 <= N <= 10^3",
+      "1 <= M <= 10^3",
+      "Each character in the array is either 'O' or 'X'."
+    ],
+    "inputFormat": "A 2D array of characters where each character is either 'O' or 'X'. The first two integers represent the number of rows (N) and columns (M) in the array.",
+    "outputFormat": "The modified 2D array where all 'O' characters that are not connected to the boundary are replaced with 'X'.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Minimum boundary",
+        "input": "[['X', 'X'], ['X', 'O']]",
+        "expectedOutput": "[['X', 'X'], ['X', 'X']]",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Maximum boundary",
+        "input": "[['O', 'O', 'O', 'O'], ['O', 'X', 'X', 'O'], ['O', 'X', 'X', 'O'], ['O', 'O', 'O', 'O']]",
+        "expectedOutput": "[['O', 'O', 'O', 'O'], ['O', 'X', 'X', 'O'], ['O', 'X', 'X', 'O'], ['O', 'O', 'O', 'O']]",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Uniform/edge cases",
+        "input": "[['X', 'X', 'X'], ['X', 'X', 'X'], ['X', 'X', 'X']]",
+        "expectedOutput": "[['X', 'X', 'X'], ['X', 'X', 'X'], ['X', 'X', 'X']]",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Tricky case / empty-like / negative if allowed",
+        "input": "[[]]",
+        "expectedOutput": "[[]]",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "General mixed case",
+        "input": "[['X', 'X', 'X', 'X'], ['X', 'O', 'X', 'X'], ['X', 'O', 'O', 'X'], ['X', 'O', 'X', 'X'], ['X', 'X', 'O', 'O']]",
+        "expectedOutput": "[['X', 'X', 'X', 'X'], ['X', 'X', 'X', 'X'], ['X', 'X', 'X', 'X'], ['X', 'X', 'X', 'X'], ['X', 'X', 'O', 'O']]",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Use DFS to mark all 'O' characters connected to the boundary, then replace all unmarked 'O' characters with 'X'.",
+    "timeComplexity": "O(N * M)",
+    "spaceComplexity": "O(N * M)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\n// Function to perform DFS\nvoid dfs(int** mat, int* visited, int i, int j, int n, int m) {\n    if (i < 0 || i >= n || j < 0 || j >= m || mat[i][j] != 'O' || visited[i][j]) return;\n    visited[i][j] = 1;\n    dfs(mat, visited, i - 1, j, n, m);\n    dfs(mat, visited, i + 1, j, n, m);\n    dfs(mat, visited, i, j - 1, n, m);\n    dfs(mat, visited, i, j + 1, n, m);\n}\n\n// Function to solve the problem\nvoid solve(int** mat, int n, int m) {\n    int** visited = (int**)malloc(n * sizeof(int*));\n    for (int i = 0; i < n; i++) {\n        visited[i] = (int*)malloc(m * sizeof(int));\n        for (int j = 0; j < m; j++) visited[i][j] = 0;\n    }\n    // Perform DFS from the boundary\n    for (int i = 0; i < n; i++) {\n        dfs(mat, visited, i, 0, n, m);\n        dfs(mat, visited, i, m - 1, n, m);\n    }\n    for (int j = 0; j < m; j++) {\n        dfs(mat, visited, 0, j, n, m);\n        dfs(mat, visited, n - 1, j, n, m);\n    }\n    // Replace all unvisited 'O' with 'X'\n    for (int i = 0; i < n; i++) {\n        for (int j = 0; j < m; j++) {\n            if (mat[i][j] == 'O' && !visited[i][j]) mat[i][j] = 'X';\n        }\n    }\n    // Free the memory\n    for (int i = 0; i < n; i++) free(visited[i]);\n    free(visited);\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nclass Solution {\nprivate:\n    // DFS to mark boundary-connected 'O's as visited\n    void dfs(int row, int col, vector<vector<int>>& vis, vector<vector<char>>& mat, int delrow[], int delcol[]) {\n        // mark current cell visited\n        vis[row][col] = 1;\n        // cache dimensions\n        int n = mat.size(), m = mat[0].size();\n        // try 4 directions\n        for (int k = 0; k < 4; k++) {\n            // compute next cell\n            int nrow = row + delrow[k], ncol = col + delcol[k];\n            // check bounds and unvisited 'O'\n            if (nrow >= 0 && nrow < n && ncol >= 0 && ncol < m && !vis[nrow][ncol] && mat[nrow][ncol] == 'O') {\n                // continue DFS\n                dfs(nrow, ncol, vis, mat, delrow, delcol);\n            }\n        }\n    }\n\npublic:\n    // Flip all 'O' not connected to boundary to 'X'\n    vector<vector<char>> fill(int n, int m, vector<vector<char>> mat) {\n        // handle empty matrix\n        if (n == 0 || m == 0) return mat;\n        // direction arrays for 4-neighbors\n        int delrow[4] = {-1, 0, 1, 0};\n        int delcol[4] = {0, 1, 0, -1};\n        // visited matrix\n        vector<vector<int>> vis(n, vector<int>(m, 0));\n\n        // traverse first and last row\n        for (int j = 0; j < m; j++) {\n            // start DFS from unvisited boundary 'O' (top row)\n            if (!vis[0][j] && mat[0][j] == 'O') dfs(0, j, vis, mat, delrow, delcol);\n            // start DFS from unvisited boundary 'O' (bottom row)\n            if (!vis[n - 1][j] && mat[n - 1][j] == 'O') dfs(n - 1, j, vis, mat, delrow, delcol);\n        }\n\n        // traverse first and last column\n        for (int i = 0; i < n; i++) {\n            // start DFS from unvisited boundary 'O' (left col)\n            if (!vis[i][0] && mat[i][0] == 'O') dfs(i, 0, vis, mat, delrow, delcol);\n            // start DFS from unvisited boundary 'O' (right col)\n            if (!vis[i][m - 1] && mat[i][m - 1] == 'O') dfs(i, m - 1, vis, mat, delrow, delcol);\n        }\n\n        // flip all unvisited 'O' to 'X'\n        for (int i = 0; i < n; i++) {\n            for (int j = 0; j < m; j++) {\n                // convert enclosed 'O' to 'X'\n                if (!vis[i][j] && mat[i][j] == 'O') mat[i][j] = 'X';\n            }\n        }\n\n        // return updated board\n        return mat;\n    }\n};",
+      "Java": "import java.util.*;\n\nclass Solution {\n    // DFS to mark boundary-connected 'O's as visited\n    private void dfs(int r, int c, int[][] vis, char[][] mat, int[] dr, int[] dc) {\n        // mark current cell visited\n        vis[r][c] = 1;\n        // cache dimensions\n        int n = mat.length, m = mat[0].length;\n        // try 4 directions\n        for (int k = 0; k < 4; k++) {\n            // compute next cell\n            int nr = r + dr[k], nc = c + dc[k];\n            // check bounds and unvisited 'O'\n            if (nr >= 0 && nr < n && nc >= 0 && nc < m && vis[nr][nc] == 0 && mat[nr][nc] == 'O') {\n                // continue DFS\n                dfs(nr, nc, vis, mat, dr, dc);\n            }\n        }\n    }\n\n    // Flip all 'O' not connected to boundary to 'X'\n    public char[][] fill(int n, int m, char[][] mat) {\n        // handle empty matrix\n        if (n == 0 || m == 0) return mat;\n        // direction arrays\n        int[] dr = {-1, 0, 1, 0};\n        int[] dc = {0, 1, 0, -1};\n        // visited matrix\n        int[][] vis = new int[n][m];\n\n        // traverse first and last row\n        for (int j = 0; j < m; j++) {\n            // DFS from top boundary 'O'\n            if (vis[0][j] == 0 && mat[0][j] == 'O') dfs(0, j, vis, mat, dr, dc);\n            // DFS from bottom boundary 'O'\n            if (vis[n - 1][j] == 0 && mat[n - 1][j] == 'O') dfs(n - 1, j, vis, mat, dr, dc);\n        }\n\n        // traverse first and last column\n        for (int i = 0; i < n; i++) {\n            // DFS from left boundary 'O'\n            if (vis[i][0] == 0 && mat[i][0] == 'O') dfs(i, 0, vis, mat, dr, dc);\n            // DFS from right boundary 'O'\n            if (vis[i][m - 1] == 0 && mat[i][m - 1] == 'O') dfs(i, m - 1, vis, mat, dr, dc);\n        }\n\n        // flip all unvisited 'O' to 'X'\n        for (int i = 0; i < n; i++) {\n            for (int j = 0; j < m; j++) {\n                // convert enclosed 'O' to 'X'\n                if (vis[i][j] == 0 && mat[i][j] == 'O') mat[i][j] = 'X';\n            }\n        }\n\n        // return updated board\n        return mat;\n    }\n}",
+      "Python3": "class Solution:\n    # DFS to mark boundary-connected 'O's as visited\n    def dfs(self, r, c, vis, mat, dr, dc):\n        # mark current cell visited\n        vis[r][c] = 1\n        # cache dimensions\n        n, m = len(mat), len(mat[0])\n        # try 4 directions\n        for k in range(4):\n            # compute next cell\n            nr, nc = r + dr[k], c + dc[k]\n            # check bounds and unvisited 'O'\n            if 0 <= nr < n and 0 <= nc < m and vis[nr][nc] == 0 and mat[nr][nc] == 'O':\n                # continue DFS\n                self.dfs(nr, nc, vis, mat, dr, dc)\n\n    # Flip all 'O' not connected to boundary to 'X'\n    def fill(self, n, m, mat):\n        # handle empty matrix\n        if n == 0 or m == 0:\n            return mat\n        # direction arrays\n        dr, dc = [-1, 0, 1, 0], [0, 1, 0, -1]\n        # visited matrix\n        vis = [[0] * m for _ in range(n)]\n\n        # traverse first and last row\n        for j in range(m):\n            # DFS from top boundary 'O'\n            if vis[0][j] == 0 and mat[0][j] == 'O':\n                self.dfs(0, j, vis, mat, dr, dc)\n            # DFS from bottom boundary 'O'\n            if vis[n - 1][j] == 0 and mat[n - 1][j] == 'O':\n                self.dfs(n - 1, j, vis, mat, dr, dc)\n\n        # traverse first and last column\n        for i in range(n):\n            # DFS from left boundary 'O'\n            if vis[i][0] == 0 and mat[i][0] == 'O':\n                self.dfs(i, 0, vis, mat, dr, dc)\n            # DFS from right boundary 'O'\n            if vis[i][m - 1] == 0 and mat[i][m - 1] == 'O':\n                self.dfs(i, m - 1, vis, mat, dr, dc)\n\n        # flip all unvisited 'O' to 'X'\n        for i in range(n):\n            for j in range(m):\n                # convert enclosed 'O' to 'X'\n                if vis[i][j] == 0 and mat[i][j] == 'O':\n                    mat[i][j] = 'X'\n\n        # return updated board\n        return mat",
+      "JavaScript": "class Solution {\n    // DFS to mark boundary-connected 'O's as visited\n    dfs(r, c, vis, mat, dr, dc) {\n        // mark current cell visited\n        vis[r][c] = 1;\n        // cache dimensions\n        const n = mat.length, m = mat[0].length;\n        // try 4 directions\n        for (let k = 0; k < 4; k++) {\n            // compute next cell\n            const nr = r + dr[k], nc = c + dc[k];\n            // check bounds and unvisited 'O'\n            if (nr >= 0 && nr < n && nc >= 0 && nc < m && vis[nr][nc] === 0 && mat[nr][nc] === 'O') {\n                // continue DFS\n                this.dfs(nr, nc, vis, mat, dr, dc);\n            }\n        }\n    }\n\n    // Flip all 'O' not connected to boundary to 'X'\n    fill(n, m, mat) {\n        // handle empty matrix\n        if (n === 0 || m === 0) return mat;\n        // direction arrays\n        const dr = [-1, 0, 1, 0], dc = [0, 1, 0, -1];\n        // visited matrix\n        const vis = Array.from({ length: n }, () => Array(m).fill(0));\n\n        // traverse first and last row\n        for (let j = 0; j < m; j++) {\n            // DFS from top boundary 'O'\n            if (vis[0][j] === 0 && mat[0][j] === 'O') this.dfs(0, j, vis, mat, dr, dc);\n            // DFS from bottom boundary 'O'\n            if (vis[n - 1][j] === 0 && mat[n - 1][j] === 'O') this.dfs(n - 1, j, vis, mat, dr, dc);\n        }\n\n        // traverse first and last column\n        for (let i = 0; i < n; i++) {\n            // DFS from left boundary 'O'\n            if (vis[i][0] === 0 && mat[i][0] === 'O') this.dfs(i, 0, vis, mat, dr, dc);\n            // DFS from right boundary 'O'\n            if (vis[i][m - 1] === 0 && mat[i][m - 1] === 'O') this.dfs(i, m - 1, vis, mat, dr, dc);\n        }\n\n        // flip all unvisited 'O' to 'X'\n        for (let i = 0; i < n; i++) {\n            for (let j = 0; j < m; j++) {\n                // convert enclosed 'O' to 'X'\n                if (vis[i][j] === 0 && mat[i][j] === 'O') mat[i][j] = 'X';\n            }\n        }\n\n        // return updated board\n        return mat;\n    }\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

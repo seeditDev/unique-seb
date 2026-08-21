@@ -1,0 +1,128 @@
+{
+  "questionId": "Q6787",
+  "title": "Area of an amazing figure",
+  "slug": "area-of-an-amazing-figure",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Geometry",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Equilateral Triangle",
+      "Circle Intersection",
+      "Numerical Integration"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Geometry"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "There is an equilateral triangle ABC with side length **2*a**. The coordinates of the triangle's vertices are A = **(-a, 0)**, B = **(a, 0)** and C = **(0, sqrt(3) * a)**. Next, there are three circles with centers at the midpoints of sides AB, BC and AC respectively and radii **r1**, **r2** and **r3** respectively. Compute the area of the intersection of the triangle and the three circles.",
+    "constraints": [
+      "1 ≤ T ≤ 20",
+      "1 ≤ a ≤ 50",
+      "1 ≤ r1, r2, r3 ≤ 200"
+    ],
+    "inputFormat": "The first line of the input contains a single integer T denoting the number of test cases. The description of T test cases follows. The first and only line of each test case contains four space-separated integers a, r1, r2, r3.",
+    "outputFormat": "For each test case, print a single line containing one real number corresponding to the area of the intersection.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "5\n10 5 5 5\n10 6 6 7\n10 12 13 14\n10 15 15 15\n10 19 20 18",
+        "output": "0.0000000\n1.417303000\n138.1789\n163.712\n173.2064190",
+        "explanation": "The black colored area shown in the figure is the intersection between the triangle and the three circles."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1 1 1",
+        "expectedOutput": "0.0000000",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n50 200 200 200",
+        "expectedOutput": "173.2064190",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n10 5 5 5",
+        "expectedOutput": "0.0000000",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n10 6 6 7",
+        "expectedOutput": "1.417303000",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n10 12 13 14",
+        "expectedOutput": "138.1789",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use numerical integration to find the area of the intersection between the triangle and the three circles. We can define a function f(y) that calculates the length of the intersection segment at a given height y. Then, we can use Simpson's rule to approximate the area of the intersection.",
+    "timeComplexity": "O(T * N) — where T is the number of test cases and N is the number of intervals used for numerical integration",
+    "spaceComplexity": "O(1) — as we only use a constant amount of space to store the input and output values",
+    "code": {
+      "C": "#include <stdio.h>\n#include <math.h>\n#define N 2000000\n#define SQRT3 1.73205080757\n\ndouble f(double y, double a, double r1, double r2, double r3) {\n    double L = -(a - y / SQRT3);\n    double R = a - y / SQRT3;\n    if (fabs(y) > r1) return 0.0;\n    double dx1 = sqrt(max(0.0, r1 * r1 - y * y));\n    L = max(L, -dx1);\n    R = min(R, dx1);\n    double y2 = a * SQRT3 / 2.0;\n    if (fabs(y - y2) > r2) return 0.0;\n    double dx2 = sqrt(max(0.0, r2 * r2 - (y - y2) * (y - y2)));\n    L = max(L, a / 2.0 - dx2);\n    R = min(R, a / 2.0 + dx2);\n    double y3 = a * SQRT3 / 2.0;\n    if (fabs(y - y3) > r3) return 0.0;\n    double dx3 = sqrt(max(0.0, r3 * r3 - (y - y3) * (y - y3)));\n    L = max(L, -a / 2.0 - dx3);\n    R = min(R, -a / 2.0 + dx3);\n    return max(0.0, R - L);\n}\n\nvoid solve() {\n    double a, r1, r2, r3;\n    scanf(\"%lf %lf %lf %lf\", &a, &r1, &r2, &r3);\n    double H = a * SQRT3;\n    double h = H / N;\n    double sum = f(0, a, r1, r2, r3) + f(H, a, r1, r2, r3);\n    for (int i = 1; i < N; i += 2) {\n        sum += 4.0 * f(i * h, a, r1, r2, r3);\n    }\n    for (int i = 2; i < N; i += 2) {\n        sum += 2.0 * f(i * h, a, r1, r2, r3);\n    }\n    double area = sum * h / 3.0;\n    printf(\"%.7f\\n\", area);\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        solve();\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <cmath>\nusing namespace std;\n#define N 2000000\n#define SQRT3 1.73205080757\n\ndouble f(double y, double a, double r1, double r2, double r3) {\n    double L = -(a - y / SQRT3);\n    double R = a - y / SQRT3;\n    if (fabs(y) > r1) return 0.0;\n    double dx1 = sqrt(max(0.0, r1 * r1 - y * y));\n    L = max(L, -dx1);\n    R = min(R, dx1);\n    double y2 = a * SQRT3 / 2.0;\n    if (fabs(y - y2) > r2) return 0.0;\n    double dx2 = sqrt(max(0.0, r2 * r2 - (y - y2) * (y - y2)));\n    L = max(L, a / 2.0 - dx2);\n    R = min(R, a / 2.0 + dx2);\n    double y3 = a * SQRT3 / 2.0;\n    if (fabs(y - y3) > r3) return 0.0;\n    double dx3 = sqrt(max(0.0, r3 * r3 - (y - y3) * (y - y3)));\n    L = max(L, -a / 2.0 - dx3);\n    R = min(R, -a / 2.0 + dx3);\n    return max(0.0, R - L);\n}\n\nvoid solve() {\n    double a, r1, r2, r3;\n    cin >> a >> r1 >> r2 >> r3;\n    double H = a * SQRT3;\n    double h = H / N;\n    double sum = f(0, a, r1, r2, r3) + f(H, a, r1, r2, r3);\n    for (int i = 1; i < N; i += 2) {\n        sum += 4.0 * f(i * h, a, r1, r2, r3);\n    }\n    for (int i = 2; i < N; i += 2) {\n        sum += 2.0 * f(i * h, a, r1, r2, r3);\n    }\n    double area = sum * h / 3.0;\n    cout << fixed << setprecision(7) << area << endl;\n}\n\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        solve();\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n        while (T-- > 0) {\n            double a = sc.nextDouble();\n            double r1 = sc.nextDouble();\n            double r2 = sc.nextDouble();\n            double r3 = sc.nextDouble();\n            double H = a * Math.sqrt(3);\n            double h = H / 2000000;\n            double sum = f(0, a, r1, r2, r3) + f(H, a, r1, r2, r3);\n            for (int i = 1; i < 2000000; i += 2) {\n                sum += 4.0 * f(i * h, a, r1, r2, r3);\n            }\n            for (int i = 2; i < 2000000; i += 2) {\n                sum += 2.0 * f(i * h, a, r1, r2, r3);\n            }\n            double area = sum * h / 3.0;\n            System.out.printf(\"%.7f\\n\", area);\n        }\n    }\n\n    public static double f(double y, double a, double r1, double r2, double r3) {\n        double L = -(a - y / Math.sqrt(3));\n        double R = a - y / Math.sqrt(3);\n        if (Math.abs(y) > r1) return 0.0;\n        double dx1 = Math.sqrt(Math.max(0.0, r1 * r1 - y * y));\n        L = Math.max(L, -dx1);\n        R = Math.min(R, dx1);\n        double y2 = a * Math.sqrt(3) / 2.0;\n        if (Math.abs(y - y2) > r2) return 0.0;\n        double dx2 = Math.sqrt(Math.max(0.0, r2 * r2 - (y - y2) * (y - y2)));\n        L = Math.max(L, a / 2.0 - dx2);\n        R = Math.min(R, a / 2.0 + dx2);\n        double y3 = a * Math.sqrt(3) / 2.0;\n        if (Math.abs(y - y3) > r3) return 0.0;\n        double dx3 = Math.sqrt(Math.max(0.0, r3 * r3 - (y - y3) * (y - y3)));\n        L = Math.max(L, -a / 2.0 - dx3);\n        R = Math.min(R, -a / 2.0 + dx3);\n        return Math.max(0.0, R - L);\n    }\n}",
+      "Python3": "import sys\nimport math\nN = 2000000\nSQRT3 = math.sqrt(3)\n\ndef f(y, a, r1, r2, r3):\n    L = -(a - y / SQRT3)\n    R = a - y / SQRT3\n    if abs(y) > r1: return 0.0\n    dx1 = math.sqrt(max(0.0, r1 * r1 - y * y))\n    L = max(L, -dx1)\n    R = min(R, dx1)\n    y2 = a * SQRT3 / 2.0\n    if abs(y - y2) > r2: return 0.0\n    dx2 = math.sqrt(max(0.0, r2 * r2 - (y - y2) * (y - y2)))\n    L = max(L, a / 2.0 - dx2)\n    R = min(R, a / 2.0 + dx2)\n    y3 = a * SQRT3 / 2.0\n    if abs(y - y3) > r3: return 0.0\n    dx3 = math.sqrt(max(0.0, r3 * r3 - (y - y3) * (y - y3)))\n    L = max(L, -a / 2.0 - dx3)\n    R = min(R, -a / 2.0 + dx3)\n    return max(0.0, R - L)\n\ndef solve():\n    a, r1, r2, r3 = map(float, input().split())\n    H = a * SQRT3\n    h = H / N\n    sum = f(0, a, r1, r2, r3) + f(H, a, r1, r2, r3)\n    for i in range(1, N, 2):\n        sum += 4.0 * f(i * h, a, r1, r2, r3)\n    for i in range(2, N, 2):\n        sum += 2.0 * f(i * h, a, r1, r2, r3)\n    area = sum * h / 3.0\n    print(\"%.7f\" % area)\nT = int(input())\nfor _ in range(T):\n    solve()",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst N = 2000000;\nconst SQRT3 = Math.sqrt(3);\n\nfunction f(y, a, r1, r2, r3) {\n    let L = -(a - y / SQRT3);\n    let R = a - y / SQRT3;\n    if (Math.abs(y) > r1) return 0.0;\n    let dx1 = Math.sqrt(Math.max(0.0, r1 * r1 - y * y));\n    L = Math.max(L, -dx1);\n    R = Math.min(R, dx1);\n    let y2 = a * SQRT3 / 2.0;\n    if (Math.abs(y - y2) > r2) return 0.0;\n    let dx2 = Math.sqrt(Math.max(0.0, r2 * r2 - (y - y2) * (y - y2)));\n    L = Math.max(L, a / 2.0 - dx2);\n    R = Math.min(R, a / 2.0 + dx2);\n    let y3 = a * SQRT3 / 2.0;\n    if (Math.abs(y - y3) > r3) return 0.0;\n    let dx3 = Math.sqrt(Math.max(0.0, r3 * r3 - (y - y3) * (y - y3)));\n    L = Math.max(L, -a / 2.0 - dx3);\n    R = Math.min(R, -a / 2.0 + dx3);\n    return Math.max(0.0, R - L);\n}\n\nfunction solve() {\n    let input = lines[idx++].trim().split(' ');\n    let a = parseFloat(input[0]);\n    let r1 = parseFloat(input[1]);\n    let r2 = parseFloat(input[2]);\n    let r3 = parseFloat(input[3]);\n    let H = a * SQRT3;\n    let h = H / N;\n    let sum = f(0, a, r1, r2, r3) + f(H, a, r1, r2, r3);\n    for (let i = 1; i < N; i += 2) {\n        sum += 4.0 * f(i * h, a, r1, r2, r3);\n    }\n    for (let i = 2; i < N; i += 2) {\n        sum += 2.0 * f(i * h, a, r1, r2, r3);\n    }\n    let area = sum * h / 3.0;\n    console.log(area.toFixed(7));\n}\n\nlet T = parseInt(lines[idx++]);\nfor (let i = 0; i < T; i++) {\n    solve();\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

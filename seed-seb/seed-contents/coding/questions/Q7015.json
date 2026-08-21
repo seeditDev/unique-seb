@@ -1,0 +1,128 @@
+{
+  "questionId": "Q7015",
+  "title": "Counting Pretty Numbers",
+  "slug": "counting-pretty-numbers",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-03",
+  "metadata": {
+    "category": "Math | Number Theory",
+    "difficulty": "Easy",
+    "isPremium": true,
+    "tags": [
+      "Counting",
+      "Digit DP",
+      "Prefix sums",
+      "Modular arithmetic"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Ad-hoc & Implementation"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Vasya likes the number 239239239. Therefore, he considers a number pretty if its last digit is 222, 333 or 999.\n\nVasya wants to watch the numbers between LLL and RRR (both inclusive), so he asked you to determine how many pretty numbers are in this range. Can you help him?",
+    "constraints": [
+      "1 ≤ T ≤ 100",
+      "1 ≤ L ≤ R ≤ 100000"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains two space‑separated integers L and R (1 ≤ L ≤ R ≤ 10^5).",
+    "outputFormat": "For each test case output a single line with the count of integers x such that L ≤ x ≤ R and the last decimal digit of x is 2, 3 or 9.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n1 10\n11 33",
+        "output": "3\n8",
+        "explanation": "Numbers ending with 2, 3 or 9 between 1 and 10 are 2, 3, 9 → 3 numbers. Between 11 and 33 they are 12,13,19,22,23,29,32,33 → 8 numbers."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n1 100000",
+        "expectedOutput": "30000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "single pretty number",
+        "input": "1\n2 2",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n95 105",
+        "expectedOutput": "3",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n123456 123499",
+        "expectedOutput": "13",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For any X we can compute how many numbers in [1, X] end with 2, 3 or 9. In each complete block of 10 consecutive numbers there are exactly three such numbers (…2, …3, …9). Let cycles = X / 10 and rem = X % 10. The answer for X is cycles * 3 plus an extra count for the remainder: add 1 if rem ≥ 2, another 1 if rem ≥ 3, and another 1 if rem ≥ 9. The result for a query [L, R] is f(R) - f(L‑1). This runs in O(1) per test case.",
+    "timeComplexity": "O(T) – constant work per test case.",
+    "spaceComplexity": "O(1) – only a few integer variables.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nstatic long long count_up_to(long long x) {\n    if (x <= 0) return 0;\n    long long cycles = x / 10;\n    int rem = x % 10;\n    long long extra = 0;\n    if (rem >= 2) extra++;\n    if (rem >= 3) extra++;\n    if (rem >= 9) extra++;\n    return cycles * 3 + extra;\n}\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        long long L, R;\n        scanf(\"%lld %lld\", &L, &R);\n        long long ans = count_up_to(R) - count_up_to(L - 1);\n        printf(\"%lld\\n\", ans);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nlong long count_up_to(long long x) {\n    if (x <= 0) return 0;\n    long long cycles = x / 10;\n    int rem = x % 10;\n    long long extra = 0;\n    if (rem >= 2) ++extra;\n    if (rem >= 3) ++extra;\n    if (rem >= 9) ++extra;\n    return cycles * 3 + extra;\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; cin >> T;\n    while (T--) {\n        long long L, R; cin >> L >> R;\n        cout << count_up_to(R) - count_up_to(L - 1) << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    private static long countUpTo(long x) {\n        if (x <= 0) return 0;\n        long cycles = x / 10;\n        int rem = (int)(x % 10);\n        long extra = 0;\n        if (rem >= 2) extra++;\n        if (rem >= 3) extra++;\n        if (rem >= 9) extra++;\n        return cycles * 3 + extra;\n    }\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder sb = new StringBuilder();\n        int T = Integer.parseInt(br.readLine().trim());\n        for (int t = 0; t < T; t++) {\n            StringTokenizer st = new StringTokenizer(br.readLine());\n            long L = Long.parseLong(st.nextToken());\n            long R = Long.parseLong(st.nextToken());\n            long ans = countUpTo(R) - countUpTo(L - 1);\n            sb.append(ans).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef count_up_to(x: int) -> int:\n    if x <= 0:\n        return 0\n    cycles = x // 10\n    rem = x % 10\n    extra = 0\n    if rem >= 2:\n        extra += 1\n    if rem >= 3:\n        extra += 1\n    if rem >= 9:\n        extra += 1\n    return cycles * 3 + extra\n\ndef main():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        L = int(next(it))\n        R = int(next(it))\n        ans = count_up_to(R) - count_up_to(L - 1)\n        out_lines.append(str(ans))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    main()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet output = [];\nfunction countUpTo(x) {\n  if (x <= 0) return 0;\n  const cycles = Math.floor(x / 10);\n  const rem = x % 10;\n  let extra = 0;\n  if (rem >= 2) extra++;\n  if (rem >= 3) extra++;\n  if (rem >= 9) extra++;\n  return cycles * 3 + extra;\n}\nfor (let t = 0; t < T; t++) {\n  const L = Number(input[idx++]);\n  const R = Number(input[idx++]);\n  const ans = countUpTo(R) - countUpTo(L - 1);\n  output.push(String(ans));\n}\nconsole.log(output.join('\\n'));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

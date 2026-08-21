@@ -1,0 +1,127 @@
+{
+  "questionId": "Q8053",
+  "title": "Gamer",
+  "slug": "gamer",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Greedy | Sorting | Data Structures",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Coordinate compression",
+      "Segment tree",
+      "Range add",
+      "Maximum query",
+      "Prefix‑suffix sums"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Data Structures"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Read problem statements in RussianIn a game, you can choose when to enter and exit, but you can only do this exactly once. Choosing to enter and exit the game at time lll and rrr respectively will cost you k⋅(r−l)k\\cdot (r-l)k⋅(r−l) coins.\n\nThe game has nnn items. Item iii is valued at viv_ivi​ coins. You can only collect item viv_ivi​ if you are in the game during the whole time period of [xi,yi][x_i,y_i][xi​,yi​]; that is, l≤xi≤yi≤rl \\le x_i \\le y_i \\le rl≤xi​≤yi​≤r. Your profit after the game is the total value of the items collected minus the cost of entering and exiting the game.\n\nYou want to enter and exit the game so that your profit is maximized. Find that maximized profit.\n\n###Input:\n\n\nThe first line contains two integers, nnn and kkk.\nThen, nnn lines follow. The iii-th line of these contains three integers, xi,yi,vix_i,y_i,v_ixi​,yi​,vi​.\n###Output:\r\nPrint a single line containing the maximized profit.\n\n###Constraints\n\n\n1≤n≤1051\\le n\\le 10^51≤n≤105\n1≤vi,k≤1091 \\le v_i ,k\\le 10^91≤vi​,k≤109\n−109≤xi,yi≤109-10^9 \\le x_i,y_i\\le 10^9−109≤xi​,yi​≤109\nxi≤yix_i \\le y_ixi​≤yi​\n###Subtasks:\r\n**Subtask #1 (15 points):** n≤20n \\le 20n≤20\n\n**Subtask #2 (25 points):** n≤1000n \\le 1000n≤1000",
+    "constraints": [
+      "1 ≤ n ≤ 10^5 per test case",
+      "1 ≤ vi, k ≤ 10^9",
+      "−10^9 ≤ xi ≤ yi ≤ 10^9",
+      "Sum of n over all test cases ≤ 2·10^5"
+    ],
+    "inputFormat": "The input may contain multiple test cases concatenated. Each test case starts with two integers n and k (1 ≤ n ≤ 10^5, 1 ≤ k ≤ 10^9). Then follow n lines, each containing three integers xi, yi, vi (−10^9 ≤ xi ≤ yi ≤ 10^9, 1 ≤ vi ≤ 10^9). The end of file marks the end of the last test case.",
+    "outputFormat": "For each test case output a single line containing the maximum possible profit (non‑negative integer).",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3 2\n    1 3 3\n    1 2 5\n    4 7 1",
+        "output": "4",
+        "explanation": "Explanation:\nIt is optimal to enter at time 111 and exit at time 333 to get item number 111 and 222."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "All vi are positive, therefore for a fixed interval [l, r] we will take every item whose whole interval lies inside it. The profit of an interval is\n    profit(l, r) = (sum of vi with xi ≥ l and yi ≤ r) – k·(r‑l).\nWe sort items by their right endpoint yi and sweep r from left to right. While sweeping we insert each item whose yi equals the current r. Insertion means adding its vi to all possible left borders l that are ≤ its xi, because such l will include the item. After processing all items with yi ≤ r we need the best left border l ≤ r:\n    best(r) = max_{l ≤ r} ( S(l) + k·l ) – k·r,\nwhere S(l) is the current sum of vi of items with xi ≥ l (the “suffix” sum).  \nIf we compress all distinct xi values and store them in increasing order, S(l) is constant between two consecutive xi, so the optimum l is always equal to some xi.  \nWe maintain a segment tree over the compressed xi indices. For each index i we store the value (k·xi_i + current_suffix_i). Initially current_suffix_i = 0, so the tree stores k·xi_i. When a new item (xi, vi) is inserted we add vi to the whole prefix of indices whose xi ≤ the item's xi (because those left borders include the item). This is a range‑add operation. The tree can then answer the maximum value over all indices with xi ≤ r in O(log m). The profit for the current r is that maximum minus k·r. The global answer is the maximum profit over all r, and we also compare with 0 (the option of not playing). The whole algorithm runs in O(n log n) time and O(n) memory.\n\nKey steps:\n1. Read a test case, collect all xi, sort and deduplicate → coordinate compression.\n2. Sort items by yi.\n3. Build a segment tree of size m (number of distinct xi). Each leaf i stores base = k·xi_i.\n4. Iterate over items in increasing yi. For each group with the same yi = curR:\n   • For every item (xi, vi) in the group, find its compressed index p and perform range‑add(0, p, vi).\n   • After all insertions for this curR, query the maximum over indices with xi ≤ curR (i.e. the largest index whose original xi ≤ curR). Let maxVal be the result.\n   • profit = maxVal – k·curR; update answer.\n5. After processing all items, output max(answer, 0).\n\nThe same procedure works for any number of test cases by simply repeating the steps.\n",
+    "timeComplexity": "O(n log n) per test case (sorting + segment‑tree operations).",
+    "spaceComplexity": "O(n) for storing items and the segment tree.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <limits.h>\n\ntypedef long long ll;\n\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

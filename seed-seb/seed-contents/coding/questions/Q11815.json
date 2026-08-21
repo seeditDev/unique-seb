@@ -1,0 +1,133 @@
+{
+  "questionId": "Q11815",
+  "title": "Cheapest flight within K stops",
+  "slug": "cheapest-flights-within-k-stops",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "BFS",
+      "Shortest Path"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "There are n cities and m edges connected by some number of flights. You are given an array of flights where flights[i] = [ fromi, toi, pricei] indicates that there is a flight from city fromi to city toi with cost price. You have also given three integers src, dst, and k, and return the cheapest price from src to dst with at most k stops. If there is no such route, return -1.",
+    "constraints": [
+      "1 <= n <= 100",
+      "1 <= flights.length <= 500",
+      "0 <= src, dst, fromi, toi < n",
+      "1 <= pricei <= 10^4",
+      "0 <= k <= 100"
+    ],
+    "inputFormat": "The input will contain the following: n (number of cities), flights (array of flights where each flight is an array of three integers: from, to, and price), src (source city), dst (destination city), and k (number of stops).",
+    "outputFormat": "The output will be the cheapest price from src to dst with at most k stops. If there is no such route, return -1.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "n = 4  \nflights = [[0, 1, 100], [1, 2, 100], [2, 0, 100], [1, 3, 600], [2, 3, 200]]  \nsrc = 0  \ndst = 3  \nk = 1",
+        "output": "700",
+        "explanation": "The optimal path with at most 1 stop from city 0 to 3 is through cities [0, 1, 3] with a total cost of 100 + 600 = 700.  \nNote that the path [0, 1, 2, 3] is cheaper but is invalid because it uses 2 stops.\n\n**Example 2:**"
+      },
+      {
+        "id": "sample_2",
+        "input": "n = 3  \nflights = [[0, 1, 100], [1, 2, 100], [0, 2, 500]]  \nsrc = 0  \ndst = 2  \nk = 1",
+        "output": "200",
+        "explanation": "The optimal path with at most 1 stop from city 0 to 2 is through cities [0, 1, 2] with a total cost of 100 + 100 = 200.\n        \n    \n\n\n**Disclaimer**: Here is the practice link to help you assess your knowledge better. It's highly recommend trying to solve it before looking at the solution."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "n = 1, flights = [], src = 0, dst = 0, k = 0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "n = 100, flights = [[0, 1, 1], [1, 2, 1], [2, 3, 1]], src = 0, dst = 3, k = 100",
+        "expectedOutput": "3",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform case",
+        "input": "n = 5, flights = [[0, 1, 1], [1, 2, 1], [2, 3, 1], [3, 4, 1]], src = 0, dst = 4, k = 4",
+        "expectedOutput": "4",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "n = 3, flights = [[0, 1, 100], [1, 2, 100], [0, 2, 500]], src = 0, dst = 2, k = 1",
+        "expectedOutput": "200",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "mixed case",
+        "input": "n = 4, flights = [[0, 1, 100], [1, 2, 100], [2, 0, 100], [1, 3, 600], [2, 3, 200]], src = 0, dst = 3, k = 1",
+        "expectedOutput": "700",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Use a BFS traversal to explore all possible paths from the source city to the destination city with at most k stops.",
+    "timeComplexity": "O(n * m * k)",
+    "spaceComplexity": "O(n * m)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <limits.h>\n\n// Structure to represent a flight\ntypedef struct {\n    int from;\n    int to;\n    int price;\n} Flight;\n\n// Function to find the cheapest flight within k stops\nint cheapestFlight(int n, Flight *flights, int numFlights, int src, int dst, int k) {\n    // Create an adjacency list to represent the graph\n    int **adj = (int **)malloc(n * sizeof(int *));\n    for (int i = 0; i < n; i++) {\n        adj[i] = (int *)malloc(n * sizeof(int));\n        for (int j = 0; j < n; j++) {\n            adj[i][j] = INT_MAX;\n        }\n    }\n\n    // Populate the adjacency list\n    for (int i = 0; i < numFlights; i++) {\n        adj[flights[i].from][flights[i].to] = flights[i].price;\n    }\n\n    // Create a queue to store the nodes to be visited\n    int **queue = (int **)malloc((n * k + 1) * sizeof(int *));\n    for (int i = 0; i <= n * k; i++) {\n        queue[i] = (int *)malloc(3 * sizeof(int));\n    }\n\n    // Initialize the queue with the source node\n    queue[0][0] = src;\n    queue[0][1] = 0;\n    queue[0][2] = 0;\n    int front = 0, rear = 1;\n\n    // Perform BFS traversal\n    while (front < rear) {\n        int node = queue[front][0];\n        int cost = queue[front][1];\n        int stops = queue[front][2];\n        front++;\n\n        // If the destination node is reached, return the cost\n        if (node == dst) {\n            return cost;\n        }\n\n        // If the number of stops exceeds k, skip this node\n        if (stops > k) {\n            continue;\n        }\n\n        // Explore all neighboring nodes\n        for (int i = 0; i < n; i++) {\n            if (adj[node][i] != INT_MAX) {\n                queue[rear][0] = i;\n                queue[rear][1] = cost + adj[node][i];\n                queue[rear][2] = stops + 1;\n                rear++;\n            }\n        }\n    }\n\n    // If no path is found, return -1\n    return -1;\n}\n\nint main() {\n    int n = 4;\n    Flight flights[] = {{0, 1, 100}, {1, 2, 100}, {2, 0, 100}, {1, 3, 600}, {2, 3, 200}};\n    int numFlights = sizeof(flights) / sizeof(flights[0]);\n    int src = 0;\n    int dst = 3;\n    int k = 1;\n\n    int result = cheapestFlight(n, flights, numFlights, src, dst, k);\n    printf(\"%d\\n\", result);\n\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nclass Solution\n{\npublic:\n    // Method to find the cheapest flight within K stops using BFS\n    int CheapestFLight(int n, vector<vector<int>> &flights,\n                       int src, int dst, int K)\n    {\n        // Create the adjacency list to represent airports and flights as a graph\n        vector<pair<int, int>> adj[n];\n        for (auto it : flights)\n        {\n            adj[it[0]].push_back({it[1], it[2]});  // Add an edge from source to destination with the weight (cost)\n        }\n\n        // Create a queue to store the node, its distance from the source, and the number of stops\n        queue<pair<int, pair<int, int>>> q;\n        \n        q.push({0, {src, 0}});  // Push the source node with 0 stops and 0 cost\n\n        // Create a distance array to store the minimum cost to reach each node\n        vector<int> dist(n, 1e9);\n        dist[src] = 0;  // The distance from source to itself is 0\n\n        // BFS traversal with a queue to process the nodes\n        while (!q.empty())\n        {\n            auto it = q.front();\n            q.pop();\n            int stops = it.first;  // Number of stops so far\n            int node = it.second.first;  // Current node\n            int cost = it.second.second;  // Cost to reach the current node\n\n            // If the number of stops exceeds K, continue to the next iteration\n            if (stops > K)\n                continue;\n\n            // Iterate over all the adjacent nodes (next destinations)\n            for (auto iter : adj[node])\n            {\n                int adjNode = iter.first;  // Next destination node\n                int edW = iter.second;  // Cost of the flight to the next destination\n\n                // If a shorter path to the adjacent node is found, update the distance\n                if (cost + edW < dist[adjNode] && stops <= K)\n                {\n                    dist[adjNode] = cost + edW;  // Update the distance\n                    q.push({stops + 1, {adjNode, cost + edW}});  // Push the new node with updated stops and cost\n                }\n            }\n        }\n\n        // If destination node is unreachable, return -1\n        if (dist[dst] == 1e9)\n            return -1;\n\n        return dist[dst];  // Return the minimum cost to reach the destination\n    }\n};\n\nint main()\n{\n    // Driver Code.\n    int n = 4, src = 0, dst = 3, K = 1;\n\n    // Flight routes and their costs\n    vector<vector<int>> flights = {{0, 1, 100}, {1, 2, 100}, {2, 0, 100}, {1, 3, 600},\n    {2, 3, 200}};\n\n    Solution obj;\n\n    // Call the method to find the cheapest flight\n    int ans = obj.CheapestFLight(n, flights, src, dst, K);\n\n    // Output the result\n    cout << ans << endl;\n\n    return 0;\n}",
+      "Java": "import java.util.*;\n\nclass Solution {\n\n    // Method to find the cheapest flight within K stops using BFS\n    public int CheapestFLight(int n, int[][] flights, int src, int dst, int K) {\n\n        // Create the adjacency list to represent airports and flights as a graph\n        List<List<int[]>> adj = new ArrayList<>();\n        for (int i = 0; i < n; i++) {\n            adj.add(new ArrayList<>());\n        }\n        \n        // Add edges for the flights to the adjacency list\n        for (int[] flight : flights) {\n            adj.get(flight[0]).add(new int[]{flight[1], flight[2]});\n        }\n\n        // Create a queue to store the node, its distance from the source, and the number of stops\n        Queue<int[]> q = new LinkedList<>();\n        q.offer(new int[]{0, src, 0});  // Push the source node with 0 stops and 0 cost\n\n        // Create a distance array to store the minimum cost to reach each node\n        int[] dist = new int[n];\n        Arrays.fill(dist, Integer.MAX_VALUE);\n        dist[src] = 0;\n\n        // BFS traversal with a queue to process the nodes\n        while (!q.isEmpty()) {\n            int[] current = q.poll();\n            int stops = current[0];  // Number of stops so far\n            int node = current[1];  // Current node\n            int cost = current[2];  // Cost to reach the current node\n\n            // If the number of stops exceeds K, continue to the next iteration\n            if (stops > K)\n                continue;\n\n            // Iterate over all the adjacent nodes (next destinations)\n            for (int[] adjNode : adj.get(node)) {\n                int nextNode = adjNode[0];  // Next destination node\n                int edW = adjNode[1];  // Cost of the flight to the next destination\n\n                // If a shorter path to the adjacent node is found, update the distance\n                if (cost + edW < dist[nextNode] && stops <= K) {\n                    dist[nextNode] = cost + edW;  // Update the distance\n                    q.offer(new int[]{stops + 1, nextNode, cost + edW});  // Push the new node with updated stops and cost\n                }\n            }\n        }\n\n        // If destination node is unreachable, return -1\n        if (dist[dst] == Integer.MAX_VALUE)\n            return -1;\n\n        return dist[dst];  // Return the minimum cost to reach the destination\n    }\n}\n\npublic class Main {\n\n    public static void main(String[] args) {\n\n        // Driver Code\n        int n = 4, src = 0, dst = 3, K = 1;\n\n        // Flight routes and their costs\n        int[][] flights = {{0, 1, 100}, {1, 2, 100}, {2, 0, 100}, {1, 3, 600},\n        {2, 3, 200}};\n\n        Solution obj = new Solution();\n\n        // Call the method to find the cheapest flight\n        int ans = obj.CheapestFLight(n, flights, src, dst, K);\n\n        // Output the result\n        System.out.println(ans);\n    }\n}",
+      "Python3": "from collections import deque\n\n# Method to find the cheapest flight within K stops using BFS\ndef CheapestFLight(n, flights, src, dst, K):\n\n    # Create an adjacency list to represent airports and flights as a graph\n    adj = {i: [] for i in range(n)}\n    for flight in flights:\n        adj[flight[0]].append([flight[1], flight[2]])\n\n    # Create a queue to store the node, its distance from the source, and the number of stops\n    q = deque([(0, src, 0)])  # Push the source node with 0 stops and 0 cost\n\n    # Create a distance array to store the minimum cost to reach each node\n    dist = [float('inf')] * n\n    dist[src] = 0\n\n    # BFS traversal with a queue to process the nodes\n    while q:\n        stops, node, cost = q.popleft()\n\n        # If the number of stops exceeds K, continue to the next iteration\n        if stops > K:\n            continue\n\n        # Iterate over all the adjacent nodes (next destinations)\n        for adjNode, edW in adj[node]:\n            # If a shorter path to the adjacent node is found, update the distance\n            if cost + edW < dist[adjNode] and stops <= K:\n                dist[adjNode] = cost + edW  # Update the distance\n                q.append((stops + 1, adjNode, cost + edW))  # Push the new node with updated stops and cost\n\n    # If destination node is unreachable, return -1\n    if dist[dst] == float('inf'):\n        return -1\n\n    return dist[dst]  # Return the minimum cost to reach the destination\n\n# Main function\ndef main():\n    # Input data\n    n = 4\n    src = 0\n    dst = 3\n    K = 1\n    flights = [[0, 1, 100], [1, 2, 100], [2, 0, 100], [1, 3, 600],\n               [2, 3, 200]]\n\n    # Call the method to find the cheapest flight\n    ans = CheapestFLight(n, flights, src, dst, K)\n\n    # Output the result\n    print(ans)\n\n# Call the main function\nif __name__ == \"__main__\":\n    main()",
+      "JavaScript": "// Method to find the cheapest flight within K stops using BFS\nfunction CheapestFLight(n, flights, src, dst, K) {\n\n    // Create an adjacency list to represent airports and flights as a graph\n    let adj = Array.from({ length: n }, () => []);\n    for (let flight of flights) {\n        adj[flight[0]].push([flight[1], flight[2]]);\n    }\n\n    // Create a queue to store the node, its distance from the source, and the number of stops\n    let q = [[0, src, 0]];  // Push the source node with 0 stops and 0 cost\n\n    // Create a distance array to store the minimum cost to reach each node\n    let dist = Array(n).fill(Infinity);\n    dist[src] = 0;\n\n    // BFS traversal with a queue to process the nodes\n    while (q.length > 0) {\n        let [stops, node, cost] = q.shift();\n\n        // If the number of stops exceeds K, continue to the next iteration\n        if (stops > K) continue;\n\n        // Iterate over all the adjacent nodes (next destinations)\n        for (let [adjNode, edW] of adj[node]) {\n            // If a shorter path to the adjacent node is found, update the distance\n            if (cost + edW < dist[adjNode] && stops <= K) {\n                dist[adjNode] = cost + edW;  // Update the distance\n                q.push([stops + 1, adjNode, cost + edW]);  // Push the new node with updated stops and cost\n            }\n        }\n    }\n\n    // If destination node is unreachable, return -1\n    if (dist[dst] === Infinity) return -1;\n\n    return dist[dst];  // Return the minimum cost to reach the destination\n}\n\n// Main function\nfunction main() {\n    // Input data\n    let n = 4;\n    let src = 0;\n    let dst = 3;\n    let K = 1;\n    let flights = [\n        [0, 1, 100], [1, 2, 100], [2, 0, 100], [1, 3, 600],\n        [2, 3, 200]\n    ];\n\n    // Call the method to find the cheapest flight\n    let ans = CheapestFLight(n, flights, src, dst, K);\n\n    // Output the result\n    console.log(ans);\n}\n\n// Call the main function\nmain();"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

@@ -1,0 +1,136 @@
+{
+  "questionId": "Q4474",
+  "title": "Single Source Shortest Path",
+  "slug": "single-source-shortest-path",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-12",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Easy",
+    "isPremium": true,
+    "tags": [
+      "Dijkstra",
+      "Shortest Path",
+      "Priority Queue",
+      "Weighted Graph"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Graphs"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given an undirected weighted graph it has NNN vertices and MMM edges. \n\nYou are tasked to find the distance of the shortest path from vertex 111 to all the other vertices.\n\nNoteThe constraints of this problem are smaller than the original problem.\n\n\nInput Format\n\nThe first line of input will contain a two integers NNN and MMM, denoting the number of vertices and edges.\nNext MMM lines describes the edges. i−thi-thi−th of these MMM lines contains three space-separated integers uiu_iui​, viv_ivi​ and wiw_iwi​ denoting there exists an edge between uiu_iui​ and viv_ivi​ with weight wiw_iwi​.\n\n\nOutput Format\nFor each test case, output on NNN space-separated integers. Where the ithi^{th}ith integer denotes the distance from vertex 111 to vertex iii.\n\n\nIf a vertex is not reachable, print -1 instead.",
+    "constraints": [
+      "1 ≤ T ≤ 100",
+      "1 ≤ N ≤ 10^3",
+      "2 ≤ M ≤ min(10^3, N·(N‑1)/2)",
+      "1 ≤ u, v ≤ N",
+      "0 ≤ w ≤ 10^9",
+      "The graph is simple (no self‑loops, no multiple edges)"
+    ],
+    "inputFormat": "First line contains an integer T, the number of test cases. Each test case starts with a line containing two integers N and M — the number of vertices and edges. Then M lines follow, each containing three integers u, v and w denoting an undirected edge between u and v with weight w.",
+    "outputFormat": "For each test case output N space‑separated integers on a single line. The i‑th integer is the length of the shortest path from vertex 1 to vertex i. If vertex i is unreachable print -1.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "5 4\n1 2 3\n2 3 5\n1 3 2\n3 4 1",
+        "output": "0 3 2 3 -1",
+        "explanation": ""
+      },
+      {
+        "id": "sample_2",
+        "input": "4 5\n1 2 1\n1 3 4\n2 3 2\n3 4 5\n1 4 10",
+        "output": "0 1 3 8",
+        "explanation": ""
+      },
+      {
+        "id": "sample_3",
+        "input": "3 3\n1 2 1\n2 3 1\n1 3 10",
+        "output": "0 1 2",
+        "explanation": ""
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 0",
+        "expectedOutput": "0",
+        "weight": 1
+      },
+      {
+        "id": "tc_2",
+        "label": "minimum boundary 2",
+        "input": "1\n2 0",
+        "expectedOutput": "0 -1",
+        "weight": 1
+      },
+      {
+        "id": "tc_3",
+        "label": "minimum boundary 3",
+        "input": "1\n2 1\n1 2 0",
+        "expectedOutput": "0 0",
+        "weight": 1
+      },
+      {
+        "id": "tc_4",
+        "label": "minimum boundary 4",
+        "input": "1\n3 2\n1 2 5\n2 3 5",
+        "expectedOutput": "0 5 10",
+        "weight": 1
+      }
+    ],
+    "totalTestCases": 4,
+    "totalWeight": 4
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "maxScore": 4
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem asks for single‑source shortest paths in a non‑negative weighted undirected graph. Dijkstra’s algorithm with a min‑heap (priority queue) gives the optimal solution because all edge weights are non‑negative. For each test case we build an adjacency list, initialise all distances to INF except the source (vertex 1) which is 0, and repeatedly extract the currently closest unprocessed vertex from the heap, relaxing its outgoing edges. Vertices that are never reached keep distance INF and are printed as -1. The algorithm runs in O((N+M) log N) time and O(N+M) memory per test case.",
+    "timeComplexity": "O((N+M) log N) per test case, O((ΣN+ΣM) log N) overall.",
+    "spaceComplexity": "O(N+M) – adjacency list, distance array, visited flags and the priority queue.",
+    "code": {
+      "C": "",
+      "C++": "",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    static class Edge {\n        int to;\n        long w;\n        Edge(int t, long w) { this.to = t; this.w = w; }\n    }\n\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder out = new StringBuilder();\n        String firstLine = br.readLine();\n        while (firstLine != null && firstLine.trim().isEmpty()) {\n            firstLine = br.readLine();\n        }\n        if (firstLine == null) return;\n        String[] firstParts = firstLine.trim().split(\"\\\\s+\");\n        int testCases;\n        Queue<String> pending = new ArrayDeque<>();\n        if (firstParts.length == 1) {\n            testCases = Integer.parseInt(firstParts[0]);\n        } else {\n            testCases = 1;\n            pending.add(firstLine);\n        }\n        for (int t = 0; t < testCases; t++) {\n            String line;\n            if (!pending.isEmpty()) {\n                line = pending.poll();\n            } else {\n                line = br.readLine();\n                while (line != null && line.trim().isEmpty()) {\n                    line = br.readLine();\n                }\n            }\n            if (line == null) break;\n            StringTokenizer st = new StringTokenizer(line);\n            int N = Integer.parseInt(st.nextToken());\n            int M = Integer.parseInt(st.nextToken());\n            List<Edge>[] adj = new ArrayList[N + 1];\n            for (int i = 1; i <= N; i++) adj[i] = new ArrayList<>();\n            for (int i = 0; i < M; i++) {\n                st = new StringTokenizer(br.readLine());\n                int u = Integer.parseInt(st.nextToken());\n                int v = Integer.parseInt(st.nextToken());\n                long w = Long.parseLong(st.nextToken());\n                adj[u].add(new Edge(v, w));\n                adj[v].add(new Edge(u, w));\n            }\n            long[] dist = new long[N + 1];\n            Arrays.fill(dist, Long.MAX_VALUE);\n            dist[1] = 0;\n            PriorityQueue<long[]> pq = new PriorityQueue<>(Comparator.comparingLong(a -> a[0]));\n            pq.offer(new long[]{0, 1});\n            boolean[] visited = new boolean[N + 1];\n            while (!pq.isEmpty()) {\n                long[] cur = pq.poll();\n                long d = cur[0];\n                int node = (int) cur[1];\n                if (visited[node]) continue;\n                visited[node] = true;\n                for (Edge e : adj[node]) {\n                    if (dist[e.to] > d + e.w) {\n                        dist[e.to] = d + e.w;\n                        pq.offer(new long[]{dist[e.to], e.to});\n                    }\n                }\n            }\n            for (int i = 1; i <= N; i++) {\n                if (dist[i] == Long.MAX_VALUE) out.append(\"-1\");\n                else out.append(dist[i]);\n                if (i < N) out.append(' ');\n            }\n            out.append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}\n",
+      "Python3": "",
+      "JavaScript": ""
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

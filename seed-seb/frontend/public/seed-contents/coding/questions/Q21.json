@@ -1,0 +1,425 @@
+{
+  "questionId": "Q21",
+  "title": "Combine Two Sorted Lists",
+  "slug": "merge-two-sorted-lists",
+  "version": 2,
+  "createdAt": "2026-07-09",
+  "updatedAt": "2026-07-16",
+  "metadata": {
+    "category": "Linked List",
+    "difficulty": "Easy",
+    "isPremium": false,
+    "tags": [
+      "linked-list",
+      "two-pointers",
+      "recursion"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "linked-list",
+      "recursion",
+      "two-pointers"
+    ],
+    "QBCategory": "LCD"
+  },
+  "content": {
+    "problemStatement": "You receive the heads of two sorted linked lists `list1` and `list2`.\n\nMerge the two lists into one **sorted** list. The list should be made by splicing together the nodes of the first two lists.\n\nThe task is to output *the head of the merged linked list*.\n\n**Examples:**\n\n```\nInput: list1 = [1,2,4], list2 = [1,3,4]\nOutput: [1,1,2,3,4,4]\n```\n\n```\nInput: list1 = [], list2 = []\nOutput: []\n```\n\n```\nInput: list1 = [], list2 = [0]\nOutput: [0]\n```\n\n**Notes:**\n\n* Both input lists are guaranteed to be sorted in non-decreasing order.\n* Reusing existing nodes is allowed; creating new nodes is also accepted as long as the returned list is correct.\n\n**Constraints:**\n\n* `0 <= number of nodes in each list <= 50`\n* `-100 <= Node.val <= 100`\n* Both `list1` and `list2` are sorted in non-decreasing order.",
+    "constraints": [
+      "0 <= number of nodes in each list <= 50",
+      "-100 <= Node.val <= 100",
+      "Both list1 and list2 are sorted in non-decreasing order"
+    ],
+    "inputFormat": "Single line: JSON array of all arguments, e.g. [arg1, arg2, ...]",
+    "outputFormat": "Single line: JSON-serialised return value",
+    "notes": [],
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "type": "reg",
+        "input": "[[1,2,4],[1,3,4]]",
+        "output": "[1,1,2,3,4,4]",
+        "explanation": "Applying the rules of Merge Two Sorted Lists to this input produces [1,1,2,3,4,4]."
+      },
+      {
+        "id": "sample_2",
+        "type": "reg",
+        "input": "[[],[]]",
+        "output": "[]",
+        "explanation": "Applying the rules of Merge Two Sorted Lists to this input produces []."
+      },
+      {
+        "id": "sample_3",
+        "type": "reg",
+        "input": "[[],[0]]",
+        "output": "[0]",
+        "explanation": "Applying the rules of Merge Two Sorted Lists to this input produces [0]."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_01",
+        "type": "reg",
+        "label": "Both empty lists",
+        "input": "[[], []]",
+        "expectedOutput": "[]",
+        "weight": 4
+      },
+      {
+        "id": "tc_02",
+        "type": "reg",
+        "label": "First empty, second non-empty",
+        "input": "[[], [1,2,3]]",
+        "expectedOutput": "[1,2,3]",
+        "weight": 4
+      },
+      {
+        "id": "tc_03",
+        "type": "reg",
+        "label": "Second empty, first non-empty",
+        "input": "[[1,2,3], []]",
+        "expectedOutput": "[1,2,3]",
+        "weight": 4
+      },
+      {
+        "id": "tc_04",
+        "type": "reg",
+        "label": "Already sorted ascending (disjoint ranges)",
+        "input": "[[1, 2, 3], [4, 5, 6]]",
+        "expectedOutput": "[1,2,3,4,5,6]",
+        "weight": 4
+      },
+      {
+        "id": "tc_05",
+        "type": "reg",
+        "label": "Alternating merge",
+        "input": "[[1,3,5,7],[2,4,6,8]]",
+        "expectedOutput": "[1,2,3,4,5,6,7,8]",
+        "weight": 4
+      },
+      {
+        "id": "tc_06",
+        "type": "reg",
+        "label": "All duplicates",
+        "input": "[[1,1,1],[1,1,1]]",
+        "expectedOutput": "[1,1,1,1,1,1]",
+        "weight": 4
+      },
+      {
+        "id": "tc_07",
+        "type": "reg",
+        "label": "Partial duplicates and interleaving",
+        "input": "[[1,2,2,4],[1,3,3,4]]",
+        "expectedOutput": "[1,1,2,2,3,3,4,4]",
+        "weight": 4
+      },
+      {
+        "id": "tc_08",
+        "type": "reg",
+        "label": "Negative and positive values",
+        "input": "[[-3,-2,-1],[0,1,2]]",
+        "expectedOutput": "[-3,-2,-1,0,1,2]",
+        "weight": 4
+      },
+      {
+        "id": "tc_09",
+        "type": "reg",
+        "label": "Single element lists",
+        "input": "[[1],[2]]",
+        "expectedOutput": "[1,2]",
+        "weight": 4
+      },
+      {
+        "id": "tc_10",
+        "type": "reg",
+        "label": "All elements equal",
+        "input": "[[5,5,5],[5,5]]",
+        "expectedOutput": "[5,5,5,5,5]",
+        "weight": 4
+      },
+      {
+        "id": "tc_11",
+        "type": "reg",
+        "label": "Boundary values",
+        "input": "[[-100],[100]]",
+        "expectedOutput": "[-100,100]",
+        "weight": 4
+      },
+      {
+        "id": "tc_12",
+        "type": "gen",
+        "label": "Maximum length both lists (sorted)",
+        "input": "[\"generator:two_sorted_max50:seed=2026\"]",
+        "expectedOutput": "(function(){const seed=2026;function rng(s){return function(){s=(1664525*s+1013904223)>>>0;return s;};}const r=rng(seed);const a=[],b=[];for(let i=0;i<50;i++)a.push((r()%201)-100);for(let i=0;i<50;i++)b.push((r()%201)-100);a.sort((x,y)=>x-y);b.sort((x,y)=>x-y);return JSON.stringify(a.concat(b).sort((x,y)=>x-y));})()",
+        "weight": 4
+      },
+      {
+        "id": "tc_13",
+        "type": "gen",
+        "label": "Random small sorted lists",
+        "input": "[\"generator:random_sorted_pairs:seed=2026,count=5,max_len=10,range=-20..20\"]",
+        "expectedOutput": "(function(){const seed=2026;function rng(s){return function(){s=(1664525*s+1013904223)>>>0;return s;};}const r=rng(seed);const n1=r()%11,n2=r()%11;const a=[],b=[];for(let i=0;i<n1;i++)a.push((r()%41)-20);for(let i=0;i<n2;i++)b.push((r()%41)-20);a.sort((x,y)=>x-y);b.sort((x,y)=>x-y);return JSON.stringify(a.concat(b).sort((x,y)=>x-y));})()",
+        "weight": 4
+      },
+      {
+        "id": "tc_14",
+        "type": "reg",
+        "label": "Interleaved duplicates heavy",
+        "input": "[[1,1,1,2,2],[1,1,2,2,2]]",
+        "expectedOutput": "[1,1,1,1,1,2,2,2,2,2]",
+        "weight": 4
+      },
+      {
+        "id": "tc_15",
+        "type": "reg",
+        "label": "Already merged (one list entirely smaller)",
+        "input": "[[1,2,3],[10,11,12]]",
+        "expectedOutput": "[1,2,3,10,11,12]",
+        "weight": 4
+      },
+      {
+        "id": "tc_16",
+        "type": "reg",
+        "label": "Second list entirely smaller",
+        "input": "[[10,11,12],[1,2,3]]",
+        "expectedOutput": "[1,2,3,10,11,12]",
+        "weight": 4
+      },
+      {
+        "id": "tc_17",
+        "type": "reg",
+        "label": "Mixed negative/positive interleaved",
+        "input": "[[-5,-2,0],[ -4,-1,3]]",
+        "expectedOutput": "[-5,-4,-2,-1,0,3]",
+        "weight": 4
+      },
+      {
+        "id": "tc_18",
+        "type": "reg",
+        "label": "Small performance check",
+        "input": "[[0,1,2,3,4,5,6,7,8,9],[10,11,12,13,14,15,16,17,18,19]]",
+        "expectedOutput": "[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]",
+        "weight": 4
+      },
+      {
+        "id": "tc_19",
+        "type": "reg",
+        "label": "Partial overlap with duplicates",
+        "input": "[[1,2,4,6,8],[2,3,4,7,9]]",
+        "expectedOutput": "[1,2,2,3,4,4,6,7,8,9]",
+        "weight": 4
+      },
+      {
+        "id": "tc_20",
+        "type": "reg",
+        "label": "Published sample regression",
+        "input": "[[1,2,4],[1,3,4]]",
+        "expectedOutput": "[1,1,2,3,4,4]",
+        "weight": 3
+      },
+      {
+        "id": "tc_21",
+        "type": "reg",
+        "label": "Published sample regression",
+        "input": "[[],[]]",
+        "expectedOutput": "[]",
+        "weight": 3
+      },
+      {
+        "id": "tc_22",
+        "type": "reg",
+        "label": "Published sample regression",
+        "input": "[[],[0]]",
+        "expectedOutput": "[0]",
+        "weight": 3
+      },
+      {
+        "id": "tc_23",
+        "type": "reg",
+        "label": "Generated boundary or representative case",
+        "input": "[[0],[]]",
+        "expectedOutput": "[0]",
+        "weight": 3
+      },
+      {
+        "id": "tc_24",
+        "type": "reg",
+        "label": "Generated boundary or representative case",
+        "input": "[[2],[1]]",
+        "expectedOutput": "[1,2]",
+        "weight": 3
+      },
+      {
+        "id": "tc_25",
+        "type": "reg",
+        "label": "Generated boundary or representative case",
+        "input": "[[-3,-1,4],[-2,0,5]]",
+        "expectedOutput": "[-3,-2,-1,0,4,5]",
+        "weight": 3
+      },
+      {
+        "id": "tc_26",
+        "type": "reg",
+        "label": "Generated boundary or representative case",
+        "input": "[[1,1,1],[1,1]]",
+        "expectedOutput": "[1,1,1,1,1]",
+        "weight": 3
+      },
+      {
+        "id": "tc_27",
+        "type": "reg",
+        "label": "Generated boundary or representative case",
+        "input": "[[1,3,5],[2,4,6]]",
+        "expectedOutput": "[1,2,3,4,5,6]",
+        "weight": 3
+      },
+      {
+        "id": "tc_28",
+        "type": "reg",
+        "label": "Boundary values with duplicates",
+        "input": "[[-100,-100,100],[ -100,100,100]]",
+        "expectedOutput": "[-100,-100,-100,100,100,100]",
+        "weight": 3
+      },
+      {
+        "id": "tc_29",
+        "type": "reg",
+        "label": "Alternating negatives and positives",
+        "input": "[[-5,-3,-1,1,3],[ -4,-2,0,2,4]]",
+        "expectedOutput": "[-5,-4,-3,-2,-1,0,1,2,3,4]",
+        "weight": 3
+      },
+      {
+        "id": "tc_30",
+        "type": "reg",
+        "label": "One list exhausted immediately",
+        "input": "[[1],[2,3,4,5,6]]",
+        "expectedOutput": "[1,2,3,4,5,6]",
+        "weight": 3
+      }
+    ],
+    "totalTestCases": 30,
+    "totalWeight": 109
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      4,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3
+    ],
+    "maxScore": 109
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ],
+    "notes": []
+  },
+  "solution": {
+    "approach": "Use a dummy head and a current pointer. Advance through both lists, attaching the smaller node each step. When one list is exhausted, attach the remainder of the other list.",
+    "timeComplexity": "O(n + m)",
+    "spaceComplexity": "O(1)",
+    "code": {
+      "C": "",
+      "C++": "",
+      "Java": "",
+      "Python3": "# Time:  O(n + m)\n# Space: O(1) (excluding output)\n\nclass ListNode:\n    def __init__(self, x):\n        self.val = x\n        self.next = None\n\nclass Solution:\n    def mergeTwoLists(self, l1, l2):\n        dummy = ListNode(0)\n        cur = dummy\n        while l1 and l2:\n            if l1.val <= l2.val:\n                cur.next = l1\n                l1 = l1.next\n            else:\n                cur.next = l2\n                l2 = l2.next\n            cur = cur.next\n        cur.next = l1 or l2\n        return dummy.next",
+      "JavaScript": ""
+    },
+    "notes": [],
+    "editorial": {
+      "bruteForce": {
+        "description": "",
+        "complexity": ""
+      },
+      "better": {
+        "description": "",
+        "complexity": ""
+      },
+      "optimal": {
+        "description": "",
+        "complexity": ""
+      }
+    }
+  },
+  "hints": [],
+  "followUps": [],
+  "learningObjectives": [],
+  "similarProblems": [],
+  "acceptanceRate": null,
+  "estimatedSolveTime": "",
+  "recommendedAfter": [],
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdbool.h>\n\n// Minimal JSON helpers for driver\nstatic char* extract_next_array_token(char** p) {\n    char* s = *p;\n    while (*s && *s != '[') s++;\n    if (!*s) return NULL;\n    char* start = s++;\n    int depth = 1;\n    while (*s && depth) {\n        if (*s == '[') depth++;\n        else if (*s == ']') depth--;\n        s++;\n    }\n    size_t len = s - start;\n    char* out = malloc(len + 1);\n    strncpy(out, start, len);\n    out[len] = '\\0';\n    *p = s;\n    return out;\n}\n\nstatic int* parse_int_array_from_token(const char* token, int* out_size) {\n    // token is like [1,2,3]\n    if (!token) { *out_size = 0; return NULL; }\n    if (strcmp(token, \"[]\") == 0) { *out_size = 0; return NULL; }\n    const char* p = token + 1; // skip [\n    int capacity = 16; int count = 0;\n    int* arr = malloc(capacity * sizeof(int));\n    while (*p && *p != ']') {\n        while (*p == ' ' || *p == ',') p++;\n        if (*p == ']') break;\n        int val = strtol(p, (char**)&p, 10);\n        if (count >= capacity) { capacity *= 2; arr = realloc(arr, capacity * sizeof(int)); }\n        arr[count++] = val;\n        while (*p == ' ' || *p == ',') p++;\n    }\n    *out_size = count;\n    return arr;\n}\n\n// Definition for singly-linked list node used by driver and contestants\nstruct ListNode {\n    int val;\n    struct ListNode* next;\n};\n\nstatic struct ListNode* list_from_array(int* arr, int n) {\n    if (n == 0) return NULL;\n    struct ListNode* head = malloc(sizeof(struct ListNode));\n    head->val = arr[0]; head->next = NULL;\n    struct ListNode* cur = head;\n    for (int i = 1; i < n; ++i) {\n        struct ListNode* node = malloc(sizeof(struct ListNode));\n        node->val = arr[i]; node->next = NULL;\n        cur->next = node; cur = node;\n    }\n    return head;\n}\n\nstatic void list_to_array_and_print(struct ListNode* head) {\n    printf(\"[\");\n    struct ListNode* cur = head;\n    bool first = true;\n    while (cur) {\n        if (!first) printf(\",\");\n        printf(\"%d\", cur->val);\n        first = false;\n        cur = cur->next;\n    }\n    printf(\"]\\n\");\n}\n\n// Contestant implements this function\nstruct ListNode* mergeTwoLists(struct ListNode* list1, struct ListNode* list2) {\n    // placeholder\n    return NULL;\n}\n\nint main() {\n    char line[200000];\n    if (!fgets(line, sizeof(line), stdin)) return 0;\n    char* p = line;\n    char* token1 = extract_next_array_token(&p);\n    char* token2 = extract_next_array_token(&p);\n    int n1 = 0, n2 = 0;\n    int* arr1 = parse_int_array_from_token(token1, &n1);\n    int* arr2 = parse_int_array_from_token(token2, &n2);\n    struct ListNode* l1 = list_from_array(arr1, n1);\n    struct ListNode* l2 = list_from_array(arr2, n2);\n    struct ListNode* res = mergeTwoLists(l1, l2);\n    list_to_array_and_print(res);\n    // Note: memory not fully freed for brevity\n    if (token1) free(token1);\n    if (token2) free(token2);\n    if (arr1) free(arr1);\n    if (arr2) free(arr2);\n    return 0;\n}\n",
+    "C++": "struct ListNode {\n    int val;\n    ListNode* next;\n    ListNode(int value = 0, ListNode* nextNode = nullptr) : val(value), next(nextNode) {}\n};\n\nclass Solution {\npublic:\n    ListNode* mergeTwoLists(ListNode* list1, ListNode* list2) {\n        // Write your solution here.\n        return nullptr;\n    }\n};\n",
+    "Java": "import java.util.*;\nimport java.io.*;\n\nclass ListNode {\n    int val;\n    ListNode next;\n    ListNode() {}\n    ListNode(int val) { this.val = val; }\n    ListNode(int val, ListNode next) { this.val = val; this.next = next; }\n}\n\nclass Solution {\n    public ListNode mergeTwoLists(ListNode list1, ListNode list2) {\n        ListNode dummy = new ListNode(0);\n        ListNode cur = dummy;\n        ListNode l1 = list1, l2 = list2;\n        while (l1 != null && l2 != null) {\n            if (l1.val <= l2.val) {\n                cur.next = l1; l1 = l1.next;\n            } else {\n                cur.next = l2; l2 = l2.next;\n            }\n            cur = cur.next;\n        }\n        cur.next = (l1 != null) ? l1 : l2;\n        return dummy.next;\n    }\n}\n\npublic class Main {\n    private static int[] parseIntArray(String token) {\n        token = token.trim();\n        if (token.equals(\"[]\")) return new int[0];\n        token = token.substring(1, token.length() - 1).trim();\n        if (token.isEmpty()) return new int[0];\n        String[] parts = token.split(\",\");\n        int[] arr = new int[parts.length];\n        for (int i = 0; i < parts.length; ++i) arr[i] = Integer.parseInt(parts[i].trim());\n        return arr;\n    }\n    private static ListNode fromArray(int[] arr) {\n        if (arr.length == 0) return null;\n        ListNode head = new ListNode(arr[0]); ListNode cur = head;\n        for (int i = 1; i < arr.length; ++i) { cur.next = new ListNode(arr[i]); cur = cur.next; }\n        return head;\n    }\n    private static String toJsonArray(ListNode head) {\n        StringBuilder sb = new StringBuilder(); sb.append(\"[\");\n        boolean first = true; while (head != null) { if (!first) sb.append(\",\"); sb.append(head.val); first = false; head = head.next; }\n        sb.append(\"]\"); return sb.toString();\n    }\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        String line = br.readLine();\n        // Extract two top-level arrays\n        int first = line.indexOf('[');\n        int second = line.indexOf(']', first) + 1;\n        String token1 = line.substring(first, second);\n        int third = line.indexOf('[', second);\n        int fourth = line.indexOf(']', third) + 1;\n        String token2 = line.substring(third, fourth);\n        int[] a1 = parseIntArray(token1);\n        int[] a2 = parseIntArray(token2);\n        ListNode l1 = fromArray(a1);\n        ListNode l2 = fromArray(a2);\n        ListNode res = new Solution().mergeTwoLists(l1, l2);\n        System.out.println(toJsonArray(res));\n    }\n}\n",
+    "Python3": "import sys, json\nfrom typing import List, Optional\n\nclass ListNode:\n    def __init__(self, val=0, next=None):\n        self.val = val\n        self.next = next\n    @staticmethod\n    def from_list(lst: List[int]) -> Optional['ListNode']:\n        if not lst: return None\n        head = ListNode(lst[0]); cur = head\n        for v in lst[1:]:\n            cur.next = ListNode(v); cur = cur.next\n        return head\n    def to_list(self) -> List[int]:\n        out = []\n        cur = self\n        while cur:\n            out.append(cur.val); cur = cur.next\n        return out\n\nclass Solution:\n    def mergeTwoLists(self, list1: Optional[ListNode], list2: Optional[ListNode]) -> Optional[ListNode]:\n        # Iterative dummy-node solution\n        dummy = ListNode(0)\n        cur = dummy\n        l1, l2 = list1, list2\n        while l1 and l2:\n            if l1.val <= l2.val:\n                cur.next = l1\n                l1 = l1.next\n            else:\n                cur.next = l2\n                l2 = l2.next\n            cur = cur.next\n        cur.next = l1 or l2\n        return dummy.next\n\nif __name__ == '__main__':\n    args = json.loads(sys.stdin.readline())\n    l1 = ListNode.from_list(args[0])\n    l2 = ListNode.from_list(args[1])\n    res = Solution().mergeTwoLists(l1, l2)\n    out = res.to_list() if res else []\n    print(json.dumps(out))\n",
+    "JavaScript": "'use strict';\n\nfunction ListNode(val, next) {\n    this.val = (val===undefined ? 0 : val);\n    this.next = (next===undefined ? null : next);\n}\n\n// Contestant implements this function\nvar mergeTwoLists = function(list1, list2) {\n    // TODO: implement\n};\n\n// Driver: convert input arrays to linked lists, call mergeTwoLists, print array\nif (require.main === module) {\n    const fs = require('fs');\n    const args = JSON.parse(fs.readFileSync(0, 'utf8'));\n    function fromArray(arr) {\n        if (!arr || arr.length === 0) return null;\n        let head = new ListNode(arr[0]); let cur = head;\n        for (let i = 1; i < arr.length; ++i) { cur.next = new ListNode(arr[i]); cur = cur.next; }\n        return head;\n    }\n    function toArray(node) {\n        const out = [];\n        while (node) { out.push(node.val); node = node.next; }\n        return out;\n    }\n    const l1 = fromArray(args[0]);\n    const l2 = fromArray(args[1]);\n    const res = mergeTwoLists(l1, l2);\n    console.log(JSON.stringify(toArray(res)));\n}\n",
+    "solution": {
+      "approach": "Use a dummy head and a current pointer. Advance through both lists, attaching the smaller node each step. When one list is exhausted, attach the remainder of the other list.",
+      "timeComplexity": "O(n + m)",
+      "spaceComplexity": "O(1)",
+      "code": {
+        "C": "",
+        "C++": "",
+        "Java": "",
+        "Python3": "# Time:  O(n + m)\n# Space: O(1) (excluding output)\n\nclass ListNode:\n    def __init__(self, x):\n        self.val = x\n        self.next = None\n\nclass Solution:\n    def mergeTwoLists(self, l1, l2):\n        dummy = ListNode(0)\n        cur = dummy\n        while l1 and l2:\n            if l1.val <= l2.val:\n                cur.next = l1\n                l1 = l1.next\n            else:\n                cur.next = l2\n                l2 = l2.next\n            cur = cur.next\n        cur.next = l1 or l2\n        return dummy.next",
+        "JavaScript": ""
+      }
+    },
+    "_internal": {
+      "methodName": "mergeTwoLists",
+      "params": [
+        {
+          "name": "list1",
+          "type": "ListNode",
+          "dealloc": false
+        },
+        {
+          "name": "list2",
+          "type": "ListNode",
+          "dealloc": false
+        }
+      ],
+      "phase": "ready-for-judge"
+    },
+    "verified": true
+  },
+  "_internal": {},
+  "verified": true
+}

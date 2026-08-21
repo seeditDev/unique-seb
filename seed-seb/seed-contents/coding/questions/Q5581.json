@@ -1,0 +1,140 @@
+{
+  "questionId": "Q5581",
+  "title": "Expected Greatest Common Divisor",
+  "slug": "expected-greatest-common-divisor",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "GCD",
+      "Expected Value",
+      "Number Theory"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Mathematics"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Several integers **X0**, **X1**, ..., **XK-1** are randomly chosen from some intervals.  Namely, **X0** is randomly chosen between **A0** and **B0**, inclusive, **X1** is randomly chosen between **A1** and **B1**, inclusive, and so on.  We are interested in the expected value of the greatest common divisor of the **Xi** which is the average of **GCD(X0, X1, ..., XK-1)** over all possible choices of **X0**, **X1**, ..., **XK-1**. In order to avoid floating-point precision issues, we instead use the following output method. Suppose the expected value of the greatest common divisor of all the **Xi** is **P**/**Q**, where **P** and **Q** are relatively prime positive integers.  Find an integer **N** between 0 and 1000000006, inclusive, for which (**P** + **Q** * **N**) is divisible by 1000000007 = 109 + 7.",
+    "constraints": [
+      "1 <= T <= 50",
+      "2 <= K <= 5",
+      "1 <= Ai <= Bi <= 200000"
+    ],
+    "inputFormat": "First line contains T, the number of test cases. Each test case contains an integer K, the number of integers to be chosen, followed by K pairs of integers Ai and Bi, where 1 <= Ai <= Bi <= 200000.",
+    "outputFormat": "For each test case, print the value N according to the problem statement. If multiple such values exist, print any one of them. If no such value exists, print -1.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4\n2\n2 4\n3 5\n3\n1 2\n1 2\n1 2\n3\n1 12\n1 12\n1 12\n2\n2700 2701\n2612 2724",
+        "output": "333333334\n875000005\n722222226\n314159265",
+        "explanation": "The expected value of the GCD is calculated for each test case."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n2\n1 2\n3 4",
+        "output": "875000005",
+        "explanation": "The expected value of the GCD is calculated for the given test case."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n3\n1 2\n3 4\n5 6",
+        "output": "722222226",
+        "explanation": "The expected value of the GCD is calculated for the given test case."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n2\n1 1\n1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n2\n200000 200000\n200000 200000",
+        "expectedOutput": "200000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n2\n2 2\n2 2",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n2\n3 5\n7 11",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "2\n2\n1 2\n3 4\n3\n1 2\n1 2\n1 2",
+        "expectedOutput": "875000005\n722222226",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem requires calculating the expected value of the greatest common divisor (GCD) of K integers chosen randomly from given intervals. To solve this, we can use a brute force approach by iterating over all possible combinations of integers and calculating the GCD for each combination. The expected value is then calculated by summing up the GCD values for all combinations and dividing by the total number of combinations.",
+    "timeComplexity": "O(T * (B1 - A1 + 1) * (B2 - A2 + 1) * ... * (BK - AK + 1)) per test case, O(T * 200000^5) total.",
+    "spaceComplexity": "O(1) — the space complexity is constant as we only use a fixed amount of space to store the input and output values.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <math.h>\n\n// Function to calculate GCD\nint gcd(int a, int b) {\n    if (b == 0)\n        return a;\n    return gcd(b, a % b);\n}\n\n// Function to calculate the expected value of GCD\nlong long calculateExpectedValue(int A[], int B[], int K) {\n    long long sum = 0;\n    long long total = 1;\n    for (int i = 0; i < K; i++) {\n        total *= (B[i] - A[i] + 1);\n    }\n    for (int i = A[0]; i <= B[0]; i++) {\n        for (int j = A[1]; j <= B[1]; j++) {\n            int g = gcd(i, j);\n            for (int k = 2; k < K; k++) {\n                for (int l = A[k]; l <= B[k]; l++) {\n                    g = gcd(g, l);\n                }\n            }\n            sum += g;\n        }\n    }\n    return sum;\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int K;\n        scanf(\"%d\", &K);\n        int A[K], B[K];\n        for (int i = 0; i < K; i++) {\n            scanf(\"%d %d\", &A[i], &B[i]);\n        }\n        long long expectedValue = calculateExpectedValue(A, B, K);\n        long long total = 1;\n        for (int i = 0; i < K; i++) {\n            total *= (B[i] - A[i] + 1);\n        }\n        long long P = expectedValue;\n        long long Q = total;\n        long long N = (1000000007 - P % Q) * powMod(Q, 1000000007 - 2, 1000000007) % 1000000007;\n        printf(\"%lld\\n\", N);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <cmath>\nusing namespace std;\n\n// Function to calculate GCD\nint gcd(int a, int b) {\n    if (b == 0)\n        return a;\n    return gcd(b, a % b);\n}\n\n// Function to calculate the expected value of GCD\nlong long calculateExpectedValue(int A[], int B[], int K) {\n    long long sum = 0;\n    long long total = 1;\n    for (int i = 0; i < K; i++) {\n        total *= (B[i] - A[i] + 1);\n    }\n    for (int i = A[0]; i <= B[0]; i++) {\n        for (int j = A[1]; j <= B[1]; j++) {\n            int g = gcd(i, j);\n            for (int k = 2; k < K; k++) {\n                for (int l = A[k]; l <= B[k]; l++) {\n                    g = gcd(g, l);\n                }\n            }\n            sum += g;\n        }\n    }\n    return sum;\n}\n\nlong long powMod(long long a, long long b, long long mod) {\n    long long res = 1;\n    while (b > 0) {\n        if (b & 1)\n            res = res * a % mod;\n        a = a * a % mod;\n        b >>= 1;\n    }\n    return res;\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(NULL);\n    int T;\n    cin >> T;\n    while (T--) {\n        int K;\n        cin >> K;\n        int A[K], B[K];\n        for (int i = 0; i < K; i++) {\n            cin >> A[i] >> B[i];\n        }\n        long long expectedValue = calculateExpectedValue(A, B, K);\n        long long total = 1;\n        for (int i = 0; i < K; i++) {\n            total *= (B[i] - A[i] + 1);\n        }\n        long long P = expectedValue;\n        long long Q = total;\n        long long N = (1000000007 - P % Q) * powMod(Q, 1000000007 - 2, 1000000007) % 1000000007;\n        cout << N << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    // Function to calculate GCD\n    public static int gcd(int a, int b) {\n        if (b == 0)\n            return a;\n        return gcd(b, a % b);\n    }\n\n    // Function to calculate the expected value of GCD\n    public static long calculateExpectedValue(int[] A, int[] B, int K) {\n        long sum = 0;\n        long total = 1;\n        for (int i = 0; i < K; i++) {\n            total *= (B[i] - A[i] + 1);\n        }\n        for (int i = A[0]; i <= B[0]; i++) {\n            for (int j = A[1]; j <= B[1]; j++) {\n                int g = gcd(i, j);\n                for (int k = 2; k < K; k++) {\n                    for (int l = A[k]; l <= B[k]; l++) {\n                        g = gcd(g, l);\n                    }\n                }\n                sum += g;\n            }\n        }\n        return sum;\n    }\n\n    public static long powMod(long a, long b, long mod) {\n        long res = 1;\n        while (b > 0) {\n            if (b % 2 == 1)\n                res = res * a % mod;\n            a = a * a % mod;\n            b >>= 1;\n        }\n        return res;\n    }\n\n    public static long modInverse(long a, long m) {\n        return powMod(a, m - 2, m);\n    }\n\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int T = scanner.nextInt();\n        while (T-- > 0) {\n            int K = scanner.nextInt();\n            int[] A = new int[K];\n            int[] B = new int[K];\n            for (int i = 0; i < K; i++) {\n                A[i] = scanner.nextInt();\n                B[i] = scanner.nextInt();\n            }\n            long expectedValue = calculateExpectedValue(A, B, K);\n            long total = 1;\n            for (int i = 0; i < K; i++) {\n                total *= (B[i] - A[i] + 1);\n            }\n            long P = expectedValue;\n            long Q = total;\n            long N = (1000000007 - P % Q) * modInverse(Q, 1000000007) % 1000000007;\n            System.out.println(N);\n        }\n    }\n}",
+      "Python3": "import sys\n\ndef gcd(a, b):\n    if b == 0:\n        return a\n    return gcd(b, a % b)\n\ndef calculateExpectedValue(A, B, K):\n    sum = 0\n    total = 1\n    for i in range(K):\n        total *= (B[i] - A[i] + 1)\n    for i in range(A[0], B[0] + 1):\n        for j in range(A[1], B[1] + 1):\n            g = gcd(i, j)\n            for k in range(2, K):\n                for l in range(A[k], B[k] + 1):\n                    g = gcd(g, l)\n            sum += g\n    return sum\n\ndef powMod(a, b, mod):\n    res = 1\n    while b > 0:\n        if b % 2 == 1:\n            res = res * a % mod\n        a = a * a % mod\n        b >>= 1\n    return res\n\ndef modInverse(a, m):\n    return powMod(a, m - 2, m)\n\nt = int(sys.stdin.readline())\nwhile t > 0:\n    K = int(sys.stdin.readline())\n    A = [0] * K\n    B = [0] * K\n    for i in range(K):\n        A[i], B[i] = map(int, sys.stdin.readline().split())\n    expectedValue = calculateExpectedValue(A, B, K)\n    total = 1\n    for i in range(K):\n        total *= (B[i] - A[i] + 1)\n    P = expectedValue\n    Q = total\n    N = (1000000007 - P % Q) * modInverse(Q, 1000000007) % 1000000007\n    print(N)\n    t -= 1",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\n\nfunction gcd(a, b) {\n    if (b == 0)\n        return a;\n    return gcd(b, a % b);\n}\n\nfunction calculateExpectedValue(A, B, K) {\n    let sum = 0;\n    let total = 1;\n    for (let i = 0; i < K; i++) {\n        total *= (B[i] - A[i] + 1);\n    }\n    for (let i = A[0]; i <= B[0]; i++) {\n        for (let j = A[1]; j <= B[1]; j++) {\n            let g = gcd(i, j);\n            for (let k = 2; k < K; k++) {\n                for (let l = A[k]; l <= B[k]; l++) {\n                    g = gcd(g, l);\n                }\n            }\n            sum += g;\n        }\n    }\n    return sum;\n}\n\nfunction powMod(a, b, mod) {\n    let res = 1;\n    while (b > 0) {\n        if (b % 2 == 1)\n            res = res * a % mod;\n        a = a * a % mod;\n        b >>= 1;\n    }\n    return res;\n}\n\nfunction modInverse(a, m) {\n    return powMod(a, m - 2, m);\n}\n\nlet T = parseInt(lines[idx++]);\nwhile (T-- > 0) {\n    let K = parseInt(lines[idx++]);\n    let A = new Array(K);\n    let B = new Array(K);\n    let input = lines[idx++].split(' ');\n    for (let i = 0; i < K; i++) {\n        A[i] = parseInt(input[i * 2]);\n        B[i] = parseInt(input[i * 2 + 1]);\n    }\n    let expectedValue = calculateExpectedValue(A, B, K);\n    let total = 1;\n    for (let i = 0; i < K; i++) {\n        total *= (B[i] - A[i] + 1);\n    }\n    let P = expectedValue;\n    let Q = total;\n    let N = (1000000007 - P % Q) * modInverse(Q, 1000000007) % 1000000007;\n    console.log(N);\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

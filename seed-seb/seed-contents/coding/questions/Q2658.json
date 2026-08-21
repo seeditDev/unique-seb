@@ -1,0 +1,128 @@
+{
+  "questionId": "Q2658",
+  "title": "Predictopus",
+  "slug": "predictopus",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "Probability",
+      "Linear Optimization",
+      "Expected Value",
+      "Math"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Combinatorics & Probability"
+    ]
+  },
+  "content": {
+    "problemStatement": "Chef Datta likes betting in Indian Premier League very much.\n\nHe has **10000** rupees. Today the match is between team A and team B. The winning probability of team A is **PA**, and hence winning probability of team B is **PB = 1 \u2212 PA**. \n\nDatta is free to bet any integral amount of money on any of the two teams as long as the total amount of money bet is at most **10000** rupees.\nHelp him know the expected amount of money he will eventually have if today he places his bet(s) optimally.\n\n\nRules of the game:If team X with winning probability **PX** actually wins and someone bets **M** rupees on this team, he will gain **(2*(1\u2212PX)) * M** rupees.\n\nIf team X with winning probability **PX** actually loses and someone bets **N** rupees on this team, he will just lose **N** rupees.",
+    "constraints": [
+      "1 \u2264 T \u2264 100001",
+      "0.0 \u2264 PA \u2264 1.0",
+      "PA has at most 5 digits after the decimal point"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains a single floating point number PA (0 \u2264 PA \u2264 1) \u2013 the probability that team A wins. PA has at most 5 digits after the decimal point.",
+    "outputFormat": "For each test case output a single line containing the maximum possible expected amount of money Datta can have after the match, rounded down to the nearest integer.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n0.510",
+        "output": "10098",
+        "explanation": "coeff_a = (1-0.51)*(2*0.51-1)=0.49*0.02=0.0098, coeff_b = 0.51*(1-1.02)=-0.0102. The best coefficient is 0.0098, so expected = 10000 + 0.0098*10000 = 10098."
+      },
+      {
+        "id": "sample_2",
+        "input": "3\n0.5\n0.0\n0.75",
+        "output": "10000\n10000\n11250",
+        "explanation": "For PA=0.5 both coefficients are 0 \u2192 no profit, answer 10000. For PA=0 both coefficients \u22640 \u2192 answer 10000. For PA=0.75 coeff_a=0.125, coeff_b=-0.375, best profit =0.125*10000=1250, total 11250."
+      },
+      {
+        "id": "sample_3",
+        "input": "2\n0.25\n0.99",
+        "output": "11250\n10099",
+        "explanation": "PA=0.25 gives coeff_b=0.125 \u2192 profit 1250 \u2192 11250. PA=0.99 gives coeff_a\u22480.0099, coeff_b\u2248-0.9702, profit\u22480.0099*10000\u224899 \u2192 floor gives 10099."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n0.00000",
+        "expectedOutput": "10000",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n1.00000",
+        "expectedOutput": "10000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case near 0.5 (slightly above)",
+        "input": "1\n0.50001",
+        "expectedOutput": "10000",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n0.12345",
+        "expectedOutput": "11234",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n0.87654",
+        "expectedOutput": "11234",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For a bet of a rupees on team A and b rupees on team B (a,b \u2265 0, a+b \u2264 10000) the expected final amount is:\n\nE = 10000 + coeff_a * a + coeff_b * b\nwhere\ncoeff_a = (1\u2011PA) * (2*PA \u2013 1)\ncoeff_b = PA * (1 \u2013 2*PA)\n\nThe expression is linear in a and b, therefore the optimal strategy is to put the whole 10000 rupees on the option with the larger non\u2011negative coefficient. If both coefficients are \u2264 0, the best is to bet nothing. Hence:\n\nmaxCoeff = max(0, coeff_a, coeff_b)\nanswer   = floor(10000 + maxCoeff * 10000)\n\nThe computation is O(1) per test case and uses only double precision arithmetic.",
+    "timeComplexity": "O(T) \u2013 constant work for each test case.",
+    "spaceComplexity": "O(1) \u2013 only a few variables are stored.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <math.h>\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        double PA;\n        scanf(\"%lf\", &PA);\n        double coeff_a = (1.0 - PA) * (2.0 * PA - 1.0);\n        double coeff_b = PA * (1.0 - 2.0 * PA);\n        double maxCoeff = coeff_a;\n        if (coeff_b > maxCoeff) maxCoeff = coeff_b;\n        if (maxCoeff < 0.0) maxCoeff = 0.0;\n        double expected = 10000.0 + maxCoeff * 10000.0;\n        long long ans = (long long)floor(expected + 1e-9);\n        printf(\"%lld\\n\", ans);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--) {\n        double PA; cin>>PA;\n        double coeff_a = (1.0 - PA) * (2.0 * PA - 1.0);\n        double coeff_b = PA * (1.0 - 2.0 * PA);\n        double maxCoeff = max({0.0, coeff_a, coeff_b});\n        double expected = 10000.0 + maxCoeff * 10000.0;\n        long long ans = (long long)floor(expected + 1e-9);\n        cout << ans << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder sb = new StringBuilder();\n        for (int i = 0; i < T; i++) {\n            double PA = Double.parseDouble(br.readLine().trim());\n            double coeffA = (1.0 - PA) * (2.0 * PA - 1.0);\n            double coeffB = PA * (1.0 - 2.0 * PA);\n            double maxCoeff = Math.max(0.0, Math.max(coeffA, coeffB));\n            double expected = 10000.0 + maxCoeff * 10000.0;\n            long ans = (long)Math.floor(expected + 1e-9);\n            sb.append(ans).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "import sys, math\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    t = int(data[0])\n    out = []\n    idx = 1\n    for _ in range(t):\n        PA = float(data[idx]); idx += 1\n        coeff_a = (1.0 - PA) * (2.0 * PA - 1.0)\n        coeff_b = PA * (1.0 - 2.0 * PA)\n        max_coeff = max(0.0, coeff_a, coeff_b)\n        expected = 10000.0 + max_coeff * 10000.0\n        out.append(str(int(math.floor(expected + 1e-9))))\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    solve()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet pos = 0;\nconst T = Number(input[pos++]);\nlet results = [];\nfor (let i = 0; i < T; i++) {\n  const PA = Number(input[pos++]);\n  const coeffA = (1.0 - PA) * (2.0 * PA - 1.0);\n  const coeffB = PA * (1.0 - 2.0 * PA);\n  const maxCoeff = Math.max(0.0, coeffA, coeffB);\n  const expected = 10000.0 + maxCoeff * 10000.0;\n  const ans = Math.floor(expected + 1e-9);\n  results.push(String(ans));\n}\nconsole.log(results.join('\\n'));"
+    }
+  }
+}

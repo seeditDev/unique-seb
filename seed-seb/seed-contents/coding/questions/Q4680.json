@@ -1,0 +1,145 @@
+{
+  "questionId": "Q4680",
+  "title": "Read & Write CSV Challenge",
+  "slug": "read-write-csv-challenge",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "File I/O",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "CSV",
+      "File Handling",
+      "Exception Handling",
+      "Python csv module",
+      "C file I/O",
+      "C++ fstream",
+      "Java IO",
+      "JavaScript fs"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Arrays"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Q6) A .Explain the process of reading from and writing to CSV files in Python using the csv module.\nMention important functions and give an example for each?    ---4 Marks.",
+    "constraints": [
+      "1 ≤ T ≤ 10",
+      "Filenames contain no whitespace",
+      "If a CSV file exists it is non‑empty and fits in memory"
+    ],
+    "inputFormat": "The first line contains an integer T (1 ≤ T ≤ 10), the number of test cases. Each of the next T lines contains a filename (a string without whitespace) of a CSV file located in the same directory as the program.",
+    "outputFormat": "For each test case output a single line. Print \"Success\" if the program was able to read the entire CSV file and write it back without error. If any exception occurs (e.g., file not found, permission denied) print the exact error message produced by the language runtime.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\\nexample.csv",
+        "output": "Success",
+        "explanation": "The file example.csv exists. The program reads all rows and writes them back unchanged, therefore it prints \"Success\"."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\\nnon_existent_file.csv",
+        "output": "[Errno 2] No such file or directory: 'non_existent_file.csv'",
+        "explanation": "The file does not exist, so opening it for reading raises a FileNotFoundError. The program catches the exception and prints its message."
+      },
+      {
+        "id": "sample_3",
+        "input": "10\\nexample.csv",
+        "output": "Success\\nSuccess\\nSuccess\\nSuccess\\nSuccess\\nSuccess\\nSuccess\\nSuccess\\nSuccess\\nSuccess",
+        "explanation": "The same existing file is processed ten times. Each iteration succeeds, producing ten lines of \"Success\"."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\\na.csv",
+        "expectedOutput": "Success",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "10\\nfile1.csv\\nfile2.csv\\nfile3.csv\\nfile4.csv\\nfile5.csv\\nfile6.csv\\nfile7.csv\\nfile8.csv\\nfile9.csv\\nfile10.csv",
+        "expectedOutput": "Success\\nSuccess\\nSuccess\\nSuccess\\nSuccess\\nSuccess\\nSuccess\\nSuccess\\nSuccess\\nSuccess",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "non‑existent file",
+        "input": "1\\nmissing.csv",
+        "expectedOutput": "[Errno 2] No such file or directory: 'missing.csv'",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "permission denied",
+        "input": "1\\nprotected.csv",
+        "expectedOutput": "[Errno 13] Permission denied: 'protected.csv'",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "mixed case",
+        "input": "3\\nvalid.csv\\nmissing.csv\\nprotected.csv",
+        "expectedOutput": "Success\\n[Errno 2] No such file or directory: 'missing.csv'\\n[Errno 13] Permission denied: 'protected.csv'",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each filename we try to open the file for reading. If the open fails we catch the error and output its message. When the file is opened successfully we read all rows (or the whole content) into memory, close the input, then open the same file for writing (truncating it) and write the stored data back unchanged. Finally we output \"Success\". All operations are wrapped in try/catch (or error‑checking) blocks so that any runtime error is reported exactly as produced by the language.",
+    "timeComplexity": "O(N) per test case where N is the size of the CSV file (number of characters/rows). Total complexity O(T·N).",
+    "spaceComplexity": "O(N) to store the file content while rewriting.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <errno.h>\n\nchar* read_and_write_csv(const char *filename) {\n    FILE *in = fopen(filename, \"r\");\n    if (!in) {\n        char *msg = malloc(256);\n        snprintf(msg, 256, \"%s\", strerror(errno));\n        return msg;\n    }\n    fseek(in, 0, SEEK_END);\n    long size = ftell(in);\n    fseek(in, 0, SEEK_SET);\n    char *buffer = malloc(size + 1);\n    if (!buffer) {\n        fclose(in);\n        char *msg = malloc(256);\n        snprintf(msg, 256, \"Memory allocation failed\");\n        return msg;\n    }\n    fread(buffer, 1, size, in);\n    buffer[size] = '\\0';\n    fclose(in);\n\n    FILE *out = fopen(filename, \"w\");\n    if (!out) {\n        free(buffer);\n        char *msg = malloc(256);\n        snprintf(msg, 256, \"%s\", strerror(errno));\n        return msg;\n    }\n    fwrite(buffer, 1, size, out);\n    fclose(out);\n    free(buffer);\n    char *msg = malloc(8);\n    strcpy(msg, \"Success\");\n    return msg;\n}\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    char filename[256];\n    for (int i = 0; i < T; ++i) {\n        scanf(\"%s\", filename);\n        char *res = read_and_write_csv(filename);\n        printf(\"%s\\n\", res);\n        free(res);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nstring read_and_write_csv(const string &filename) {\n    ifstream fin(filename);\n    if (!fin) return string(strerror(errno));\n    vector<string> lines;\n    string line;\n    while (getline(fin, line)) lines.push_back(line);\n    fin.close();\n    ofstream fout(filename, ios::trunc);\n    if (!fout) return string(strerror(errno));\n    for (size_t i = 0; i < lines.size(); ++i) {\n        fout << lines[i];\n        if (i + 1 < lines.size()) fout << '\\n';\n    }\n    fout.close();\n    return \"Success\";\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T;\n    if(!(cin >> T)) return 0;\n    string filename;\n    while (T--) {\n        cin >> filename;\n        cout << read_and_write_csv(filename) << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    private static String readAndWriteCsv(String filename) {\n        List<String> lines = new ArrayList<>();\n        try (BufferedReader br = new BufferedReader(new FileReader(filename))) {\n            String line;\n            while ((line = br.readLine()) != null) {\n                lines.add(line);\n            }\n        } catch (IOException e) {\n            return e.getMessage();\n        }\n        try (BufferedWriter bw = new BufferedWriter(new FileWriter(filename, false))) {\n            for (int i = 0; i < lines.size(); i++) {\n                bw.write(lines.get(i));\n                if (i + 1 < lines.size()) bw.newLine();\n            }\n        } catch (IOException e) {\n            return e.getMessage();\n        }\n        return \"Success\";\n    }\n\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        int T = Integer.parseInt(br.readLine().trim());\n        for (int i = 0; i < T; i++) {\n            String filename = br.readLine().trim();\n            System.out.println(readAndWriteCsv(filename));\n        }\n    }\n}",
+      "Python3": "# COMPLETE, RUNNABLE Python3 code\nimport sys, csv\n\ndef read_and_write_csv(filename):\n    try:\n        with open(filename, newline='') as f:\n            reader = csv.reader(f)\n            rows = list(reader)\n        with open(filename, 'w', newline='') as f:\n            writer = csv.writer(f)\n            writer.writerows(rows)\n        return \"Success\"\n    except Exception as e:\n        return str(e)\n\ndef main():\n    data = sys.stdin.read().splitlines()\n    if not data:\n        return\n    t = int(data[0].strip())\n    for i in range(1, t + 1):\n        filename = data[i].strip()\n        print(read_and_write_csv(filename))\n\nif __name__ == \"__main__\":\n    main()",
+      "JavaScript": "// COMPLETE, RUNNABLE JavaScript code\nconst fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nif (input.length === 0) process.exit(0);\nconst T = parseInt(input[0].trim(), 10);\nlet out = [];\nfor (let i = 1; i <= T; i++) {\n    const filename = input[i].trim();\n    try {\n        const data = fs.readFileSync(filename, 'utf-8');\n        fs.writeFileSync(filename, data, 'utf-8');\n        out.push('Success');\n    } catch (err) {\n        out.push(err.message);\n    }\n}\nconsole.log(out.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

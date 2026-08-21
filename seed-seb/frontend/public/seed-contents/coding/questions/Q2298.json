@@ -1,0 +1,132 @@
+{
+  "questionId": "Q2298",
+  "title": "Breaking Into Atoms",
+  "slug": "breaking-into-atoms",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Bit Manipulation",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "Bit Manipulation",
+      "Bitmask",
+      "Hash Set",
+      "Set Partition",
+      "Distinct Patterns"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Ad-hoc & Implementation"
+    ]
+  },
+  "content": {
+    "problemStatement": "Let X be the set of all integers between 0 and n-1. Suppose we have a collection S1, S2, ..., Sm of subsets of X. Say an atom A is a subset of X such that for each Si we have either A is a subset of Si or A and Si do not have any common elements.\n\n\n\nYour task is to find a collection A1, ..., Ak of atoms such that every item in X is in some Ai and no two Ai, Aj with i \u2260 j share a common item. Surely such a collection exists as we could create a single set {x} for each x in X. A more interesting question is to minimize k, the number of atoms.",
+    "constraints": [
+      "1 \u2264 t \u2264 30",
+      "1 \u2264 n \u2264 100",
+      "1 \u2264 m \u2264 30",
+      "1 \u2264 vi \u2264 n",
+      "All elements are between 0 and n\u20111",
+      "Each element of X belongs to at least one Si"
+    ],
+    "inputFormat": "The first line contains an integer t (1 \u2264 t \u2264 30), the number of test cases. Each test case starts with two integers n and m (1 \u2264 n \u2264 100, 1 \u2264 m \u2264 30). Then follow m lines. The i\u2011th line begins with vi (1 \u2264 vi \u2264 n) \u2013 the size of set Si \u2013 followed by vi distinct integers in the range [0, n\u20111] describing the elements of Si. Every integer from 0 to n\u20111 appears in at least one Si.",
+    "outputFormat": "For each test case output a single line containing one integer \u2013 the minimum possible number of atoms into which X can be partitioned.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n5 2\n3 0 1 2\n3 2 3 4\n4 3\n2 0 1\n2 1 2\n2 2 3",
+        "output": "3\n4",
+        "explanation": "First test case: masks are {0,1}:{001}, {2}:{011}, {3,4}:{010}. Three distinct masks \u2192 3 atoms. Second test case: each element obtains a unique mask, so 4 atoms."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n3 1\n2 0 2",
+        "output": "2",
+        "explanation": "Masks: element 0 \u2192 1, element 1 \u2192 0, element 2 \u2192 1. Distinct masks are {0,1}, so the minimum number of atoms is 2."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n4 2\n2 0 1\n2 2 3",
+        "output": "2",
+        "explanation": "Masks: 0 and 1 have 01, 2 and 3 have 10. Two different masks \u2192 2 atoms."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1\n1 0",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary (15 elements, each unique)",
+        "input": "1\n15 15\n1 0\n1 1\n1 2\n1 3\n1 4\n1 5\n1 6\n1 7\n1 8\n1 9\n1 10\n1 11\n1 12\n1 13\n1 14",
+        "expectedOutput": "15",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case with overlapping sets",
+        "input": "1\n6 2\n4 0 1 2 3\n4 2 3 4 5",
+        "expectedOutput": "3",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n8 3\n4 0 1 2 3\n4 2 3 4 5\n4 4 5 6 7",
+        "expectedOutput": "4",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n9 4\n4 0 1 2 3\n4 3 4 5 6\n3 6 7 8\n3 0 4 8",
+        "expectedOutput": "8",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For every element x in X we build a binary mask of length m. Bit i (0\u2011based) is 1 iff x belongs to Si. Two elements can be placed in the same atom exactly when their masks are identical, because an atom must be either completely inside a set or completely outside it. Therefore the minimum number of atoms equals the number of distinct masks among the n elements. The algorithm:  \u2022 Initialise an array mask[0\u2026n\u20111] with 0.  \u2022 For each set Si (i from 0 to m\u20111) read its elements and set the i\u2011th bit in mask[x] for every x in Si.  \u2022 Insert all mask values into a hash set (or sort and count unique values).  \u2022 The size of the set is the answer. The procedure is repeated for each test case.",
+    "timeComplexity": "O( \u03a3 vi ) per test case, i.e. O(n\u00b7m) in the worst case because each element can appear in every set. With the given limits this is at most 3000 operations per case.",
+    "spaceComplexity": "O(n) for the mask array plus O(n) for the set of distinct masks.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        int n, m;\n        scanf(\"%d %d\", &n, &m);\n        int *mask = (int *)calloc(n, sizeof(int));\n        for (int i = 0; i < m; ++i) {\n            int v; scanf(\"%d\", &v);\n            for (int j = 0; j < v; ++j) {\n                int x; scanf(\"%d\", &x);\n                mask[x] |= (1 << i);\n            }\n        }\n        // count distinct masks\n        int distinct = 0;\n        for (int i = 0; i < n; ++i) {\n            int seen = 0;\n            for (int j = 0; j < i; ++j) {\n                if (mask[j] == mask[i]) { seen = 1; break; }\n            }\n            if (!seen) ++distinct;\n        }\n        printf(\"%d\\n\", distinct);\n        free(mask);\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if (!(cin >> T)) return 0;\n    while (T--) {\n        int n, m; cin >> n >> m;\n        vector<int> mask(n, 0);\n        for (int i = 0; i < m; ++i) {\n            int v; cin >> v;\n            for (int j = 0; j < v; ++j) {\n                int x; cin >> x;\n                mask[x] |= (1 << i);\n            }\n        }\n        unordered_set<int> st;\n        for (int x : mask) st.insert(x);\n        cout << st.size() << '\\n';\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st = new StringTokenizer(br.readLine());\n        int T = Integer.parseInt(st.nextToken());\n        StringBuilder sb = new StringBuilder();\n        while (T-- > 0) {\n            st = new StringTokenizer(br.readLine());\n            int n = Integer.parseInt(st.nextToken());\n            int m = Integer.parseInt(st.nextToken());\n            int[] mask = new int[n];\n            for (int i = 0; i < m; ++i) {\n                st = new StringTokenizer(br.readLine());\n                int v = Integer.parseInt(st.nextToken());\n                for (int j = 0; j < v; ++j) {\n                    int x = Integer.parseInt(st.nextToken());\n                    mask[x] |= (1 << i);\n                }\n            }\n            HashSet<Integer> set = new HashSet<>();\n            for (int val : mask) set.add(val);\n            sb.append(set.size()).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}\n",
+      "Python3": "import sys\n\ndef solve():\n    data = list(map(int, sys.stdin.read().strip().split()))\n    if not data:\n        return\n    it = iter(data)\n    T = next(it)\n    out = []\n    for _ in range(T):\n        n = next(it); m = next(it)\n        mask = [0] * n\n        for i in range(m):\n            v = next(it)\n            for _ in range(v):\n                x = next(it)\n                mask[x] |= (1 << i)\n        out.append(str(len(set(mask))))\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/).map(Number);\nlet idx = 0;\nconst T = input[idx++];\nlet results = [];\nfor (let tc = 0; tc < T; ++tc) {\n  const n = input[idx++];\n  const m = input[idx++];\n  const mask = new Array(n).fill(0);\n  for (let i = 0; i < m; ++i) {\n    const v = input[idx++];\n    for (let j = 0; j < v; ++j) {\n      const x = input[idx++];\n      mask[x] |= (1 << i);\n    }\n  }\n  const set = new Set(mask);\n  results.push(String(set.size));\n}\nconsole.log(results.join('\\n'));\n"
+    }
+  }
+}

@@ -1,0 +1,130 @@
+{
+  "questionId": "Q7866",
+  "title": "Path-etic Sums",
+  "slug": "path-etic-sums",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Tree",
+      "Bipartite Coloring",
+      "Constructive",
+      "Greedy"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Constructive Algorithms"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given a tree with NNN nodes (numbered 111 through NNN). A tree is a connected undirected graph without cycles.\n\nYou have to assign an integer to each node; for each valid iii, let's denote the integer assigned to node iii by AiA_iAi​. This assignment must satisfy the following conditions:\n\n\nFor each valid iii, 1≤Ai≤1051 \\le A_i \\le 10^51≤Ai​≤105.\nFor each simple path in the tree which contains at least two nodes, let's denote the set of nodes in this path by SSS. Then, ∑v∈SAv\\sum_{v \\in S} A_v∑v∈S​Av​ is not divisible by ∣S∣|S|∣S∣.",
+    "constraints": [
+      "1 ≤ T ≤ 200",
+      "2 ≤ N ≤ 100",
+      "1 ≤ u, v ≤ N",
+      "1 ≤ Ai ≤ 10^5"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case: the first line contains an integer N, the number of nodes in the tree. Each of the next N‑1 lines contains two integers u and v denoting an undirected edge between nodes u and v.",
+    "outputFormat": "For each test case output a single line with N space‑separated integers A1 … AN, where 1 ≤ Ai ≤ 10^5 and the assignment satisfies the condition that for every simple path containing at least two nodes, the sum of values on the path is not divisible by the number of nodes on that path.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\\n7\\n1 2\\n4 6\\n3 5\\n1 4\\n7 5\\n5 1\\n3\\n1 2\\n2 3",
+        "output": "1 2 1 2 2 1 1\\n1 2 1",
+        "explanation": "The tree of the first test case is coloured bipartitely starting from node 1. Nodes 1,3,6,7 receive colour 0 → value 1; nodes 2,4,5 receive colour 1 → value 2. The second test case is a simple chain 1‑2‑3, giving values 1 2 1. For any path the sum equals length plus the number of colour‑1 nodes, which is never a multiple of the length."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\\n2\\n1 2",
+        "expectedOutput": "1 2",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "1\\n2\\n1 2",
+        "expectedOutput": "1 2",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "1\\n2\\n1 2",
+        "expectedOutput": "1 2",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "1\\n2\\n1 2",
+        "expectedOutput": "1 2",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "1\\n2\\n1 2",
+        "expectedOutput": "1 2",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "A tree is bipartite. Colour the nodes with two colours using a DFS/BFS (colour 0 for the start node, colour 1 for its neighbours, and so on). Assign value 1 to every node of colour 0 and value 2 to every node of colour 1. For any simple path of length L, let c1 be the number of colour‑1 nodes on the path. The sum on the path equals L + c1, therefore sum mod L = c1 ≠ 0 because a path of length ≥2 always contains at least one node of each colour, so 1 ≤ c1 < L. Hence the condition is satisfied for all paths.",
+    "timeComplexity": "O(N) per test case (DFS/BFS traversal).",
+    "spaceComplexity": "O(N) for the adjacency list and colour array.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\n#define MAXN 105\n#define MAXE 210\n\nint head[MAXN];\nint to[MAXE];\nint nxt[MAXE];\nint ecnt;\nint col[MAXN];\nint q[MAXN];\n\nvoid addEdge(int u,int v){\n    to[ecnt]=v; nxt[ecnt]=head[u]; head[u]=ecnt++;\n    to[ecnt]=u; nxt[ecnt]=head[v]; head[v]=ecnt++;\n}\n\nint main(){\n    int T; if(scanf(\"%d\",&T)!=1) return 0;\n    while(T--){\n        int N; scanf(\"%d\",&N);\n        for(int i=1;i<=N;i++) head[i]=-1, col[i]=-1;\n        ecnt=0;\n        for(int i=0;i<N-1;i++){\n            int u,v; scanf(\"%d %d\",&u,&v);\n            addEdge(u,v);\n        }\n        int front=0, back=0;\n        q[back++]=1; col[1]=0;\n        while(front<back){\n            int u=q[front++];\n            for(int e=head[u]; e!=-1; e=nxt[e]){\n                int v=to[e];\n                if(col[v]==-1){\n                    col[v]=col[u]^1;\n                    q[back++]=v;\n                }\n            }\n        }\n        for(int i=1;i<=N;i++){\n            int val = (col[i]==0)?1:2;\n            printf(\"%d\",val);\n            if(i<N) printf(\" \");\n        }\n        printf(\"\\n\");\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N; cin>>N;\n        vector<vector<int>> g(N+1);\n        for(int i=0;i<N-1;i++){\n            int u,v; cin>>u>>v;\n            g[u].push_back(v);\n            g[v].push_back(u);\n        }\n        vector<int> col(N+1,-1);\n        queue<int> q; q.push(1); col[1]=0;\n        while(!q.empty()){\n            int u=q.front(); q.pop();\n            for(int v:g[u]) if(col[v]==-1){\n                col[v]=col[u]^1;\n                q.push(v);\n            }\n        }\n        for(int i=1;i<=N;i++){\n            int val = (col[i]==0)?1:2;\n            cout<<val<<(i==N?'\\n':' ');\n        }\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner(System.in);\n        int T = fs.nextInt();\n        StringBuilder out = new StringBuilder();\n        while (T-- > 0) {\n            int N = fs.nextInt();\n            List<Integer>[] g = new ArrayList[N+1];\n            for (int i = 1; i <= N; i++) g[i] = new ArrayList<>();\n            for (int i = 0; i < N-1; i++) {\n                int u = fs.nextInt();\n                int v = fs.nextInt();\n                g[u].add(v);\n                g[v].add(u);\n            }\n            int[] col = new int[N+1];\n            Arrays.fill(col, -1);\n            Queue<Integer> q = new ArrayDeque<>();\n            q.add(1);\n            col[1] = 0;\n            while (!q.isEmpty()) {\n                int u = q.poll();\n                for (int v : g[u]) if (col[v] == -1) {\n                    col[v] = col[u] ^ 1;\n                    q.add(v);\n                }\n            }\n            for (int i = 1; i <= N; i++) {\n                int val = (col[i] == 0) ? 1 : 2;\n                out.append(val);\n                out.append(i == N ? '\\n' : ' ');\n            }\n        }\n        System.out.print(out.toString());\n    }\n    static class FastScanner {\n        private final InputStream in;\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        FastScanner(InputStream in) { this.in = in; }\n        private int readByte() throws IOException {\n            if (ptr >= len) {\n                len = in.read(buffer);\n                ptr = 0;\n                if (len <= 0) return -1;\n            }\n            return buffer[ptr++];\n        }\n        int nextInt() throws IOException {\n            int c, sign = 1, val = 0;\n            do { c = readByte(); } while (c <= ' ');\n            if (c == '-') { sign = -1; c = readByte(); }\n            while (c > ' ') {\n                val = val * 10 + (c - '0');\n                c = readByte();\n            }\n            return val * sign;\n        }\n    }\n}\n",
+      "Python3": "#!/usr/bin/env python3\nimport sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it))\n        g = [[] for _ in range(N+1)]\n        for _ in range(N-1):\n            u = int(next(it)); v = int(next(it))\n            g[u].append(v); g[v].append(u)\n        col = [-1]*(N+1)\n        from collections import deque\n        q = deque([1])\n        col[1] = 0\n        while q:\n            u = q.popleft()\n            for v in g[u]:\n                if col[v] == -1:\n                    col[v] = col[u]^1\n                    q.append(v)\n        vals = ['1' if col[i]==0 else '2' for i in range(1,N+1)]\n        out_lines.append(' '.join(vals))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/).map(Number);\nlet idx = 0;\nconst T = input[idx++];\nlet output = [];\nfor (let t = 0; t < T; t++) {\n  const N = input[idx++];\n  const g = Array.from({ length: N + 1 }, () => []);\n  for (let i = 0; i < N - 1; i++) {\n    const u = input[idx++];\n    const v = input[idx++];\n    g[u].push(v);\n    g[v].push(u);\n  }\n  const col = new Array(N + 1).fill(-1);\n  const queue = [];\n  queue.push(1);\n  col[1] = 0;\n  while (queue.length) {\n    const u = queue.shift();\n    for (const v of g[u]) {\n      if (col[v] === -1) {\n        col[v] = col[u] ^ 1;\n        queue.push(v);\n      }\n    }\n  }\n  const line = [];\n  for (let i = 1; i <= N; i++) {\n    line.push(col[i] === 0 ? '1' : '2');\n  }\n  output.push(line.join(' '));\n}\nconsole.log(output.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

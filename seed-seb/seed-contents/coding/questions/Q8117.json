@@ -1,0 +1,131 @@
+{
+  "questionId": "Q8117",
+  "title": "Chef and Subarrays",
+  "slug": "chef-and-subarrays",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Arrays | Greedy",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Sliding Window",
+      "Frequency Counting",
+      "Periodicity",
+      "Hash Map"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Data Structures"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef is playing a game where he has an array AAA of NNN integers, and an integer KKK. He looks at every subarray of length KKK, and writes its sum on a piece of paper. If a number appears as the sum of multiple subarrays of length KKK, then he only writes down that number once.\n\nChef is lazy and doesn't like to write numbers. You, being a friend of Chef, want to modify the array such that Chef will only write one number on his paper. In one modification you can choose any index iii and replace AiA_iAi​ with any integer.\n\nYou need to find the minimum number of modifications required.\n\n###Input\n\n\nThe first line contains an integer TTT, the number of test cases. Then the test cases follow.\nEach test case contains two lines of input.\nThe first line contains two space-separated integers NNN, KKK.\nThe second line contains NNN space-separated integers A1,A2,…,ANA_{1}, A_{2}, \\ldots, A_{N}A1​,A2​,…,AN​.\n###Output\r\nFor each test case, output the answer in a single line.\n\n###Constraints\n\n\n1≤T≤10001 \\leq T \\leq 10001≤T≤1000\n1≤N≤1051 \\leq N \\leq 10^{5}1≤N≤105\n1≤K≤N1 \\leq K \\leq N1≤K≤N\n1≤Ai≤1051 \\leq A_{i} \\leq 10^{5}1≤Ai​≤105\nThe sum of NNN over all test cases does not exceed 5⋅1055\\cdot 10^{5}5⋅105.",
+    "constraints": [
+      "1 <= T <= 1000",
+      "1 <= N <= 100000",
+      "1 <= K <= N",
+      "1 <= Ai <= 100000",
+      "Sum of N over all test cases does not exceed 5*10^5"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case consists of two lines. The first line contains two integers N and K. The second line contains N space‑separated integers A1, A2, …, AN.",
+    "outputFormat": "For each test case output a single line containing the minimum number of modifications required so that all subarrays of length K have the same sum.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n3 3\n1 2 3\n2 1\n4 6",
+        "output": "0\n1",
+        "explanation": "Test case 1: K equals N, only one subarray exists, so no modification is needed.\\nTest case 2: K=1 forces all elements to be equal. Changing one of the two numbers makes the array constant, thus only one modification is required."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For two consecutive subarrays of length K their sums differ by A_{i+K} - A_i. For all subarray sums to be equal we need A_{i+K}=A_i for every i (1‑based) where i+K <= N. Hence the array must be K‑periodic: all positions having the same index modulo K must contain the same value. For each residue class r (0 <= r < K) we can keep any value; the optimal choice is the value that already appears most frequently in that class. The number of changes for the class equals (size of class) - (maximum frequency). Summing this over all K classes gives the answer. The algorithm therefore iterates over the array, groups elements by i % K, counts frequencies with a hash map, finds the maximum frequency per group and accumulates the required modifications. Complexity is O(N) time and O(K) additional space per test case.",
+    "timeComplexity": "O(N) per test case, where N is the length of the array.",
+    "spaceComplexity": "O(K) for the hash maps storing frequencies of each residue class (overall O(N) in the worst case due to stored keys).",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nint cmp_int(const void *a, const void *b) {\n    int x = *(const int*)a;\n    int y = *(const int*)b;\n    return (x > y) - (x < y);\n}\n\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    while(T--){\n        int N, K; scanf(\"%d %d\", &N, &K);\n        int *A = (int*)malloc(N * sizeof(int));\n        for(int i=0;i<N;i++) scanf(\"%d\", &A[i]);\n        long long ans = 0;\n        for(int r=0;r<K;r++){\n            // collect elements of this class\n            int cnt = 0;\n            for(int i=r;i<N;i+=K) cnt++;\n            int *tmp = (int*)malloc(cnt * sizeof(int));\n            int idx=0;\n            for(int i=r;i<N;i+=K) tmp[idx++] = A[i];\n            qsort(tmp, cnt, sizeof(int), cmp_int);\n            int maxFreq = 1, curFreq = 1;\n            for(int i=1;i<cnt;i++){\n                if(tmp[i]==tmp[i-1]) curFreq++; else { if(curFreq>maxFreq) maxFreq=curFreq; curFreq=1; }\n            }\n            if(curFreq>maxFreq) maxFreq=curFreq;\n            ans += cnt - maxFreq;\n            free(tmp);\n        }\n        printf(\"%lld\\n\", ans);\n        free(A);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N,K; cin>>N>>K;\n        vector<int> A(N);\n        for(int &x: A) cin>>x;\n        long long ans=0;\n        for(int r=0;r<K;r++){\n            unordered_map<int,int> freq;\n            int sz=0, mx=0;\n            for(int i=r;i<N;i+=K){\n                ++sz;\n                int v=A[i];\n                int c=++freq[v];\n                if(c>mx) mx=c;\n            }\n            ans+=sz-mx;\n        }\n        cout<<ans<<\"\\n\";\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner(System.in);\n        int T = fs.nextInt();\n        StringBuilder sb = new StringBuilder();\n        while (T-- > 0) {\n            int N = fs.nextInt();\n            int K = fs.nextInt();\n            int[] A = new int[N];\n            for (int i = 0; i < N; i++) A[i] = fs.nextInt();\n            long ans = 0;\n            for (int r = 0; r < K; r++) {\n                HashMap<Integer, Integer> map = new HashMap<>();\n                int sz = 0, mx = 0;\n                for (int i = r; i < N; i += K) {\n                    sz++;\n                    int v = A[i];\n                    int c = map.getOrDefault(v, 0) + 1;\n                    map.put(v, c);\n                    if (c > mx) mx = c;\n                }\n                ans += sz - mx;\n            }\n            sb.append(ans).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n    // Fast scanner for large input\n    static class FastScanner {\n        private final InputStream in;\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        FastScanner(InputStream in) { this.in = in; }\n        private int readByte() throws IOException {\n            if (ptr >= len) {\n                len = in.read(buffer);\n                ptr = 0;\n                if (len <= 0) return -1;\n            }\n            return buffer[ptr++];\n        }\n        int nextInt() throws IOException {\n            int c, sign = 1, val = 0;\n            do { c = readByte(); } while (c <= ' ');\n            if (c == '-') { sign = -1; c = readByte(); }\n            while (c > ' ') {\n                val = val * 10 + (c - '0');\n                c = readByte();\n            }\n            return val * sign;\n        }\n    }\n}",
+      "Python3": "import sys\nfrom collections import Counter\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it)); K = int(next(it))\n        A = [int(next(it)) for _ in range(N)]\n        ans = 0\n        for r in range(K):\n            freq = Counter()\n            sz = 0\n            mx = 0\n            for i in range(r, N, K):\n                sz += 1\n                v = A[i]\n                freq[v] += 1\n                if freq[v] > mx:\n                    mx = freq[v]\n            ans += sz - mx\n        out_lines.append(str(ans))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/).map(Number);\nlet idx = 0;\nconst T = input[idx++];\nlet outputs = [];\nfor (let t = 0; t < T; t++) {\n  const N = input[idx++];\n  const K = input[idx++];\n  const A = input.slice(idx, idx + N);\n  idx += N;\n  let ans = 0;\n  for (let r = 0; r < K; r++) {\n    const freq = new Map();\n    let sz = 0, mx = 0;\n    for (let i = r; i < N; i += K) {\n      sz++;\n      const v = A[i];\n      const c = (freq.get(v) || 0) + 1;\n      freq.set(v, c);\n      if (c > mx) mx = c;\n    }\n    ans += sz - mx;\n  }\n  outputs.push(String(ans));\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

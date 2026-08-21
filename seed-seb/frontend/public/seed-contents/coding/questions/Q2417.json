@@ -1,0 +1,127 @@
+{
+  "questionId": "Q2417",
+  "title": "Flight Distance",
+  "slug": "flight-distance",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graphs",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Graph Optimization",
+      "Graphs",
+      "Floyd-Warshall algorithm"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Graphs"
+    ]
+  },
+  "content": {
+    "problemStatement": "The chef is stuck at the airport since all flights are grounded because of a blizzard. He is trying to pass the time by analyzing a chart of distances between cities where the Spaghetti airline is flying and he noticed something strange about it. Sometimes the distance of a direct flight from city A to city B is longer than a flight with intermediate stops in some other cities. This should be impossible under assumption that the flights always take the shortest path from start to destination. The chef is determined to fix this.\n\nThere are N cities numbered from 0 to N-1 and M flights between these cities. Each flight is characterized by its two destination points (it is always possible to fly in both directions) and the distance of the flight. The chef will change (increase or decrease) the distance of the flight i by di (di can be any rational number provided that the distance covered by this flight remains positive). After he makes all the changes, there should not exist a pair of cities A and B such that it is possible to fly through intermediate cities and reach the destination by covering less distance than with a direct flight. He is looking for a valid set of changes with minimum sum.",
+    "constraints": [
+      "2 <= N <= 10",
+      "1 <= M <= 45",
+      "1 <= Di <= 20"
+    ],
+    "inputFormat": "The first line contains two integers N and M, where N is the number of cities and M is the number of flights. Each of the next M lines contains three integers Ai, Bi, and Di, representing the endpoints of a flight and its distance.",
+    "outputFormat": "The minimum sum of modifications as a reduced fraction 'X/Y' - the greatest common divisor of X and Y must be 1.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4 4\n0 1 1\n1 2 1\n2 3 1\n0 3 8",
+        "output": "5/1",
+        "explanation": "The minimum sum of modifications is 5, which is achieved by increasing the distance of the direct flight from city 0 to city 3 by 5 units."
+      },
+      {
+        "id": "sample_2",
+        "input": "3 3\n0 1 2\n1 2 3\n0 2 1",
+        "output": "0/1",
+        "explanation": "The minimum sum of modifications is 0, which means that the direct flight distances are already optimal."
+      },
+      {
+        "id": "sample_3",
+        "input": "5 6\n0 1 1\n1 2 1\n2 3 1\n3 4 1\n0 4 10\n1 4 2",
+        "output": "7/1",
+        "explanation": "The minimum sum of modifications is 7, which is achieved by increasing the distance of the direct flight from city 0 to city 4 by 7 units."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "2 1\n0 1 1",
+        "expectedOutput": "0/1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "10 45\n0 1 20\n1 2 20\n2 3 20\n3 4 20\n4 5 20\n5 6 20\n6 7 20\n7 8 20\n8 9 20\n9 0 20\n0 2 1\n1 3 1\n2 4 1\n3 5 1\n4 6 1\n5 7 1\n6 8 1\n7 9 1\n8 0 1\n0 9 1",
+        "expectedOutput": "0/1",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "5 10\n0 1 1\n1 2 1\n2 3 1\n3 4 1\n4 0 1\n0 2 1\n1 3 1\n2 4 1\n3 0 1\n4 1 1",
+        "expectedOutput": "0/1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "4 4\n0 1 1\n1 2 1\n2 3 1\n0 3 8",
+        "expectedOutput": "5/1",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "10 20\n0 1 1\n1 2 1\n2 3 1\n3 4 1\n4 5 1\n5 6 1\n6 7 1\n7 8 1\n8 9 1\n9 0 1\n0 2 1\n1 3 1\n2 4 1\n3 5 1\n4 6 1\n5 7 1\n6 8 1\n7 9 1\n8 0 1\n0 9 1",
+        "expectedOutput": "0/1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved using the Floyd-Warshall algorithm to find the shortest path between all pairs of cities. Then, we can compare the direct flight distances with the shortest path distances and calculate the minimum sum of modifications required.",
+    "timeComplexity": "O(N^3 + M) per test case, where N is the number of cities and M is the number of flights.",
+    "spaceComplexity": "O(N^2) for the distance matrix.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <limits.h>\n#define MAX_N 10\n#define MAX_M 45\n#define MAX_D 20\nint N, M;\nint dist[MAX_N][MAX_N];\nint main() {\n    scanf(\"%d %d\", &N, &M);\n    for (int i = 0; i < N; i++) {\n        for (int j = 0; j < N; j++) {\n            if (i == j) dist[i][j] = 0;\n            else dist[i][j] = INT_MAX;\n        }\n    }\n    for (int i = 0; i < M; i++) {\n        int A, B, D;\n        scanf(\"%d %d %d\", &A, &B, &D);\n        dist[A][B] = D;\n        dist[B][A] = D;\n    }\n    // Floyd-Warshall algorithm\n    for (int k = 0; k < N; k++) {\n        for (int i = 0; i < N; i++) {\n            for (int j = 0; j < N; j++) {\n                if (dist[i][k] != INT_MAX && dist[k][j] != INT_MAX) {\n                    dist[i][j] = (dist[i][j] < dist[i][k] + dist[k][j]) ? dist[i][j] : dist[i][k] + dist[k][j];\n                }\n            }\n        }\n    }\n    int sum = 0;\n    for (int i = 0; i < N; i++) {\n        for (int j = 0; j < N; j++) {\n            if (dist[i][j] < INT_MAX && dist[i][j] < dist[j][i]) {\n                sum += dist[i][j];\n            }\n        }\n    }\n    printf(\"%d/1\\n\", sum);\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <limits>\nusing namespace std;\n#define MAX_N 10\n#define MAX_M 45\n#define MAX_D 20\nint N, M;\nint dist[MAX_N][MAX_N];\nint main() {\n    cin >> N >> M;\n    for (int i = 0; i < N; i++) {\n        for (int j = 0; j < N; j++) {\n            if (i == j) dist[i][j] = 0;\n            else dist[i][j] = INT_MAX;\n        }\n    }\n    for (int i = 0; i < M; i++) {\n        int A, B, D;\n        cin >> A >> B >> D;\n        dist[A][B] = D;\n        dist[B][A] = D;\n    }\n    // Floyd-Warshall algorithm\n    for (int k = 0; k < N; k++) {\n        for (int i = 0; i < N; i++) {\n            for (int j = 0; j < N; j++) {\n                if (dist[i][k] != INT_MAX && dist[k][j] != INT_MAX) {\n                    dist[i][j] = (dist[i][j] < dist[i][k] + dist[k][j]) ? dist[i][j] : dist[i][k] + dist[k][j];\n                }\n            }\n        }\n    }\n    int sum = 0;\n    for (int i = 0; i < N; i++) {\n        for (int j = 0; j < N; j++) {\n            if (dist[i][j] < INT_MAX && dist[i][j] < dist[j][i]) {\n                sum += dist[i][j];\n            }\n        }\n    }\n    cout << sum << \"/1\" << endl;\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int N = sc.nextInt();\n        int M = sc.nextInt();\n        int[][] dist = new int[N][N];\n        for (int i = 0; i < N; i++) {\n            for (int j = 0; j < N; j++) {\n                if (i == j) dist[i][j] = 0;\n                else dist[i][j] = Integer.MAX_VALUE;\n            }\n        }\n        for (int i = 0; i < M; i++) {\n            int A = sc.nextInt();\n            int B = sc.nextInt();\n            int D = sc.nextInt();\n            dist[A][B] = D;\n            dist[B][A] = D;\n        }\n        // Floyd-Warshall algorithm\n        for (int k = 0; k < N; k++) {\n            for (int i = 0; i < N; i++) {\n                for (int j = 0; j < N; j++) {\n                    if (dist[i][k] != Integer.MAX_VALUE && dist[k][j] != Integer.MAX_VALUE) {\n                        dist[i][j] = (dist[i][j] < dist[i][k] + dist[k][j]) ? dist[i][j] : dist[i][k] + dist[k][j];\n                    }\n                }\n            }\n        }\n        int sum = 0;\n        for (int i = 0; i < N; i++) {\n            for (int j = 0; j < N; j++) {\n                if (dist[i][j] < Integer.MAX_VALUE && dist[i][j] < dist[j][i]) {\n                    sum += dist[i][j];\n                }\n            }\n        }\n        System.out.println(sum + \"/1\");\n    }\n}",
+      "Python3": "import sys\nN, M = map(int, sys.stdin.readline().split())\ninf = float('inf')\ndist = [[inf] * N for _ in range(N)]\nfor i in range(N):\n    dist[i][i] = 0\nfor _ in range(M):\n    A, B, D = map(int, sys.stdin.readline().split())\n    dist[A][B] = D\n    dist[B][A] = D\n# Floyd-Warshall algorithm\nfor k in range(N):\n    for i in range(N):\n        for j in range(N):\n            if dist[i][k] != inf and dist[k][j] != inf:\n                dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j])\nsum = 0\nfor i in range(N):\n    for j in range(N):\n        if dist[i][j] < inf and dist[i][j] < dist[j][i]:\n            sum += dist[i][j]\nsys.stdout.write(str(sum) + \"/1\\n\")",
+      "JavaScript": "const lines = require('fs').readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nfunction nextLine() {\n    return lines[idx++];\n}\nfunction nextInt() {\n    return parseInt(nextLine());\n}\nfunction nextInts() {\n    return nextLine().split(' ').map(x => parseInt(x));\n}\nlet [N, M] = nextInts();\nlet inf = Number.MAX_SAFE_INTEGER;\nlet dist = Array(N).fill(0).map(() => Array(N).fill(inf));\nfor (let i = 0; i < N; i++) {\n    dist[i][i] = 0;\n}\nfor (let i = 0; i < M; i++) {\n    let [A, B, D] = nextInts();\n    dist[A][B] = D;\n    dist[B][A] = D;\n}\n// Floyd-Warshall algorithm\nfor (let k = 0; k < N; k++) {\n    for (let i = 0; i < N; i++) {\n        for (let j = 0; j < N; j++) {\n            if (dist[i][k] != inf && dist[k][j] != inf) {\n                dist[i][j] = Math.min(dist[i][j], dist[i][k] + dist[k][j]);\n            }\n        }\n    }\n}\nlet sum = 0;\nfor (let i = 0; i < N; i++) {\n    for (let j = 0; j < N; j++) {\n        if (dist[i][j] < inf && dist[i][j] < dist[j][i]) {\n            sum += dist[i][j];\n        }\n    }\n}\nconsole.log(sum + \"/1\");"
+    }
+  }
+}

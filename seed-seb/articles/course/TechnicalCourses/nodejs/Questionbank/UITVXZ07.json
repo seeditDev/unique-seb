@@ -1,0 +1,82 @@
+{
+  "questionId": "UITVXZ07",
+  "title": "Data Validation with Schemas",
+  "slug": "uitvxz07",
+  "version": 1,
+  "createdAt": "2026-07-13",
+  "updatedAt": "2026-07-13",
+  "source": {
+    "platform": "SEED-IT",
+    "courseSlug": "nodejs",
+    "contestCode": "FHRVRX",
+    "module": "Database Integration",
+    "submodule": "Mongoose Fundamentals",
+    "contentType": "mcq",
+    "originalUrl": "https://www.codechef.com/learn/course/nodejs/FHRVRX/problems/UITVXZ07"
+  },
+  "metadata": {
+    "category": "Concept",
+    "difficulty": "Beginner",
+    "isPremium": false,
+    "tags": [
+      "javascript"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Database Integration",
+      "Mongoose Fundamentals"
+    ],
+    "QBCategory": "SEED-IT"
+  },
+  "content": {
+    "problemStatement": "In our previous lessons, we learned how to define **schemas** and **models** in Mongoose. Schemas describe the *structure* of our data in MongoDB – what fields a document will have and their basic data types (like String, Number, Boolean).\n\nNow, let's take it a step further. What if we want to ensure the data we save is not just structured correctly, but also meets certain *rules*? For example:\n*   A user's `username` must always be provided.\n*   A product's `price` must be a positive number.\n*   A user's `role` can only be 'user' or 'admin'.\n\nThis process of checking data against rules is called **data validation**.\n\n**Why is Data Validation Important?**\n\nThink of it like filling out a form. If you miss a required field or enter an invalid email, the form usually tells you, right? Data validation in our backend application does something similar for the data we store in our database.\n*   **Keeps Data Clean:** It prevents \"garbage\" or incorrect data from getting into our database.\n*   **Increases Reliability:** Our application becomes more robust and less prone to errors caused by bad data.\n*   **Maintains Integrity:** Ensures the data stored is meaningful and consistent.\n\n**Mongoose Schemas for Validation**\n\nThe great thing about Mongoose is that it allows us to define these validation rules directly within our schema definitions! Mongoose has several built-in validators we can use.\n\nWhen you try to save a new document (using methods like `new Model(data).save()` or `Model.create(data)` which we learned about in \"CRUD operations with Mongoose\"), Mongoose automatically runs these validation checks.\n\n**Common Built-in Validators:**\n\nLet's look at some of the most common validation options you can add to your schema fields:\n\n1.  **`required: true`**: Makes a field mandatory. If you try to save a document without this field, Mongoose will raise an error.\n    ```javascript\n    // In your schema definition\n    name: {\n      type: String,\n      required: true // The 'name' field must be provided\n    }\n    ```\n\n2.  **`default: `**: Provides a default value for a field if one is not supplied when creating a new document.\n    ```javascript\n    // In your schema definition\n    isActive: {\n      type: Boolean,\n      default: true // If 'isActive' is not provided, it will default to true\n    }\n    ```\n\n3.  **`minlength: ` / `maxlength: `** (for Strings): Specifies the minimum or maximum length for a string.\n    ```javascript\n    // In your schema definition\n    username: {\n      type: String,\n      required: true,\n      minlength: 3,    // Username must be at least 3 characters long\n      maxlength: 20    // Username cannot be more than 20 characters long\n    }\n    ```\n\n4.  **`min: ` / `max: `** (for Numbers): Specifies the minimum or maximum value for a number.\n    ```javascript\n    // In your schema definition\n    age: {\n      type: Number,\n      min: 0,        // Age cannot be less than 0\n      max: 120       // Age cannot be more than 120\n    }\n    ```\n\n5.  **`enum: [, , ...]`**: Restricts the field's value to be one of the specified values in the array.\n    ```javascript\n    // In your schema definition\n    status: {\n      type: String,\n      enum: ['pending', 'active', 'inactive'] // Status must be one of these three values\n    }\n    ```\n\n**Example: A `Product` Schema with Validation**\n\nLet's combine these in an example `Product` schema. Remember from \"Defining schemas and models\" how we create schemas:\n\n```javascript\nconst mongoose = require('mongoose');\n\nconst productSchema = new mongoose.Schema({\n  productName: {\n    type: String,\n    required: true,      // Product name is mandatory\n    minlength: 3         // Must be at least 3 characters\n  },\n  price: {\n    type: Number,\n    required: true,\n    min: 0.01            // Price must be a positive value\n  },\n  category: {\n    type: String,\n    required: true,\n    enum: ['Electronics', 'Books', 'Clothing'] // Category must be one of these\n  },\n  inStock: {\n    type: Boolean,\n    default: true        // Defaults to true if not specified\n  }\n});\n\n// const Product = mongoose.model('Product', productSchema);\n// module.exports = Product; // To use this model in other files\n```\n\n**What Happens if Validation Fails?**\n\nIf you try to save data that violates any of these rules:\n1.  Mongoose will **not** save the data to your MongoDB database.\n2.  The `save()` or `create()` operation (which are asynchronous, as we learned in \"Asynchronous JavaScript Basics\") will result in an error. This error is typically a `ValidationError`.\n\nYou can catch this error using a `try...catch` block, which you might remember from \"Asynchronous JavaScript Basics\".\n\nLet's imagine you're handling a request in an Express app (from \"Express Setup & Basics\" and \"Handling Requests & Data\"). You get data from `req.body` and try to create a new product:\n\n```javascript\n// Assume 'Product' is your Mongoose model\n// const Product = require('./models/productModel'); // Import your model\n\n// Inside an Express route handler, e.g., app.post('/products', async (req, res) => { ... });\n// const newProductData = req.body; // Data from an HTTP request\n\n// Example of trying to save valid data:\n// const validData = { productName: 'Laptop Pro', price: 1200, category: 'Electronics' };\n// const product = new Product(validData);\n\n// Example of trying to save invalid data:\nconst invalidData = { productName: 'TV', price: -50 }; // 'productName' is okay, but 'price' is invalid, 'category' is missing\n\nconst product = new Product(invalidData);\n\ntry {\n  await product.save(); // This is a CRUD operation\n  console.log(\"Product saved successfully!\"); // This line won't be reached for invalidData\n  // res.status(201).send(product); // If using Express\n} catch (error) {\n  console.error(\"Validation Failed!\");\n  console.error(\"Error Message:\", error.message);\n  // error.errors will often contain more details about which specific fields failed validation.\n  // We will learn more about handling database errors in a future lesson.\n  // res.status(400).send({ message: \"Validation failed\", details: error.errors }); // If using Express\n}\n```\n\nIn the `invalidData` example above, the `price` is negative (violating `min: 0.01`) and `category` is missing (violating `required: true`). So, `product.save()` would throw an error, and the `catch` block would be executed. The product would *not* be saved to MongoDB.\n\nData validation is a powerful feature of Mongoose schemas that helps you build more robust and reliable applications by ensuring the integrity of the data you store in MongoDB. It works hand-in-hand with the schemas and CRUD operations you've already learned.",
+    "constraints": [
+      "Time Limit: 1s",
+      "Memory Limit: 256MB"
+    ],
+    "inputFormat": "Standard input",
+    "outputFormat": "Standard output",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "input": "",
+        "expectedOutput": "expected",
+        "weight": 100
+      }
+    ],
+    "totalTestCases": 1,
+    "totalWeight": 100
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      100
+    ],
+    "maxScore": 100
+  },
+  "judging": {
+    "timeLimitMs": 1000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // Write your C code here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your C++ code here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) {\n        // Write your Java code here\n    }\n}",
+    "Python3": "# Write your Python code here\n",
+    "JavaScript": "// Write your JavaScript code here\n",
+    "Go": "package main\n\nimport \"fmt\"\n\nfunc main() {\n    // Write your Go code here\n}",
+    "Rust": "fn main() {\n    // Write your Rust code here\n}",
+    "C#": "using System;\n\nclass Program {\n    static void Main() {\n        // Write your C# code here\n    }\n}",
+    "SQL": "-- Write your SQL query here\n"
+  }
+}

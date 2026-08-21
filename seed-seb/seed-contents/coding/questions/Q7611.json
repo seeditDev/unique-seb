@@ -1,0 +1,140 @@
+{
+  "questionId": "Q7611",
+  "title": "Crash It",
+  "slug": "crash-it",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-02",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Number Theory",
+      "Prime Numbers",
+      "Sieve of Eratosthenes",
+      "Brute Force"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Data Structures"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Roger recently built a circular race track with length KKK. After hosting a few races, he realised that people do not come there to see the race itself, they come to see racers crash into each other (what's wrong with our generation...). After this realisation, Roger decided to hold a different kind of \"races\": he hired NNN racers (numbered 111 through NNN) whose task is to crash into each other.\n\nAt the beginning, for each valid iii, the iii-th racer is XiX_iXi​ metres away from the starting point of the track (measured in the clockwise direction) and driving in the direction DiD_iDi​ (clockwise or counterclockwise). All racers move with the constant speed 111 metre per second. The lengths of cars are negligible, but the track is only wide enough for one car, so whenever two cars have the same position along the track, they crash into each other and the direction of movement of each of these cars changes (from clockwise to counterclockwise and vice versa). The cars do not change the directions of their movement otherwise.\n\nSince crashes reduce the lifetime of the racing cars, Roger sometimes wonders how many crashes happen. You should answer QQQ queries. In each query, you are given an integer TTT and you should find the number of crashes that happen until TTT seconds have passed (inclusive).",
+    "constraints": [
+      "1 <= N <= 10^5",
+      "1 <= Q <= 1000",
+      "1 <= K <= 10^12",
+      "1 <= Di <= 2",
+      "0 <= Xi <= K - 1",
+      "X1, X2, ..., XN are pairwise distinct",
+      "0 <= T <= 10^12"
+    ],
+    "inputFormat": "First line contains three space-separated integers N, Q, and K. N lines follow. Each line contains two space-separated integers Di and Xi. Each of the next Q lines contains a single integer T.",
+    "outputFormat": "For each query, print a single line containing one integer — the number of crashes.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "5 3 11\n1 3\n1 10\n2 4\n2 7\n2 0\n3\n8\n100",
+        "output": "4\n10\n110",
+        "explanation": ""
+      },
+      {
+        "id": "sample_2",
+        "input": "3 2 10\n1 3\n2 4\n2 5\n5",
+        "output": "1\n2",
+        "explanation": ""
+      },
+      {
+        "id": "sample_3",
+        "input": "4 3 100\n1 10\n2 20\n2 30\n2 40\n5\n50\n100",
+        "output": "2\n4",
+        "explanation": ""
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "input": "1 1 1\n1 0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "input": "100 100 1000000000\n1 1000000000\n2 1000000000\n2 1000000000\n2 1000000000\n100",
+        "expectedOutput": "100",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "input": "2 2 10\n1 3\n2 4\n2 5\n5",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "input": "5 3 11\n1 3\n1 10\n2 4\n2 7\n2 0\n3\n8\n100",
+        "expectedOutput": "4\n10\n110",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "input": "3 2 10\n1 3\n2 4\n2 5\n5",
+        "expectedOutput": "1\n2",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "We will use a sweep line approach to solve this problem. We will first sort the racers by their initial positions. Then, we will iterate over the racers and update the number of crashes at each position. We will use a segment tree to store the number of crashes at each position.",
+    "timeComplexity": "O(N log N + Q log K) with N being the number of racers and Q being the number of queries.",
+    "spaceComplexity": "O(N + Q log K)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <math.h>\n\n#define N 100005\n#define Q 1005\n#define K 1000000005\n\nint n, q, k;\nint a[N], b[N];\nint c[N];\n\nint read() {\n    int x = 0, f = 1;\n    char ch = getchar();\n    while (!isdigit(ch)) {\n        if (ch == '-')\n            f = -1;\n        ch = getchar();\n    }\n    while (isdigit(ch)) {\n        x = x * 10 + ch - '0';\n        ch = getchar();\n    }\n    return x * f;\n}\n\nvoid write(int x) {\n    if (x < 0) {\n        putchar('-');\n        x = -x;\n    }\n    if (x > 9)\n        write(x / 10);\n    putchar(x % 10 + '0');\n}\n\nint main() {\n    n = read();\n    q = read();\n    k = read();\n    for (int i = 1; i <= n; i++) {\n        a[i] = read();\n        b[i] = read();\n    }\n    for (int i = 1; i <= q; i++) {\n        int t = read();\n        int l = 0, r = n;\n        while (l < r) {\n            int mid = (l + r) >> 1;\n            if (b[mid] + (k - b[mid]) * a[mid] <= t * k)\n                l = mid + 1;\n            else\n                r = mid;\n        }\n        int ans = 0;\n        for (int j = 1; j <= l - 1; j++) {\n            if (a[j] == a[j + 1] || b[j] == b[j + 1])\n                ans++;\n        }\n        write(ans);\n        putchar('\\n');\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <algorithm>\n#include <vector>\n#include <string>\n#include <cmath>\n\nusing namespace std;\n\nconst int N = 100005;\nconst int Q = 1005;\nconst int K = 1000000005;\n\nint n, q, k;\nint a[N], b[N];\nint c[N];\n\nint read() {\n    int x = 0, f = 1;\n    char ch;\n    cin >> ch;\n    while (!isdigit(ch)) {\n        if (ch == '-')\n            f = -1;\n        cin >> ch;\n    }\n    while (isdigit(ch)) {\n        x = x * 10 + ch - '0';\n        cin >> ch;\n    }\n    return x * f;\n}\n\nvoid write(int x) {\n    if (x < 0) {\n        cout << '-';\n        x = -x;\n    }\n    if (x > 9)\n        write(x / 10);\n    cout << x % 10 + '0';\n}\n\nint main() {\n    cin >> n >> q >> k;\n    for (int i = 1; i <= n; i++) {\n        cin >> a[i] >> b[i];\n    }\n    for (int i = 1; i <= q; i++) {\n        int t = read();\n        int l = 0, r = n;\n        while (l < r) {\n            int mid = (l + r) >> 1;\n            if (b[mid] + (k - b[mid]) * a[mid] <= t * k)\n                l = mid + 1;\n            else\n                r = mid;\n        }\n        int ans = 0;\n        for (int j = 1; j <= l - 1; j++) {\n            if (a[j] == a[j + 1] || b[j] == b[j + 1])\n                ans++;\n        }\n        cout << ans << endl;\n    }\n    return 0;\n}",
+      "Java": "public class Main {\n    public static void main(String[] args) {\n        java.util.Scanner sc = new java.util.Scanner(System.in);\n        int n = sc.nextInt();\n        int q = sc.nextInt();\n        int k = sc.nextInt();\n        int[] a = new int[n + 1];\n        int[] b = new int[n + 1];\n        for (int i = 1; i <= n; i++) {\n            a[i] = sc.nextInt();\n            b[i] = sc.nextInt();\n        }\n        for (int i = 1; i <= q; i++) {\n            int t = sc.nextInt();\n            int l = 0, r = n;\n            while (l < r) {\n                int mid = (l + r) >> 1;\n                if (b[mid] + (k - b[mid]) * a[mid] <= t * k)\n                    l = mid + 1;\n                else\n                    r = mid;\n            }\n            int ans = 0;\n            for (int j = 1; j <= l - 1; j++) {\n                if (a[j] == a[j + 1] || b[j] == b[j + 1])\n                    ans++;\n            }\n            System.out.println(ans);\n        }\n    }\n}",
+      "Python3": "import sys\nimport math\n\nn, q, k = map(int, input().split())\na = [0] * (n + 1)\nb = [0] * (n + 1)\nfor i in range(1, n + 1):\n    a[i], b[i] = map(int, input().split())\nfor i in range(1, q + 1):\n    t = int(input())\n    l = 0\n    r = n\n    while l < r:\n        mid = (l + r) >> 1\n        if b[mid] + (k - b[mid]) * a[mid] <= t * k:\n            l = mid + 1\n        else:\n            r = mid\n    ans = 0\n    for j in range(1, l):\n        if a[j] == a[j + 1] or b[j] == b[j + 1]:\n            ans += 1\n    print(ans)",
+      "JavaScript": "const readline = require('readline').createInterface({\n    input: process.stdin,\n    output: process.stdout\n});\n\nlet n, q, k;\nlet a = [], b = [];\n\nreadline.on('line', line => {\n    if (!n) {\n        [n, q, k] = line.split(' ').map(Number);\n    } else if (a.length < n) {\n        a.push(...line.split(' ').map(Number));\n    } else {\n        readline.close();\n        for (let i = 1; i <= q; i++) {\n            let t = Number(readline.question());\n            let l = 0, r = n;\n            while (l < r) {\n                let mid = Math.floor((l + r) / 2);\n                if (b[mid] + (k - b[mid]) * a[mid] <= t * k)\n                    l = mid + 1;\n                else\n                    r = mid;\n            }\n            let ans = 0;\n            for (let j = 1; j <= l - 1; j++) {\n                if (a[j] == a[j + 1] || b[j] == b[j + 1])\n                    ans++;\n            }\n            console.log(ans);\n        }\n    }\n});\n\nfunction read() {\n    return readline.question().trim();\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

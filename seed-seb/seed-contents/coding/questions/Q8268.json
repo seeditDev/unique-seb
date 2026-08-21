@@ -1,0 +1,137 @@
+{
+  "questionId": "Q8268",
+  "title": "Bus full of passengers",
+  "slug": "bus-full-of-passengers",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Implementation",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Simulation",
+      "Hash Set",
+      "Array",
+      "Greedy"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Ad-hoc & Implementation"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "There is an **empty bus** with MMM seats and a total of NNN people, numbered from 111 to NNN. Everyone is currently outside the bus. You are given a sequence of QQQ events of the following form.\n\n\n\n+&nbsp;i+\\ i+&nbsp;i :  It denotes that the person iii enters the bus.\n\n\n\n\n−&nbsp;i-\\ i−&nbsp;i : It denotes that the person iii leaves the bus.\n\n\n\nIt is guaranteed in the input that each person from 111 to NNN enters at most once as well as leaves the bus at most once.\n\nDetermine whether the sequence of events is consistent or not (i.e. no person leaves the bus before entering and the number of passengers in the bus does not exceed MMM at any point of time).\n\n\nInput Format\n\nThe first line of the input contains a single integer TTT denoting the number of test cases. The description of TTT test cases follows.\nEach test case contains Q+1Q + 1Q+1 lines of input.\nThe first line of each test case contains three space-separated integers N,M,QN, M, QN,M,Q.\nQQQ lines follow. For each valid jjj, jthj^{th}jth of these lines contains a character chchch, followed by a space and an integer iii. Here chchch is either '+++' or '−-−' and 1≤i≤N1 \\leq i \\leq N1≤i≤N.\nIt is guaranteed that ‘‘+``+‘‘+ i\"i\"i\" and ‘‘−``-‘‘− i\"i\"i\" appears at most once for every 1≤i≤N1 \\leq i \\leq N1≤i≤N\n\n\nOutput Format\nFor each test case, print a single line containing one string - \"Consistent\" (without quotes) if the sequence is consistent, \"Inconsistent\" (without quotes) otherwise.",
+    "constraints": [
+      "1 ≤ T ≤ 20",
+      "1 ≤ N ≤ 10^4",
+      "1 ≤ M ≤ 10^4",
+      "1 ≤ Q ≤ 10^4",
+      "Each person i appears at most once with '+' and at most once with '-'"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, the first line contains three integers N, M and Q — the number of people, the bus capacity and the number of events. Then Q lines follow, each containing a character '+' or '-' and an integer i (1 ≤ i ≤ N) separated by a space. '+' i means person i enters the bus, '-' i means person i leaves the bus.",
+    "outputFormat": "For each test case output a single line containing either \"Consistent\" if the whole sequence of events can happen without any person leaving before entering and without the number of passengers ever exceeding the capacity M, otherwise output \"Inconsistent\".",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n2 1 4\n+ 1\n+ 2\n- 1\n- 2\n3 2 6\n+ 2\n+ 1\n- 1\n+ 3\n- 3\n- 2",
+        "output": "Inconsistent\nConsistent",
+        "explanation": "Test case 1: after person 2 enters, the bus has 2 passengers while capacity is 1 → inconsistent. Test case 2 respects both rules."
+      },
+      {
+        "id": "sample_2",
+        "input": "2\n100 10 5\n+ 1\n+ 2\n- 3\n+ 3\n- 2\n6 4 4\n+ 3\n+ 2\n+ 1\n+ 4",
+        "output": "Inconsistent\nConsistent",
+        "explanation": "Test case 1: person 3 leaves before entering. Test case 2 never exceeds capacity and no illegal leave."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1 0",
+        "expectedOutput": "Consistent",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum reasonable boundary",
+        "input": "1\n5 5 10\n+ 1\n+ 2\n+ 3\n+ 4\n+ 5\n- 1\n- 2\n- 3\n- 4\n- 5",
+        "expectedOutput": "Consistent",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "leave before enter",
+        "input": "1\n2 2 2\n- 1\n+ 1",
+        "expectedOutput": "Inconsistent",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "capacity exceeded later",
+        "input": "1\n3 2 4\n+ 1\n+ 2\n+ 3\n- 2",
+        "expectedOutput": "Inconsistent",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "all enter, none leave, within capacity",
+        "input": "1\n3 3 3\n+ 1\n+ 2\n+ 3",
+        "expectedOutput": "Consistent",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "We simulate the process. Keep a boolean array inside[1..N] (or a hash set) indicating whether a person is currently on the bus and a counter cur for the current number of passengers. For each event: • If it is '+ i' and inside[i] is true, the sequence is already invalid (duplicate entry). Otherwise set inside[i]=true, increment cur and check if cur > M – if so, the sequence is inconsistent. • If it is '- i' and inside[i] is false, a person tries to leave before entering → inconsistent. Otherwise set inside[i]=false and decrement cur. If we finish all events without detecting a violation, the sequence is consistent.",
+    "timeComplexity": "O(Q) per test case, because each event is processed in O(1). Overall O(T·Q).",
+    "spaceComplexity": "O(N) for the boolean array (or O(N) for a hash set).",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdbool.h>\n\nint main() {\n    int T; if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        int N, M, Q; scanf(\"%d %d %d\", &N, &M, &Q);\n        bool *inside = (bool*)calloc(N + 1, sizeof(bool));\n        int cur = 0;\n        int consistent = 1;\n        for (int k = 0; k < Q; ++k) {\n            char op; int id;\n            scanf(\" %c %d\", &op, &id);\n            if (!consistent) continue; // still read input\n            if (op == '+') {\n                if (inside[id]) { consistent = 0; }\n                else {\n                    inside[id] = true;\n                    ++cur;\n                    if (cur > M) consistent = 0;\n                }\n            } else { // '-'\n                if (!inside[id]) { consistent = 0; }\n                else {\n                    inside[id] = false;\n                    --cur;\n                }\n            }\n        }\n        free(inside);\n        printf(consistent ? \"Consistent\\n\" : \"Inconsistent\\n\");\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--) {\n        int N,M,Q; cin>>N>>M>>Q;\n        vector<char> inside(N+1,0);\n        int cur=0; bool ok=true;\n        for(int i=0;i<Q;++i){\n            char op; int id; cin>>op>>id;\n            if(!ok) continue;\n            if(op=='+'){\n                if(inside[id]) ok=false;\n                else{ inside[id]=1; ++cur; if(cur>M) ok=false; }\n            }else{ // '-'\n                if(!inside[id]) ok=false;\n                else{ inside[id]=0; --cur; }\n            }\n        }\n        cout<<(ok?\"Consistent\":\"Inconsistent\")<<'\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder out = new StringBuilder();\n        int T = Integer.parseInt(br.readLine().trim());\n        while (T-- > 0) {\n            StringTokenizer st = new StringTokenizer(br.readLine());\n            int N = Integer.parseInt(st.nextToken());\n            int M = Integer.parseInt(st.nextToken());\n            int Q = Integer.parseInt(st.nextToken());\n            boolean[] inside = new boolean[N + 1];\n            int cur = 0;\n            boolean ok = true;\n            for (int i = 0; i < Q; i++) {\n                st = new StringTokenizer(br.readLine());\n                char op = st.nextToken().charAt(0);\n                int id = Integer.parseInt(st.nextToken());\n                if (!ok) continue;\n                if (op == '+') {\n                    if (inside[id]) ok = false;\n                    else {\n                        inside[id] = true;\n                        cur++;\n                        if (cur > M) ok = false;\n                    }\n                } else { // '-'\n                    if (!inside[id]) ok = false;\n                    else {\n                        inside[id] = false;\n                        cur--;\n                    }\n                }\n            }\n            out.append(ok ? \"Consistent\" : \"Inconsistent\").append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it)); M = int(next(it)); Q = int(next(it))\n        inside = [False] * (N + 1)\n        cur = 0\n        ok = True\n        for __ in range(Q):\n            op = next(it)\n            pid = int(next(it))\n            if not ok:\n                continue\n            if op == '+':\n                if inside[pid]:\n                    ok = False\n                else:\n                    inside[pid] = True\n                    cur += 1\n                    if cur > M:\n                        ok = False\n            else:  # '-'\n                if not inside[pid]:\n                    ok = False\n                else:\n                    inside[pid] = False\n                    cur -= 1\n        out_lines.append('Consistent' if ok else 'Inconsistent')\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet results = [];\nfor (let t = 0; t < T; ++t) {\n  const N = Number(input[idx++]);\n  const M = Number(input[idx++]);\n  const Q = Number(input[idx++]);\n  const inside = new Array(N + 1).fill(false);\n  let cur = 0;\n  let ok = true;\n  for (let i = 0; i < Q; ++i) {\n    const op = input[idx++];\n    const id = Number(input[idx++]);\n    if (!ok) continue;\n    if (op === '+') {\n      if (inside[id]) ok = false;\n      else {\n        inside[id] = true;\n        cur++;\n        if (cur > M) ok = false;\n      }\n    } else { // '-'\n      if (!inside[id]) ok = false;\n      else {\n        inside[id] = false;\n        cur--;\n      }\n    }\n  }\n  results.push(ok ? 'Consistent' : 'Inconsistent');\n}\nconsole.log(results.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

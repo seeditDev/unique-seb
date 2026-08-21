@@ -1,0 +1,116 @@
+{
+  "questionId": "Q3220",
+  "title": "Chef and Circle Run",
+  "slug": "chef-and-circle-run",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graphs",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Graphs",
+      "Cycle",
+      "Optimization",
+      "Prefix Sum",
+      "Greedy"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Data Structures"
+    ]
+  },
+  "content": {
+    "problemStatement": "Chef likes to play with graphs a lot. Today he created a graph in the following way. He first lays down **N** nodes in a circle. The nodes nodes are numbered from **1** to **N**, in the clockwise order, i.e. the node **2** is followed by **1**, **3** is followed by **2**, and **1** is followed by **N**. Two vertices are said to be adjacent if they don't have an intermediate vertex placed between them. There is an edge between each adjacent pair of vertices, so there are total **N** such edges. Each edge has an integer associated with it (may be negative). \n\n\nChef wants to find a **walk** from node **start** to node **end** using the above described edges. Chef has to pay cost for each edge in the walk equal to the integer associated with the edge. He wants to minimize the total cost he will incur. Also, Chef does not like to move through an edge more than twice. Find out minimum cost that Chef has to pay.\n\nNote that a walk from a node **u** to **v** can contain repeated vertices in it. Please refer to  link for a formal definition.",
+    "constraints": [
+      "1 \u2264 T \u2264 10^6",
+      "2 \u2264 N \u2264 2\u00b710^5 (sum of N over all test cases fits in memory limits)",
+      "-10^6 \u2264 Ri \u2264 10^6",
+      "1 \u2264 start < end \u2264 N"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case:\n- A line with integer N, the number of nodes in the circle.\n- A line with N space\u2011separated integers R1 \u2026 RN, where Ri is the cost of the edge from node i to node (i % N) + 1 (clockwise direction). The edge is undirected, the same cost is paid when traversed in the opposite direction.\n- A line with two integers start and end (1\u2011based, 1 \u2264 start < end \u2264 N), the first and last node of the required walk.\nAll edges may be used at most twice in total.",
+    "outputFormat": "For each test case output a single line containing the minimum possible total cost of a walk from start to end respecting the \u201cat most twice per edge\u201d rule.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n4\n1 2 1 1\n1 3\n5\n-5 100 100 100 2\n1 5",
+        "output": "2\n-8",
+        "explanation": "Explanation: Example case 1. Chef's walk starts with node 1. He goes to node 4 by incurring a cost of 1. Then from node 4, he goes to node 3 by incurring a cost of 1 more. Total cost incurred is 2. Example case 2. Chef goes from 1 to 2 by incurring a cost of -5. Then from 2 to 1 using the edge second time and incurring cost of -5 again. Now he can not use the edge between 1 and 2 again, as he has traversed the edge already twice. Now he will go from node 1 to node 4 by paying a cost of 2. Total sum of costs incurred is -5 + -5 + 2 = -8. This is the minimum possible cost that Chef can have."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The graph is a simple cycle. Because an edge can be traversed at most twice, the only useful extra traversals are *back\u2011and\u2011forth* on a single edge (one forward, one backward). Such a pair adds 2\u00b7weight to the total cost. If the weight is negative, this pair strictly reduces the total cost, so we will always take it for every negative edge. Positive edges never benefit from a back\u2011and\u2011forth.\nTherefore the optimal cost consists of two independent parts:\n1. Choose a direction (clockwise or counter\u2011clockwise) for the net movement from start to end. The cost of the clockwise walk is the sum of the edge weights encountered when moving clockwise from start to end; the counter\u2011clockwise cost is the total sum of all edges minus the clockwise sum. The cheaper of the two is the minimal net\u2011movement cost.\n2. Add 2\u00b7weight for every edge with a negative weight (the back\u2011and\u2011forth on that edge). This addition is independent of the chosen direction.\nHence:\n```\nanswer = min(clockwiseCost, totalSum - clockwiseCost) + 2 * (sum of all negative Ri)\n```\nThe algorithm for each test case:\n- Read N and the array R.\n- Compute `totalSum` (sum of all Ri) and `negSum` (sum of Ri where Ri < 0).\n- Compute `clockwiseCost` by iterating from `start` (0\u2011based) to `end` (exclusive) moving clockwise and adding the visited edges.\n- `counterCost = totalSum - clockwiseCost`.\n- Result = min(clockwiseCost, counterCost) + 2 * negSum.\nThe procedure is O(N) time and O(1) extra space per test case.\n",
+    "timeComplexity": "O(N) per test case (single pass to compute sums and another pass for the clockwise segment).",
+    "spaceComplexity": "O(1) besides the input array.",
+    "code": {
+      "C": "// COMPLETE, COMPILABLE C code\n#include <stdio.h>\n#include <stdlib.h>\n#include <limits.h>\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        int N;\n        scanf(\"%d\", &N);\n        long long *R = (long long*)malloc(sizeof(long long) * N);\n        long long totalSum = 0, negSum = 0;\n        for (int i = 0; i < N; ++i) {\n            scanf(\"%lld\", &R[i]);\n            totalSum += R[i];\n            if (R[i] < 0) negSum += R[i];\n        }\n        int start, end;\n        scanf(\"%d %d\", &start, &end);\n        start--; end--; // zero based\n        long long cw = 0;\n        int i = start;\n        while (i != end) {\n            cw += R[i];\n            i = (i + 1) % N;\n        }\n        long long ccw = totalSum - cw;\n        long long best = cw < ccw ? cw : ccw;\n        long long ans = best + 2 * negSum;\n        printf(\"%lld\\n\", ans);\n        free(R);\n    }\n    return 0;\n}",
+      "C++": "// COMPLETE, COMPILABLE C++ code\n#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--) {\n        int N; cin>>N;\n        vector<long long> R(N);\n        long long totalSum=0, negSum=0;\n        for(int i=0;i<N;++i){\n            cin>>R[i];\n            totalSum+=R[i];\n            if(R[i]<0) negSum+=R[i];\n        }\n        int start,end; cin>>start>>end; --start; --end;\n        long long cw=0;\n        for(int i=start; i!=end; i=(i+1)%N) cw+=R[i];\n        long long ccw=totalSum-cw;\n        long long best=min(cw,ccw);\n        long long ans=best+2*negSum;\n        cout<<ans<<\"\\n\";\n    }\n    return 0;\n}",
+      "Java": ""
+    }
+  }
+}

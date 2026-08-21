@@ -1,0 +1,129 @@
+{
+  "questionId": "Q2355",
+  "title": "Dish Distribution",
+  "slug": "dish-distribution",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Dish Distribution",
+      "Modular Arithmetic",
+      "Dynamic Programming"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Combinatorics & Probability"
+    ]
+  },
+  "content": {
+    "problemStatement": "Chef feels that being the Head Chef is a very difficult job. More than cooking, managing the kitchen and distributing the work between various cooks proves to be a tiring task. There are many dishes to be prepared. And he has a team of talented cooks to do this for him. But the Chef always has a problem distributing tasks among them. For a cook i, the Chef wants to give him atleast xi dishes to prepare in a day. But different cooks have different capacities. Any cook i can cook atmost yi number of dishes in a single day. Chef is very aware of every cook's capability and will not give anyone more work than his maximum capacity. Now, he wants you to help him out here. \n\nYour task will be simple: Tell him the number of ways in which he can distribute the given number of dishes among his team.\n\nInput:First line contains T, number of tests.\nEach test begins with a single line containing 2 space separated integers: n and m, the number of dishes to be prepared and the number of cooks in Chef's team.\n\nThen follow m lines. The ith line contains 2 space separater integers which are the corresponding xi and yi.\n\nOutput:For every test case, output a single integer: the number of ways of distributing the work mod 1000000007.",
+    "constraints": [
+      "1 <= T <= 10",
+      "0 <= N <= 1000",
+      "1 <= M <= 100",
+      "0 <= xi <= yi <= N for every cook",
+      "The sum of N over all test cases does not exceed 5000"
+    ],
+    "inputFormat": "First line contains T, the number of test cases. Each test case contains two integers N and M, the number of dishes and the number of cooks. Then M lines follow, each containing two integers xi and yi, the minimum and maximum number of dishes that the ith cook can prepare.",
+    "outputFormat": "For each test case, print the number of ways to distribute the dishes among the cooks, modulo 1000000007.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n3 2\n0 3\n1 3",
+        "output": "3",
+        "explanation": "There are three feasible assignments of dishes (cook1, cook2): (0,3), (1,2) and (2,1). All respect the given minima and maxima and sum to 3."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n5 3\n0 5\n0 5\n0 5",
+        "output": "21",
+        "explanation": "With no lower bounds, the problem reduces to distributing 5 indistinguishable dishes among 3 cooks. The number of ways is C(5+3-1,3-1)=C(7,2)=21."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n4 2\n2 3\n1 2",
+        "output": "2",
+        "explanation": "Possible assignments are (2,2) and (3,1). Both satisfy the individual ranges and the total of 4 dishes."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n0 1\n0 0",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n1000 100\n0 1000\n0 1000",
+        "expectedOutput": "1001",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n5 5\n0 5\n0 5\n0 5\n0 5\n0 5",
+        "expectedOutput": "126",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n10 2\n5 10\n0 5",
+        "expectedOutput": "6",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "5\n3 2\n0 3\n1 3\n5 3\n0 5\n0 5\n0 5\n4 2\n2 3\n1 2\n10 5\n0 10\n0 10\n0 10\n0 10\n0 10",
+        "expectedOutput": "3\n21\n2\n6\n126",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved using dynamic programming. We maintain a DP array where dp[i] represents the number of ways to distribute i dishes among the cooks. For each cook, we update the DP array by considering all possible number of dishes that the cook can prepare, from xi to yi. We use modular arithmetic to avoid overflow.",
+    "timeComplexity": "O(T * N * M) per test case, O(T * N * M) total.",
+    "spaceComplexity": "O(N) \u2014 the dominant structure is the DP array.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n#define MOD 1000000007\n\nint main() {\n    int T; \n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        int n, m;\n        scanf(\"%d %d\", &n, &m);\n        int x[105], y[105];\n        for (int i = 1; i <= m; ++i) {\n            scanf(\"%d %d\", &x[i], &y[i]);\n        }\n        long long dp[1005] = {0}, ndp[1005];\n        long long pref[1006];\n        dp[0] = 1;\n        for (int i = 1; i <= m; ++i) {\n            memset(ndp, 0, sizeof(ndp));\n            pref[0] = 0;\n            for (int s = 0; s <= n; ++s) {\n                pref[s+1] = (pref[s] + dp[s]) % MOD;\n            }\n            for (int s = 0; s <= n; ++s) {\n                int l = s - y[i];\n                int r = s - x[i];\n                if (r < 0) continue;               // no valid k\n                if (l < 0) l = 0;\n                ndp[s] = (pref[r+1] - pref[l] + MOD) % MOD;\n            }\n            memcpy(dp, ndp, sizeof(dp));\n        }\n        printf(\"%lld\\n\", dp[n] % MOD);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nconst long long MOD = 1000000007LL;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(NULL);\n    int T; \n    if(!(cin >> T)) return 0;\n    while (T--) {\n        int n, m;\n        cin >> n >> m;\n        vector<int> x(m+1), y(m+1);\n        for (int i = 1; i <= m; ++i) cin >> x[i] >> y[i];\n        vector<long long> dp(n+1, 0), ndp(n+1);\n        dp[0] = 1;\n        for (int i = 1; i <= m; ++i) {\n            fill(ndp.begin(), ndp.end(), 0);\n            vector<long long> pref(n+2, 0);\n            for (int s = 0; s <= n; ++s) pref[s+1] = (pref[s] + dp[s]) % MOD;\n            for (int s = 0; s <= n; ++s) {\n                int l = s - y[i];\n                int r = s - x[i];\n                if (r < 0) continue;\n                if (l < 0) l = 0;\n                ndp[s] = (pref[r+1] - pref[l] + MOD) % MOD;\n            }\n            dp.swap(ndp);\n        }\n        cout << dp[n] % MOD << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    static final long MOD = 1_000_000_007L;\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner(System.in);\n        int T = fs.nextInt();\n        StringBuilder sb = new StringBuilder();\n        while (T-- > 0) {\n            int n = fs.nextInt();\n            int m = fs.nextInt();\n            int[] x = new int[m+1];\n            int[] y = new int[m+1];\n            for (int i = 1; i <= m; i++) {\n                x[i] = fs.nextInt();\n                y[i] = fs.nextInt();\n            }\n            long[] dp = new long[n+1];\n            long[] ndp = new long[n+1];\n            dp[0] = 1;\n            for (int i = 1; i <= m; i++) {\n                Arrays.fill(ndp, 0);\n                long[] pref = new long[n+2];\n                for (int s = 0; s <= n; s++) pref[s+1] = (pref[s] + dp[s]) % MOD;\n                for (int s = 0; s <= n; s++) {\n                    int l = s - y[i];\n                    int r = s - x[i];\n                    if (r < 0) continue;\n                    if (l < 0) l = 0;\n                    ndp[s] = (pref[r+1] - pref[l] + MOD) % MOD;\n                }\n                long[] tmp = dp; dp = ndp; ndp = tmp;\n            }\n            sb.append(dp[n] % MOD).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n\n    // Fast scanner based on BufferedInputStream\n    static class FastScanner {\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        private final InputStream in;\n        FastScanner(InputStream in) { this.in = in; }\n        private int readByte() throws IOException {\n            if (ptr >= len) {\n                len = in.read(buffer);\n                ptr = 0;\n                if (len <= 0) return -1;\n            }\n            return buffer[ptr++];\n        }\n        int nextInt() throws IOException {\n            int c, sign = 1, val = 0;\n            do { c = readByte(); } while (c <= ' ');\n            if (c == '-') { sign = -1; c = readByte(); }\n            while (c > ' ') {\n                val = val * 10 + (c - '0');\n                c = readByte();\n            }\n            return val * sign;\n        }\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys\nMOD = 1_000_000_007\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        n = int(next(it))\n        m = int(next(it))\n        x = [0]*(m+1)\n        y = [0]*(m+1)\n        for i in range(1, m+1):\n            x[i] = int(next(it))\n            y[i] = int(next(it))\n        dp = [0]*(n+1)\n        dp[0] = 1\n        for i in range(1, m+1):\n            pref = [0]*(n+2)\n            for s in range(n+1):\n                pref[s+1] = (pref[s] + dp[s]) % MOD\n            ndp = [0]*(n+1)\n            for s in range(n+1):\n                l = s - y[i]\n                r = s - x[i]\n                if r < 0:\n                    continue\n                if l < 0:\n                    l = 0\n                ndp[s] = (pref[r+1] - pref[l] + MOD) % MOD\n            dp = ndp\n        out_lines.append(str(dp[n] % MOD))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst MOD = 1000000007n;\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/).map(BigInt);\nlet idx = 0n;\nfunction nextInt() { return Number(input[idx++]); }\nconst T = nextInt();\nlet outputs = [];\nfor (let tc = 0; tc < T; ++tc) {\n  const n = nextInt();\n  const m = nextInt();\n  const x = new Array(m+1);\n  const y = new Array(m+1);\n  for (let i = 1; i <= m; ++i) {\n    x[i] = nextInt();\n    y[i] = nextInt();\n  }\n  let dp = new Array(n+1).fill(0n);\n  dp[0] = 1n;\n  for (let i = 1; i <= m; ++i) {\n    const pref = new Array(n+2).fill(0n);\n    for (let s = 0; s <= n; ++s) pref[s+1] = (pref[s] + dp[s]) % MOD;\n    const ndp = new Array(n+1).fill(0n);\n    for (let s = 0; s <= n; ++s) {\n      let l = s - y[i];\n      let r = s - x[i];\n      if (r < 0) continue;\n      if (l < 0) l = 0;\n      ndp[s] = (pref[r+1] - pref[l] + MOD) % MOD;\n    }\n    dp = ndp;\n  }\n  outputs.push(String(dp[n] % MOD));\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  }
+}

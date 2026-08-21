@@ -1,0 +1,141 @@
+{
+  "questionId": "Q5830",
+  "title": "Sereja and ASum",
+  "slug": "sereja-and-asum",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Arithmetic Mean",
+      "Modular Arithmetic",
+      "Exponentiation"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Ad-hoc & Implementation"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Sereja have an array that consist of **n** integers **a[1], a[2], ..., a[n]**. Now Sereja want to delete some(possible none, but not all) elements from the array, such that arithmetical mean of all remaining numbers will as big as possible.\n\nHelp Sereja, find number of ways to delete numbers.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= n <= 100000",
+      "1 <= a[i] <= 100000",
+      "The sum of n over all test cases does not exceed 1000000"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Then T test cases follow. For each test case, the first line contains an integer n, the size of the array. The second line contains n integers a[1], a[2], ..., a[n].",
+    "outputFormat": "For each test case, print the number of ways to delete elements so that the arithmetic mean of the remaining numbers is maximal. The answer must be given modulo 1,000,000,007.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n1\n1\n4\n1 2 1 2",
+        "output": "1\n3",
+        "explanation": "Test case 1: only one element, max=1, k=1 → 2^1-1=1.\nTest case 2: max=2 appears twice, k=2 → 2^2-1=3."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n5\n5 5 5 5 5",
+        "output": "31",
+        "explanation": "All five numbers are maximal (5). Any non-empty subset of the five positions works, giving 2^5-1 = 31 ways."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n3\n1 2 3",
+        "output": "1",
+        "explanation": "Maximum value is 3 and it appears once, so only the subset containing that element yields the maximal mean."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n10\n100000 100000 100000 100000 100000 100000 100000 100000 100000 100000",
+        "expectedOutput": "1023",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n5\n0 0 0 0 0",
+        "expectedOutput": "31",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n5\n1 2 3 4 5",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "5\n3\n1 2 3\n4\n1 2 3 4\n5\n1 2 3 4 5\n6\n1 2 3 4 5 6\n7\n1 2 3 4 5 6 7",
+        "expectedOutput": "1\n1\n1\n1\n1\n1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The key insight is to find the maximum value in the array and count its occurrences. The number of ways to delete elements to maximize the arithmetic mean is then 2^k - 1, where k is the count of the maximum value. This is because for each occurrence of the maximum value, we have two choices: include it or exclude it. However, we cannot exclude all occurrences, so we subtract 1 from the total number of possibilities.",
+    "timeComplexity": "O(n) per test case, O(T * n) total. The precomputation is done once for each test case.",
+    "spaceComplexity": "O(1) — the dominant structure is a constant amount of space to store the maximum value and its count.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdint.h>\n\nconst int64_t MOD = 1000000007LL;\n\nint64_t modPow(int64_t base, int64_t exp) {\n    int64_t res = 1;\n    base %= MOD;\n    while (exp > 0) {\n        if (exp & 1) res = (res * base) % MOD;\n        base = (base * base) % MOD;\n        exp >>= 1;\n    }\n    return res;\n}\n\nint main() {\n    int T; if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        int n; scanf(\"%d\", &n);\n        int maxVal = 0, cnt = 0;\n        for (int i = 0; i < n; ++i) {\n            int x; scanf(\"%d\", &x);\n            if (x > maxVal) {\n                maxVal = x;\n                cnt = 1;\n            } else if (x == maxVal) {\n                ++cnt;\n            }\n        }\n        int64_t ans = (modPow(2, cnt) - 1 + MOD) % MOD;\n        printf(\"%lld\\n\", ans);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nconst long long MOD = 1000000007LL;\n\nlong long modPow(long long base, long long exp) {\n    long long res = 1;\n    base %= MOD;\n    while (exp) {\n        if (exp & 1) res = res * base % MOD;\n        base = base * base % MOD;\n        exp >>= 1;\n    }\n    return res;\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if (!(cin >> T)) return 0;\n    while (T--) {\n        int n; cin >> n;\n        int maxVal = 0, cnt = 0;\n        for (int i = 0; i < n; ++i) {\n            int x; cin >> x;\n            if (x > maxVal) {\n                maxVal = x;\n                cnt = 1;\n            } else if (x == maxVal) {\n                ++cnt;\n            }\n        }\n        long long ans = (modPow(2, cnt) - 1 + MOD) % MOD;\n        cout << ans << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    static final long MOD = 1_000_000_007L;\n    static long modPow(long base, long exp) {\n        long res = 1L;\n        base %= MOD;\n        while (exp > 0) {\n            if ((exp & 1L) == 1L) res = (res * base) % MOD;\n            base = (base * base) % MOD;\n            exp >>= 1;\n        }\n        return res;\n    }\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st;\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder sb = new StringBuilder();\n        while (T-- > 0) {\n            int n = Integer.parseInt(br.readLine().trim());\n            st = new StringTokenizer(br.readLine());\n            int maxVal = 0, cnt = 0;\n            for (int i = 0; i < n; ++i) {\n                int x = Integer.parseInt(st.nextToken());\n                if (x > maxVal) {\n                    maxVal = x;\n                    cnt = 1;\n                } else if (x == maxVal) {\n                    cnt++;\n                }\n            }\n            long ans = (modPow(2, cnt) - 1 + MOD) % MOD;\n            sb.append(ans).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys\nMOD = 1_000_000_007\n\ndef mod_pow(base, exp):\n    res = 1\n    base %= MOD\n    while exp:\n        if exp & 1:\n            res = (res * base) % MOD\n        base = (base * base) % MOD\n        exp >>= 1\n    return res\n\ndef solve():\n    data = list(map(int, sys.stdin.read().strip().split()))\n    if not data:\n        return\n    it = iter(data)\n    T = next(it)\n    out_lines = []\n    for _ in range(T):\n        n = next(it)\n        max_val = 0\n        cnt = 0\n        for _ in range(n):\n            x = next(it)\n            if x > max_val:\n                max_val = x\n                cnt = 1\n            elif x == max_val:\n                cnt += 1\n        ans = (mod_pow(2, cnt) - 1) % MOD\n        out_lines.append(str(ans))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst MOD = 1000000007n;\nfunction modPow(base, exp) {\n  let result = 1n;\n  base = base % MOD;\n  while (exp > 0n) {\n    if (exp & 1n) result = (result * base) % MOD;\n    base = (base * base) % MOD;\n    exp >>= 1n;\n  }\n  return result;\n}\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/).map(BigInt);\nlet idx = 0n;\nif (input.length === 0) process.exit(0);\nconst T = Number(input[idx++]);\nlet outputs = [];\nfor (let t = 0; t < T; ++t) {\n  const n = Number(input[idx++]);\n  let maxVal = 0n;\n  let cnt = 0n;\n  for (let i = 0; i < n; ++i) {\n    const x = input[idx++];\n    if (x > maxVal) {\n      maxVal = x;\n      cnt = 1n;\n    } else if (x === maxVal) {\n      cnt += 1n;\n    }\n  }\n  const ans = (modPow(2n, cnt) - 1n + MOD) % MOD;\n  outputs.push(ans.toString());\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

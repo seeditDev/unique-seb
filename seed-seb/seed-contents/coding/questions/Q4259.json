@@ -1,0 +1,104 @@
+{
+  "questionId": "Q4259",
+  "title": "Implementation of Prims",
+  "slug": "implementation-of-prims",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-12",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Easy",
+    "isPremium": true,
+    "tags": [
+      "Prim's Algorithm",
+      "Minimum Spanning Tree",
+      "Greedy"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Graphs"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "We will implement Prim's algorithm using Priority Queue. The queue will help us to get the minimum weight edge every time.\n\nSelect any vertex, say 1 and push all the edges from 1 into the queue. \n\nPerform the following operations while queue is not empty.\n\n\nTake the minimum weight edge from the queue.\nIf the edge connects a vertex that is already in the tree then skip this edge.\nOtherwise perform the following operations.\n\nAdd the edge to the Minimum Spanning Tree.\nPush all the edges that goes from the newly connected vertex.\n\n\nTaskPrim's algorithm is implemented in the IDE. \n\nThe following graph is processed using the algorithm; run the code and check the output.",
+    "constraints": [
+      "1 <= T <= 100",
+      "1 <= n <= 1000",
+      "0 <= m <= n*(n-1)/2",
+      "1 <= u, v <= n",
+      "1 <= w <= 1000"
+    ],
+    "inputFormat": "First line contains an integer T, the number of test cases. For each test case, the first line contains two integers n and m — the number of vertices and edges. The next m lines each contain three integers u, v, w describing an undirected edge between vertices u and v with weight w.",
+    "outputFormat": "For each test case, output the total weight of the Minimum Spanning Tree on a single line, followed by (n‑1) lines each containing two integers u and v representing an edge of the MST. The edges can be printed in the order they are selected by Prim's algorithm.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n6 7\n1 2 4\n1 3 4\n2 3 2\n3 4 4\n3 5 2\n4 6 3\n5 6 3",
+        "output": "14\n1 2\n2 3\n3 5\n5 6\n6 4",
+        "explanation": "The MST consists of edges with total weight 14 as shown."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n4 5\n1 2 2\n1 3 3\n2 3 1\n2 4 4\n3 4 5",
+        "output": "7\n1 2\n2 3\n2 4",
+        "explanation": "The MST weight is 7, obtained by edges (1,2), (2,3) and (2,4)."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 1
+      }
+    ],
+    "totalTestCases": 1,
+    "totalWeight": 1
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      1
+    ],
+    "maxScore": 1
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "We run Prim's algorithm starting from vertex 1. A min‑heap (priority queue) always gives the smallest weight edge that connects the current tree to an unvisited vertex. When a vertex is added, all its incident edges to still unvisited vertices are pushed into the heap. The process stops after n‑1 edges have been selected. The sum of the selected edge weights is the MST weight. The algorithm is optimal because Prim's greedy choice property guarantees that the locally cheapest edge extending the tree never prevents an optimal solution.",
+    "timeComplexity": "O((n + m) log n) per test case – each edge is inserted into the priority queue at most once and each extraction costs log n.",
+    "spaceComplexity": "O(n + m) for the adjacency lists, visited array and the priority queue.",
+    "code": {
+      "C": "",
+      "C++": "",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    static class Edge implements Comparable<Edge> {\n        int u, v, w;\n        Edge(int u, int v, int w) {\n            this.u = u;\n            this.v = v;\n            this.w = w;\n        }\n        public int compareTo(Edge o) {\n            if (this.w != o.w) return Integer.compare(this.w, o.w);\n            if (this.u != o.u) return Integer.compare(this.u, o.u);\n            return Integer.compare(this.v, o.v);\n        }\n    }\n\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        String firstLine = br.readLine();\n        if (firstLine == null || firstLine.trim().isEmpty()) {\n            // No input provided\n            return;\n        }\n        StringBuilder out = new StringBuilder();\n        int T = Integer.parseInt(firstLine.trim());\n        while (T-- > 0) {\n            String line;\n            // skip possible empty lines\n            do {\n                line = br.readLine();\n            } while (line != null && line.trim().isEmpty());\n            if (line == null) break;\n            StringTokenizer st = new StringTokenizer(line);\n            int n = Integer.parseInt(st.nextToken());\n            int m = Integer.parseInt(st.nextToken());\n            List<Edge>[] adj = new ArrayList[n + 1];\n            for (int i = 1; i <= n; i++) adj[i] = new ArrayList<>();\n            for (int i = 0; i < m; i++) {\n                st = new StringTokenizer(br.readLine());\n                int u = Integer.parseInt(st.nextToken());\n                int v = Integer.parseInt(st.nextToken());\n                int w = Integer.parseInt(st.nextToken());\n                adj[u].add(new Edge(u, v, w));\n                adj[v].add(new Edge(v, u, w));\n            }\n            boolean[] vis = new boolean[n + 1];\n            PriorityQueue<Edge> pq = new PriorityQueue<>();\n            List<int[]> mstEdges = new ArrayList<>();\n            long totalWeight = 0;\n            // start from vertex 1\n            vis[1] = true;\n            for (Edge e : adj[1]) pq.offer(e);\n            while (!pq.isEmpty() && mstEdges.size() < n - 1) {\n                Edge e = pq.poll();\n                int from = -1, to = -1;\n                if (vis[e.u] && !vis[e.v]) {\n                    from = e.u;\n                    to = e.v;\n                } else if (!vis[e.u] && vis[e.v]) {\n                    from = e.v;\n                    to = e.u;\n                } else {\n                    continue; // both visited or both unvisited\n                }\n                vis[to] = true;\n                totalWeight += e.w;\n                mstEdges.add(new int[]{from, to});\n                for (Edge ne : adj[to]) {\n                    if (!vis[ne.v]) pq.offer(ne);\n                }\n            }\n            out.append(totalWeight).append('\\n');\n            for (int[] e : mstEdges) {\n                out.append(e[0]).append(' ').append(e[1]).append('\\n');\n            }\n        }\n        System.out.print(out.toString());\n    }\n}\n",
+      "Python3": "",
+      "JavaScript": ""
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

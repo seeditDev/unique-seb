@@ -1,0 +1,139 @@
+{
+  "questionId": "Q5169",
+  "title": "The White Knight",
+  "slug": "the-white-knight",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Memoization",
+      "Knights Move",
+      "Chessboard"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given a chessboard of size NxN. There is a white knight and several black pawns located on the board. The knight can move similarly to the normal knight in the game of chess; however it can only move towards the right of the board (see the below figure).\n\n\n\nThe mission of the knight is to capture as many black pawns as possible. Its journey ends when it moves to the rightmost column of the board.\n\nCompute the maximum number of black pawns the white knight can capture.",
+    "constraints": [
+      "1 <= T <= 10",
+      "4 <= N <= 1000"
+    ],
+    "inputFormat": "First line contains T, the number of test cases. Then T test cases follow. Each test case has the following form: The first line contains N, the size of the chessboard. Then N lines follow, each line containing N characters which may be '.', 'K' or 'P', corresponding to the empty cell, the white knight, and the black pawn, respectively. There is exactly one 'K' character in the whole of the board.",
+    "outputFormat": "For each test case, print in a single line the maximum number of black pawns that can be captured.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n5\nK....\n..P..\n.P...\n...P.\n.....",
+        "output": "2",
+        "explanation": "The knight can capture two pawns by moving to the rightmost column."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n4\nK...\n....\n....\n....",
+        "output": "0",
+        "explanation": "There are no pawns to capture."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n5\n.....\n.....\n.K...\n.....\n.....",
+        "output": "0",
+        "explanation": "The knight is already at the rightmost column and cannot capture any pawns."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n4\nK...\n....\n....\n....",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n1000\nK....\n..P..\n.P...\n...P.\n.....",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n5\n.....\n.....\n.K...\n.....\n.....",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n5\nK....\n..P..\n.P...\n...P.\n.....",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "1\n10\nK......\n..P....\n.P.....\n...P...\n.....P.\n......P\n.......P\n........\n.........\n.........",
+        "expectedOutput": "4",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved using dynamic programming with memoization. The idea is to try all possible moves of the knight and keep track of the maximum number of pawns captured. We use a 2D array dp where dp[i][j] represents the maximum number of pawns that can be captured if the knight is at position (i, j). We fill up the dp array by trying all possible moves of the knight and updating the dp array accordingly.",
+    "timeComplexity": "O(N^2) per test case, O(T * N^2) total. The time complexity is O(N^2) because we are filling up a 2D array of size N x N.",
+    "spaceComplexity": "O(N^2) — The dominant structure is the 2D dp array.",
+    "code": {
+      "C": "#include <stdio.h>\n#define MAX_SIZE 1001\nchar grid[MAX_SIZE][MAX_SIZE];\nint dp[MAX_SIZE][MAX_SIZE];\nint n;\nint solve(int i, int j) {\n    if (i < 1 || j < 1 || i > n || j > n) return 0;\n    if (dp[i][j] != -1) return dp[i][j];\n    dp[i][j] = (grid[i][j] == 'P' ? 1 : 0) + max(max(solve(i - 1, j + 2), solve(i + 1, j + 2)), max(solve(i - 2, j + 1), solve(i + 2, j + 1)));\n    return dp[i][j];\n}\nint main() {\n    int t;\n    scanf(\"%d\", &t);\n    while (t--) {\n        scanf(\"%d\", &n);\n        int start_i = -1, start_j = -1;\n        for (int i = 1; i <= n; i++) {\n            for (int j = 1; j <= n; j++) {\n                scanf(\" %c\", &grid[i][j]);\n                dp[i][j] = -1;\n                if (grid[i][j] == 'K') {\n                    start_i = i;\n                    start_j = j;\n                }\n            }\n        }\n        printf(\"%d\\n\", solve(start_i, start_j));\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nconst int MAX_SIZE = 1001;\nchar grid[MAX_SIZE][MAX_SIZE];\nint dp[MAX_SIZE][MAX_SIZE];\nint n;\nint solve(int i, int j) {\n    if (i < 1 || j < 1 || i > n || j > n) return 0;\n    if (dp[i][j] != -1) return dp[i][j];\n    dp[i][j] = (grid[i][j] == 'P' ? 1 : 0) + max({solve(i - 1, j + 2), solve(i + 1, j + 2), solve(i - 2, j + 1), solve(i + 2, j + 1)});\n    return dp[i][j];\n}\nint main() {\n    int t;\n    cin >> t;\n    while (t--) {\n        cin >> n;\n        int start_i = -1, start_j = -1;\n        for (int i = 1; i <= n; i++) {\n            for (int j = 1; j <= n; j++) {\n                cin >> grid[i][j];\n                dp[i][j] = -1;\n                if (grid[i][j] == 'K') {\n                    start_i = i;\n                    start_j = j;\n                }\n            }\n        }\n        cout << solve(start_i, start_j) << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    static final int MAX_SIZE = 1001;\n    static char[][] grid = new char[MAX_SIZE][MAX_SIZE];\n    static int[][] dp = new int[MAX_SIZE][MAX_SIZE];\n    static int n;\n    public static int solve(int i, int j) {\n        if (i < 1 || j < 1 || i > n || j > n) return 0;\n        if (dp[i][j] != -1) return dp[i][j];\n        dp[i][j] = (grid[i][j] == 'P' ? 1 : 0) + Math.max(Math.max(solve(i - 1, j + 2), solve(i + 1, j + 2)), Math.max(solve(i - 2, j + 1), solve(i + 2, j + 1)));\n        return dp[i][j];\n    }\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int t = sc.nextInt();\n        while (t-- > 0) {\n            n = sc.nextInt();\n            int start_i = -1, start_j = -1;\n            for (int i = 1; i <= n; i++) {\n                String s = sc.next();\n                for (int j = 1; j <= n; j++) {\n                    grid[i][j] = s.charAt(j - 1);\n                    dp[i][j] = -1;\n                    if (grid[i][j] == 'K') {\n                        start_i = i;\n                        start_j = j;\n                    }\n                }\n            }\n            System.out.println(solve(start_i, start_j));\n        }\n    }\n}",
+      "Python3": "def solve(i, j, n, grid, dp):\n    if i < 1 or j < 1 or i > n or j > n:\n        return 0\n    if dp[i][j] != -1:\n        return dp[i][j]\n    dp[i][j] = (1 if grid[i][j] == 'P' else 0) + max(max(solve(i - 1, j + 2, n, grid, dp), solve(i + 1, j + 2, n, grid, dp)), max(solve(i - 2, j + 1, n, grid, dp), solve(i + 2, j + 1, n, grid, dp)))\n    return dp[i][j]\ndef main():\n    t = int(input())\n    for _ in range(t):\n        n = int(input())\n        grid = [[''] * (n + 1) for _ in range(n + 1)]\n        dp = [[-1] * (n + 1) for _ in range(n + 1)]\n        start_i, start_j = -1, -1\n        for i in range(1, n + 1):\n            row = input()\n            for j in range(1, n + 1):\n                grid[i][j] = row[j - 1]\n                if grid[i][j] == 'K':\n                    start_i, start_j = i, j\n        print(solve(start_i, start_j, n, grid, dp))\nif __name__ == \"__main__\":\n    main()",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nfunction solve(i, j, n, grid, dp) {\n    if (i < 1 || j < 1 || i > n || j > n) return 0;\n    if (dp[i][j] !== -1) return dp[i][j];\n    dp[i][j] = (grid[i][j] === 'P' ? 1 : 0) + Math.max(Math.max(solve(i - 1, j + 2, n, grid, dp), solve(i + 1, j + 2, n, grid, dp)), Math.max(solve(i - 2, j + 1, n, grid, dp), solve(i + 2, j + 1, n, grid, dp)));\n    return dp[i][j];\n}\nfunction main() {\n    let t = +lines[idx++];\n    while (t--) {\n        let n = +lines[idx++];\n        let grid = Array(n + 1).fill(0).map(() => Array(n + 1).fill(''));\n        let dp = Array(n + 1).fill(0).map(() => Array(n + 1).fill(-1));\n        let start_i = -1, start_j = -1;\n        for (let i = 1; i <= n; i++) {\n            let row = lines[idx++].trim();\n            for (let j = 1; j <= n; j++) {\n                grid[i][j] = row[j - 1];\n                if (grid[i][j] === 'K') {\n                    start_i = i;\n                    start_j = j;\n                }\n            }\n        }\n        console.log(solve(start_i, start_j, n, grid, dp));\n    }\n}\nmain();"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

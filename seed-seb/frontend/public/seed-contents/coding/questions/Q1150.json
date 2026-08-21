@@ -1,0 +1,127 @@
+{
+  "questionId": "Q1150",
+  "title": "Password Generator - Final Touch",
+  "slug": "password-generator-final-touch",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "Implementation",
+      "String manipulation",
+      "Strings"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Strings & Streams"
+    ]
+  },
+  "content": {
+    "problemStatement": "Perfect - you have completed the Password generator project!\n\nHere are some additional exercises for you to try out.\n\n\nCreate a password of length NNN from a string which consists of all alphabets, numbers and special characters. Once the password is created, check if it has a number and / or special character depending on the conditions. \n\nThis method ensures that there can be multiple numbers and special characters in our password.\nConvert the password generator into a username recommendation system. \n\nGiven an input string (the email id) - recommend a username allowed by the system.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= |S| <= 1000",
+      "S contains only printable ASCII characters"
+    ],
+    "inputFormat": "First line contains an integer T (1 \u2264 T \u2264 10), the number of test cases. Each of the next T lines contains a non\u2011empty string S (1 \u2264 |S| \u2264 1000) consisting of printable ASCII characters. S is the email id (or any identifier) from which a username and a password must be generated.",
+    "outputFormat": "For each test case output two strings separated by a single space: the recommended username (exactly S) and the generated password. The password has the same length as S and is modified so that it contains at least one digit and at least one special (non\u2011alphanumeric) character according to the deterministic rules described.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\nabc123\nabc\nabc123!",
+        "output": "abc123 !bc123\nabc !bc\nabc123! abc123!",
+        "explanation": "Test case 1: original string has digits but no special character, so the first alphanumeric character 'a' is replaced by '!'.\\nTest case 2: original string lacks both a digit and a special character. First a non\u2011digit is replaced by '1' (result \\\"1bc\\\"), then the first alphanumeric character (now '1') is replaced by '!' giving \\\"!bc\\\".\\nTest case 3: string already contains at least one digit and one special character, so it remains unchanged."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\na",
+        "output": "a !",
+        "explanation": "Single character without digit or special. After the digit step it becomes '1', after the special step it becomes '!'."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n!@#$",
+        "output": "!@#$ 1@#$",
+        "explanation": "String has specials but no digit. The first non\u2011digit (the leading '!') is replaced by '1'. The resulting password now contains both a digit and specials."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\nZ",
+        "expectedOutput": "Z !",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary (already valid)",
+        "input": "1\nLongEmailAddress2022#",
+        "expectedOutput": "LongEmailAddress2022# LongEmailAddress2022#",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform letters, missing both",
+        "input": "1\naaaaaaaa",
+        "expectedOutput": "aaaaaaaa !aaaaaaa",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "digits only, missing special",
+        "input": "1\n12345",
+        "expectedOutput": "12345 !2345",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "mixed multiple cases",
+        "input": "3\nabc!def\n987\n!@#",
+        "expectedOutput": "abc!def 1bc!def\n987 !87\n!@# 1@#",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each test case we copy S into a mutable array (or string). We scan once to know whether the current password already contains a digit (0\u20119) and a special character (any character that is not a letter or digit). If a digit is missing we replace the first character that is not a digit with '1'. After this step we again scan (or continue scanning) to see if a special character is missing; if so we replace the first alphanumeric character (letter or digit) with '!'. The order (digit first, then special) is fixed, which matches the reference implementation. The algorithm is linear in the length of S, O(|S|) time and O(|S|) extra space for the mutable copy.",
+    "timeComplexity": "O(|S|) per test case, O(total length of all strings) overall.",
+    "spaceComplexity": "O(|S|) for the mutable password copy (besides the input string).",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n#include <ctype.h>\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        char S[1005];\n        scanf(\"%s\", S);\n        int len = strlen(S);\n        char password[1005];\n        strcpy(password, S);\n        int hasDigit = 0, hasSpecial = 0;\n        for (int i = 0; i < len; ++i) {\n            if (isdigit((unsigned char)password[i])) hasDigit = 1;\n            else if (!isalnum((unsigned char)password[i])) hasSpecial = 1;\n        }\n        if (!hasDigit) {\n            for (int i = 0; i < len; ++i) {\n                if (!isdigit((unsigned char)password[i])) {\n                    password[i] = '1';\n                    break;\n                }\n            }\n        }\n        if (!hasSpecial) {\n            for (int i = 0; i < len; ++i) {\n                if (isalnum((unsigned char)password[i])) {\n                    password[i] = '!';\n                    break;\n                }\n            }\n        }\n        printf(\"%s %s\\n\", S, password);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T;\n    if (!(cin >> T)) return 0;\n    while (T--) {\n        string S;\n        cin >> S;\n        string password = S;\n        bool hasDigit = false, hasSpecial = false;\n        for (char c : password) {\n            if (isdigit(static_cast<unsigned char>(c))) hasDigit = true;\n            else if (!isalnum(static_cast<unsigned char>(c))) hasSpecial = true;\n        }\n        if (!hasDigit) {\n            for (size_t i = 0; i < password.size(); ++i) {\n                if (!isdigit(static_cast<unsigned char>(password[i]))) {\n                    password[i] = '1';\n                    break;\n                }\n            }\n        }\n        if (!hasSpecial) {\n            for (size_t i = 0; i < password.size(); ++i) {\n                if (isalnum(static_cast<unsigned char>(password[i]))) {\n                    password[i] = '!';\n                    break;\n                }\n            }\n        }\n        cout << S << ' ' << password << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder out = new StringBuilder();\n        for (int t = 0; t < T; ++t) {\n            String S = br.readLine();\n            StringBuilder pwd = new StringBuilder(S);\n            boolean hasDigit = false, hasSpecial = false;\n            for (int i = 0; i < pwd.length(); ++i) {\n                char c = pwd.charAt(i);\n                if (Character.isDigit(c)) hasDigit = true;\n                else if (!Character.isLetterOrDigit(c)) hasSpecial = true;\n            }\n            if (!hasDigit) {\n                for (int i = 0; i < pwd.length(); ++i) {\n                    if (!Character.isDigit(pwd.charAt(i))) {\n                        pwd.setCharAt(i, '1');\n                        break;\n                    }\n                }\n            }\n            if (!hasSpecial) {\n                for (int i = 0; i < pwd.length(); ++i) {\n                    if (Character.isLetterOrDigit(pwd.charAt(i))) {\n                        pwd.setCharAt(i, '!');\n                        break;\n                    }\n                }\n            }\n            out.append(S).append(' ').append(pwd).append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef solve():\n    data = sys.stdin.read().splitlines()\n    if not data:\n        return\n    T = int(data[0])\n    out_lines = []\n    for i in range(1, T + 1):\n        S = data[i].rstrip('\\n')\n        pwd = list(S)\n        has_digit = any(ch.isdigit() for ch in pwd)\n        has_special = any(not ch.isalnum() for ch in pwd)\n        if not has_digit:\n            for idx, ch in enumerate(pwd):\n                if not ch.isdigit():\n                    pwd[idx] = '1'\n                    break\n        if not has_special:\n            for idx, ch in enumerate(pwd):\n                if ch.isalnum():\n                    pwd[idx] = '!'\n                    break\n        out_lines.append(f\"{S} {''.join(pwd)}\")\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst T = parseInt(lines[idx++], 10);\nlet output = [];\nfor (let t = 0; t < T; ++t) {\n  const S = lines[idx++] || '';\n  let pwdArr = S.split('');\n  let hasDigit = false, hasSpecial = false;\n  for (const ch of pwdArr) {\n    if (/[0-9]/.test(ch)) hasDigit = true;\n    else if (!/[a-zA-Z0-9]/.test(ch)) hasSpecial = true;\n  }\n  if (!hasDigit) {\n    for (let i = 0; i < pwdArr.length; ++i) {\n      if (!/[0-9]/.test(pwdArr[i])) { pwdArr[i] = '1'; break; }\n    }\n  }\n  if (!hasSpecial) {\n    for (let i = 0; i < pwdArr.length; ++i) {\n      if (/[a-zA-Z0-9]/.test(pwdArr[i])) { pwdArr[i] = '!'; break; }\n    }\n  }\n  output.push(`${S} ${pwdArr.join('')}`);\n}\nconsole.log(output.join('\\n'));"
+    }
+  }
+}

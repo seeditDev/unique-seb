@@ -1,0 +1,128 @@
+{
+  "questionId": "Q2390",
+  "title": "First non-Palindrome",
+  "slug": "first-non-palindrome",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Substring",
+      "Palindrome",
+      "Modular Arithmetic",
+      "Strings"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Strings"
+    ]
+  },
+  "content": {
+    "problemStatement": "For the given string **S** of length **N** you need to find for each **L** from **1** to **N** the first non-palindrome substring of **S** that has length **L**. That is, for each **L** from **1** to **N** you need to find the smallest positive integer **K &lt;= N - L + 1** such that the string **S[K, K + L - 1]** is not a palindrome. Denote this number by **K(L)**. Here **S[i, j]** stands for the substring of **S** composed of its characters in positions **i, i + 1, ..., j**. Characters of **S** are numbered from **1** to **N**. If for some **L** there is no such **K** set **K(L) = 0**. After you find all numbers **K(1), K(2), ..., K(N)** output the following sum\n\n\n\n\n\n\n**100007N - 1 * K(1) + 100007N - 2 * K(2) + ... + 100007 * K(N - 1) + K(N)**\n\n\n\n\n**264**\n\n\n\n**Remark.****abacaba****abba****seed-it****abbc**",
+    "constraints": [
+      "1 \u2264 T \u2264 20",
+      "1 \u2264 |S| \u2264 100",
+      "S contains only characters 'a'-'z'"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case contains a non-empty string S consisting only of lowercase English letters.",
+    "outputFormat": "For each test case, output a single line containing the value (100007^(N-1) * K(1) + 100007^(N-2) * K(2) + \u2026 + 100007 * K(N-1) + K(N)) mod 264, where N = |S| and K(L) is the smallest starting position of a non-palindromic substring of length L (or 0 if none exists).",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4\n a\n ab\n aa\n aba",
+        "output": "0\n1\n0\n215",
+        "explanation": "For each string we compute K(L) values and evaluate the polynomial with base 100007 modulo 264. The results are:\n- \"a\": K = [0] \u2192 sum = 0.\n- \"ab\": K = [0,1] \u2192 0*100007 + 1 = 1.\n- \"aa\": K = [0,0] \u2192 0.\n- \"aba\": K = [0,1,0] \u2192 ((0*100007 + 1)*100007 + 0) mod 264 = 215."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\nabc",
+        "output": "1",
+        "explanation": "For the string \"abc\", we compute K(L) values and evaluate the polynomial with base 100007 modulo 264. The result is:\n- \"abc\": K = [0,1,0] \u2192 (0*100007 + 1)*100007 + 0 = 1."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\naaaa",
+        "output": "0",
+        "explanation": "For the string \"aaaa\", we compute K(L) values and evaluate the polynomial with base 100007 modulo 264. The result is:\n- \"aaaa\": K = [0,0,0,0] \u2192 0."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\na",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\nabcdefghijklmnopqrstuvwxyz",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\naaaaaaaa",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\nabababab",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "5\nabc\ndef\nghi\njkl\nmno",
+        "expectedOutput": "1\n1\n1\n1\n1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The key insight is to iterate over all possible substrings of the given string and check if they are palindromes. We use a helper function to check if a substring is a palindrome. We then calculate the value of K(L) for each length L from 1 to N, where N is the length of the string. Finally, we calculate the required sum using modular arithmetic to avoid overflow.",
+    "timeComplexity": "O(T * N^3) per test case, O(T * N^3) total, where N is the maximum length of the string.",
+    "spaceComplexity": "O(N) \u2014 the dominant structure is the string itself.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n#define BASE 100007\n#define MOD 264\nint is_palindrome(const char *s, int l, int r) {\n    while (l < r) {\n        if (s[l] != s[r]) return 0;\n        ++l; --r;\n    }\n    return 1;\n}\nint main() {\n    int T; if (scanf(\"%d\", &T)!=1) return 0;\n    char buf[105];\n    while (T--) {\n        scanf(\"%s\", buf);\n        int n = strlen(buf);\n        long long ans = 0;\n        for (int len = 1; len <= n; ++len) {\n            int k = 0; // 0 means not found yet\n            for (int start = 0; start + len <= n; ++start) {\n                if (!is_palindrome(buf, start, start + len - 1)) {\n                    k = start + 1; // convert to 1-based\n                    break;\n                }\n            }\n            ans = (ans * BASE + k) % MOD;\n        }\n        printf(\"%lld\\n\", ans);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nconst long long BASE = 100007LL;\nconst long long MOD = 264LL;\nbool isPal(const string &s, int l, int r) {\n    while (l < r) {\n        if (s[l] != s[r]) return false;\n        ++l; --r;\n    }\n    return true;\n}\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while (T--) {\n        string s; cin >> s;\n        int n = s.size();\n        long long ans = 0;\n        for (int len = 1; len <= n; ++len) {\n            int k = 0;\n            for (int st = 0; st + len <= n; ++st) {\n                if (!isPal(s, st, st + len - 1)) { k = st + 1; break; }\n            }\n            ans = (ans * BASE + k) % MOD;\n        }\n        cout << ans << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    static final long BASE = 100007L;\n    static final long MOD = 264L;\n    static boolean isPal(char[] a, int l, int r) {\n        while (l < r) {\n            if (a[l] != a[r]) return false;\n            l++; r--;\n        }\n        return true;\n    }\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder out = new StringBuilder();\n        for (int tc = 0; tc < T; ++tc) {\n            String s = br.readLine().trim();\n            char[] arr = s.toCharArray();\n            int n = arr.length;\n            long ans = 0;\n            for (int len = 1; len <= n; ++len) {\n                int k = 0;\n                for (int st = 0; st + len <= n; ++st) {\n                    if (!isPal(arr, st, st + len - 1)) { k = st + 1; break; }\n                }\n                ans = (ans * BASE + k) % MOD;\n            }\n            out.append(ans).append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys\nBASE = 100007\nMOD = 264\ndef is_pal(s, l, r):\n    while l < r:\n        if s[l] != s[r]:\n            return False\n        l += 1\n        r -= 1\n    return True\ndef solve():\n    data = sys.stdin.read().strip().splitlines()\n    if not data:\n        return\n    t = int(data[0])\n    out = []\n    for i in range(1, t+1):\n        s = data[i].strip()\n        n = len(s)\n        ans = 0\n        for length in range(1, n+1):\n            k = 0\n            for start in range(0, n-length+1):\n                if not is_pal(s, start, start+length-1):\n                    k = start + 1  # 1-based\n                    break\n            ans = (ans * BASE + k) % MOD\n        out.append(str(ans))\n    sys.stdout.write('\\n'.join(out))\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\n/);\nif (input.length === 0) process.exit(0);\nconst T = parseInt(input[0].trim(), 10);\nconst BASE = 100007n;\nconst MOD = 264n;\nlet idx = 1;\nlet results = [];\nfunction isPal(arr, l, r) {\n  while (l < r) {\n    if (arr[l] !== arr[r]) return false;\n    l++; r--;\n  }\n  return true;\n}\nfor (let tc = 0; tc < T; ++tc) {\n  const s = input[idx++].trim();\n  const arr = s.split('');\n  const n = arr.length;\n  let ans = 0n;\n  for (let len = 1; len <= n; ++len) {\n    let k = 0n;\n    for (let st = 0; st + len <= n; ++st) {\n      if (!isPal(arr, st, st + len - 1)) { k = BigInt(st + 1); break; }\n    }\n    ans = (ans * BASE + k) % MOD;\n  }\n  results.push(ans.toString());\n}\nconsole.log(results.join('\\n'));"
+    }
+  }
+}

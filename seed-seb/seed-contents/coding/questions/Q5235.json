@@ -1,0 +1,140 @@
+{
+  "questionId": "Q5235",
+  "title": "Gravel",
+  "slug": "gravel",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Arrays",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Fenwick Tree",
+      "Prefix Sum"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Data Structures"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Bob has n heap(s) of gravel (initially there are exactly c piece(s) in each). He wants to do m operation(s) with that heaps, each maybe:\n\n\nadding pieces of gravel onto the heaps from u to v, exactly k pieces for each,\nor querying \"how many pieces of gravel are there in the heap p now?\".\nRequestHelp Bob do operations of the second type.",
+    "constraints": [
+      "1 ≤ T ≤ 10",
+      "1 ≤ n ≤ 10^6",
+      "0 ≤ m ≤ 250000",
+      "0 ≤ c, k ≤ 10^9"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case starts with a line containing three integers n, m, and c, where n is the number of heaps, m is the number of operations, and c is the initial number of pieces in each heap. The next m lines describe the operations: 'S u v k' to add k pieces to every heap with index i such that u ≤ i ≤ v, or 'Q p' to query the current number of pieces in heap p.",
+    "outputFormat": "For each query operation (Q), output the number of pieces in the requested heap on a new line.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n7 5 0\nQ 7\nS 1 7 1\nQ 3\nS 1 3 1\nQ 3",
+        "output": "0\n1\n2",
+        "explanation": "Initially all heaps contain 0. Query heap 7 → 0. Add 1 to every heap (1-7). Query heap 3 → 1. Add another 1 to heaps 1-3. Query heap 3 → 2."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n5 3 10\nQ 1\nS 2 4 5\nQ 3",
+        "output": "10\n15",
+        "explanation": "Initially all heaps contain 10. Query heap 1 → 10. Add 5 to heaps 2-4. Query heap 3 → 15."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n3 2 0\nS 1 3 10\nQ 2",
+        "output": "10",
+        "explanation": "Initially all heaps contain 0. Add 10 to every heap (1-3). Query heap 2 → 10."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1 0\nQ 1",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n1000000 250000 1000000000\nS 1 1000000 1000000000\nQ 500000",
+        "expectedOutput": "2000000000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n5 5 10\nS 1 5 10\nS 1 5 10\nS 1 5 10\nQ 1\nQ 2",
+        "expectedOutput": "40\n40",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n10 10 0\nS 1 5 10\nS 6 10 10\nQ 3\nQ 7",
+        "expectedOutput": "10\n10",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "5\n10 10 0\nS 1 5 10\nS 6 10 10\nQ 3\nQ 7\nS 1 10 10\nQ 5\nQ 8\nS 2 9 10\nQ 4\nQ 6",
+        "expectedOutput": "10\n10\n20\n20\n30\n30",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved using a Fenwick Tree (also known as a Binary Indexed Tree), which allows for efficient range updates and prefix sum queries. The key insight is to maintain a Fenwick Tree where the value at each index represents the cumulative sum of pieces added to the corresponding heap. When a query operation is encountered, the number of pieces in the requested heap can be calculated by adding the initial number of pieces (c) to the prefix sum of the Fenwick Tree up to the heap's index.",
+    "timeComplexity": "O(m log n) per test case, O(T * m log n) total, where m is the number of operations and n is the number of heaps.",
+    "spaceComplexity": "O(n) — the dominant structure is the Fenwick Tree of size n+2.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\ntypedef long long ll;\n\nstatic ll *bit;\nstatic int N;\n\nvoid bit_init(int n) {\n    N = n + 2;\n    bit = (ll*)calloc(N + 1, sizeof(ll));\n}\n\nvoid bit_add(int idx, ll val) {\n    for (int i = idx; i <= N; i += i & -i) bit[i] += val;\n}\n\nll bit_sum(int idx) {\n    ll res = 0;\n    for (int i = idx; i > 0; i -= i & -i) res += bit[i];\n    return res;\n}\n\nint main() {\n    int T; if (scanf(\"%d\", &T)!=1) return 0;\n    while (T--) {\n        int n, m; ll c; scanf(\"%d %d %lld\", &n, &m, &c);\n        bit_init(n+2);\n        for (int i = 0; i < m; ++i) {\n            char type; scanf(\" %c\", &type);\n            if (type == 'S') {\n                int u, v; ll k; scanf(\"%d %d %lld\", &u, &v, &k);\n                bit_add(u, k);\n                if (v + 1 <= n) bit_add(v + 1, -k);\n            } else if (type == 'Q') {\n                int p; scanf(\"%d\", &p);\n                ll ans = c + bit_sum(p);\n                printf(\"%lld\\n\", ans);\n            }\n        }\n        free(bit);\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nusing ll = long long;\n\nstruct Fenwick {\n    int n; vector<ll> bit;\n    Fenwick(int n=0){init(n);}    \n    void init(int n_){n=n_; bit.assign(n+2,0);}    \n    void add(int idx, ll val){ for(int i=idx;i<=n;i+=i&-i) bit[i]+=val; }\n    ll sum(int idx) const{ ll s=0; for(int i=idx;i>0;i-=i&-i) s+=bit[i]; return s; }\n};\n\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int n,m; ll c; cin>>n>>m>>c;\n        Fenwick ft(n+2);\n        for(int i=0;i<m;++i){\n            char type; cin>>type;\n            if(type=='S'){\n                int u,v; ll k; cin>>u>>v>>k;\n                ft.add(u,k);\n                if(v+1<=n) ft.add(v+1,-k);\n            }else{ // Q\n                int p; cin>>p;\n                ll ans = c + ft.sum(p);\n                cout<<ans<<'\\n';\n            }\n        }\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    static class Fenwick {\n        int n; long[] bit;\n        Fenwick(int n){ this.n=n; bit=new long[n+2]; }\n        void add(int idx, long val){ for(int i=idx;i<=n;i+=i&-i) bit[i]+=val; }\n        long sum(int idx){ long s=0; for(int i=idx;i>0;i-=i&-i) s+=bit[i]; return s; }\n    }\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner(System.in);\n        int T = fs.nextInt();\n        StringBuilder out = new StringBuilder();\n        while(T-- > 0){\n            int n = fs.nextInt();\n            int m = fs.nextInt();\n            long c = fs.nextLong();\n            Fenwick ft = new Fenwick(n+2);\n            for(int i=0;i<m;++i){\n                char type = fs.next().charAt(0);\n                if(type=='S'){\n                    int u = fs.nextInt();\n                    int v = fs.nextInt();\n                    long k = fs.nextLong();\n                    ft.add(u,k);\n                    if(v+1<=n) ft.add(v+1,-k);\n                }else{ // Q\n                    int p = fs.nextInt();\n                    long ans = c + ft.sum(p);\n                    out.append(ans).append('\\n');\n                }\n            }\n        }\n        System.out.print(out.toString());\n    }\n    // Fast scanner\n    static class FastScanner {\n        private final BufferedInputStream in;\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        FastScanner(InputStream is){ in = new BufferedInputStream(is); }\n        private int readByte() throws IOException {\n            if (ptr >= len) {\n                len = in.read(buffer);\n                ptr = 0;\n                if (len <= 0) return -1;\n            }\n            return buffer[ptr++];\n        }\n        String next() throws IOException {\n            StringBuilder sb = new StringBuilder();\n            int c;\n            while ((c = readByte()) != -1 && c <= ' ') {}\n            while (c != -1 && c > ' ') {\n                sb.append((char) c);\n                c = readByte();\n            }\n            return sb.toString();\n        }\n        int nextInt() throws IOException { return Integer.parseInt(next()); }\n        long nextLong() throws IOException { return Long.parseLong(next()); }\n    }\n}\n",
+      "Python3": "import sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        n = int(next(it)); m = int(next(it)); c = int(next(it))\n        size = n + 2\n        bit = [0] * (size + 1)\n        def bit_add(idx, val):\n            while idx <= size:\n                bit[idx] += val\n                idx += idx & -idx\n        def bit_sum(idx):\n            s = 0\n            while idx > 0:\n                s += bit[idx]\n                idx -= idx & -idx\n            return s\n        for __ in range(m):\n            typ = next(it)\n            if typ == 'S':\n                u = int(next(it)); v = int(next(it)); k = int(next(it))\n                bit_add(u, k)\n                if v + 1 <= n:\n                    bit_add(v + 1, -k)\n            else:  # Q\n                p = int(next(it))\n                ans = c + bit_sum(p)\n                out_lines.append(str(ans))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst data = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nif (data.length === 0) process.exit(0);\nconst T = Number(data[idx++]);\nlet output = [];\nfor (let t = 0; t < T; ++t) {\n  const n = Number(data[idx++]);\n  const m = Number(data[idx++]);\n  const c = Number(data[idx++]);\n  const size = n + 2;\n  const bit = new Array(size + 1).fill(0);\n  const add = (i, val) => {\n    while (i <= size) {\n      bit[i] += val;\n      i += i & -i;\n    }\n  };\n  const sum = (i) => {\n    let s = 0;\n    while (i > 0) {\n      s += bit[i];\n      i -= i & -i;\n    }\n    return s;\n  };\n  for (let i = 0; i < m; ++i) {\n    const type = data[idx++];\n    if (type === 'S') {\n      const u = Number(data[idx++]);\n      const v = Number(data[idx++]);\n      const k = Number(data[idx++]);\n      add(u, k);\n      if (v + 1 <= n) add(v + 1, -k);\n    } else { // Q\n      const p = Number(data[idx++]);\n      const ans = c + sum(p);\n      output.push(String(ans));\n    }\n  }\n}\nconsole.log(output.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

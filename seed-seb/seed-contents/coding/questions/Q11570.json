@@ -1,0 +1,119 @@
+{
+  "questionId": "Q11570",
+  "title": "Three Paths on a Tree",
+  "slug": "F",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Graph Theory",
+    "difficulty": "$undefined",
+    "isPremium": true,
+    "tags": [
+      "Tree",
+      "Path",
+      "Product"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Write a program for the coding challenge \"Three Paths on a Tree\". Refer to SEED-IT description: https://codeforces.com/contest/1294/problem/F",
+    "constraints": [
+      "1 <= n <= 100",
+      "1 <= u, v <= n",
+      "The graph is a tree, i.e., it is connected and has no cycles."
+    ],
+    "inputFormat": "The first line contains an integer n, the number of nodes in the tree. Then n-1 lines follow, each containing two integers u and v, the nodes connected by an edge.",
+    "outputFormat": "The output should be the maximum product of the lengths of three paths in the tree.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "1\n",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "10\n1 2\n2 3\n3 4\n4 5\n5 6\n6 7\n7 8\n8 9\n9 10",
+        "expectedOutput": "120",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": "5\n1 2\n2 3\n3 4\n4 5\n5 1",
+        "expectedOutput": "Error: The input graph is not a tree.",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case / empty-like / negative if allowed",
+        "input": "0\n",
+        "expectedOutput": "Error: The input graph is empty.",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": "7\n1 2\n2 3\n3 4\n4 5\n5 6\n6 7",
+        "expectedOutput": "60",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a depth-first search (DFS) to find all possible paths in the tree, then calculate the product of the lengths of all possible combinations of three paths.",
+    "timeComplexity": "O(n^3)",
+    "spaceComplexity": "O(n^2)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#define MAX_N 100\n// Define the structure for a tree node\ntypedef struct Node {\n    int value;\n    struct Node** children;\n    int numChildren;\n} Node;\n// Function to create a new tree node\nNode* createNode(int value) {\n    Node* node = (Node*) malloc(sizeof(Node));\n    node->value = value;\n    node->children = NULL;\n    node->numChildren = 0;\n    return node;\n}\n// Function to add a child to a node\nvoid addChild(Node* node, Node* child) {\n    node->numChildren++;\n    node->children = (Node**) realloc(node->children, node->numChildren * sizeof(Node*));\n    node->children[node->numChildren - 1] = child;\n}\n// Function to calculate the maximum product of three paths\nint maxProduct(Node* node) {\n    // Base case: if the node is a leaf, return 0\n    if (node->numChildren == 0) return 0;\n    // Initialize the maximum product\n    int maxProd = 0;\n    // Iterate over all possible combinations of three paths\n    for (int i = 0; i < node->numChildren; i++) {\n        for (int j = i + 1; j < node->numChildren; j++) {\n            for (int k = j + 1; k < node->numChildren; k++) {\n                // Calculate the product of the lengths of the three paths\n                int prod = (node->children[i]->value) * (node->children[j]->value) * (node->children[k]->value);\n                // Update the maximum product\n                if (prod > maxProd) maxProd = prod;\n            }\n        }\n    }\n    return maxProd;\n}\nint main() {\n    int n;\n    scanf(\"%d\", &n);\n    // Create the tree nodes\n    Node** nodes = (Node**) malloc(n * sizeof(Node*));\n    for (int i = 0; i < n; i++) nodes[i] = createNode(i + 1);\n    // Read the edges and add the children\n    for (int i = 0; i < n - 1; i++) {\n        int u, v;\n        scanf(\"%d %d\", &u, &v);\n        addChild(nodes[u - 1], nodes[v - 1]);\n    }\n    // Calculate and print the maximum product\n    printf(\"%d\\n\", maxProduct(nodes[0]));\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\nusing namespace std;\n#define MAX_N 100\n// Define the structure for a tree node\nstruct Node {\n    int value;\n    vector<Node*> children;\n};\n// Function to create a new tree node\nNode* createNode(int value) {\n    Node* node = new Node;\n    node->value = value;\n    return node;\n}\n// Function to add a child to a node\nvoid addChild(Node* node, Node* child) {\n    node->children.push_back(child);\n}\n// Function to calculate the maximum product of three paths\nint maxProduct(Node* node) {\n    // Base case: if the node is a leaf, return 0\n    if (node->children.empty()) return 0;\n    // Initialize the maximum product\n    int maxProd = 0;\n    // Iterate over all possible combinations of three paths\n    for (int i = 0; i < node->children.size(); i++) {\n        for (int j = i + 1; j < node->children.size(); j++) {\n            for (int k = j + 1; k < node->children.size(); k++) {\n                // Calculate the product of the lengths of the three paths\n                int prod = (node->children[i]->value) * (node->children[j]->value) * (node->children[k]->value);\n                // Update the maximum product\n                if (prod > maxProd) maxProd = prod;\n            }\n        }\n    }\n    return maxProd;\n}\nint main() {\n    int n;\n    cin >> n;\n    // Create the tree nodes\n    Node** nodes = new Node*[n];\n    for (int i = 0; i < n; i++) nodes[i] = createNode(i + 1);\n    // Read the edges and add the children\n    for (int i = 0; i < n - 1; i++) {\n        int u, v;\n        cin >> u >> v;\n        addChild(nodes[u - 1], nodes[v - 1]);\n    }\n    // Calculate and print the maximum product\n    cout << maxProduct(nodes[0]) << endl;\n    return 0;\n}",
+      "Java": "import java.util.ArrayList;\nimport java.util.Scanner;\npublic class Main {\n    static class Node {\n        int value;\n        ArrayList<Node> children;\n        public Node(int value) {\n            this.value = value;\n            this.children = new ArrayList<>();\n        }\n    }\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int n = scanner.nextInt();\n        Node[] nodes = new Node[n];\n        for (int i = 0; i < n; i++) {\n            nodes[i] = new Node(i + 1);\n        }\n        for (int i = 0; i < n - 1; i++) {\n            int u = scanner.nextInt() - 1;\n            int v = scanner.nextInt() - 1;\n            nodes[u].children.add(nodes[v]);\n        }\n        System.out.println(maxProduct(nodes[0]));\n    }\n    public static int maxProduct(Node node) {\n        if (node.children.isEmpty()) return 0;\n        int maxProd = 0;\n        for (int i = 0; i < node.children.size(); i++) {\n            for (int j = i + 1; j < node.children.size(); j++) {\n                for (int k = j + 1; k < node.children.size(); k++) {\n                    int prod = node.children.get(i).value * node.children.get(j).value * node.children.get(k).value;\n                    if (prod > maxProd) maxProd = prod;\n                }\n            }\n        }\n        return maxProd;\n    }\n}",
+      "Python3": "class Node:\n    def __init__(self, value):\n        self.value = value\n        self.children = []\n\ndef max_product(node):\n    if not node.children:\n        return 0\n    max_prod = 0\n    for i in range(len(node.children)):\n        for j in range(i + 1, len(node.children)):\n            for k in range(j + 1, len(node.children)):\n                prod = node.children[i].value * node.children[j].value * node.children[k].value\n                if prod > max_prod:\n                    max_prod = prod\n    return max_prod\n\ndef main):\n    n = int(input())\n    nodes = [Node(i + 1) for i in range(n)]\n    for _ in range(n - 1):\n        u, v = map(int, input().split())\n        nodes[u - 1].children.append(nodes[v - 1])\n    print(max_product(nodes[0]))",
+      "JavaScript": "class Node {\n    constructor(value) {\n        this.value = value;\n        this.children = [];\n    }\n}\nfunction maxProduct(node) {\n    if (node.children.length === 0) return 0;\n    let maxProd = 0;\n    for (let i = 0; i < node.children.length; i++) {\n        for (let j = i + 1; j < node.children.length; j++) {\n            for (let k = j + 1; k < node.children.length; k++) {\n                let prod = node.children[i].value * node.children[j].value * node.children[k].value;\n                if (prod > maxProd) maxProd = prod;\n            }\n        }\n    }\n    return maxProd;\n}\nfunction main() {\n    const readline = require('readline');\n    const rl = readline.createInterface({\n        input: process.stdin,\n        output: process.stdout\n    });\n    let n;\n    let nodes;\n    rl.on('line', (input) => {\n        if (!n) {\n            n = parseInt(input);\n            nodes = Array(n).fill(0).map((_, i) => new Node(i + 1));\n        } else {\n            const [u, v] = input.split(' ').map((x) => parseInt(x));\n            nodes[u - 1].children.push(nodes[v - 1]);\n            if (nodes[u - 1].children.length === n - 1) {\n                console.log(maxProduct(nodes[0]));\n                rl.close();\n            }\n        }\n    });\n}\nmain();"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

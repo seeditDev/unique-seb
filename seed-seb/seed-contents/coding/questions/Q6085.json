@@ -1,0 +1,128 @@
+{
+  "questionId": "Q6085",
+  "title": "Special Economic Zone",
+  "slug": "special-economic-zone",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Graph Theory",
+      "Maximal Independent Set",
+      "Greedy Algorithm"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Flow & Matching"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Fox Ciel is the queen of Fox Kingdom. There are **n** cities and **m** bidirectional roads between them. Two cities are called neighbours if there is a road between them. She wants to select some of the cities to establish as SEZs (Special Economic Zones). Also she must ensure that no two neighbouring cities are SEZ's as it will hinders growth of both the cities.\n\n\nPeople in SEZ will be happy due to huge employments opportunities. People living in a non SEZ city and having at least one neighbouring SEZ city will be unhappy due to jealousy. \n\n\n\n\n\n\nLet **x** be the number of happy cities and **y** be the number of unhappy cities. Ciel's goal is to maximize the value of **(x - y)**. Please output the maximal value of **(x - y)**.",
+    "constraints": [
+      "1 ≤ n ≤ 200",
+      "1 ≤ m ≤ 400",
+      "There won't be any self-loop or repeated edges."
+    ],
+    "inputFormat": "The first line contains two space-separated integers n and m, where n is the number of cities and m is the number of bidirectional roads between them. The next m lines contain two space-separated integers u and v, denoting a road between city u and v.",
+    "outputFormat": "The maximal value of (x - y), where x is the number of happy cities and y is the number of unhappy cities.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "6 5\n1 2\n2 3\n4 5\n5 6\n6 4",
+        "output": "1",
+        "explanation": "The queen can select cities 1 and 3 as SEZs. So, x = 2 (cities 1 and 3), y = 1 (city 2), x - y = 1."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1 0",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "200 400",
+        "expectedOutput": "100",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "5 4\n1 2\n2 3\n3 4\n4 5",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "10 9\n1 2\n2 3\n3 4\n4 5\n5 6\n6 7\n7 8\n8 9\n9 10",
+        "expectedOutput": "5",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "15 14\n1 2\n2 3\n3 4\n4 5\n5 6\n6 7\n7 8\n8 9\n9 10\n10 11\n11 12\n12 13\n13 14\n14 15",
+        "expectedOutput": "7",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a greedy algorithm to find a maximal independent set in the graph. An independent set is a set of vertices in a graph, no two of which are adjacent. We can start by sorting the vertices by their degree (the number of edges incident to them). Then, we can iterate over the sorted vertices and add each vertex to the independent set if it is not adjacent to any vertex already in the set. The size of the independent set will be the number of happy cities. The number of unhappy cities will be the number of vertices that are adjacent to at least one vertex in the independent set but are not in the set themselves.",
+    "timeComplexity": "O(n + m) — where n is the number of vertices and m is the number of edges. This is because we need to iterate over all vertices and edges to find the maximal independent set.",
+    "spaceComplexity": "O(n + m) — where n is the number of vertices and m is the number of edges. This is because we need to store the adjacency list of the graph.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#define MAX 200\n#define MAX_EDGES 400\n\nint compare(const void *a, const void *b) {\n    return (*(int*)a - *(int*)b);\n}\n\nint main() {\n    int n, m;\n    scanf(\"%d %d\", &n, &m);\n    int edges[MAX_EDGES][2];\n    for (int i = 0; i < m; i++) {\n        scanf(\"%d %d\", &edges[i][0], &edges[i][1]);\n    }\n    int degrees[n];\n    for (int i = 0; i < n; i++) {\n        degrees[i] = 0;\n    }\n    for (int i = 0; i < m; i++) {\n        degrees[edges[i][0] - 1]++;\n        degrees[edges[i][1] - 1]++;\n    }\n    int sorted_degrees[n];\n    for (int i = 0; i < n; i++) {\n        sorted_degrees[i] = i;\n    }\n    qsort(sorted_degrees, n, sizeof(int), compare);\n    int independent_set[n];\n    int independent_set_size = 0;\n    for (int i = 0; i < n; i++) {\n        int is_adjacent = 0;\n        for (int j = 0; j < independent_set_size; j++) {\n            for (int k = 0; k < m; k++) {\n                if ((edges[k][0] == sorted_degrees[i] + 1 && edges[k][1] == independent_set[j] + 1) || (edges[k][0] == independent_set[j] + 1 && edges[k][1] == sorted_degrees[i] + 1)) {\n                    is_adjacent = 1;\n                    break;\n                }\n            }\n            if (is_adjacent) {\n                break;\n            }\n        }\n        if (!is_adjacent) {\n            independent_set[independent_set_size] = sorted_degrees[i];\n            independent_set_size++;\n        }\n    }\n    int happy_cities = independent_set_size;\n    int unhappy_cities = 0;\n    for (int i = 0; i < n; i++) {\n        int is_unhappy = 0;\n        for (int j = 0; j < independent_set_size; j++) {\n            for (int k = 0; k < m; k++) {\n                if ((edges[k][0] == i + 1 && edges[k][1] == independent_set[j] + 1) || (edges[k][0] == independent_set[j] + 1 && edges[k][1] == i + 1)) {\n                    is_unhappy = 1;\n                    break;\n                }\n            }\n            if (is_unhappy) {\n                break;\n            }\n        }\n        if (is_unhappy && !is_adjacent) {\n            unhappy_cities++;\n        }\n    }\n    printf(\"%d\\n\", happy_cities - unhappy_cities);\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\n#include <algorithm>\nusing namespace std;\n\nint main() {\n    int n, m;\n    cin >> n >> m;\n    vector<pair<int, int>> edges(m);\n    for (int i = 0; i < m; i++) {\n        cin >> edges[i].first >> edges[i].second;\n    }\n    vector<int> degrees(n, 0);\n    for (int i = 0; i < m; i++) {\n        degrees[edges[i].first - 1]++;\n        degrees[edges[i].second - 1]++;\n    }\n    vector<int> sorted_degrees(n);\n    for (int i = 0; i < n; i++) {\n        sorted_degrees[i] = i;\n    }\n    sort(sorted_degrees.begin(), sorted_degrees.end(), [&degrees](int a, int b) {\n        return degrees[a] < degrees[b];\n    });\n    vector<int> independent_set;\n    for (int i = 0; i < n; i++) {\n        bool is_adjacent = false;\n        for (int j = 0; j < independent_set.size(); j++) {\n            for (int k = 0; k < m; k++) {\n                if ((edges[k].first == sorted_degrees[i] + 1 && edges[k].second == independent_set[j] + 1) || (edges[k].first == independent_set[j] + 1 && edges[k].second == sorted_degrees[i] + 1)) {\n                    is_adjacent = true;\n                    break;\n                }\n            }\n            if (is_adjacent) {\n                break;\n            }\n        }\n        if (!is_adjacent) {\n            independent_set.push_back(sorted_degrees[i]);\n        }\n    }\n    int happy_cities = independent_set.size();\n    int unhappy_cities = 0;\n    for (int i = 0; i < n; i++) {\n        bool is_unhappy = false;\n        for (int j = 0; j < independent_set.size(); j++) {\n            for (int k = 0; k < m; k++) {\n                if ((edges[k].first == i + 1 && edges[k].second == independent_set[j] + 1) || (edges[k].first == independent_set[j] + 1 && edges[k].second == i + 1)) {\n                    is_unhappy = true;\n                    break;\n                }\n            }\n            if (is_unhappy) {\n                break;\n            }\n        }\n        if (is_unhappy) {\n            unhappy_cities++;\n        }\n    }\n    cout << happy_cities - unhappy_cities << endl;\n    return 0;\n}",
+      "Java": "import java.util.Arrays;\nimport java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int n = scanner.nextInt();\n        int m = scanner.nextInt();\n        int[][] edges = new int[m][2];\n        for (int i = 0; i < m; i++) {\n            edges[i][0] = scanner.nextInt();\n            edges[i][1] = scanner.nextInt();\n        }\n        int[] degrees = new int[n];\n        for (int i = 0; i < m; i++) {\n            degrees[edges[i][0] - 1]++;\n            degrees[edges[i][1] - 1]++;\n        }\n        Integer[] sortedDegrees = new Integer[n];\n        for (int i = 0; i < n; i++) {\n            sortedDegrees[i] = i;\n        }\n        Arrays.sort(sortedDegrees, (a, b) -> degrees[a] - degrees[b]);\n        int[] independentSet = new int[n];\n        int independentSetSize = 0;\n        for (int i = 0; i < n; i++) {\n            boolean isAdjacent = false;\n            for (int j = 0; j < independentSetSize; j++) {\n                for (int k = 0; k < m; k++) {\n                    if ((edges[k][0] == sortedDegrees[i] + 1 && edges[k][1] == independentSet[j] + 1) || (edges[k][0] == independentSet[j] + 1 && edges[k][1] == sortedDegrees[i] + 1)) {\n                        isAdjacent = true;\n                        break;\n                    }\n                }\n                if (isAdjacent) {\n                    break;\n                }\n            }\n            if (!isAdjacent) {\n                independentSet[independentSetSize] = sortedDegrees[i];\n                independentSetSize++;\n            }\n        }\n        int happyCities = independentSetSize;\n        int unhappyCities = 0;\n        for (int i = 0; i < n; i++) {\n            boolean isUnhappy = false;\n            for (int j = 0; j < independentSetSize; j++) {\n                for (int k = 0; k < m; k++) {\n                    if ((edges[k][0] == i + 1 && edges[k][1] == independentSet[j] + 1) || (edges[k][0] == independentSet[j] + 1 && edges[k][1] == i + 1)) {\n                        isUnhappy = true;\n                        break;\n                    }\n                }\n                if (isUnhappy) {\n                    break;\n                }\n            }\n            if (isUnhappy) {\n                unhappyCities++;\n            }\n        }\n        System.out.println(happyCities - unhappyCities);\n    }\n}",
+      "Python3": "import sys\n\nn, m = map(int, sys.stdin.readline().split())\nedges = [list(map(int, sys.stdin.readline().split())) for _ in range(m)]\ndegrees = [0] * n\nfor edge in edges:\n    degrees[edge[0] - 1] += 1\n    degrees[edge[1] - 1] += 1\nsorted_degrees = sorted(range(n), key=lambda x: degrees[x])\nindependent_set = []\nfor i in sorted_degrees:\n    is_adjacent = False\n    for j in independent_set:\n        for edge in edges:\n            if (edge[0] == i + 1 and edge[1] == j + 1) or (edge[0] == j + 1 and edge[1] == i + 1):\n                is_adjacent = True\n                break\n        if is_adjacent:\n            break\n    if not is_adjacent:\n        independent_set.append(i)\nhappy_cities = len(independent_set)\nunhappy_cities = 0\nfor i in range(n):\n    is_unhappy = False\n    for j in independent_set:\n        for edge in edges:\n            if (edge[0] == i + 1 and edge[1] == j + 1) or (edge[0] == j + 1 and edge[1] == i + 1):\n                is_unhappy = True\n                break\n        if is_unhappy:\n            break\n    if is_unhappy:\n        unhappy_cities += 1\nprint(happy_cities - unhappy_cities)",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf8').trim().split('\\n');\nlet n, m;\n[n, m] = input[0].split(' ').map(Number);\nconst edges = [];\nfor (let i = 1; i <= m; i++) {\n    edges.push(input[i].split(' ').map(Number));\n}\nconst degrees = new Array(n).fill(0);\nfor (let i = 0; i < m; i++) {\n    degrees[edges[i][0] - 1]++;\n    degrees[edges[i][1] - 1]++;\n}\nconst sortedDegrees = Array.from(Array(n).keys()).sort((a, b) => degrees[a] - degrees[b]);\nconst independentSet = [];\nfor (let i = 0; i < n; i++) {\n    let isAdjacent = false;\n    for (let j = 0; j < independentSet.length; j++) {\n        for (let k = 0; k < m; k++) {\n            if ((edges[k][0] === sortedDegrees[i] + 1 && edges[k][1] === independentSet[j] + 1) || (edges[k][0] === independentSet[j] + 1 && edges[k][1] === sortedDegrees[i] + 1)) {\n                isAdjacent = true;\n                break;\n            }\n        }\n        if (isAdjacent) {\n            break;\n        }\n    }\n    if (!isAdjacent) {\n        independentSet.push(sortedDegrees[i]);\n    }\n}\nconst happyCities = independentSet.length;\nlet unhappyCities = 0;\nfor (let i = 0; i < n; i++) {\n    let isUnhappy = false;\n    for (let j = 0; j < independentSet.length; j++) {\n        for (let k = 0; k < m; k++) {\n            if ((edges[k][0] === i + 1 && edges[k][1] === independentSet[j] + 1) || (edges[k][0] === independentSet[j] + 1 && edges[k][1] === i + 1)) {\n                isUnhappy = true;\n                break;\n            }\n        }\n        if (isUnhappy) {\n            break;\n        }\n    }\n    if (isUnhappy) {\n        unhappyCities++;\n    }\n}\nconsole.log(happyCities - unhappyCities);"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

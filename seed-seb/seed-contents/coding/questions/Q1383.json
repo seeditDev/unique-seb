@@ -1,0 +1,128 @@
+{
+  "questionId": "Q1383",
+  "title": "Largest Common Element in Two Arrays",
+  "slug": "largest-common-element-in-two-arrays",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Arrays",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "Arrays",
+      "Two Arrays",
+      "Hash Set"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Two Pointers & Sliding Window"
+    ]
+  },
+  "content": {
+    "problemStatement": "You are given two arrays of positive integers, arr1arr1arr1 and arr2arr2arr2, of sizes nnn and mmm respectively. Your task is to find the largest common element that appears in both arrays. If no common element exists, return \u22121-1\u22121.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= n, m <= 10^5",
+      "1 <= arr1[i], arr2[i] <= 10^9",
+      "sum of n+m over all test cases <= 10^6"
+    ],
+    "inputFormat": "First line contains T, the number of test cases. Each test case contains two integers n and m, the sizes of the two arrays. The next two lines contain n and m space-separated positive integers, the elements of the two arrays.",
+    "outputFormat": "For each test case, print the largest integer that appears in both arrays. If the two arrays share no common element, print -1.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n5 6\n1 3 4 6 7\n2 3 5 6 7 8\n4 3\n1 2 3 4\n5 6 7\n4 4\n9 2 1 10\n3 11 9 2",
+        "output": "7\n-1\n9",
+        "explanation": "Test case 1: common elements are 3,6,7 \u2192 largest is 7.\nTest case 2: arrays share no element \u2192 -1.\nTest case 3: common elements are 2 and 9 \u2192 largest is 9."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n1 1\n5\n5",
+        "output": "5",
+        "explanation": "Both arrays contain only the element 5, so the largest common element is 5."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n5 5\n2 2 2 2 2\n3 3 3 3 3",
+        "output": "-1",
+        "explanation": "There is no integer that appears in both arrays, therefore the answer is -1."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1\n1\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n100000 100000\n1000000000 1000000000 1000000000 1000000000 1000000000\n1000000000 1000000000 1000000000 1000000000 1000000000",
+        "expectedOutput": "1000000000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n5 5\n1 1 1 1 1\n1 1 1 1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n5 5\n10 20 30 40 50\n10 20 30 40 50",
+        "expectedOutput": "50",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "5\n5 5\n1 2 3 4 5\n2 3 4 5 6\n5 5\n1 1 1 1 1\n1 1 1 1 1\n5 5\n10 20 30 40 50\n10 20 30 40 50\n5 5\n1000000000 1000000000 1000000000 1000000000 1000000000\n1000000000 1000000000 1000000000 1000000000 1000000000\n5 5\n1 2 3 4 5\n6 7 8 9 10",
+        "expectedOutput": "5\n1\n1000000000\n50\n-1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "We use a hash set to store the elements of the smaller array. Then we iterate over the larger array and check if each element is in the hash set. If it is, we update our answer if the current element is larger than the current answer.",
+    "timeComplexity": "O(T * (n + m)) per test case, O(T * (n + m)) total. We iterate over each element in both arrays once.",
+    "spaceComplexity": "O(min(n, m)) \u2014 we store the elements of the smaller array in a hash set.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdbool.h>\n\n// Simple hash set for integers (open addressing, linear probing)\ntypedef struct {\n    int *keys;\n    char *used;\n    size_t size;\n} IntHashSet;\n\nstatic size_t nextPowerOfTwo(size_t n) {\n    size_t p = 1;\n    while (p < n) p <<= 1;\n    return p;\n}\n\nstatic IntHashSet* createSet(size_t capacity) {\n    IntHashSet *set = (IntHashSet*)malloc(sizeof(IntHashSet));\n    set->size = nextPowerOfTwo(capacity * 2);\n    set->keys = (int*)malloc(set->size * sizeof(int));\n    set->used = (char*)calloc(set->size, sizeof(char));\n    return set;\n}\n\nstatic void freeSet(IntHashSet *set) {\n    free(set->keys);\n    free(set->used);\n    free(set);\n}\n\nstatic size_t hashInt(int x, size_t mask) {\n    // simple mix\n    return ((unsigned int)x * 2654435761u) & mask;\n}\n\nstatic void insertSet(IntHashSet *set, int x) {\n    size_t mask = set->size - 1;\n    size_t idx = hashInt(x, mask);\n    while (set->used[idx]) {\n        if (set->keys[idx] == x) return; // already present\n        idx = (idx + 1) & mask;\n    }\n    set->used[idx] = 1;\n    set->keys[idx] = x;\n}\n\nstatic bool containsSet(IntHashSet *set, int x) {\n    size_t mask = set->size - 1;\n    size_t idx = hashInt(x, mask);\n    while (set->used[idx]) {\n        if (set->keys[idx] == x) return true;\n        idx = (idx + 1) & mask;\n    }\n    return false;\n}\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        int n, m;\n        scanf(\"%d %d\", &n, &m);\n        int *arr1 = (int*)malloc(n * sizeof(int));\n        int *arr2 = (int*)malloc(m * sizeof(int));\n        for (int i = 0; i < n; ++i) scanf(\"%d\", &arr1[i]);\n        for (int i = 0; i < m; ++i) scanf(\"%d\", &arr2[i]);\n        // Build set from smaller array\n        IntHashSet *set;\n        if (n <= m) {\n            set = createSet(n);\n            for (int i = 0; i < n; ++i) insertSet(set, arr1[i]);\n            int ans = -1;\n            for (int i = 0; i < m; ++i) if (containsSet(set, arr2[i]) && arr2[i] > ans) ans = arr2[i];\n            printf(\"%d\\n\", ans);\n        } else {\n            set = createSet(m);\n            for (int i = 0; i < m; ++i) insertSet(set, arr2[i]);\n            int ans = -1;\n            for (int i = 0; i < n; ++i) if (containsSet(set, arr1[i]) && arr1[i] > ans) ans = arr1[i];\n            printf(\"%d\\n\", ans);\n        }\n        freeSet(set);\n        free(arr1);\n        free(arr2);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--) {\n        int n,m; cin>>n>>m;\n        vector<int> a(n), b(m);\n        for(int &x: a) cin>>x;\n        for(int &x: b) cin>>x;\n        // put smaller array into unordered_set\n        if(n>m) swap(a,b), swap(n,m);\n        unordered_set<int> s;\n        s.reserve(n*2);\n        for(int x: a) s.insert(x);\n        int ans = -1;\n        for(int x: b) if(s.count(x) && x>ans) ans = x;\n        cout<<ans<<\"\\n\";\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st = new StringTokenizer(br.readLine());\n        int T = Integer.parseInt(st.nextToken());\n        StringBuilder out = new StringBuilder();\n        while (T-- > 0) {\n            st = new StringTokenizer(br.readLine());\n            int n = Integer.parseInt(st.nextToken());\n            int m = Integer.parseInt(st.nextToken());\n            int[] a = new int[n];\n            int[] b = new int[m];\n            st = new StringTokenizer(br.readLine());\n            for (int i = 0; i < n; i++) a[i] = Integer.parseInt(st.nextToken());\n            st = new StringTokenizer(br.readLine());\n            for (int i = 0; i < m; i++) b[i] = Integer.parseInt(st.nextToken());\n            // ensure a is the smaller array\n            if (n > m) {\n                int[] tmp = a; a = b; b = tmp;\n                int t = n; n = m; m = t;\n            }\n            HashSet<Integer> set = new HashSet<>(n * 2);\n            for (int x : a) set.add(x);\n            int ans = -1;\n            for (int x : b) if (set.contains(x) && x > ans) ans = x;\n            out.append(ans).append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys\n\ndef main():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        n = int(next(it)); m = int(next(it))\n        arr1 = [int(next(it)) for _ in range(n)]\n        arr2 = [int(next(it)) for _ in range(m)]\n        # use the smaller list for the set\n        if n > m:\n            arr1, arr2 = arr2, arr1\n        s = set(arr1)\n        ans = -1\n        for x in arr2:\n            if x in s and x > ans:\n                ans = x\n        out_lines.append(str(ans))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    main()",
+      "JavaScript": "const fs = require('fs');\nconst data = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/).map(Number);\nlet idx = 0;\nconst T = data[idx++];\nlet outputs = [];\nfor (let t = 0; t < T; t++) {\n  const n = data[idx++];\n  const m = data[idx++];\n  const arr1 = data.slice(idx, idx + n); idx += n;\n  const arr2 = data.slice(idx, idx + m); idx += m;\n  // ensure arr1 is the smaller one for the Set\n  let small = arr1, large = arr2;\n  if (n > m) { small = arr2; large = arr1; }\n  const set = new Set(small);\n  let ans = -1;\n  for (const x of large) {\n    if (set.has(x) && x > ans) ans = x;\n  }\n  outputs.push(String(ans));\n}\nconsole.log(outputs.join('\\n'));"
+    }
+  }
+}

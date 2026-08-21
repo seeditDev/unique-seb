@@ -1,0 +1,128 @@
+{
+  "questionId": "Q6998",
+  "title": "Danya and Numbers",
+  "slug": "danya-and-numbers",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Bit Manipulation",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Bitwise AND",
+      "Dynamic Programming"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Data Structures"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Danya has a sequence AAA of non-negative integers. Initially, AAA has length NNN.\n\nLet's define a function f(x,A)f(x, A)f(x,A), where xxx is a positive integer ≤∣A∣\\le |A|≤∣A∣, as the maximum of bitwise ANDs of all subsequences of AAA with length equal to xxx.\n\nKostya gives Danya MMM requests. There are three types of requests:\n\n\n1  v1\\;v1v: append an integer vvv to AAA\n2  v2\\;v2v: delete an element equal to vvv from AAA; it is guaranteed that AAA contains vvv at least once, but if there are more elements equal to vvv, you should only delete one of them\n3  x3\\;x3x: calculate f(x,A)f(x, A)f(x,A)\nAlso, Kostya knows that at any time, all elements of AAA are smaller than 2k2^k2k for a fixed kkk.\n\nHelp Danya process all of Kostya's requests.",
+    "constraints": [
+      "1 ≤ N, M ≤ 75,000",
+      "1 ≤ k ≤ 18",
+      "0 ≤ v < 2^k",
+      "1 ≤ x ≤ |A|"
+    ],
+    "inputFormat": "The first line contains three space-separated integers N, M, and k. The second line contains N space-separated integers a1, a2, …, aN denoting the initial sequence A. Each of the following M lines contains two space-separated integers describing a request in the format 1 v1, 2 v2, or 3 x3.",
+    "outputFormat": "For each request of type 3, print a single line containing one integer — the value of f(x, A).",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4 7 3\n6 7 5 2\n3 2\n3 3\n1 7\n3 3\n2 7\n2 6\n3 2",
+        "output": "6\n4\n6\n5",
+        "explanation": "Subsequences giving optimal answers for the requests of type 3 are, in order: (6,7); (6,7,5); (6,7,7); (7,5)."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1 1 1\n1\n3 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "75000 1 18\n0\n3 75000",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "2 2 2\n1 2\n1 3\n3 2",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "5 3 3\n1 2 3 4 5\n3 2\n3 3\n1 6",
+        "expectedOutput": "4\n6",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "10 5 5\n1 2 3 4 5 6 7 8 9 10\n3 5\n3 7\n1 11\n2 5\n3 5",
+        "expectedOutput": "4\n8\n10",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a dynamic programming approach. We will maintain a 2D array dp where dp[i][j] represents the maximum bitwise AND of all subsequences of length j from the first i elements. We will update this array based on the type of request. For type 1 requests, we append the new element to the sequence and update the dp array. For type 2 requests, we remove the specified element from the sequence and update the dp array. For type 3 requests, we calculate the maximum bitwise AND of all subsequences of length x from the current sequence.",
+    "timeComplexity": "O(M * N * k) — where M is the number of requests, N is the length of the sequence, and k is the number of bits in the integers.",
+    "spaceComplexity": "O(N * k) — where N is the length of the sequence and k is the number of bits in the integers.",
+    "code": {
+      "C": "// COMPLETE, COMPILABLE C code\n#include <stdio.h>\n#include <stdlib.h>\n#define MAXN 75000\n#define MAXK 18\nint dp[MAXN + 1][MAXN + 1];\nint a[MAXN];\nint n, m, k;\nvoid update(int idx, int val) {\n    for (int i = n; i >= idx; i--) {\n        for (int j = 1; j <= i; j++) {\n            if (i == idx) {\n                dp[i][j] = val;\n            } else {\n                dp[i][j] = (dp[i - 1][j - 1] & val) > dp[i - 1][j] ? (dp[i - 1][j - 1] & val) : dp[i - 1][j];\n            }\n        }\n    }\n}\nint main() {\n    scanf(\"%d %d %d\", &n, &m, &k);\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &a[i]);\n        update(i, a[i]);\n    }\n    for (int i = 0; i < m; i++) {\n        int type, val;\n        scanf(\"%d %d\", &type, &val);\n        if (type == 1) {\n            a[n++] = val;\n            update(n - 1, val);\n        } else if (type == 2) {\n            for (int j = 0; j < n; j++) {\n                if (a[j] == val) {\n                    for (int p = j; p < n - 1; p++) {\n                        a[p] = a[p + 1];\n                    }\n                    n--;\n                    update(j, a[j]);\n                    break;\n                }\n            }\n        } else {\n            printf(\"%d\\n\", dp[n][val]);\n        }\n    }\n    return 0;\n}",
+      "C++": "// COMPLETE, COMPILABLE C++ code\n#include <iostream>\n#include <vector>\nusing namespace std;\nconst int MAXN = 75000;\nconst int MAXK = 18;\nint dp[MAXN + 1][MAXN + 1];\nint a[MAXN];\nint n, m, k;\nvoid update(int idx, int val) {\n    for (int i = n; i >= idx; i--) {\n        for (int j = 1; j <= i; j++) {\n            if (i == idx) {\n                dp[i][j] = val;\n            } else {\n                dp[i][j] = (dp[i - 1][j - 1] & val) > dp[i - 1][j] ? (dp[i - 1][j - 1] & val) : dp[i - 1][j];\n            }\n        }\n    }\n}\nint main() {\n    cin >> n >> m >> k;\n    for (int i = 0; i < n; i++) {\n        cin >> a[i];\n        update(i, a[i]);\n    }\n    for (int i = 0; i < m; i++) {\n        int type, val;\n        cin >> type >> val;\n        if (type == 1) {\n            a[n++] = val;\n            update(n - 1, val);\n        } else if (type == 2) {\n            for (int j = 0; j < n; j++) {\n                if (a[j] == val) {\n                    for (int p = j; p < n - 1; p++) {\n                        a[p] = a[p + 1];\n                    }\n                    n--;\n                    update(j, a[j]);\n                    break;\n                }\n            }\n        } else {\n            cout << dp[n][val] << endl;\n        }\n    }\n    return 0;\n}",
+      "Java": "// COMPLETE, COMPILABLE Java code\nimport java.util.Scanner;\npublic class Main {\n    static final int MAXN = 75000;\n    static final int MAXK = 18;\n    static int[][] dp = new int[MAXN + 1][MAXN + 1];\n    static int[] a = new int[MAXN];\n    static int n, m, k;\n    public static void update(int idx, int val) {\n        for (int i = n; i >= idx; i--) {\n            for (int j = 1; j <= i; j++) {\n                if (i == idx) {\n                    dp[i][j] = val;\n                } else {\n                    dp[i][j] = (dp[i - 1][j - 1] & val) > dp[i - 1][j] ? (dp[i - 1][j - 1] & val) : dp[i - 1][j];\n                }\n            }\n        }\n    }\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        n = sc.nextInt();\n        m = sc.nextInt();\n        k = sc.nextInt();\n        for (int i = 0; i < n; i++) {\n            a[i] = sc.nextInt();\n            update(i, a[i]);\n        }\n        for (int i = 0; i < m; i++) {\n            int type = sc.nextInt();\n            int val = sc.nextInt();\n            if (type == 1) {\n                a[n++] = val;\n                update(n - 1, val);\n            } else if (type == 2) {\n                for (int j = 0; j < n; j++) {\n                    if (a[j] == val) {\n                        for (int p = j; p < n - 1; p++) {\n                            a[p] = a[p + 1];\n                        }\n                        n--;\n                        update(j, a[j]);\n                        break;\n                    }\n                }\n            } else {\n                System.out.println(dp[n][val]);\n            }\n        }\n    }\n}",
+      "Python3": "# COMPLETE, RUNNABLE Python3 code\nimport sys\nMAXN = 75000\nMAXK = 18\ndp = [[0] * (MAXN + 1) for _ in range(MAXN + 1)]\na = [0] * MAXN\nn, m, k = map(int, input().split())\ndef update(idx, val):\n    for i in range(n, idx - 1, -1):\n        for j in range(1, i + 1):\n            if i == idx:\n                dp[i][j] = val\n            else:\n                dp[i][j] = max(dp[i - 1][j - 1] & val, dp[i - 1][j])\nfor i in range(n):\n    a[i] = int(input().split()[i])\n    update(i, a[i])\nfor _ in range(m):\n    type, val = map(int, input().split())\n    if type == 1:\n        a[n] = val\n        n += 1\n        update(n - 1, val)\n    elif type == 2:\n        for j in range(n):\n            if a[j] == val:\n                for p in range(j, n - 1):\n                    a[p] = a[p + 1]\n                n -= 1\n                update(j, a[j])\n                break\n    else:\n        print(dp[n][val])",
+      "JavaScript": "// COMPLETE, RUNNABLE JavaScript code\nconst fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst MAXN = 75000;\nconst MAXK = 18;\nconst dp = Array(MAXN + 1).fill(0).map(() => Array(MAXN + 1).fill(0));\nconst a = Array(MAXN).fill(0);\nlet n, m, k;\nfunction update(idx, val) {\n    for (let i = n; i >= idx; i--) {\n        for (let j = 1; j <= i; j++) {\n            if (i == idx) {\n                dp[i][j] = val;\n            } else {\n                dp[i][j] = (dp[i - 1][j - 1] & val) > dp[i - 1][j] ? (dp[i - 1][j - 1] & val) : dp[i - 1][j];\n            }\n        }\n    }\n}\n[n, m, k] = lines[idx++].trim().split(' ').map(Number);\nconst input = lines[idx++].trim().split(' ').map(Number);\nfor (let i = 0; i < n; i++) {\n    a[i] = input[i];\n    update(i, a[i]);\n}\nfor (let i = 0; i < m; i++) {\n    const [type, val] = lines[idx++].trim().split(' ').map(Number);\n    if (type == 1) {\n        a[n] = val;\n        n++;\n        update(n - 1, val);\n    } else if (type == 2) {\n        for (let j = 0; j < n; j++) {\n            if (a[j] == val) {\n                for (let p = j; p < n - 1; p++) {\n                    a[p] = a[p + 1];\n                }\n                n--;\n                update(j, a[j]);\n                break;\n            }\n        }\n    } else {\n        console.log(dp[n][val]);\n    }\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

@@ -1,0 +1,119 @@
+{
+  "questionId": "Q11369",
+  "title": "Pacific Atlantic Water Flow",
+  "slug": "pacific-atlantic-water-flow",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Easy",
+    "isPremium": true,
+    "tags": [
+      "Depth-First Search",
+      "Breadth-First Search",
+      "Graph Traversal"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Write a program for the coding challenge \"Pacific Atlantic Water Flow\". Refer to SEED-IT description: https://leetcode.com/problems/pacific-atlantic-water-flow/",
+    "constraints": [
+      "1 <= m <= 200",
+      "1 <= n <= 200",
+      "0 <= height[i][j] <= 10^5"
+    ],
+    "inputFormat": "The input is a 2D array of integers, where each integer represents the height of the cell. The first line contains two integers, m and n, representing the number of rows and columns in the grid.",
+    "outputFormat": "The output is a 2D array of coordinates, where each coordinate represents a cell that can flow to both the Pacific and the Atlantic oceans.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "[[1,2,2,3,5],[3,2,3,4,4],[2,4,5,3,1],[6,7,1,4,5],[5,1,1,2,4]]",
+        "expectedOutput": "[[0,4],[1,3],[1,4],[2,2],[3,0],[3,1],[4,0]]",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "[[1,1,1,1,1],[1,1,1,1,1],[1,1,1,1,1],[1,1,1,1,1],[1,1,1,1,1]]",
+        "expectedOutput": "[[0,0],[0,1],[0,2],[0,3],[0,4],[1,0],[1,1],[1,2],[1,3],[1,4],[2,0],[2,1],[2,2],[2,3],[2,4],[3,0],[3,1],[3,2],[3,3],[3,4],[4,0],[4,1],[4,2],[4,3],[4,4]]",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": "[[1,1,1],[1,1,1],[1,1,1]]",
+        "expectedOutput": "[[0,0],[0,1],[0,2],[1,0],[1,1],[1,2],[2,0],[2,1],[2,2]]",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case / empty-like / negative if allowed",
+        "input": "[[]]",
+        "expectedOutput": "[]",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": "[[1,2,3],[4,5,6],[7,8,9]]",
+        "expectedOutput": "[[0,2],[1,2],[2,2]]",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Use depth-first search or breadth-first search to traverse the grid and find the cells that can flow to both the Pacific and the Atlantic oceans.",
+    "timeComplexity": "O(m * n)",
+    "spaceComplexity": "O(m * n)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#define MAX 200\n#define MIN 1\n\nint** pacificAtlantic(int** matrix, int matrixSize, int* matrixColSize, int* returnSize) {\n    if (matrixSize == 0 || matrixColSize[0] == 0) return NULL;\n    int m = matrixSize;\n    int n = matrixColSize[0];\n    int** result = (int**)malloc(sizeof(int*) * m * n);\n    *returnSize = 0;\n    int** visited = (int**)malloc(sizeof(int*) * m);\n    for (int i = 0; i < m; i++) {\n        visited[i] = (int*)malloc(sizeof(int) * n);\n        for (int j = 0; j < n; j++) {\n            visited[i][j] = 0;\n        }\n    }\n    for (int i = 0; i < m; i++) {\n        dfs(matrix, i, 0, visited, m, n);\n        dfs(matrix, i, n - 1, visited, m, n);\n    }\n    for (int i = 0; i < n; i++) {\n        dfs(matrix, 0, i, visited, m, n);\n        dfs(matrix, m - 1, i, visited, m, n);\n    }\n    for (int i = 0; i < m; i++) {\n        for (int j = 0; j < n; j++) {\n            if (visited[i][j] == 3) {\n                result[(*returnSize)++] = (int*)malloc(sizeof(int) * 2);\n                result[(*returnSize) - 1][0] = i;\n                result[(*returnSize) - 1][1] = j;\n            }\n        }\n    }\n    return result;\n}\n\nvoid dfs(int** matrix, int x, int y, int** visited, int m, int n) {\n    if (x < 0 || x >= m || y < 0 || y >= n || visited[x][y] == 3) return;\n    visited[x][y] |= 1;\n    if (x > 0 && matrix[x - 1][y] >= matrix[x][y]) dfs(matrix, x - 1, y, visited, m, n);\n    if (x < m - 1 && matrix[x + 1][y] >= matrix[x][y]) dfs(matrix, x + 1, y, visited, m, n);\n    if (y > 0 && matrix[x][y - 1] >= matrix[x][y]) dfs(matrix, x, y - 1, visited, m, n);\n    if (y < n - 1 && matrix[x][y + 1] >= matrix[x][y]) dfs(matrix, x, y + 1, visited, m, n);\n}",
+      "C++": "#include <iostream>\n#include <vector>\nusing namespace std;\n\nvector<vector<int>> pacificAtlantic(vector<vector<int>>& matrix) {\n    if (matrix.empty() || matrix[0].empty()) return {};\n    int m = matrix.size();\n    int n = matrix[0].size();\n    vector<vector<int>> result;\n    vector<vector<bool>> pacific(m, vector<bool>(n, false));\n    vector<vector<bool>> atlantic(m, vector<bool>(n, false));\n    for (int i = 0; i < m; i++) {\n        dfs(matrix, i, 0, pacific);\n        dfs(matrix, i, n - 1, atlantic);\n    }\n    for (int i = 0; i < n; i++) {\n        dfs(matrix, 0, i, pacific);\n        dfs(matrix, m - 1, i, atlantic);\n    }\n    for (int i = 0; i < m; i++) {\n        for (int j = 0; j < n; j++) {\n            if (pacific[i][j] && atlantic[i][j]) {\n                result.push_back({i, j});\n            }\n        }\n    }\n    return result;\n}\n\nvoid dfs(vector<vector<int>>& matrix, int x, int y, vector<vector<bool>>& visited) {\n    if (x < 0 || x >= matrix.size() || y < 0 || y >= matrix[0].size() || visited[x][y]) return;\n    visited[x][y] = true;\n    if (x > 0 && matrix[x - 1][y] >= matrix[x][y]) dfs(matrix, x - 1, y, visited);\n    if (x < matrix.size() - 1 && matrix[x + 1][y] >= matrix[x][y]) dfs(matrix, x + 1, y, visited);\n    if (y > 0 && matrix[x][y - 1] >= matrix[x][y]) dfs(matrix, x, y - 1, visited);\n    if (y < matrix[0].size() - 1 && matrix[x][y + 1] >= matrix[x][y]) dfs(matrix, x, y + 1, visited);\n}",
+      "Java": "public class Solution {\n    public List<List<Integer>> pacificAtlantic(int[][] matrix) {\n        if (matrix.length == 0 || matrix[0].length == 0) return new ArrayList<>();\n        int m = matrix.length;\n        int n = matrix[0].length;\n        boolean[][] pacific = new boolean[m][n];\n        boolean[][] atlantic = new boolean[m][n];\n        for (int i = 0; i < m; i++) {\n            dfs(matrix, i, 0, pacific);\n            dfs(matrix, i, n - 1, atlantic);\n        }\n        for (int i = 0; i < n; i++) {\n            dfs(matrix, 0, i, pacific);\n            dfs(matrix, m - 1, i, atlantic);\n        }\n        List<List<Integer>> result = new ArrayList<>();\n        for (int i = 0; i < m; i++) {\n            for (int j = 0; j < n; j++) {\n                if (pacific[i][j] && atlantic[i][j]) {\n                    result.add(Arrays.asList(i, j));\n                }\n            }\n        }\n        return result;\n    }\n\n    private void dfs(int[][] matrix, int x, int y, boolean[][] visited) {\n        if (x < 0 || x >= matrix.length || y < 0 || y >= matrix[0].length || visited[x][y]) return;\n        visited[x][y] = true;\n        if (x > 0 && matrix[x - 1][y] >= matrix[x][y]) dfs(matrix, x - 1, y, visited);\n        if (x < matrix.length - 1 && matrix[x + 1][y] >= matrix[x][y]) dfs(matrix, x + 1, y, visited);\n        if (y > 0 && matrix[x][y - 1] >= matrix[x][y]) dfs(matrix, x, y - 1, visited);\n        if (y < matrix[0].length - 1 && matrix[x][y + 1] >= matrix[x][y]) dfs(matrix, x, y + 1, visited);\n    }\n}",
+      "Python3": "def pacificAtlantic(matrix):\n    if not matrix or not matrix[0]: return []\n    m, n = len(matrix), len(matrix[0])\n    pacific = [[False] * n for _ in range(m)]\n    atlantic = [[False] * n for _ in range(m)]\n    for i in range(m):\n        dfs(matrix, i, 0, pacific)\n        dfs(matrix, i, n - 1, atlantic)\n    for i in range(n):\n        dfs(matrix, 0, i, pacific)\n        dfs(matrix, m - 1, i, atlantic)\n    result = []\n    for i in range(m):\n        for j in range(n):\n            if pacific[i][j] and atlantic[i][j]:\n                result.append([i, j])\n    return result\n\ndef dfs(matrix, x, y, visited):\n    if x < 0 or x >= len(matrix) or y < 0 or y >= len(matrix[0]) or visited[x][y]: return\n    visited[x][y] = True\n    if x > 0 and matrix[x - 1][y] >= matrix[x][y]: dfs(matrix, x - 1, y, visited)\n    if x < len(matrix) - 1 and matrix[x + 1][y] >= matrix[x][y]: dfs(matrix, x + 1, y, visited)\n    if y > 0 and matrix[x][y - 1] >= matrix[x][y]: dfs(matrix, x, y - 1, visited)\n    if y < len(matrix[0]) - 1 and matrix[x][y + 1] >= matrix[x][y]: dfs(matrix, x, y + 1, visited)",
+      "JavaScript": "function pacificAtlantic(matrix) {\n    if (!matrix.length || !matrix[0].length) return [];\n    const m = matrix.length;\n    const n = matrix[0].length;\n    const pacific = Array(m).fill().map(() => Array(n).fill(false));\n    const atlantic = Array(m).fill().map(() => Array(n).fill(false));\n    for (let i = 0; i < m; i++) {\n        dfs(matrix, i, 0, pacific);\n        dfs(matrix, i, n - 1, atlantic);\n    }\n    for (let i = 0; i < n; i++) {\n        dfs(matrix, 0, i, pacific);\n        dfs(matrix, m - 1, i, atlantic);\n    }\n    const result = [];\n    for (let i = 0; i < m; i++) {\n        for (let j = 0; j < n; j++) {\n            if (pacific[i][j] && atlantic[i][j]) {\n                result.push([i, j]);\n            }\n        }\n    }\n    return result;\n}\n\nfunction dfs(matrix, x, y, visited) {\n    if (x < 0 || x >= matrix.length || y < 0 || y >= matrix[0].length || visited[x][y]) return;\n    visited[x][y] = true;\n    if (x > 0 && matrix[x - 1][y] >= matrix[x][y]) dfs(matrix, x - 1, y, visited);\n    if (x < matrix.length - 1 && matrix[x + 1][y] >= matrix[x][y]) dfs(matrix, x + 1, y, visited);\n    if (y > 0 && matrix[x][y - 1] >= matrix[x][y]) dfs(matrix, x, y - 1, visited);\n    if (y < matrix[0].length - 1 && matrix[x][y + 1] >= matrix[x][y]) dfs(matrix, x, y + 1, visited);\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

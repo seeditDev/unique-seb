@@ -1,0 +1,130 @@
+{
+  "questionId": "Q8736",
+  "title": "Duplicate Removal",
+  "slug": "duplicate-removal",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Data Structures",
+    "difficulty": "Easy",
+    "isPremium": true,
+    "tags": [
+      "Linked List",
+      "Two Pointers",
+      "Frequency Count",
+      "Sorting"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Linked Lists"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "The Chef is celebrating his birthday! His best friend gifted him a sorted singly linked list. But there is a catch - Chef hates duplicates, so he wants to remove every element that occurs more than once (he wants to remove all of the occurrences). However, he is very busy with his birthday party, he asks you to help him.\n\nComplete the function \"duplicateRemoval\" in the code snippet that takes a single argument: a head of the sorted singly linked list. The function should return the head of the singly linked list that is the modification of the original one, but the duplicates are completely erased. The function will be called multiple times.\n\n\nInput Format\n\nFirst line will contain TTT, number of testcases. Then the testcases follow.\nThe first line of each test case contains an integer NNN - representing the length of the linked list\nThe second line of each test case contains NNN space-separated integers - representing the elements of the list\n\nNote: You need to complete the functions in the submit solution tab.\n\n\n\nOutput Format\nFor each testcase, output will be in a single line containing a list passed by the function duplicateRemoval.",
+    "constraints": [
+      "1 <= T <= 1000",
+      "1 <= N <= 100000",
+      "Sum of N over all test cases does not exceed 200000",
+      "1 <= Ai <= 10^9"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, the first line contains an integer N, the length of the sorted singly linked list. The second line contains N space‑separated integers representing the list elements in non‑decreasing order.",
+    "outputFormat": "For each test case output a single line containing the elements of the list after removing every value that appears more than once. Elements are printed in their original order, separated by a single space. If all elements are removed, output an empty line.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n5\n1 2 3 3 4\n7\n1 1 5 6 6 6 10",
+        "output": "1 2 4\n5 10",
+        "explanation": "In the first test case the value 3 appears twice, so both 3's are removed, leaving 1 2 4. In the second test case values 1 and 6 appear more than once, so they are removed, leaving 5 10."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n5",
+        "expectedOutput": "5",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n15\n7 7 7 7 7 7 7 7 7 7 7 7 7 7 7",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n10\n1 1 2 3 3 4 5 5 5 6",
+        "expectedOutput": "2 4 6",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n4\n2 4 6 8",
+        "expectedOutput": "2 4 6 8",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n8\n1 1 2 3 4 5 6 6",
+        "expectedOutput": "2 3 4 5",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Because the list is already sorted, equal values appear consecutively. Traverse the list with two pointers: 'prev' points to the last node that is guaranteed to stay in the result, 'cur' scans the list. If cur and cur->next have the same value, we have found a duplicate block. Skip the whole block, delete those nodes and link prev->next to the first node after the block. If cur is unique, simply advance both prev and cur. A dummy head simplifies edge cases where the first nodes are removed. The algorithm runs in O(N) time and O(1) extra space per test case.",
+    "timeComplexity": "O(N) per test case, where N is the length of the list. Overall O(total N) for all test cases.",
+    "spaceComplexity": "O(1) auxiliary space (the list nodes themselves are reused).",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\ntypedef struct Node{ long long val; struct Node* next; } Node;\n\nNode* duplicateRemoval(Node* head){\n    Node dummy; dummy.val=0; dummy.next=head;\n    Node* prev=&dummy; Node* cur=head;\n    while(cur){\n        if(cur->next && cur->val==cur->next->val){\n            long long dup=cur->val;\n            while(cur && cur->val==dup){\n                Node* tmp=cur; cur=cur->next; free(tmp);\n            }\n            prev->next=cur;\n        }else{\n            prev=cur; cur=cur->next;\n        }\n    }\n    return dummy.next;\n}\n\nint main(){\n    int T; if(scanf(\"%d\",&T)!=1) return 0;\n    while(T--){\n        int N; scanf(\"%d\",&N);\n        Node* head=NULL; Node* tail=NULL;\n        for(int i=0;i<N;i++){\n            long long x; scanf(\"%lld\",&x);\n            Node* node=(Node*)malloc(sizeof(Node));\n            node->val=x; node->next=NULL;\n            if(!head) head=node; else tail->next=node;\n            tail=node;\n        }\n        head=duplicateRemoval(head);\n        int first=1;\n        for(Node* p=head;p;p=p->next){\n            if(!first) printf(\" \");\n            printf(\"%lld\",p->val);\n            first=0;\n        }\n        printf(\"\\n\");\n        while(head){ Node* tmp=head; head=head->next; free(tmp); }\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nstruct Node{ long long val; Node* next; Node(long long v):val(v),next(nullptr){} };\nNode* duplicateRemoval(Node* head){\n    Node dummy(0); dummy.next=head;\n    Node* prev=&dummy; Node* cur=head;\n    while(cur){\n        if(cur->next && cur->val==cur->next->val){\n            long long dup=cur->val;\n            while(cur && cur->val==dup){\n                Node* tmp=cur; cur=cur->next; delete tmp;\n            }\n            prev->next=cur;\n        }else{ prev=cur; cur=cur->next; }\n    }\n    return dummy.next;\n}\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N; cin>>N;\n        Node* head=nullptr; Node* tail=nullptr;\n        for(int i=0;i<N;i++){\n            long long x; cin>>x;\n            Node* node=new Node(x);\n            if(!head) head=node; else tail->next=node;\n            tail=node;\n        }\n        head=duplicateRemoval(head);\n        bool first=true;\n        for(Node* p=head;p;p=p->next){\n            if(!first) cout<<' ';\n            cout<<p->val; first=false;\n        }\n        cout<<\"\\n\";\n        while(head){ Node* tmp=head; head=head->next; delete tmp; }\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    static class Node {\n        long val; Node next;\n        Node(long v){ val=v; }\n    }\n    static Node duplicateRemoval(Node head){\n        Node dummy=new Node(0);\n        dummy.next=head;\n        Node prev=dummy, cur=head;\n        while(cur!=null){\n            if(cur.next!=null && cur.val==cur.next.val){\n                long dup=cur.val;\n                while(cur!=null && cur.val==dup){\n                    Node tmp=cur; cur=cur.next; // Java GC will free\n                }\n                prev.next=cur;\n            }else{\n                prev=cur; cur=cur.next;\n            }\n        }\n        return dummy.next;\n    }\n    public static void main(String[] args) throws Exception {\n        BufferedReader br=new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder out=new StringBuilder();\n        int T=Integer.parseInt(br.readLine().trim());\n        for(int t=0;t<T;t++){\n            int N=Integer.parseInt(br.readLine().trim());\n            StringTokenizer st=new StringTokenizer(br.readLine());\n            Node head=null, tail=null;\n            for(int i=0;i<N;i++){\n                long x=Long.parseLong(st.nextToken());\n                Node node=new Node(x);\n                if(head==null) head=node; else tail.next=node;\n                tail=node;\n            }\n            head=duplicateRemoval(head);\n            boolean first=true;\n            for(Node p=head;p!=null;p=p.next){\n                if(!first) out.append(' ');\n                out.append(p.val);\n                first=false;\n            }\n            out.append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys\n\ndef duplicate_removal(head):\n    dummy = [0, head]  # [val, next]\n    prev = dummy\n    cur = head\n    while cur:\n        if cur[1] and cur[0] == cur[1][0]:\n            dup = cur[0]\n            while cur and cur[0] == dup:\n                cur = cur[1]\n            prev[1] = cur\n        else:\n            prev = cur\n            cur = cur[1]\n    return dummy[1]\n\ndef build_linked(arr):\n    head = None\n    tail = None\n    for v in arr:\n        node = [v, None]\n        if not head:\n            head = node\n        else:\n            tail[1] = node\n        tail = node\n    return head\n\ndef to_list(head):\n    res = []\n    while head:\n        res.append(str(head[0]))\n        head = head[1]\n    return res\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it))\n        arr = [int(next(it)) for _ in range(N)]\n        head = build_linked(arr)\n        head = duplicate_removal(head)\n        out_lines.append(' '.join(to_list(head)))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet output = [];\nfunction buildList(arr){\n  let head=null, tail=null;\n  for(const v of arr){\n    const node={val: Number(v), next: null};\n    if(!head) head=node; else tail.next=node;\n    tail=node;\n  }\n  return head;\n}\nfunction duplicateRemoval(head){\n  const dummy={val:0, next:head};\n  let prev=dummy, cur=head;\n  while(cur){\n    if(cur.next && cur.val===cur.next.val){\n      const dup=cur.val;\n      while(cur && cur.val===dup){\n        cur=cur.next;\n      }\n      prev.next=cur;\n    }else{\n      prev=cur; cur=cur.next;\n    }\n  }\n  return dummy.next;\n}\nfor(let t=0;t<T;t++){\n  const N = Number(input[idx++]);\n  const arr = input.slice(idx, idx+N);\n  idx+=N;\n  let head = buildList(arr);\n  head = duplicateRemoval(head);\n  const vals=[];\n  for(let p=head;p;p=p.next){ vals.push(p.val.toString()); }\n  output.push(vals.join(' '));\n}\nconsole.log(output.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

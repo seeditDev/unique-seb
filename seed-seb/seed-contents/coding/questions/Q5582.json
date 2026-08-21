@@ -1,0 +1,142 @@
+{
+  "questionId": "Q5582",
+  "title": "Root of the Problem",
+  "slug": "root-of-the-problem",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Tree",
+      "Root Finding",
+      "Simple Arithmetic",
+      "Invariant"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Ad-hoc & Implementation"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef has a binary tree. The binary tree consists of 1 or more nodes. Each node has a unique integer id. Each node has up to 2 children, which are identified by their ids, and each node is the child of at most 1 other node. A node **X** is considered to be an ancestor of node **Y** if node **Y** is a child of node **X** or if there is some node **Z** for which **X** is an ancestor of **Z** and **Y** is a child of **Z**. No node is an ancestor of itself.  A special node called the root node is an ancestor of all other nodes.\n\nChef has forgotten which node of his tree is the root, and wants you to help him to figure it out. Unfortunately, Chef's knowledge of the tree is incomplete. He does not remember the ids of the children of each node, but only remembers the sum of the ids of the children of each node.",
+    "constraints": [
+      "1 ≤ T ≤ 50",
+      "1 ≤ N ≤ 30",
+      "All node ids are distinct and lie in [1, 1000]",
+      "For every node, 0 ≤ sum ≤ 2000"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case starts with an integer N, the number of nodes in the tree. Then N lines follow, each containing two integers id and sum where id is the unique identifier of a node (1 ≤ id ≤ 1000) and sum is the sum of the identifiers of its children (0 ≤ sum ≤ 2000).",
+    "outputFormat": "For each test case output a single line containing the identifier of the root node. The identifier is the only value that can be the root of a tree consistent with the given information.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n1\n4 0",
+        "output": "4",
+        "explanation": "Only one node exists, so its identifier 4 must be the root."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n6\n1 5\n2 0\n3 0\n4 0\n5 5\n6 5",
+        "output": "6",
+        "explanation": "Sum of all ids = 21, sum of all child‑sums = 15, therefore root = 21‑15 = 6."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n3\n10 0\n20 10\n30 20",
+        "output": "30",
+        "explanation": "Total ids = 60, total child‑sums = 30, root = 60‑30 = 30. The tree can be 30 → 20 → 10."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n1 0",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n30\n1 0\n2 0\n3 0\n4 0\n5 0\n6 0\n7 0\n8 0\n9 0\n10 0\n11 0\n12 0\n13 0\n14 0\n15 0\n16 0\n17 0\n18 0\n19 0\n20 0\n21 0\n22 0\n23 0\n24 0\n25 0\n26 0\n27 0\n28 0\n29 0\n30 435",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case – chain",
+        "input": "1\n4\n5 0\n10 5\n15 10\n20 15",
+        "expectedOutput": "20",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1 – two children",
+        "input": "1\n5\n7 0\n3 0\n4 0\n10 7\n14 3",
+        "expectedOutput": "14",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2 – mixed",
+        "input": "1\n6\n2 0\n3 0\n5 0\n8 5\n13 8\n21 13",
+        "expectedOutput": "21",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "In any rooted tree each node except the root appears exactly once as a child of its parent. Therefore the sum of the identifiers of all children in the whole tree equals the sum of identifiers of all nodes except the root. Let S_id be the sum of all node identifiers and S_sum be the sum of all given child‑sums. Then:\n    S_id - S_sum = root_id\nThus the root identifier can be obtained in O(N) time per test case by computing the two sums and taking their difference. The result is guaranteed to be one of the given identifiers because the input describes a valid tree.\nThe algorithm is optimal: it uses only a single pass over the data and O(1) extra memory.",
+    "timeComplexity": "O(N) per test case, where N is the number of nodes.",
+    "spaceComplexity": "O(1) additional space (besides the input storage).",
+    "code": {
+      "C": "#include <stdio.h>\n\nint main() {\n    int T; scanf(\"%d\", &T);\n    while (T--) {\n        int N; scanf(\"%d\", &N);\n        long long sumId = 0, sumChildren = 0;\n        for (int i = 0; i < N; ++i) {\n            int id, childSum; scanf(\"%d %d\", &id, &childSum);\n            sumId += id;\n            sumChildren += childSum;\n        }\n        long long root = sumId - sumChildren;\n        printf(\"%lld\\n\", root);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin >> T)) return 0;\n    while (T--) {\n        int N; cin >> N;\n        long long sumId = 0, sumChildren = 0;\n        for (int i = 0; i < N; ++i) {\n            long long id, childSum; cin >> id >> childSum;\n            sumId += id;\n            sumChildren += childSum;\n        }\n        cout << (sumId - sumChildren) << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st;\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder out = new StringBuilder();\n        while (T-- > 0) {\n            int N = Integer.parseInt(br.readLine().trim());\n            long sumId = 0, sumChildren = 0;\n            for (int i = 0; i < N; ++i) {\n                st = new StringTokenizer(br.readLine());\n                long id = Long.parseLong(st.nextToken());\n                long childSum = Long.parseLong(st.nextToken());\n                sumId += id;\n                sumChildren += childSum;\n            }\n            out.append(sumId - sumChildren).append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it))\n        sum_id = 0\n        sum_children = 0\n        for _ in range(N):\n            id_ = int(next(it))\n            child_sum = int(next(it))\n            sum_id += id_\n            sum_children += child_sum\n        out_lines.append(str(sum_id - sum_children))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet outputs = [];\nfor (let t = 0; t < T; ++t) {\n  const N = Number(input[idx++]);\n  let sumId = 0, sumChildren = 0;\n  for (let i = 0; i < N; ++i) {\n    const id = Number(input[idx++]);\n    const childSum = Number(input[idx++]);\n    sumId += id;\n    sumChildren += childSum;\n  }\n  outputs.push(String(sumId - sumChildren));\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

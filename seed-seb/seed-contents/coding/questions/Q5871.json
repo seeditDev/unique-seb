@@ -1,0 +1,140 @@
+{
+  "questionId": "Q5871",
+  "title": "Tree Game",
+  "slug": "tree-game",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Tree",
+      "Game Theory",
+      "Depth-First Search"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Trees"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Alice and Bob are playing the game. Initially, there is a single rooted tree. Players take turns alternately, Alice starts.\n\n\n\nIn a single turn, Alice should choose any non-empty subset of roots of tree (or trees) and remove them. On the other hand, Bob should choose any non-empty subset of leafs and remove them from the tree (or trees). (**Please note** that Bob always takes some of the **deepest** in the original tree leafs.) It's not allowed to skip the turn. The game ends when a player can't take a turn.\n\n\n\nThe Alice's goal is to minimize the number of turns made by the both players, while Bob wants this number to be the maximal. Considering they both play optimally, what is the number of turns eventually made?",
+    "constraints": [
+      "1 <= T <= 40",
+      "1 <= N <= 10000",
+      "1 <= Ui, Vi <= N"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case contains a single integer N, the number of nodes in the tree, followed by N-1 lines, each containing a pair of nodes' numbers Ui and Vi (one pair per line), denoting the edges of the tree.",
+    "outputFormat": "For each test case, print the minimum number of turns required to end the game.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n2\n1 2\n7\n1 3\n1 4\n4 2\n4 5\n4 6\n6 7\n1",
+        "output": "1\n4\n1",
+        "explanation": "The first test case has a tree with 2 nodes, the second test case has a tree with 7 nodes, and the third test case has a tree with 1 node."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n5\n1 2\n1 3\n2 4\n2 5",
+        "output": "3",
+        "explanation": "The tree has 5 nodes, and the minimum number of turns required to end the game is 3."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n10\n1 2\n1 3\n2 4\n2 5\n3 6\n3 7\n4 8\n4 9\n5 10",
+        "output": "6",
+        "explanation": "The tree has 10 nodes, and the minimum number of turns required to end the game is 6."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n10000\n1 2\n1 3\n2 4\n2 5\n3 6\n3 7\n4 8\n4 9\n5 10",
+        "expectedOutput": "5001",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n5\n1 2\n1 3\n1 4\n1 5",
+        "expectedOutput": "3",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n10\n1 2\n1 3\n2 4\n2 5\n3 6\n3 7\n4 8\n4 9\n5 10\n6 11",
+        "expectedOutput": "6",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "5\n2\n1 2\n7\n1 3\n1 4\n4 2\n4 5\n4 6\n6 7\n1\n5\n1 2\n1 3\n2 4\n2 5\n3 6\n3 7\n4 8\n4 9\n5 10",
+        "expectedOutput": "1\n4\n1\n3\n6",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a depth-first search (DFS) approach to calculate the depth of each node in the tree. Then, we can use the fact that the minimum number of turns required to end the game is equal to the ceiling of half the maximum depth of the tree.",
+    "timeComplexity": "O(T * N) per test case, O(T * N) total. The DFS operation takes O(N) time, and we perform it for each test case.",
+    "spaceComplexity": "O(N) — the dominant structure is the tree, which has N nodes.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#define MAX_N 10000\n\n// Structure to represent a tree node\ntypedef struct Node {\n    int data;\n    struct Node** children;\n    int numChildren;\n} Node;\n\n// Function to create a new tree node\nNode* createNode(int data) {\n    Node* newNode = (Node*) malloc(sizeof(Node));\n    newNode->data = data;\n    newNode->children = NULL;\n    newNode->numChildren = 0;\n    return newNode;\n}\n\n// Function to add a child to a node\nvoid addChild(Node* parent, Node* child) {\n    parent->numChildren++;\n    parent->children = (Node**) realloc(parent->children, parent->numChildren * sizeof(Node*));\n    parent->children[parent->numChildren - 1] = child;\n}\n\n// Function to perform DFS and calculate the depth of each node\nint dfs(Node* node, int depth) {\n    if (node->numChildren == 0) {\n        return depth;\n    }\n    int maxDepth = 0;\n    for (int i = 0; i < node->numChildren; i++) {\n        maxDepth = (maxDepth > dfs(node->children[i], depth + 1)) ? maxDepth : dfs(node->children[i], depth + 1);\n    }\n    return maxDepth;\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int N;\n        scanf(\"%d\", &N);\n        Node** nodes = (Node**) malloc(N * sizeof(Node*));\n        for (int i = 0; i < N; i++) {\n            nodes[i] = createNode(i + 1);\n        }\n        for (int i = 0; i < N - 1; i++) {\n            int u, v;\n            scanf(\"%d %d\", &u, &v);\n            addChild(nodes[u - 1], nodes[v - 1]);\n        }\n        int depth = dfs(nodes[0], 1);\n        printf(\"%d\\n\", (depth + 1) / 2);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\nusing namespace std;\n\n// Structure to represent a tree node\nstruct Node {\n    int data;\n    vector<Node*> children;\n};\n\n// Function to create a new tree node\nNode* createNode(int data) {\n    Node* newNode = new Node;\n    newNode->data = data;\n    return newNode;\n}\n\n// Function to add a child to a node\nvoid addChild(Node* parent, Node* child) {\n    parent->children.push_back(child);\n}\n\n// Function to perform DFS and calculate the depth of each node\nint dfs(Node* node, int depth) {\n    if (node->children.empty()) {\n        return depth;\n    }\n    int maxDepth = 0;\n    for (Node* child : node->children) {\n        maxDepth = max(maxDepth, dfs(child, depth + 1));\n    }\n    return maxDepth;\n}\n\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        int N;\n        cin >> N;\n        Node** nodes = new Node*[N];\n        for (int i = 0; i < N; i++) {\n            nodes[i] = createNode(i + 1);\n        }\n        for (int i = 0; i < N - 1; i++) {\n            int u, v;\n            cin >> u >> v;\n            addChild(nodes[u - 1], nodes[v - 1]);\n        }\n        int depth = dfs(nodes[0], 1);\n        cout << (depth + 1) / 2 << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.ArrayList;\nimport java.util.Scanner;\n\npublic class Main {\n    // Structure to represent a tree node\n    static class Node {\n        int data;\n        ArrayList<Node> children;\n        \n        public Node(int data) {\n            this.data = data;\n            this.children = new ArrayList<>();\n        }\n    }\n    \n    // Function to add a child to a node\n    public static void addChild(Node parent, Node child) {\n        parent.children.add(child);\n    }\n    \n    // Function to perform DFS and calculate the depth of each node\n    public static int dfs(Node node, int depth) {\n        if (node.children.isEmpty()) {\n            return depth;\n        }\n        int maxDepth = 0;\n        for (Node child : node.children) {\n            maxDepth = Math.max(maxDepth, dfs(child, depth + 1));\n        }\n        return maxDepth;\n    }\n    \n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int T = scanner.nextInt();\n        while (T-- > 0) {\n            int N = scanner.nextInt();\n            Node[] nodes = new Node[N];\n            for (int i = 0; i < N; i++) {\n                nodes[i] = new Node(i + 1);\n            }\n            for (int i = 0; i < N - 1; i++) {\n                int u = scanner.nextInt();\n                int v = scanner.nextInt();\n                addChild(nodes[u - 1], nodes[v - 1]);\n            }\n            int depth = dfs(nodes[0], 1);\n            System.out.println((depth + 1) / 2);\n        }\n    }\n}",
+      "Python3": "# COMPLETE, RUNNABLE Python3 code\nimport sys\n\n# Structure to represent a tree node\nclass Node:\n    def __init__(self, data):\n        self.data = data\n        self.children = []\n\n# Function to add a child to a node\ndef add_child(parent, child):\n    parent.children.append(child)\n\n# Function to perform DFS and calculate the depth of each node\ndef dfs(node, depth):\n    if not node.children:\n        return depth\n    max_depth = 0\n    for child in node.children:\n        max_depth = max(max_depth, dfs(child, depth + 1))\n    return max_depth\n\n# Read input from standard input\nT = int(input())\nwhile T > 0:\n    N = int(input())\n    nodes = [Node(i + 1) for i in range(N)]\n    for _ in range(N - 1):\n        u, v = map(int, input().split())\n        add_child(nodes[u - 1], nodes[v - 1])\n    depth = dfs(nodes[0], 1)\n    print((depth + 1) // 2)\n    T -= 1",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\n\n// Structure to represent a tree node\nclass Node {\n    constructor(data) {\n        this.data = data;\n        this.children = [];\n    }\n}\n\n// Function to add a child to a node\nfunction addChild(parent, child) {\n    parent.children.push(child);\n}\n\n// Function to perform DFS and calculate the depth of each node\nfunction dfs(node, depth) {\n    if (node.children.length === 0) {\n        return depth;\n    }\n    let maxDepth = 0;\n    for (let child of node.children) {\n        maxDepth = Math.max(maxDepth, dfs(child, depth + 1));\n    }\n    return maxDepth;\n}\n\n// Read input from standard input\nlet T = parseInt(input[idx++]);\nwhile (T-- > 0) {\n    let N = parseInt(input[idx++]);\n    let nodes = [];\n    for (let i = 0; i < N; i++) {\n        nodes.push(new Node(i + 1));\n    }\n    for (let i = 0; i < N - 1; i++) {\n        let [u, v] = input[idx++].split(' ').map(Number);\n        addChild(nodes[u - 1], nodes[v - 1]);\n    }\n    let depth = dfs(nodes[0], 1);\n    console.log(Math.floor((depth + 1) / 2));\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

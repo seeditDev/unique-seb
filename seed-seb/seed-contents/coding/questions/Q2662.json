@@ -1,0 +1,128 @@
+{
+  "questionId": "Q2662",
+  "title": "Cool Guys",
+  "slug": "cool-guys",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Summation of floor division",
+      "GCD",
+      "Mathematical reduction",
+      "Math",
+      "Divisor Counting"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Mathematics"
+    ]
+  },
+  "content": {
+    "problemStatement": "Given an integer **N**. Integers **A** and **B** are chosen randomly in the range **[1..N]**. Calculate the probability that the Greatest Common Divisor(GCD) of **A** and **B** equals to **B**.",
+    "constraints": [
+      "1 \u2264 T \u2264 10^3",
+      "1 \u2264 N \u2264 10^9"
+    ],
+    "inputFormat": "The first line contains an integer T (1 \u2264 T \u2264 10^3), the number of test cases. Each of the next T lines contains a single integer N (1 \u2264 N \u2264 10^9).",
+    "outputFormat": "For each test case output the probability that gcd(A, B) = B as a reduced fraction \"P/Q\" on its own line, where P and Q are coprime positive integers.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n1\n2\n3",
+        "output": "1/1\n3/4\n5/9",
+        "explanation": "For each N, the numerator is \u03a3_{i=1..N} floor(N/i). N=1 \u2192 1, denominator 1 \u2192 1/1. N=2 \u2192 floor(2/1)+floor(2/2)=2+1=3, denominator 4 \u2192 3/4. N=3 \u2192 3+1+1=5, denominator 9 \u2192 5/9."
+      },
+      {
+        "id": "sample_2",
+        "input": "2\n4\n6",
+        "output": "1/2\n7/18",
+        "explanation": "N=4: sum=8, denominator=16, reduced 1/2. N=6: sum=14, denominator=36, gcd=2, result 7/18."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n12",
+        "output": "35/144",
+        "explanation": "N=12: \u03a3 floor(12/i)=35, denominator=144, fraction already in lowest terms."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1",
+        "expectedOutput": "1/1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum reasonable boundary",
+        "input": "1\n1000",
+        "expectedOutput": "822/1000000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "prime N",
+        "input": "1\n13",
+        "expectedOutput": "37/169",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "1\n1",
+        "expectedOutput": "1/1",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "1\n1",
+        "expectedOutput": "1/1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For a fixed B, gcd(A,B)=B iff B divides A. The number of A in [1..N] divisible by B is floor(N/B). Therefore the total number of favorable ordered pairs (A,B) is S = \u03a3_{B=1..N} floor(N/B). The total number of ordered pairs is N^2. The required probability is S / N^2, reduced by dividing numerator and denominator by their greatest common divisor. Computing S naively is O(N) which is too slow for N up to 1e9. The sum can be evaluated in O(\u221aN) by grouping equal values of floor(N/i): for a current i, let q = N / i, then all i in [i, N/q] have the same floor value q. Add q * (next - i + 1) to the sum and jump i to next+1. This runs in about 2\u00b7\u221aN iterations. Finally compute g = gcd(S, N^2) and output (S/g)/(N^2/g).",
+    "timeComplexity": "O(\u221aN) per test case",
+    "spaceComplexity": "O(1) additional space",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdint.h>\n\nstatic uint64_t gcd_uint64(uint64_t a, uint64_t b) {\n    while (b) {\n        uint64_t t = a % b;\n        a = b;\n        b = t;\n    }\n    return a;\n}\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        uint64_t N;\n        scanf(\"%llu\", &N);\n        uint64_t sum = 0;\n        uint64_t i = 1;\n        while (i <= N) {\n            uint64_t q = N / i;\n            uint64_t next = N / q;\n            sum += q * (next - i + 1);\n            i = next + 1;\n        }\n        uint64_t den = N * N;\n        uint64_t g = gcd_uint64(sum, den);\n        printf(\"%llu/%llu\\n\", sum / g, den / g);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T;\n    if (!(cin >> T)) return 0;\n    while (T--) {\n        long long N;\n        cin >> N;\n        long long sum = 0;\n        for (long long i = 1; i <= N; ) {\n            long long q = N / i;\n            long long nxt = N / q;\n            sum += q * (nxt - i + 1);\n            i = nxt + 1;\n        }\n        long long den = N * N;\n        long long g = std::gcd(sum, den);\n        cout << (sum / g) << '/' << (den / g) << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    private static long gcd(long a, long b) {\n        while (b != 0) {\n            long t = a % b;\n            a = b;\n            b = t;\n        }\n        return a;\n    }\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder sb = new StringBuilder();\n        int T = Integer.parseInt(br.readLine().trim());\n        for (int tc = 0; tc < T; ++tc) {\n            long N = Long.parseLong(br.readLine().trim());\n            long sum = 0;\n            long i = 1;\n            while (i <= N) {\n                long q = N / i;\n                long nxt = N / q;\n                sum += q * (nxt - i + 1);\n                i = nxt + 1;\n            }\n            long den = N * N;\n            long g = gcd(sum, den);\n            sb.append(sum / g).append('/').append(den / g).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys, math\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out = []\n    for _ in range(T):\n        N = int(next(it))\n        i = 1\n        s = 0\n        while i <= N:\n            q = N // i\n            nxt = N // q\n            s += q * (nxt - i + 1)\n            i = nxt + 1\n        den = N * N\n        g = math.gcd(s, den)\n        out.append(f\"{s//g}/{den//g}\")\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet results = [];\nfunction gcd(a, b) {\n  while (b !== 0n) {\n    const t = a % b;\n    a = b;\n    b = t;\n  }\n  return a;\n}\nfor (let t = 0; t < T; ++t) {\n  const N = BigInt(input[idx++]);\n  let i = 1n;\n  let sum = 0n;\n  while (i <= N) {\n    const q = N / i;\n    const nxt = N / q;\n    sum += q * (nxt - i + 1n);\n    i = nxt + 1n;\n  }\n  const den = N * N;\n  const g = gcd(sum, den);\n  results.push(`${sum / g}/${den / g}`);\n}\nconsole.log(results.join('\\n'));\n"
+    }
+  }
+}

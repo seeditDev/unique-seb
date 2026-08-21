@@ -1,0 +1,128 @@
+{
+  "questionId": "Q2539",
+  "title": "The New Scheme",
+  "slug": "the-new-scheme",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "Combinatorics",
+      "Exponentiation",
+      "Modular Arithmetic",
+      "Sequences",
+      "Math"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ]
+  },
+  "content": {
+    "problemStatement": "Scheme? - Too loudly said. Just a new idea. Now Chef is expanding his business. He wants to make some new restaurants in the big city of Lviv. To make his business competitive he should interest customers. Now he knows how. But don't tell anyone -  it is a secret plan. Chef knows four national Ukrainian dishes - **salo**, **borsch**, **varenyky** and **galushky**. It is too few, of course, but enough for the beginning. Every day in his restaurant will be a dish of the day among these four ones. And dishes of the consecutive days must be different. To make the scheme more refined the dish of the first day and the dish of the last day must be different too. Now he wants his assistant to make schedule for some period. Chef suspects that there is more than one possible schedule. Hence he wants his assistant to prepare all possible plans so that he can choose the best one among them. He asks you for help. At first tell him how many such schedules exist. Since the answer can be large output it modulo **109 + 7**, that is, you need to output the remainder of division of the actual answer by **109 + 7**.",
+    "constraints": [
+      "1 \u2264 T \u2264 100",
+      "2 \u2264 N \u2264 10^9"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains a single integer N (2 \u2264 N \u2264 10^9) \u2013 the number of days.",
+    "outputFormat": "For each test case output a single line containing the number of possible schedules modulo 1000000007.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n2\n3\n5",
+        "output": "12\n24\n240",
+        "explanation": "For N=2: 4 choices for day1, 3 for day2 \u2192 12.\\nFor N=3: 3^3 - 3 = 24.\\nFor N=5: 3^5 - 3 = 240."
+      },
+      {
+        "id": "sample_2",
+        "input": "2\n4\n6",
+        "output": "84\n732",
+        "explanation": "N=4 (even): 3^4 + 3 = 81 + 3 = 84.\\nN=6 (even): 3^6 + 3 = 729 + 3 = 732."
+      },
+      {
+        "id": "sample_3",
+        "input": "2\n7\n10",
+        "output": "2184\n59052",
+        "explanation": "N=7 (odd): 3^7 - 3 = 2187 - 3 = 2184.\\nN=10 (even): 3^10 + 3 = 59049 + 3 = 59052."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n2",
+        "expectedOutput": "12",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "small even N",
+        "input": "1\n10",
+        "expectedOutput": "59052",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "small odd N",
+        "input": "1\n7",
+        "expectedOutput": "2184",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "medium even N",
+        "input": "1\n20",
+        "expectedOutput": "486784383",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "medium odd N",
+        "input": "1\n15",
+        "expectedOutput": "14348904",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "We need to count sequences of length N over 4 symbols where adjacent symbols differ and the first and last symbols also differ. This is exactly the number of proper colourings of a cycle of length N with k=4 colours. The known formula for a cycle is: answer = (k\u20111)^N + (-1)^N\u00b7(k\u20111). Substituting k=4 gives answer = 3^N + (-1)^N\u00b73. The term 3^N is computed with fast binary exponentiation in O(log N) time. If N is even we add 3, otherwise we subtract 3 (implemented as adding MOD\u20113). Finally we take the result modulo MOD = 1\u202f000\u202f000\u202f007.",
+    "timeComplexity": "O(T\u00b7log N) \u2013 each test case needs a logarithmic exponentiation.",
+    "spaceComplexity": "O(1) \u2013 only a few integer variables are used.",
+    "code": {
+      "C": "#include <stdio.h>\n#define MOD 1000000007LL\n\nlong long modPow(long long base, long long exp) {\n    long long res = 1;\n    base %= MOD;\n    while (exp > 0) {\n        if (exp & 1) res = (res * base) % MOD;\n        base = (base * base) % MOD;\n        exp >>= 1;\n    }\n    return res;\n}\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        long long N;\n        scanf(\"%lld\", &N);\n        long long pow3 = modPow(3, N);\n        long long add = (N % 2 == 0) ? 3 : MOD - 3;\n        long long ans = (pow3 + add) % MOD;\n        printf(\"%lld\\n\", ans);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nconst long long MOD = 1000000007LL;\n\nlong long modPow(long long base, long long exp) {\n    long long res = 1;\n    base %= MOD;\n    while (exp) {\n        if (exp & 1) res = res * base % MOD;\n        base = base * base % MOD;\n        exp >>= 1;\n    }\n    return res;\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; cin >> T;\n    while (T--) {\n        long long N; cin >> N;\n        long long pow3 = modPow(3, N);\n        long long add = (N % 2 == 0) ? 3 : MOD - 3;\n        long long ans = (pow3 + add) % MOD;\n        cout << ans << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    static final long MOD = 1_000_000_007L;\n    static long modPow(long base, long exp) {\n        long res = 1L;\n        base %= MOD;\n        while (exp > 0) {\n            if ((exp & 1L) == 1L) res = (res * base) % MOD;\n            base = (base * base) % MOD;\n            exp >>= 1;\n        }\n        return res;\n    }\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder sb = new StringBuilder();\n        for (int i = 0; i < T; i++) {\n            long N = Long.parseLong(br.readLine().trim());\n            long pow3 = modPow(3, N);\n            long add = (N % 2 == 0) ? 3 : MOD - 3;\n            long ans = (pow3 + add) % MOD;\n            sb.append(ans).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "import sys\nMOD = 1_000_000_007\n\ndef mod_pow(base, exp):\n    res = 1\n    base %= MOD\n    while exp:\n        if exp & 1:\n            res = (res * base) % MOD\n        base = (base * base) % MOD\n        exp >>= 1\n    return res\n\ndef main():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    t = int(data[0])\n    out = []\n    idx = 1\n    for _ in range(t):\n        n = int(data[idx]); idx += 1\n        pow3 = mod_pow(3, n)\n        add = 3 if n % 2 == 0 else MOD - 3\n        ans = (pow3 + add) % MOD\n        out.append(str(ans))\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    main()",
+      "JavaScript": "const fs = require('fs');\nconst MOD = 1000000007n;\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet results = [];\nfunction modPow(base, exp) {\n  let b = BigInt(base) % MOD;\n  let e = BigInt(exp);\n  let res = 1n;\n  while (e > 0n) {\n    if (e & 1n) res = (res * b) % MOD;\n    b = (b * b) % MOD;\n    e >>= 1n;\n  }\n  return res;\n}\nfor (let i = 0; i < T; i++) {\n  const N = BigInt(input[idx++]);\n  const pow3 = modPow(3n, N);\n  const add = (N % 2n === 0n) ? 3n : MOD - 3n;\n  const ans = (pow3 + add) % MOD;\n  results.push(ans.toString());\n}\nconsole.log(results.join('\\n'));"
+    }
+  }
+}

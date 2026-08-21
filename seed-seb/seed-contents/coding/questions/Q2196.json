@@ -1,0 +1,129 @@
+{
+  "questionId": "Q2196",
+  "title": "Palindromic Numbers",
+  "slug": "palindromic-numbers",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "Palindrome",
+      "Base conversion",
+      "Math",
+      "Brute force up to sqrt(N)",
+      "Divisor enumeration"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Ad-hoc & Implementation"
+    ]
+  },
+  "content": {
+    "problemStatement": "Johnny has figured out that there are some numbers which have an interesting property: they are the same when read from left to right, and from right to left. For example, 5115 and 929 are such numbers, while 31 and 125 are not. Johnny calls such numbers palindromic numbers.\n\nAfter a while, Johnny has realized that his definition of palindromic numbers is not really precise. Whether a number is palindromic or not depends on the base in which the number is written. For example, 21 is not palindromic in base 10 but it is palindromic in base 2 (because 21 = 101012).\n\nJohnny finds it interesting that any number becomes palindromic when it is written in an appropriate base.\n\nGiven a number N, write a program to help Johnny compute the smallest base B such that N is palindromic when written in base B.",
+    "constraints": [
+      "1 \u2264 t \u2264 1000",
+      "1 \u2264 N \u2264 10^10",
+      "Base B must be an integer and B \u2265 2"
+    ],
+    "inputFormat": "The first line contains an integer t (1 \u2264 t \u2264 1000), the number of test cases. Each of the next t lines contains a single integer N (1 \u2264 N \u2264 10^10).",
+    "outputFormat": "For each test case output a line with the smallest integer base B (B \u2265 2) such that the representation of N in base B is a palindrome.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n1\n4\n21",
+        "output": "2\n3\n2",
+        "explanation": "N=1 \u2192 smallest base is 2 (single digit). N=4 \u2192 base 3 gives \"11\" which is palindrome, no smaller base works. N=21 \u2192 binary (base 2) representation is 10101, palindrome."
+      },
+      {
+        "id": "sample_2",
+        "input": "2\n3\n2",
+        "output": "2\n3",
+        "explanation": "N=3 \u2192 base 2 representation \"11\" is palindrome, so answer 2. N=2 \u2192 no base \u2264 sqrt(2) works, smallest base giving a single digit is 3."
+      },
+      {
+        "id": "sample_3",
+        "input": "4\n6\n9\n15\n31",
+        "output": "5\n2\n2\n2",
+        "explanation": "N=6 \u2192 bases 2\u20114 give non\u2011palindromes, base 5 yields \"11\". N=9 \u2192 binary \"1001\" palindrome, answer 2. N=15 \u2192 binary \"1111\" palindrome, answer 2. N=31 \u2192 binary \"11111\" palindrome, answer 2."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n1000000007",
+        "expectedOutput": "1000000006",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case N=2",
+        "input": "1\n2",
+        "expectedOutput": "3",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case medium",
+        "input": "1\n6",
+        "expectedOutput": "5",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case with small palindrome",
+        "input": "1\n9",
+        "expectedOutput": "2",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For a given N we look for the smallest base B \u2265 2 that makes the representation of N a palindrome.\n1. Single\u2011digit representations are palindromes. The smallest base that yields a single digit is B = N+1, but we are looking for the *smallest* base, so we first try smaller bases.\n2. If the length of the representation is at least 3, then the base B must satisfy B \u2264 \u221aN (otherwise B\u00b3 > N). Therefore we can safely test every base B from 2 up to \u230a\u221aN\u230b and directly check whether the digits of N in base B form a palindrome.\n3. If no base in that range works, the representation must have length 2. A two\u2011digit palindrome has the form \"aa\", i.e. N = a\u00b7(B+1) with 1 \u2264 a < B. The smallest such base is obtained with a = 1, giving B = N\u20111, which is always \u2265 2 for N \u2265 3. (Special cases N = 1 and N = 2 are handled separately.)\nThe algorithm therefore:\n- Handles N = 1 (answer 2) and N = 2 (answer 3) explicitly.\n- Loops B = 2 \u2026 \u221aN, checking palindrome by extracting digits.\n- If none succeeds, returns N\u20111.\nTime complexity per test case: O(\u221aN \u00b7 log_B N) \u2248 O(\u221aN). With N \u2264 10^10 this is at most 10\u2075 operations, easily fast for t \u2264 1000.\nSpace complexity: O(log_B N) for the temporary digit array, i.e. O(64) integers.",
+    "timeComplexity": "O(\u221aN) per test case, overall O(t\u00b7\u221aN_max) where \u221aN_max \u2264 10\u2075.",
+    "spaceComplexity": "O(log N) \u2248 O(64) auxiliary space.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <math.h>\n#include <stdbool.h>\n\nstatic bool is_palindrome(long long n, long long base) {\n    long long digits[64];\n    int len = 0;\n    while (n > 0) {\n        digits[len++] = n % base;\n        n /= base;\n    }\n    for (int i = 0; i < len / 2; ++i) {\n        if (digits[i] != digits[len - 1 - i]) return false;\n    }\n    return true;\n}\n\nint main(void) {\n    int t;\n    if (scanf(\"%d\", &t) != 1) return 0;\n    while (t--) {\n        long long N;\n        scanf(\"%lld\", &N);\n        if (N == 1) { printf(\"2\\n\"); continue; }\n        if (N == 2) { printf(\"3\\n\"); continue; }\n        long long limit = (long long) sqrt((double) N);\n        long long answer = -1;\n        for (long long b = 2; b <= limit; ++b) {\n            if (is_palindrome(N, b)) { answer = b; break; }\n        }\n        if (answer == -1) answer = N - 1; // length\u20112 palindrome \"11\"\n        printf(\"%lld\\n\", answer);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nbool isPalindrome(long long n, long long base) {\n    vector<int> d;\n    while (n) { d.push_back(n % base); n /= base; }\n    for (size_t i = 0; i < d.size() / 2; ++i)\n        if (d[i] != d[d.size() - 1 - i]) return false;\n    return true;\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int t; if(!(cin >> t)) return 0;\n    while (t--) {\n        long long N; cin >> N;\n        if (N == 1) { cout << 2 << '\\n'; continue; }\n        if (N == 2) { cout << 3 << '\\n'; continue; }\n        long long limit = sqrt((long double)N);\n        long long ans = -1;\n        for (long long b = 2; b <= limit; ++b) {\n            if (isPalindrome(N, b)) { ans = b; break; }\n        }\n        if (ans == -1) ans = N - 1; // \"11\" in base N-1\n        cout << ans << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    private static boolean isPalindrome(long n, long base) {\n        long[] digits = new long[64];\n        int len = 0;\n        while (n > 0) {\n            digits[len++] = n % base;\n            n /= base;\n        }\n        for (int i = 0; i < len / 2; i++) {\n            if (digits[i] != digits[len - 1 - i]) return false;\n        }\n        return true;\n    }\n\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        int t = Integer.parseInt(br.readLine().trim());\n        StringBuilder sb = new StringBuilder();\n        for (int caseIdx = 0; caseIdx < t; ++caseIdx) {\n            long N = Long.parseLong(br.readLine().trim());\n            if (N == 1) { sb.append(2).append('\\n'); continue; }\n            if (N == 2) { sb.append(3).append('\\n'); continue; }\n            long limit = (long)Math.sqrt(N);\n            long ans = -1;\n            for (long b = 2; b <= limit; ++b) {\n                if (isPalindrome(N, b)) { ans = b; break; }\n            }\n            if (ans == -1) ans = N - 1; // \"11\"\n            sb.append(ans).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "import sys, math\n\ndef is_pal(n, base):\n    digits = []\n    while n:\n        digits.append(n % base)\n        n //= base\n    return digits == digits[::-1]\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    t = int(data[0])\n    out = []\n    idx = 1\n    for _ in range(t):\n        N = int(data[idx]); idx += 1\n        if N == 1:\n            out.append('2')\n            continue\n        if N == 2:\n            out.append('3')\n            continue\n        limit = int(math.isqrt(N))\n        ans = None\n        for b in range(2, limit + 1):\n            if is_pal(N, b):\n                ans = b\n                break\n        if ans is None:\n            ans = N - 1\n        out.append(str(ans))\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet pos = 0;\nconst t = Number(input[pos++]);\nlet results = [];\nfunction isPal(n, base) {\n  const digits = [];\n  while (n > 0) {\n    digits.push(n % base);\n    n = Math.floor(n / base);\n  }\n  for (let i = 0, j = digits.length - 1; i < j; ++i, --j) {\n    if (digits[i] !== digits[j]) return false;\n  }\n  return true;\n}\nfor (let caseIdx = 0; caseIdx < t; ++caseIdx) {\n  const N = Number(input[pos++]);\n  if (N === 1) { results.push('2'); continue; }\n  if (N === 2) { results.push('3'); continue; }\n  const limit = Math.floor(Math.sqrt(N));\n  let ans = null;\n  for (let b = 2; b <= limit; ++b) {\n    if (isPal(N, b)) { ans = b; break; }\n  }\n  if (ans === null) ans = N - 1; // \"11\"\n  results.push(String(ans));\n}\nconsole.log(results.join('\\n'));\n"
+    }
+  }
+}

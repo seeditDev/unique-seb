@@ -1,0 +1,132 @@
+{
+  "questionId": "Q6466",
+  "title": "Sherlock Counts Ways",
+  "slug": "sherlock-counts-ways",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Combinatorics",
+      "Modular Arithmetic"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Mathematics"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Watson gives an array of colored balls to Sherlock. All balls are identical in shape and size and hence, two balls with same color are indistinguishable. He gives to Sherlock an integer **K** and wants Sherlock to choose a bundle of **K** balls from the array. Sherlock is intrigued by the problem and starts wondering in how many different ways he can choose **K** such balls. Two ways are different if for any color **c**, there are different count of balls with color **c** in two chosen bundles.",
+    "constraints": [
+      "1 <= K <= N <= 2*10^5",
+      "1 <= Ai <= 2*10^5"
+    ],
+    "inputFormat": "The first line contains two integers N and K, where N is the number of balls and K is the number of balls to choose. The second line contains N integers, each representing the color of a ball.",
+    "outputFormat": "The number of different ways to choose K balls, modulo 13313.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4 2\n3 2 2 3",
+        "output": "3",
+        "explanation": "The possible ways to choose 2 balls are: [2, 2], [3, 3], [2, 3]."
+      },
+      {
+        "id": "sample_2",
+        "input": "5 1\n2 2 2 2 2",
+        "output": "1",
+        "explanation": "The only way to choose 1 ball is: [2]."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1 1\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "200000 200000\n1 1 1 1 1 1 1 1 1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "5 3\n1 1 1 1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "10 5\n1 2 3 4 5 1 2 3 4 5",
+        "expectedOutput": "126",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "15 10\n1 2 3 4 5 1 2 3 4 5 1 2 3 4 5",
+        "expectedOutput": "3003",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "We can use a dynamic programming approach to solve this problem. We will create a 2D array, dp, where dp[i][j] represents the number of ways to choose j balls from the first i colors. We will iterate over each color and for each color, we will iterate over the number of balls to choose. For each state, we will calculate the number of ways to choose the balls by considering two cases: choosing a ball of the current color or not choosing a ball of the current color.",
+    "timeComplexity": "O(N*K*max(Ai)) — where N is the number of balls, K is the number of balls to choose, and max(Ai) is the maximum number of balls of a color.",
+    "spaceComplexity": "O(N*K) — where N is the number of balls and K is the number of balls to choose.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#define MOD 13313\nint main() {\n    int N, K;\n    scanf(\"%d %d\", &N, &K);\n    int* colors = (int*)malloc(N * sizeof(int));\n    for (int i = 0; i < N; i++) {\n        scanf(\"%d\", &colors[i]);\n    }\n    int* count = (int*)calloc(200001, sizeof(int));\n    for (int i = 0; i < N; i++) {\n        count[colors[i]]++;\n    }\n    int** dp = (int**)malloc((200001) * sizeof(int*));\n    for (int i = 0; i <= 200000; i++) {\n        dp[i] = (int*)malloc((K + 1) * sizeof(int));\n    }\n    for (int i = 0; i <= 200000; i++) {\n        dp[i][0] = 1;\n    }\n    for (int i = 1; i <= 200000; i++) {\n        for (int j = 1; j <= K; j++) {\n            for (int k = 0; k <= count[i] && k <= j; k++) {\n                dp[i][j] = (dp[i][j] + dp[i - 1][j - k]) % MOD;\n            }\n        }\n    }\n    printf(\"%d\\n\", dp[200000][K]);\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\n#define MOD 13313\nusing namespace std;\nint main() {\n    int N, K;\n    cin >> N >> K;\n    vector<int> colors(N);\n    for (int i = 0; i < N; i++) {\n        cin >> colors[i];\n    }\n    vector<int> count(200001, 0);\n    for (int i = 0; i < N; i++) {\n        count[colors[i]]++;\n    }\n    vector<vector<int>> dp(200001, vector<int>(K + 1, 0));\n    for (int i = 0; i <= 200000; i++) {\n        dp[i][0] = 1;\n    }\n    for (int i = 1; i <= 200000; i++) {\n        for (int j = 1; j <= K; j++) {\n            for (int k = 0; k <= count[i] && k <= j; k++) {\n                dp[i][j] = (dp[i][j] + dp[i - 1][j - k]) % MOD;\n            }\n        }\n    }\n    cout << dp[200000][K] << endl;\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int N = sc.nextInt();\n        int K = sc.nextInt();\n        int[] colors = new int[N];\n        for (int i = 0; i < N; i++) {\n            colors[i] = sc.nextInt();\n        }\n        int[] count = new int[200001];\n        for (int i = 0; i < N; i++) {\n            count[colors[i]]++;\n        }\n        int[][] dp = new int[200001][K + 1];\n        for (int i = 0; i <= 200000; i++) {\n            dp[i][0] = 1;\n        }\n        for (int i = 1; i <= 200000; i++) {\n            for (int j = 1; j <= K; j++) {\n                for (int k = 0; k <= count[i] && k <= j; k++) {\n                    dp[i][j] = (dp[i][j] + dp[i - 1][j - k]) % 13313;\n                }\n            }\n        }\n        System.out.println(dp[200000][K]);\n    }\n}",
+      "Python3": "import sys\nMOD = 13313\nN, K = map(int, sys.stdin.readline().split())\ncolors = list(map(int, sys.stdin.readline().split()))\ncount = [0] * 200001\nfor i in range(N):\n    count[colors[i]] += 1\ndp = [[0] * (K + 1) for _ in range(200001)]\nfor i in range(200001):\n    dp[i][0] = 1\nfor i in range(1, 200001):\n    for j in range(1, K + 1):\n        for k in range(min(count[i], j) + 1):\n            dp[i][j] = (dp[i][j] + dp[i - 1][j - k]) % MOD\nprint(dp[200000][K])",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst readline = () => input[idx++];\nconst MOD = 13313;\nconst [N, K] = readline().split(' ').map(Number);\nconst colors = readline().split(' ').map(Number);\nconst count = new Array(200001).fill(0);\nfor (let i = 0; i < N; i++) {\n    count[colors[i]]++;\n}\nconst dp = new Array(200001).fill(0).map(() => new Array(K + 1).fill(0));\nfor (let i = 0; i <= 200000; i++) {\n    dp[i][0] = 1;\n}\nfor (let i = 1; i <= 200000; i++) {\n    for (let j = 1; j <= K; j++) {\n        for (let k = 0; k <= count[i] && k <= j; k++) {\n            dp[i][j] = (dp[i][j] + dp[i - 1][j - k]) % MOD;\n        }\n    }\n}\nconsole.log(dp[200000][K]);"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

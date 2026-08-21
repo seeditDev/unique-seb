@@ -1,0 +1,668 @@
+.proctoring-instructions-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+  overflow-y: auto;
+  /* Promote overlay to its own GPU layer so React re-renders don't cascade */
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+/* Backdrop is a static pseudo-element — it never re-paints when React state changes */
+.proctoring-instructions-overlay::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 15, 30, 0.85);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: -1;
+  /* Own compositing layer — isolated from modal repaints */
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+.proctoring-instructions-modal {
+  background: var(--bg-secondary, #111827);
+  border: 1px solid var(--border-color, #1e293b);
+  border-radius: 16px;
+  max-width: 1040px;
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  color: var(--text-main, #f1f5f9);
+  overflow: hidden;
+  /* Contain repaints to this subtree — prevents cascading upward to the backdrop */
+  contain: layout paint;
+  isolation: isolate;
+  /* Own GPU compositing layer — modal repaints stay local */
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.instructions-header {
+  padding: 28px 32px;
+  border-bottom: 1px solid var(--border-color, #1e293b);
+  background: linear-gradient(135deg, #1e1b4b 0%, #15182e 100%);
+  color: white;
+}
+
+.instructions-header h2 {
+  margin: 0 0 8px 0;
+  font-size: 24px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-icon {
+  font-size: 28px;
+  color: #a5b4fc;
+}
+
+.instructions-subtitle {
+  margin: 0;
+  font-size: 14px;
+  color: #c7d2fe;
+  opacity: 0.9;
+}
+
+.instructions-content {
+  padding: 32px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Custom Scrollbar */
+.instructions-content::-webkit-scrollbar {
+  width: 8px;
+}
+.instructions-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+.instructions-content::-webkit-scrollbar-thumb {
+  background: var(--border-color, #334155);
+  border-radius: 4px;
+}
+.instructions-content::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted, #94a3b8);
+}
+
+.instructions-scroll-hint {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  color: #a5b4fc;
+  padding: 12px 18px;
+  border-radius: 10px;
+  margin-bottom: 24px;
+  font-weight: 600;
+  font-size: 13.5px;
+}
+
+.instructions-scroll-hint .hint-icon {
+  color: #f59e0b;
+}
+
+.instructions-section {
+  margin-bottom: 28px;
+}
+
+.instructions-section h3 {
+  margin: 0 0 16px 0;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-main, #f1f5f9);
+  font-weight: 600;
+}
+
+.section-icon {
+  font-size: 22px;
+}
+
+.check-icon {
+  color: #10b981;
+}
+
+.dont-icon {
+  color: #ef4444;
+}
+
+.warning-icon {
+  color: #f59e0b;
+}
+
+.instructions-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.instructions-list li {
+  display: flex;
+  align-items: flex-start;
+  padding: 12px 0;
+  line-height: 1.5;
+  font-size: 14px;
+  color: var(--text-muted, #94a3b8);
+  border-bottom: 1px solid var(--border-color, #334155);
+}
+
+.instructions-list li:last-child {
+  border-bottom: none;
+}
+
+.instructions-list li span {
+  flex: 1;
+}
+
+.warning-section {
+  background: rgba(245, 158, 11, 0.05);
+  padding: 24px;
+  border-radius: 12px;
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-left: 4px solid #f59e0b;
+}
+
+/* Camera Preview Section */
+.camera-preview-section {
+  margin-bottom: 24px;
+  background: var(--bg-primary, #090d16);
+  padding: 24px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color, #1e293b);
+}
+
+.camera-preview-section h3 {
+  margin: 0 0 16px 0;
+  font-size: 18px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-main, #f1f5f9);
+}
+
+.camera-preview-container {
+  position: relative;
+  min-height: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.camera-preview-wrapper {
+  width: 100%;
+  max-width: 440px;
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--border-color, #1e293b);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+  /* Isolate this sub-tree so camera/video layer is independent of modal state */
+  contain: layout paint;
+  isolation: isolate;
+}
+
+.instructions-video-preview {
+  width: 100%;
+  height: auto;
+  display: block;
+  background: #000;
+  transform: scaleX(-1);
+}
+
+.camera-status-message {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted, #94a3b8);
+}
+
+.camera-status-hint {
+  font-size: 12.5px;
+  color: var(--text-muted, #94a3b8);
+  margin-top: 8px;
+  opacity: 0.8;
+}
+
+.spinner-icon {
+  font-size: 40px;
+  animation: spin 1s linear infinite;
+  color: var(--accent-coding, #6366f1);
+  margin-bottom: 16px;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.camera-status-error {
+  text-align: center;
+  padding: 40px 24px;
+  color: #ef4444;
+}
+
+.error-icon {
+  font-size: 40px;
+  color: #ef4444;
+  margin-bottom: 16px;
+}
+
+.camera-status-error p {
+  margin: 12px 0;
+  font-size: 14.5px;
+  line-height: 1.5;
+}
+
+.retry-camera-btn {
+  margin-top: 16px;
+  padding: 10px 20px;
+  background: var(--accent-coding, #6366f1);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.retry-camera-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.photo-capture-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(15, 23, 42, 0.85);
+  padding: 12px;
+  border-top: 1px solid var(--border-color, #334155);
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+
+.photo-scan-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  width: 100%;
+  justify-content: center;
+}
+
+.scan-captured {
+  color: #10b981;
+}
+
+.photo-thumbnail {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 72px;
+  height: 72px;
+  border-radius: 8px;
+  border: 2px solid #10b981;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  background: #000;
+  z-index: 6;
+}
+
+.photo-thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform: scaleX(-1);
+}
+
+.thumbnail-label {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(16, 185, 129, 0.9);
+  color: white;
+  font-size: 8px;
+  font-weight: 800;
+  text-align: center;
+  padding: 2px 0;
+  letter-spacing: 0.05em;
+}
+
+.pulse {
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+/* Two-column layout grid for desktop */
+.instructions-grid-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+@media (min-width: 769px) {
+  .instructions-grid-layout {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 32px;
+    align-items: start;
+  }
+}
+
+.instructions-left-column,
+.instructions-right-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.instructions-left-column {
+  position: sticky;
+  top: 0;
+}
+
+.camera-verification-checklist {
+  background: var(--bg-primary, #0f172a);
+  border: 1px solid var(--border-color, #334155);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.camera-verification-checklist h4 {
+  margin: 0 0 14px 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-muted, #94a3b8);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.camera-verification-checklist ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.camera-verification-checklist li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.25s ease;
+  border: 1px solid transparent;
+}
+
+.camera-verification-checklist li.pending {
+  background: rgba(245, 158, 11, 0.05);
+  border-color: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+}
+
+.camera-verification-checklist li.passed {
+  background: rgba(16, 185, 129, 0.05);
+  border-color: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+}
+
+.camera-verification-checklist li .badge-bullet {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.camera-verification-checklist li.pending .badge-bullet {
+  background: #f59e0b;
+}
+
+.camera-verification-checklist li.passed .badge-bullet {
+  background: #10b981;
+}
+
+.camera-verification-checklist li .badge-text {
+  flex: 1;
+}
+
+.camera-verification-checklist li .badge-status {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.instructions-acknowledgement {
+  padding: 20px 32px;
+  background: var(--bg-secondary, #1e293b);
+  border-top: 1px solid var(--border-color, #334155);
+  border-bottom: 1px solid var(--border-color, #334155);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.instructions-acknowledgement label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 600;
+  color: var(--text-main, #f1f5f9);
+  cursor: pointer;
+  user-select: none;
+  font-size: 14.5px;
+}
+
+.instructions-acknowledgement input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent-coding, #10b981);
+  cursor: pointer;
+}
+
+.instructions-acknowledgement small {
+  color: var(--text-muted, #94a3b8);
+  font-size: 12px;
+  padding-left: 30px;
+}
+
+.instructions-acknowledgement.disabled label {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.instructions-footer {
+  padding: 20px 32px;
+  display: flex;
+  gap: 16px;
+  justify-content: flex-end;
+  background: var(--bg-primary, #0f172a);
+}
+
+.instructions-btn {
+  padding: 12px 28px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancel-btn {
+  background: transparent;
+  border: 1px solid var(--border-color, #334155);
+  color: var(--text-main, #f1f5f9);
+}
+
+.cancel-btn:hover {
+  background: var(--bg-secondary, #1e293b);
+}
+
+.continue-btn {
+  background: var(--accent-coding, #10b981);
+  color: white;
+}
+
+.continue-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.continue-btn.disabled {
+  background: var(--border-color, #334155);
+  color: var(--text-muted, #94a3b8);
+  cursor: not-allowed;
+}
+
+.continue-btn.disabled:hover {
+  transform: none;
+  opacity: 1;
+}
+
+/* Face verification guide and oval */
+/* REMOVED box-shadow: 0 0 0 9999px — that caused full-screen repaints every animation frame */
+/* Vignette is now a separate .face-guide-vignette div (see JSX) painted once on its own layer */
+.face-guide-vignette {
+  position: absolute;
+  inset: 0;
+  /* Radial gradient creates the darkening around the oval — no paint cascade */
+  background: radial-gradient(
+    ellipse 160px 210px at 50% 50%,
+    transparent 88%,
+    rgba(15, 23, 42, 0.7) 100%
+  );
+  pointer-events: none;
+  z-index: 4;
+  /* Own GPU layer — completely independent of React renders */
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+.face-guide-oval {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 180px;
+  height: 230px;
+  border: 3px dashed rgba(16, 185, 129, 0.7);
+  border-radius: 50%;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  z-index: 5;
+  animation: borderPulse 2s infinite ease-in-out;
+  /* Promote oval to its own GPU compositing layer — animation stays isolated */
+  will-change: border-color;
+}
+
+@keyframes borderPulse {
+  0% { border-color: rgba(16, 185, 129, 0.5); }
+  50% { border-color: rgba(16, 185, 129, 0.95); }
+  100% { border-color: rgba(16, 185, 129, 0.5); }
+}
+
+.guide-text {
+  color: white;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: #0f172a;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  text-align: center;
+  pointer-events: none;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 768px) {
+  .proctoring-instructions-modal {
+    max-width: 100%;
+    max-height: 100vh;
+    border-radius: 0;
+    height: 100vh;
+  }
+
+  .instructions-header {
+    padding: 20px;
+  }
+
+  .instructions-header h2 {
+    font-size: 20px;
+  }
+
+  .instructions-content {
+    padding: 20px;
+  }
+
+  .instructions-footer {
+    padding: 16px 20px;
+    flex-direction: column;
+  }
+
+  .instructions-btn {
+    width: 100%;
+  }
+}
+
+.registration-grid-layout {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 32px;
+  width: 100%;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .registration-grid-layout {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}

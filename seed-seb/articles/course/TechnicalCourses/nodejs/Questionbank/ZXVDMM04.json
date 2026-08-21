@@ -1,0 +1,82 @@
+{
+  "questionId": "ZXVDMM04",
+  "title": "Referencing vs Embedding Documents",
+  "slug": "zxvdmm04",
+  "version": 1,
+  "createdAt": "2026-07-13",
+  "updatedAt": "2026-07-13",
+  "source": {
+    "platform": "SEED-IT",
+    "courseSlug": "nodejs",
+    "contestCode": "ENQZMF",
+    "module": "Database Integration",
+    "submodule": "Data relationships",
+    "contentType": "mcq",
+    "originalUrl": "https://www.codechef.com/learn/course/nodejs/ENQZMF/problems/ZXVDMM04"
+  },
+  "metadata": {
+    "category": "Concept",
+    "difficulty": "Beginner",
+    "isPremium": false,
+    "tags": [
+      "javascript"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Database Integration",
+      "Data relationships"
+    ],
+    "QBCategory": "SEED-IT"
+  },
+  "content": {
+    "problemStatement": "Okay, so we've learned about MongoDB and how to use Mongoose to define `Schemas` for our data. Now, let's talk about how we can represent relationships between different pieces of data, specifically \"one-to-many\" relationships.\n\nImagine you're building a simple blog application. A user can write many blog posts. This is a classic \"one-to-many\" relationship: one user, many posts. How do we store this relationship in our MongoDB database using Mongoose? We have two main approaches: **embedding** and **referencing**.\n\n**1. Embedding Documents (Keeping everything in one place)**\n\nThink of embedding like putting all related information directly inside the main document.\n\n*   **Analogy:** Imagine you have a folder for each `User`. When a `User` writes a blog `Post`, you put a copy of the *entire post* (title, content, date) directly inside that `User`'s folder.\n*   **How it works in Mongoose:** In your `UserSchema`, you might have a field called `posts`. This `posts` field would be an array, and each item in the array would be a complete post object (e.g., `{ title: 'My First Post', content: 'Hello world!' }`).\n\n    ```javascript\n    // Simplified Example (conceptual)\n    const userSchema = new mongoose.Schema({\n      name: String,\n      email: String,\n      posts: [ // Array of embedded post documents\n        {\n          title: String,\n          content: String,\n          date: Date\n        }\n      ]\n    });\n    ```\n\n*   **Pros:**\n    *   **Easy to retrieve:** When you fetch a user, you get all their posts at the same time in a single database query. Very convenient!\n*   **Cons:**\n    *   **Large documents:** If a user has hundreds or thousands of posts, the user document can become very large. This can slow down queries and updates for that user.\n    *   **Data duplication (potentially):** If a post somehow needed to be associated with another user (less common in a simple blog), embedding would mean duplicating the post data.\n    *   **Independent access:** It's harder to query just the posts independently (e.g., get the 10 most recent posts from *all* users) if they are all buried inside user documents.\n\n**2. Referencing Documents (Linking with IDs)**\n\nThink of referencing like keeping related information in separate places but linking them with a unique ID.\n\n*   **Analogy:** You still have a folder for each `User`. You also have a separate filing cabinet for all `Posts`. Each `Post` in the cabinet has a unique ID number. Now, inside the `User`'s folder, instead of putting the whole post, you just put a list of the ID numbers of the posts written by that user.\n*   **How it works in Mongoose:** Your `UserSchema` would have a field, say `postIds`, which is an array of `ObjectId`s. Each `ObjectId` in this array is the unique `_id` of a document in your `Posts` collection. You'd have a separate `PostSchema` and `Post` model.\n\n    ```javascript\n    // Simplified Example (conceptual)\n    // User Schema\n    const userSchema = new mongoose.Schema({\n      name: String,\n      email: String,\n      postIds: [ // Array of ObjectId references to Post documents\n        { type: mongoose.Schema.Types.ObjectId, ref: 'Post' }\n      ]\n    });\n\n    // Post Schema\n    const postSchema = new mongoose.Schema({\n      title: String,\n      content: String,\n      date: Date,\n      authorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' } // Reference back to the User\n    });\n    ```\n    (Note: `ref: 'Post'` tells Mongoose which model these IDs refer to. We'll explore this more with \"population\" soon.)\n\n*   **Pros:**\n    *   **Smaller documents:** User documents remain small, only storing IDs. Post documents are also separate and manageable.\n    *   **Data consistency:** Each post exists as a single document. If you update a post, it's updated in one place.\n    *   **Independent access:** Posts can be easily queried on their own (e.g., find all posts with a certain keyword).\n*   **Cons:**\n    *   **Multiple queries:** To get a user and all their posts, you first fetch the user to get the `postIds`, and then you need to make another query (or queries) to fetch the actual post documents using those IDs. (Don't worry, Mongoose has a neat way to handle this called \"population,\" which we'll cover next!)\n\n**When to Choose Which?**\n\n*   **Choose Embedding when:**\n    *   You have a \"one-to-few\" relationship (e.g., a user has a few addresses, a blog post has a few comments).\n    *   The embedded data is almost always accessed *with* the parent document.\n    *   The embedded data doesn't have a strong independent identity or isn't queried separately very often.\n    *   The total size of the parent document won't become excessively large.\n\n*   **Choose Referencing when:**\n    *   You have a \"one-to-many\" or \"one-to-squillions\" relationship (e.g., a user has many posts, a product has many reviews).\n    *   The related documents need to be accessed independently.\n    *   You want to avoid very large parent documents.\n    *   Data consistency across references is important.\n\nThis decision between embedding and referencing is a fundamental part of designing your database `Schemas` with Mongoose. It impacts how you store data in MongoDB and how you'll later retrieve and work with it in your Node.js application.",
+    "constraints": [
+      "Time Limit: 1s",
+      "Memory Limit: 256MB"
+    ],
+    "inputFormat": "Standard input",
+    "outputFormat": "Standard output",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "input": "",
+        "expectedOutput": "expected",
+        "weight": 100
+      }
+    ],
+    "totalTestCases": 1,
+    "totalWeight": 100
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      100
+    ],
+    "maxScore": 100
+  },
+  "judging": {
+    "timeLimitMs": 1000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // Write your C code here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your C++ code here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) {\n        // Write your Java code here\n    }\n}",
+    "Python3": "# Write your Python code here\n",
+    "JavaScript": "// Write your JavaScript code here\n",
+    "Go": "package main\n\nimport \"fmt\"\n\nfunc main() {\n    // Write your Go code here\n}",
+    "Rust": "fn main() {\n    // Write your Rust code here\n}",
+    "C#": "using System;\n\nclass Program {\n    static void Main() {\n        // Write your C# code here\n    }\n}",
+    "SQL": "-- Write your SQL query here\n"
+  }
+}

@@ -1,0 +1,131 @@
+{
+  "questionId": "Q7901",
+  "title": "Gasoline",
+  "slug": "gasoline",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Greedy",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Sorting",
+      "Greedy",
+      "Minimum Cost",
+      "Circular Track"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Sorting"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "There are NNN cars (numbered 111 through NNN) on a circular track with length NNN. For each iii (2≤i≤N2 \\le i \\le N2≤i≤N), the iii-th of them is at a distance i−1i-1i−1 clockwise from car 111, i.e. car 111 needs to travel a distance i−1i-1i−1 clockwise to reach car iii.\n\nFor each valid iii, you can fill the iii-th car's tank with up to fif_ifi​ litres of gasoline, with cost cic_ici​ coins per litre.\n\nAfter that, you choose some car, sit in this car and start driving in the clockwise direction. To move one unit of distance in this direction, you need to spend 111 litre of gasoline. When you pass another car (even if you'd run out of gasoline exactly at that point), you steal all its gasoline. You cannot move if you do not have any gasoline left.\n\nYour goal is to fill the cars in such a way that you are able to choose an optimal car, travel the clockwise distance NNN and return to the place where you were initially. Under this constraint, you want to pay the least possible number of coins.\n\nFind the smallest number of coins you need to pay. It is guaranteed that there is a way to travel the distance NNN. It can be proved that in such a case, the smallest number of coins is always an integer.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 200000",
+      "0 <= fi <= 10^9",
+      "0 <= ci <= 10^9",
+      "It is guaranteed that sum of fi over all i is at least N (so a solution always exists)."
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case: first line contains integer N – the number of cars (and the length of the circular track). The second line contains N integers f1 … fN – the maximum litres that can be filled in each car. The third line contains N integers c1 … cN – the cost (coins) per litre for each car.",
+    "outputFormat": "For each test case output a single line with one integer – the minimum total number of coins needed to be able to travel the whole circle.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n3\n1 1 1\n1 1 1\n3\n3 0 0\n10 0 0\n3\n3 3 3\n3 2 1",
+        "output": "3\n30\n3",
+        "explanation": "In each test case we need N litres total. Buying from the cheapest cars first gives the minimal cost, which matches the shown outputs."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n0\n0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n5\n1000000000 1000000000 1000000000 1000000000 1000000000\n1000000000 999999999 999999998 999999997 999999996",
+        "expectedOutput": "5000000000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case with zero cost",
+        "input": "1\n4\n2 2 2 2\n0 5 5 5",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n6\n1 2 3 4 5 6\n6 5 4 3 2 1",
+        "expectedOutput": "12",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n3\n0 5 5\n10 1 2",
+        "expectedOutput": "5",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The only requirement for being able to complete the circle is that the total amount of gasoline bought is at least N, because the distances between consecutive cars are all 1. If the total gasoline is >= N, we can start at the car that follows the point where the cumulative surplus is minimal, guaranteeing we never run out. Therefore we only need to buy at least N litres in total, respecting each car's capacity fi, while minimizing cost. Since cost per litre is linear, the optimal strategy is to buy gasoline from the cheapest cars first. Sort the cars by ci ascending, then take from each car as much as possible (up to its capacity) until we have collected N litres. The sum of taken litres multiplied by their costs is the answer.",
+    "timeComplexity": "O(N log N) per test case because of sorting.",
+    "spaceComplexity": "O(N) for storing the (cost, capacity) pairs.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\ntypedef struct { long long c; long long f; } Pair;\nint cmp(const void *a, const void *b) {\n    long long ca = ((Pair*)a)->c;\n    long long cb = ((Pair*)b)->c;\n    return (ca > cb) - (ca < cb);\n}\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    while(T--){\n        int N; scanf(\"%d\", &N);\n        long long *f = (long long*)malloc(N*sizeof(long long));\n        for(int i=0;i<N;i++) scanf(\"%lld\", &f[i]);\n        Pair *arr = (Pair*)malloc(N*sizeof(Pair));\n        for(int i=0;i<N;i++){\n            long long c; scanf(\"%lld\", &c);\n            arr[i].c = c; arr[i].f = f[i];\n        }\n        free(f);\n        qsort(arr, N, sizeof(Pair), cmp);\n        long long need = N;\n        long long ans = 0;\n        for(int i=0;i<N && need>0;i++){\n            long long take = arr[i].f < need ? arr[i].f : need;\n            ans += take * arr[i].c;\n            need -= take;\n        }\n        printf(\"%lld\\n\", ans);\n        free(arr);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N; cin>>N;\n        vector<long long> f(N);\n        for(int i=0;i<N;i++) cin>>f[i];\n        vector<pair<long long,long long>> v(N); // {cost, capacity}\n        for(int i=0;i<N;i++){\n            long long c; cin>>c;\n            v[i] = {c, f[i]};\n        }\n        sort(v.begin(), v.end(), [](auto &a, auto &b){return a.first < b.first;});\n        long long need = N;\n        long long ans = 0;\n        for(auto &p: v){\n            if(need==0) break;\n            long long take = min(p.second, need);\n            ans += take * p.first;\n            need -= take;\n        }\n        cout<<ans<<\"\\n\";\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    static class FastScanner {\n        private final InputStream in;\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        FastScanner(InputStream in){ this.in = in; }\n        private int readByte() throws IOException {\n            if (ptr >= len) {\n                len = in.read(buffer);\n                ptr = 0;\n                if (len <= 0) return -1;\n            }\n            return buffer[ptr++];\n        }\n        long nextLong() throws IOException {\n            int c;\n            while ((c = readByte()) <= ' ') {\n                if (c == -1) return Long.MIN_VALUE;\n            }\n            boolean neg = false;\n            if (c == '-') { neg = true; c = readByte(); }\n            long val = 0;\n            while (c > ' ') {\n                val = val * 10 + (c - '0');\n                c = readByte();\n            }\n            return neg ? -val : val;\n        }\n        int nextInt() throws IOException { return (int) nextLong(); }\n    }\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner(System.in);\n        int T = fs.nextInt();\n        StringBuilder sb = new StringBuilder();\n        while (T-- > 0) {\n            int N = fs.nextInt();\n            long[] f = new long[N];\n            for (int i = 0; i < N; i++) f[i] = fs.nextLong();\n            long[][] arr = new long[N][2]; // {cost, capacity}\n            for (int i = 0; i < N; i++) {\n                long c = fs.nextLong();\n                arr[i][0] = c;\n                arr[i][1] = f[i];\n            }\n            Arrays.sort(arr, Comparator.comparingLong(a -> a[0]));\n            long need = N;\n            long ans = 0;\n            for (int i = 0; i < N && need > 0; i++) {\n                long take = Math.min(arr[i][1], need);\n                ans += take * arr[i][0];\n                need -= take;\n            }\n            sb.append(ans).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef solve():\n    data = list(map(int, sys.stdin.buffer.read().split()))\n    it = iter(data)\n    T = next(it)\n    out_lines = []\n    for _ in range(T):\n        N = next(it)\n        f = [next(it) for _ in range(N)]\n        cars = []\n        for i in range(N):\n            c = next(it)\n            cars.append((c, f[i]))\n        cars.sort(key=lambda x: x[0])\n        need = N\n        ans = 0\n        for c, cap in cars:\n            if need == 0:\n                break\n            take = cap if cap < need else need\n            ans += take * c\n            need -= take\n        out_lines.append(str(ans))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()",
+      "JavaScript": "const fs = require('fs');\nconst data = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/).map(Number);\nlet idx = 0;\nconst T = data[idx++];\nlet output = [];\nfor (let t = 0; t < T; t++) {\n  const N = data[idx++];\n  const f = new Array(N);\n  for (let i = 0; i < N; i++) f[i] = data[idx++];\n  const cars = [];\n  for (let i = 0; i < N; i++) {\n    const c = data[idx++];\n    cars.push({c: c, f: f[i]});\n  }\n  cars.sort((a, b) => a.c - b.c);\n  let need = N;\n  let ans = 0;\n  for (const car of cars) {\n    if (need === 0) break;\n    const take = car.f < need ? car.f : need;\n    ans += take * car.c;\n    need -= take;\n  }\n  output.push(String(ans));\n}\nconsole.log(output.join('\\n'));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

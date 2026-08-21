@@ -1,0 +1,208 @@
+{
+  "questionId": "Q11956",
+  "title": "N meetings in one room",
+  "slug": "n-meetings-in-one-room",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Greedy Algorithms",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Meeting Room",
+      "Scheduling",
+      "Greedy Algorithm"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "There is one meeting room in a firm. You are given two arrays, start and end each of size N. For an index \u2018i\u2019, start[i] denotes the starting time of the ith meeting while end[i]  will denote the ending time of the ith meeting. Find the maximum number of meetings that can be accommodated if only one meeting can happen in the room at a  particular time. Print the order in which these meetings will be performed.",
+    "constraints": [
+      "1 <= N <= 10^5",
+      "0 <= start[i] < end[i] <= 10^6",
+      "All start and end times are integers."
+    ],
+    "inputFormat": "Two arrays, start and end, each of size N, where start[i] and end[i] denote the start and end times of the ith meeting.",
+    "outputFormat": "An array of indices representing the order in which the meetings can be accommodated.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": {
+          "start": [
+            1
+          ],
+          "end": [
+            2
+          ]
+        },
+        "expectedOutput": [
+          1
+        ],
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": {
+          "start": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+          ],
+          "end": [
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19
+          ]
+        },
+        "expectedOutput": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ],
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": {
+          "start": [
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "end": [
+            1,
+            1,
+            1,
+            1,
+            1
+          ]
+        },
+        "expectedOutput": [
+          1
+        ],
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case/empty-like",
+        "input": {
+          "start": [],
+          "end": []
+        },
+        "expectedOutput": [],
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": {
+          "start": [
+            1,
+            3,
+            0,
+            5,
+            8,
+            5
+          ],
+          "end": [
+            2,
+            4,
+            6,
+            7,
+            9,
+            9
+          ]
+        },
+        "expectedOutput": [
+          1,
+          2,
+          4,
+          5
+        ],
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Sort the meetings by their end times and then select the meetings that can be accommodated in the room.",
+    "timeComplexity": "O(N log N) due to sorting",
+    "spaceComplexity": "O(N) for storing the meetings and the result",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\n// Structure to represent a meeting\ntypedef struct Meeting {\n    int start;\n    int end;\n    int index;\n} Meeting;\n\n// Comparison function for sorting meetings\nint compareMeetings(const void *a, const void *b) {\n    Meeting *m1 = (Meeting *)a;\n    Meeting *m2 = (Meeting *)b;\n    return m1->end - m2->end;\n}\n\n// Function to find the maximum number of meetings that can be accommodated\nvoid maxMeetings(int start[], int end[], int n) {\n    Meeting meetings[n];\n    for (int i = 0; i < n; i++) {\n        meetings[i].start = start[i];\n        meetings[i].end = end[i];\n        meetings[i].index = i + 1;\n    }\n\n    qsort(meetings, n, sizeof(Meeting), compareMeetings);\n\n    printf(\"%d \", meetings[0].index);\n    int lastEnd = meetings[0].end;\n    for (int i = 1; i < n; i++) {\n        if (meetings[i].start > lastEnd) {\n            printf(\"%d \", meetings[i].index);\n            lastEnd = meetings[i].end;\n        }\n    }\n    printf(\"\\n\");\n}\n\nint main() {\n    int start[] = {1, 3, 0, 5, 8, 5};\n    int end[] = {2, 4, 6, 7, 9, 9};\n    int n = sizeof(start) / sizeof(start[0]);\n    maxMeetings(start, end, n);\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\n// Class to hold solution logic\nclass Solution {\npublic:\n    // Function to get all meetings that can be scheduled\n    vector<int> maxMeetings(vector<int>& start, vector<int>& end) {\n        // Store meetings as (end_time, start_time, original_index)\n        vector<tuple<int, int, int>> meetings;\n        for (int i = 0; i < start.size(); i++) {\n            // i+1 for 1-based indexing\n            meetings.push_back({end[i], start[i], i + 1}); \n           \n        }\n\n        // Sort by end time\n        sort(meetings.begin(), meetings.end());\n\n        vector<int> result; // To store meeting indices\n        int lastEnd = -1;\n\n        // Traverse sorted meetings\n        for (auto& m : meetings) {\n            int e = get<0>(m);\n            int s = get<1>(m);\n            int idx = get<2>(m);\n\n            // If meeting starts after last one ends\n            if (s > lastEnd) {\n                // Store index\n                result.push_back(idx); \n                // Update last end time\n                lastEnd = e; \n            }\n        }\n        return result;\n    }\n};\n\n// Main driver code\nint main() {\n    vector<int> start = {1, 3, 0, 5, 8, 5};\n    vector<int> end   = {2, 4, 6, 7, 9, 9};\n\n    Solution sol;\n    vector<int> res = sol.maxMeetings(start, end);\n\n    for (int idx : res) cout << idx << \" \";\n}",
+      "Java": "import java.util.*;\n\n// Class to hold solution logic\nclass Solution {\n    // Function to get all meetings that can be scheduled\n    public List<Integer> maxMeetings(int[] start, int[] end) {\n        // Store meetings as (end_time, start_time, index)\n        List<int[]> meetings = new ArrayList<>();\n        for (int i = 0; i < start.length; i++) {\n            // i+1 for 1-based index\n            meetings.add(new int[]{end[i], start[i], i + 1}); \n            \n        }\n\n        // Sort by end time\n        meetings.sort(Comparator.comparingInt(a -> a[0]));\n\n        List<Integer> result = new ArrayList<>();\n        int lastEnd = -1;\n\n        // Traverse sorted meetings\n        for (int[] m : meetings) {\n            // If meeting can be scheduled\n            if (m[1] > lastEnd) { \n                // Store original index\n                result.add(m[2]); \n                // Update last meeting end time\n                lastEnd = m[0];   \n            }\n        }\n        return result;\n    }\n}\n\n// Separate main class\npublic class Main {\n    public static void main(String[] args) {\n        int[] start = {1, 3, 0, 5, 8, 5};\n        int[] end   = {2, 4, 6, 7, 9, 9};\n\n        Solution sol = new Solution();\n        List<Integer> res = sol.maxMeetings(start, end);\n\n        for (int idx : res) {\n            System.out.print(idx + \" \");\n        }\n    }\n}",
+      "Python3": "# Class to hold solution logic\nclass Solution:\n    # Function to get all meetings that can be scheduled\n    def maxMeetings(self, start, end):\n        # Store as (end, start, index)\n        meetings = [(end[i], start[i], i + 1) for i in range(len(start))]\n\n        # Sort by end time\n        meetings.sort()\n\n        result = []\n        last_end = -1\n\n        # Traverse sorted meetings\n        for e, s, idx in meetings:\n            # If meeting can be scheduled\n            if s > last_end:  \n                # Store index\n                result.append(idx)  \n                # Update last end time\n                last_end = e  \n        return result\n\n\n# Main driver code\nif __name__ == \"__main__\":\n    start = [1, 3, 0, 5, 8, 5]\n    end   = [2, 4, 6, 7, 9, 9]\n\n    sol = Solution()\n    res = sol.maxMeetings(start, end)\n    print(res)",
+      "JavaScript": "// Class to hold solution logic\nclass Solution {\n    // Function to get all meetings that can be scheduled\n    maxMeetings(start, end) {\n        // Store as [end_time, start_time, index]\n        let meetings = [];\n        for (let i = 0; i < start.length; i++) {\n            // i+1 for 1-based index\n            meetings.push([end[i], start[i], i + 1]); \n            \n        }\n\n        // Sort by end time\n        meetings.sort((a, b) => a[0] - b[0]);\n\n        let result = [];\n        let lastEnd = -1;\n\n        // Traverse sorted meetings\n        for (let m of meetings) {\n            // If meeting can be scheduled\n            if (m[1] > lastEnd) { \n                // Store original index\n                result.push(m[2]); \n                // Update last meeting end time\n                lastEnd = m[0]; \n            }\n        }\n        return result;\n    }\n}\n\n// Main driver code\nlet start = [1, 3, 0, 5, 8, 5];\nlet end   = [2, 4, 6, 7, 9, 9];\n\nlet sol = new Solution();\nconsole.log(sol.maxMeetings(start, end));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  },
+  "video": "II6ziNnub1Q",
+  "articleContent": "<p><strong>Problem Statement: </strong> There is one meeting room in a firm. You are given two arrays, start and end each of size N. For an index \u2018i\u2019, start[i] denotes the starting time of the ith meeting while end[i]  will denote the ending time of the ith meeting. Find the maximum number of meetings that can be accommodated if only one meeting can happen in the room at a  particular time. Print the order in which these meetings will be performed.\n</p>\n<!-- This is Examples Drop-Down -->\n<div id=\"article_examples\">\n    <details class=\"article_example_details\">\n        <summary class=\"article_example_summary\">\n            <span><strong>\n                    Examples\n                </strong>\n            </span>\n            <svg class=\"arrow-svg opacity-75\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 20 20\">\n                <path d=\"M12.95 10.707l.707-.707L8 4.343 6.586 5.757 10.828 10l-4.242 4.243L8 15.657l4.95-4.95z\"></path>\n            </svg>\n        </summary>\n        <div class=\"atricle_example_content\">\n            <pre class=\"wp-block-preformatted\">\n<span>Input: N = 6,  start[] = {1,3,0,5,8,5}, end[] =  {2,4,5,7,9,9}</span>\n<span>Output: [1, 2, 4, 5]</span>\n<span>Explanation: These meeting can be conducted in the room.</span>\n<!--<img width=\"615\" height=\"142\" src=\"https://lh3.googleusercontent.com/TtxJefJFSrt-O3yH53CFJ8udcDt02PkBduRCvO6XvndajetZ2LUEgNhrSIcbSBtHLodGgPfuJeEuIP4azq0dZaN5XQ9Zgz5BWKnGAQu25YDPuLqIcHT1aFA66Lvz8Q\">-->\n<p><img width=\"700\" height=\"457\" src=\"https://static.takeuforward.org/content/-2ub6AsmJ\"></p>\n<span>Input: N = 2, start[] = {1,5}, end[] = {7,8}</span>\n<span>Output: [1]</span>\n<span>Explanation: Any one out of the two meeting can take place.</span>\n            </pre>\n        </div>\n    </details>\n</div>\n\n<p class=\"new-disclaimer\"><strong><em>Disclaimer</em></strong>: <em>\n    Here is the <a href=\"https://takeuforward.org/plus/dsa/problems/n-meetings-in-one-room\"\n            target=\"_blank\">practice link</a> to help you assess your knowledge better.\n            It's highly recommend trying to\n        solve it before looking at the solution. </em></p>\n\n\n<!-- This is Approaches Drop-Down -->\n<div class=\"dsa_article_dropdown_approachs \">\n    <!-- Approach - 1 Starts from here -->\n    \n    <div id=\"brute-force-approach\">\n        <details>\n            <summary class=\"main-summary\">\n                <span>\n                  Approach \n                </span>\n                <svg class=\"arrow-svg opacity-75\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 20 20\">\n                    <path d=\"M12.95 10.707l.707-.707L8 4.343 6.586 5.757 10.828 10l-4.242 4.243L8 15.657l4.95-4.95z\">\n                    </path>\n                </svg>\n            </summary>\n            <div class=\"common-drops\">\n                <details class=\"secondary-details\" open=\"\">\n                    <summary class=\"secondary-summary\">\n                        <span>\n                            Algorithm\n                        </span>\n                        <svg class=\"arrow-svg opacity-75\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 20 20\">\n                            <path\n                                d=\"M12.95 10.707l.707-.707L8 4.343 6.586 5.757 10.828 10l-4.242 4.243L8 15.657l4.95-4.95z\">\n                            </path>\n                        </svg>\n                    </summary>\n                    <div class=\"approach-algorithm\">\nWe need to schedule as many meetings as possible in a single room without overlaps. The key observation is that once we choose a meeting that ends earliest, it leaves the room available for more potential meetings afterward. This naturally leads to a greedy approach, where instead of testing all possible combinations we pick meetings in an order that maximizes free time for future meetings. The greedy choice is to always select the meeting that finishes earliest among the available ones.\n<ul>\n    <li>Sort meetings by end time so that the ones that finish earliest are considered first.</li>\n    <li>Select the first meeting in the sorted list and mark its end time as the last occupied time.</li>\n    <li>Iterate through remaining meetings, and for each, check if its start time is strictly greater than the last occupied end time.</li>\n    <li>If condition holds, include that meeting in the schedule and update the last occupied end time to this meeting\u2019s end time.</li>\n    <li>Continue until all meetings are checked, resulting in the maximum possible non-overlapping meetings in the room.</li>\n</ul>\n<div class=\"image-carousel-container\"><div class=\"carousel-container\"><div class=\"carousel\"><div class=\"carousel-image\"><img src=\"https://static.takeuforward.org/content/h1.png-2TQU4knt\" alt=\"Image 1\"></div><div class=\"carousel-image\"><img src=\"https://static.takeuforward.org/content/h2.png-BtAcwiwN\" alt=\"Image 2\"></div></div><div class=\"control-container\"><div class=\"control-container-2\"><button class=\"image-carousel-arrow image-carousel-left-arrow group\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-chevron-left\"><path d=\"m15 18-6-6 6-6\" /></svg></button><span class=\"image-number\"></span><button class=\"image-carousel-arrow image-carousel-right-arrow group\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\"  stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-chevron-right\"><path d=\"m9 18 6-6-6-6\" /></svg></button></div><div class=\"control-buttons\"><button class=\"image-carousel-control-button image-carousel-play-button group\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-play\"><polygon points=\"6 3 20 12 6 21 6 3\" /></svg></button><button class=\"image-carousel-control-button image-carousel-pause-button group\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\"  stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" class=\"lucide lucide-pause\"><rect x=\"14\" y=\"4\" width=\"4\" height=\"16\" rx=\"1\" /><rect x=\"6\" y=\"4\" width=\"4\" height=\"16\" rx=\"1\" /></svg></button><button class=\"image-carousel-control-button image-carousel-down-button group\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" strokeWidth=\"2\" strokeLinecap=\"round\" strokeLinejoin=\"round\" class=\"lucide lucide-external-link\"><path d=\"M15 3h6v6\"></path><path d=\"M10 14L21 3\"></path><path d=\"M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6\"></path></svg></button></div></div></div><div class=\"vertical-view\" id=\"vertical-view\"><img src=\"https://static.takeuforward.org/content/h1.png-2TQU4knt\" alt=\"Image 1\"><img src=\"https://static.takeuforward.org/content/h2.png-BtAcwiwN\" alt=\"Image 2\"></div></div>\n\n                    </div>\n                </details>\n               <details class=\"code-section secondary-details\"><summary class=\"secondary-summary\">\n        <span>Code</span>\n        <svg class=\"arrow-svg opacity-75\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 20 20\">\n            <path d=\"M12.95 10.707l.707-.707L8 4.343 6.586 5.757 10.828 10l-4.242 4.243L8 15.657l4.95-4.95z\"></path>\n        </svg>\n    </summary><div class=\"code-tabs\"><div><button class=\"code-tab dsa_article_code_active\" data-lang=\"cpp\">Cpp</button><button class=\"code-tab\" data-lang=\"java\">Java</button><button class=\"code-tab\" data-lang=\"python\">Python</button><button class=\"code-tab\" data-lang=\"javascript\">Javascript</button></div><div class=\"copy-btn\"><svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\">\n        <rect width=\"8\" height=\"4\" x=\"8\" y=\"2\" rx=\"1\" ry=\"1\" />\n        <path d=\"M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2\" />\n    </svg></div></div><div class=\"code-content\"><div class=\"code-block dsa_article_code_active\" data-lang=\"cpp\"><div class=\"line-numbers line-num\"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span><span>46</span><span>47</span><span>48</span></div><pre class=\"wp-block-code\"><code lang=\"cpp\" class=\"language-cpp\">#include &lt;bits/stdc++.h&gt;\nusing namespace std;\n\n// Class to hold solution logic\nclass Solution {\npublic:\n    // Function to get all meetings that can be scheduled\n    vector&lt;int&gt; maxMeetings(vector&lt;int&gt;&amp; start, vector&lt;int&gt;&amp; end) {\n        // Store meetings as (end_time, start_time, original_index)\n        vector&lt;tuple&lt;int, int, int&gt;&gt; meetings;\n        for (int i = 0; i &lt; start.size(); i++) {\n            // i+1 for 1-based indexing\n            meetings.push_back({end[i], start[i], i + 1}); \n           \n        }\n\n        // Sort by end time\n        sort(meetings.begin(), meetings.end());\n\n        vector&lt;int&gt; result; // To store meeting indices\n        int lastEnd = -1;\n\n        // Traverse sorted meetings\n        for (auto&amp; m : meetings) {\n            int e = get&lt;0&gt;(m);\n            int s = get&lt;1&gt;(m);\n            int idx = get&lt;2&gt;(m);\n\n            // If meeting starts after last one ends\n            if (s &gt; lastEnd) {\n                // Store index\n                result.push_back(idx); \n                // Update last end time\n                lastEnd = e; \n            }\n        }\n        return result;\n    }\n};\n\n// Main driver code\nint main() {\n    vector&lt;int&gt; start = {1, 3, 0, 5, 8, 5};\n    vector&lt;int&gt; end   = {2, 4, 6, 7, 9, 9};\n\n    Solution sol;\n    vector&lt;int&gt; res = sol.maxMeetings(start, end);\n\n    for (int idx : res) cout &lt;&lt; idx &lt;&lt; \" \";\n}\n</code></pre></div><div class=\"code-block\" data-lang=\"java\"><div class=\"line-numbers line-num\"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span><span>36</span><span>37</span><span>38</span><span>39</span><span>40</span><span>41</span><span>42</span><span>43</span><span>44</span><span>45</span></div><pre class=\"wp-block-code\"><code lang=\"java\" class=\"language-java\">import java.util.*;\n\n// Class to hold solution logic\nclass Solution {\n    // Function to get all meetings that can be scheduled\n    public List&lt;Integer&gt; maxMeetings(int[] start, int[] end) {\n        // Store meetings as (end_time, start_time, index)\n        List&lt;int[]&gt; meetings = new ArrayList&lt;&gt;();\n        for (int i = 0; i &lt; start.length; i++) {\n            // i+1 for 1-based index\n            meetings.add(new int[]{end[i], start[i], i + 1}); \n            \n        }\n\n        // Sort by end time\n        meetings.sort(Comparator.comparingInt(a -&gt; a[0]));\n\n        List&lt;Integer&gt; result = new ArrayList&lt;&gt;();\n        int lastEnd = -1;\n\n        // Traverse sorted meetings\n        for (int[] m : meetings) {\n            // If meeting can be scheduled\n            if (m[1] &gt; lastEnd) { \n                // Store original index\n                result.add(m[2]); \n                // Update last meeting end time\n                lastEnd = m[0];   \n            }\n        }\n        return result;\n    }\n}\n\n// Separate main class\npublic class Main {\n    public static void main(String[] args) {\n        int[] start = {1, 3, 0, 5, 8, 5};\n        int[] end   = {2, 4, 6, 7, 9, 9};\n\n        Solution sol = new Solution();\n        List&lt;Integer&gt; res = sol.maxMeetings(start, end);\n\n        for (int idx : res) {\n            System.out.print(idx + \" \");\n        }\n    }\n}\n</code></pre></div><div class=\"code-block\" data-lang=\"python\"><div class=\"line-numbers line-num\"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span></div><pre class=\"wp-block-code\"><code lang=\"python\" class=\"language-python\"># Class to hold solution logic\nclass Solution:\n    # Function to get all meetings that can be scheduled\n    def maxMeetings(self, start, end):\n        # Store as (end, start, index)\n        meetings = [(end[i], start[i], i + 1) for i in range(len(start))]\n\n        # Sort by end time\n        meetings.sort()\n\n        result = []\n        last_end = -1\n\n        # Traverse sorted meetings\n        for e, s, idx in meetings:\n            # If meeting can be scheduled\n            if s &gt; last_end:  \n                # Store index\n                result.append(idx)  \n                # Update last end time\n                last_end = e  \n        return result\n\n\n# Main driver code\nif __name__ == \"__main__\":\n    start = [1, 3, 0, 5, 8, 5]\n    end   = [2, 4, 6, 7, 9, 9]\n\n    sol = Solution()\n    res = sol.maxMeetings(start, end)\n    print(res)\n</code></pre></div><div class=\"code-block\" data-lang=\"javascript\"><div class=\"line-numbers line-num\"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span><span>18</span><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span><span>26</span><span>27</span><span>28</span><span>29</span><span>30</span><span>31</span><span>32</span><span>33</span><span>34</span><span>35</span></div><pre class=\"wp-block-code\"><code lang=\"javascript\" class=\"language-javascript\">// Class to hold solution logic\nclass Solution {\n    // Function to get all meetings that can be scheduled\n    maxMeetings(start, end) {\n        // Store as [end_time, start_time, index]\n        let meetings = [];\n        for (let i = 0; i &lt; start.length; i++) {\n            // i+1 for 1-based index\n            meetings.push([end[i], start[i], i + 1]); \n            \n        }\n\n        // Sort by end time\n        meetings.sort((a, b) =&gt; a[0] - b[0]);\n\n        let result = [];\n        let lastEnd = -1;\n\n        // Traverse sorted meetings\n        for (let m of meetings) {\n            // If meeting can be scheduled\n            if (m[1] &gt; lastEnd) { \n                // Store original index\n                result.push(m[2]); \n                // Update last meeting end time\n                lastEnd = m[0]; \n            }\n        }\n        return result;\n    }\n}\n\n// Main driver code\nlet start = [1, 3, 0, 5, 8, 5];\nlet end   = [2, 4, 6, 7, 9, 9];\n\nlet sol = new Solution();\nconsole.log(sol.maxMeetings(start, end));\n</code></pre></div></div></details>\n                <details class=\"secondary-details\">\n                    <summary class=\"secondary-summary\">\n                        <span>\n                            Complexity Analysis\n                        </span>\n                        <svg class=\"arrow-svg opacity-75\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 20 20\">\n                            <path\n                                d=\"M12.95 10.707l.707-.707L8 4.343 6.586 5.757 10.828 10l-4.242 4.243L8 15.657l4.95-4.95z\">\n                            </path>\n                        </svg>\n                    </summary>\n                    <span>\n                        <!-- Insert Time and Space Complexity  Here -->\n                        <strong>Time Complexity: O(N*logN) + O(N)</strong>, We sort the entire start and end time array and then iterate over every interval one by one.<br>\n                            <strong>Space Complexity: O(N)</strong>, additional space used to store tuple of start time, end time and index.\n                            <p></p>\n                    </span>\n                </details>\n            </div>\n        </details>\n    </div>\n    \n   \n    <!-- Approach -1 Ends here -->\n\n\n    \n</div>\n\n\n<!-- This is Video Explination Drop-Down -->\n<!-- <div class=\"dsa_article_youtube_video\" id=\"dsa_article_video_explanation\">-->\n<!--    <details>-->\n<!--        <summary class=\"main-summary\">-->\n<!--            <span>-->\n<!--                Video Explanation-->\n<!--            </span>-->\n<!--            <svg class=\"arrow-svg opacity-75\" xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 20 20\">-->\n<!--                <path d=\"M12.95 10.707l.707-.707L8 4.343 6.586 5.757 10.828 10l-4.242 4.243L8 15.657l4.95-4.95z\"></path>-->\n<!--            </svg>-->\n<!--        </summary>-->\n<!--        <div class=\"yt-video-wrapper\">-->\n            <!-- Insert iframe embed Link of Youtube Video-->\n<!--            <iframe width=\"560\" height=\"315\" src=\"https://www.youtube.com/embed/\" title=\"YouTube video player\"-->\n<!--                frameborder=\"0\"-->\n<!--                allow=\"accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share\"-->\n<!--                referrerpolicy=\"strict-origin-when-cross-origin\" allowfullscreen></iframe>-->\n\n<!--        </div>-->\n<!--    </details>-->\n<!--</div> -->\n\n<script src=\"https://takeuforward.org/UXApproachDropDowns/3ApproachJSScript.js\"></script>\n\n<!--<blockquote class=\"wp-block-quote\">\n\n</blockquote> -->\n\n\n<script>\n\n    const codeSections = document.querySelectorAll('.code-section');\n\n    // Get last selected language from localStorage or set default value\n    let lastSelectedLanguage = localStorage.getItem('lastSelectedLanguage') || 'cpp';\n\n    codeSections.forEach((section, sectionIndex) => {\n        const codeTabs = section.querySelectorAll('.code-tab');\n        const codeBlocks = section.querySelectorAll('.code-block');\n        const copyBtn = section.querySelector('.copy-btn');\n\n        codeTabs.forEach((tab) => {\n            tab.addEventListener('click', () => {\n                codeTabs.forEach((t) => {\n                    t.classList.remove('dsa_article_code_active');\n                });\n                tab.classList.add('dsa_article_code_active');\n\n                const lang = tab.dataset.lang;\n                const activeBlock = section.querySelector(`.code-block[data-lang=\"${lang}\"]`);\n                codeBlocks.forEach((block) => {\n                    if (block === activeBlock) {\n                        block.classList.add('dsa_article_code_active');\n                    } else {\n                        block.classList.remove('dsa_article_code_active');\n                    }\n                });\n\n                // Update last selected language for all sections and store in localStorage\n                lastSelectedLanguage = lang;\n                localStorage.setItem('lastSelectedLanguage', lang);\n                codeSections.forEach((otherSection, otherIndex) => {\n                    if (otherIndex !== sectionIndex) {\n                        const otherTabs = otherSection.querySelectorAll('.code-tab');\n                        otherTabs.forEach((otherTab) => {\n                            if (otherTab.dataset.lang === lang) {\n                                otherTab.classList.add('dsa_article_code_active');\n                            } else {\n                                otherTab.classList.remove('dsa_article_code_active');\n                            }\n                        });\n                        const otherActiveBlock = otherSection.querySelector(`.code-block[data-lang=\"${lang}\"]`);\n                        const otherCodeBlocks = otherSection.querySelectorAll('.code-block');\n                        otherCodeBlocks.forEach((block) => {\n                            if (block === otherActiveBlock) {\n                                block.classList.add('dsa_article_code_active');\n                            } else {\n                                block.classList.remove('dsa_article_code_active');\n                            }\n                        });\n                    \n                    }\n                });\n            });\n        });\n\n        // Handle copy button click event\n        copyBtn.addEventListener('click', () => {\n            const activeBlock = section.querySelector('.code-block.dsa_article_code_active code');\n            navigator.clipboard.writeText(activeBlock.innerText);\n            copyBtn.classList.add('dsa_article_code_active');\n            setTimeout(() => {\n                copyBtn.classList.remove('dsa_article_code_active');\n            }, 1000);\n        });\n    });\n\n    // Set initial state of the tabs\n    codeSections.forEach((section) => {\n        const codeTabs = section.querySelectorAll('.code-tab');\n        const codeBlocks = section.querySelectorAll('.code-block');\n\n        codeTabs.forEach((tab) => {\n            if (tab.dataset.lang === lastSelectedLanguage) {\n                tab.classList.add('dsa_article_code_active');\n            } else {\n                tab.classList.remove('dsa_article_code_active');\n            }\n        });\n\n        codeBlocks.forEach((block) => {\n            if (block.dataset.lang === lastSelectedLanguage) {\n                block.classList.add('dsa_article_code_active');\n            } else {\n                block.classList.remove('dsa_article_code_active');\n            }\n        });\n    });\n</script>\n<link rel=\"stylesheet\" href=\"https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/atom-one-dark.min.css\">\n<script src=\"https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js\"></script>\n<script src=\"https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/go.min.js\"></script>\n<script src=\"index.js\"></script>\n<script>hljs.highlightAll();</script>"
+}

@@ -1,0 +1,140 @@
+{
+  "questionId": "Q4413",
+  "title": "Painter Partition Problem",
+  "slug": "painter-partition-problem",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Greedy",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Binary Search",
+      "Painter Partition Problem"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Binary Search"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given NNN boards of varying lengths, and kkk painters are available to paint these boards. Each painter takes the same amount of time to paint **1 unit** of board length. A painter can only paint contiguous sections of boards, and each board must be painted by exactly **one** painter.\n\nYour task is to determine the **minimum time** required to paint all the boards such that no painter paints more than a specific amount of length. You need to divide the boards into kkk **contiguous** parts in such a way that the maximum length painted by any painter is **minimized**.\n\n\nInput Format\nThe first line contains the number of test cases, T.\n\n\n\nThe first line of each test case contains two integers, NNN (the number of boards) and kkk (the number of painters).\nThe second line of each test case contains NNN space-separated integers, where the iii-th integer represents the length of the iii-th board\n\n\nOutput Format\n\nA single integer representing the minimum time required to paint all the boards, where the time is defined as the maximum time taken by any single painter to paint their assigned section of boards.",
+    "constraints": [
+      "1 <= T <= 100",
+      "1 <= N <= 10^5",
+      "1 <= k <= N",
+      "1 <= a[i] <= 10^5"
+    ],
+    "inputFormat": "The first line contains the number of test cases, T. Each test case consists of two lines. The first line contains two integers, N (the number of boards) and k (the number of painters). The second line contains N space-separated integers, where the i-th integer represents the length of the i-th board.",
+    "outputFormat": "For each test case, print the minimum time required to paint all the boards, where the time is defined as the maximum time taken by any single painter to paint their assigned section of boards.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n4 2\n10 20 30 40\n5 3\n10 10 10 10 10\n6 1\n5 10 15 20 25 30",
+        "output": "60\n20\n105",
+        "explanation": "Explanation:\nTest Case 1: There are 4 boards with lengths [10, 20, 30, 40] and 2 painters. Optimal division will be  [10, 20, 30] for one painter and [40] for the other. Maximum length painted by a painter = 60.\nTest case 2: There are 5 boards with equal lengths [10, 10, 10, 10, 10] and 3 painters. Optimal division will be [10, 10], [10, 10], and [10]. Maximum length painted by a painter = 20.\nTest case 3: Only one painter is available, so they must paint all boards. Total length = 5 + 10 + 15 + 20 + 25 + 30 = 105."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n1 1\n100",
+        "output": "100",
+        "explanation": "Only one board and one painter, so the painter must paint the entire board."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n5 5\n10 20 30 40 50",
+        "output": "50",
+        "explanation": "Each painter paints one board, so the maximum length painted by a painter is the length of the longest board, which is 50."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n100000 100000\n100000",
+        "expectedOutput": "100000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n5 5\n10 10 10 10 10",
+        "expectedOutput": "10",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n10 5\n1 2 3 4 5 6 7 8 9 10",
+        "expectedOutput": "10",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "5\n4 2\n10 20 30 40\n5 3\n10 10 10 10 10\n6 1\n5 10 15 20 25 30\n1 1\n100\n1 1\n1",
+        "expectedOutput": "60\n20\n105\n100\n1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved using a binary search approach. We need to find the minimum time required to paint all the boards such that no painter paints more than a specific amount of length. We can use binary search to find the minimum time by checking if it is possible to paint all the boards within a given time limit.",
+    "timeComplexity": "O(T * N * log(sum of all board lengths)) per test case, O(T * N * log(sum of all board lengths)) total.",
+    "spaceComplexity": "O(N) — for storing the lengths of the boards.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <stdbool.h>\n#include <limits.h>\n\nbool is_valid_partition(int boards[], int n, int k, int max_length) {\n    int painters_required = 1, current_length = 0;\n\n    for (int i = 0; i < n; i++) {\n        if (current_length + boards[i] > max_length) {\n            painters_required++;\n            current_length = boards[i];\n            if (painters_required > k) {\n                return false;\n            }\n        } else {\n            current_length += boards[i];\n        }\n    }\n    return true;\n}\n\nint painter_partition(int boards[], int n, int k) {\n    int low = 0, high = 0, result = INT_MAX;\n\n    // Calculate low (max element) and high (sum of all elements)\n    for (int i = 0; i < n; i++) {\n        if (boards[i] > low) {\n            low = boards[i];\n        }\n        high += boards[i];\n    }\n\n    while (low <= high) {\n        int mid = low + (high - low) / 2;\n\n        if (is_valid_partition(boards, n, k, mid)) {\n            result = mid;\n            high = mid - 1;\n        } else {\n            low = mid + 1;\n        }\n    }\n\n    return result;\n}\n\nint main() {\n    int t;\n    scanf(\"%d\", &t);\n\n    while (t--) {\n        int n, k;\n        scanf(\"%d %d\", &n, &k);\n\n        int* boards = (int*)malloc(n * sizeof(int));\n        for (int i = 0; i < n; i++) {\n            scanf(\"%d\", &boards[i]);\n        }\n\n        printf(\"%d\\n\", painter_partition(boards, n, k));\n\n        free(boards);\n    }\n\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nbool is_valid_partition(const vector<int> &boards, int k, int max_length) {\n    int painters_required = 1, current_length = 0;\n\n    for (int length : boards) {\n        if (current_length + length > max_length) {\n            painters_required++;\n            current_length = length;\n            if (painters_required > k)\n                return false;\n        } else {\n            current_length += length;\n        }\n    }\n    return true;\n}\n\nint painter_partition(const vector<int> &boards, int k) {\n    int low = *max_element(boards.begin(), boards.end());\n    int high = accumulate(boards.begin(), boards.end(), 0);\n    int result = high;\n\n    while (low <= high) {\n        int mid = low + (high - low) / 2;\n\n        if (is_valid_partition(boards, k, mid)) {\n            result = mid;\n            high = mid - 1;\n        } else {\n            low = mid + 1;\n        }\n    }\n    return result;\n}\n\nint main() {\n    int t;\n    cin>>t;\n    while(t--){\n    int n, k;\n    cin >> n >> k;\n    vector<int> boards(n);\n    for (int i = 0; i < n; i++)\n        cin >> boards[i];\n\n    cout << painter_partition(boards, k) << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.*;\n\npublic class Main {\n\n    public static boolean isValidPartition(int[] boards, int k, int maxLength) {\n        int paintersRequired = 1, currentLength = 0;\n\n        for (int length : boards) {\n            if (currentLength + length > maxLength) {\n                paintersRequired++;\n                currentLength = length;\n                if (paintersRequired > k)\n                    return false;\n            } else {\n                currentLength += length;\n            }\n        }\n        return true;\n    }\n\n    public static int painterPartition(int[] boards, int k) {\n        int low = Arrays.stream(boards).max().getAsInt();\n        int high = Arrays.stream(boards).sum();\n        int result = high;\n\n        while (low <= high) {\n            int mid = low + (high - low) / 2;\n\n            if (isValidPartition(boards, k, mid)) {\n                result = mid;\n                high = mid - 1;\n            } else {\n                low = mid + 1;\n            }\n        }\n        return result;\n    }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        \n        // Ensure input is available and handled properly\n        if (sc.hasNextInt()) {\n            int t = sc.nextInt();\n            \n            while (t-- > 0) {\n                if (sc.hasNextInt()) {\n                    int N = sc.nextInt();\n                    int k = sc.nextInt();\n                    int[] boards = new int[N];\n                    \n                    for (int i = 0; i < N; i++) {\n                        if (sc.hasNextInt()) {\n                            boards[i] = sc.nextInt();\n                        }\n                    }\n                    System.out.println(painterPartition(boards, k));\n                } \n                }\n            }\n    }\n}",
+      "Python3": "def is_valid_partition(boards, k, max_length):\n    painters_required = 1\n    current_length = 0\n\n    for length in boards:\n        if current_length + length > max_length:\n            painters_required += 1\n            current_length = length\n            if painters_required > k:\n                return False\n        else:\n            current_length += length\n    return True\n\ndef painter_partition(boards, k):\n    low = max(boards)\n    high = sum(boards)\n    result = high\n\n    while low <= high:\n        mid = (low + high) // 2\n\n        if is_valid_partition(boards, k, mid):\n            result = mid\n            high = mid - 1\n        else:\n            low = mid + 1\n\n    return result\n\n# Input and Output using input()\ndef main():\n    t = int(input())  \n    results = []  \n\n    for _ in range(t):\n        N, k = map(int, input().split())  \n        boards = list(map(int, input().split())) \n        results.append(str(painter_partition(boards, k))) \n    print(\"\\n\".join(results))\n\nif __name__ == \"__main__\":\n    main()\n",
+      "JavaScript": "function isValidPartition(boards, k, maxLength) {\n    let paintersRequired = 1;\n    let currentLength = 0;\n\n    for (let length of boards) {\n        if (currentLength + length > maxLength) {\n            paintersRequired++;\n            currentLength = length;\n            if (paintersRequired > k) {\n                return false;\n            }\n        } else {\n            currentLength += length;\n        }\n    }\n    return true;\n}\n\nfunction painterPartition(boards, k) {\n    let low = Math.max(...boards);\n    let high = boards.reduce((sum, length) => sum + length, 0);\n    let result = high;\n\n    while (low <= high) {\n        let mid = Math.floor((low + high) / 2);\n\n        if (isValidPartition(boards, k, mid)) {\n            result = mid;\n            high = mid - 1;\n        } else {\n            low = mid + 1;\n        }\n    }\n    return result;\n}\n\n// Input and Output using readline module\nconst fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\n\nfunction nextLine() {\n    return lines[idx++];\n}\n\nfunction nextInt() {\n    return parseInt(nextLine());\n}\n\nfunction nextIntArray() {\n    return nextLine().split(' ').map(Number);\n}\n\nlet t = nextInt();\nlet results = [];\n\nwhile (t--) {\n    let [N, k] = nextIntArray();\n    let boards = nextIntArray();\n    results.push(painterPartition(boards, k));\n}\n\nconsole.log(results.join('\\n'));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

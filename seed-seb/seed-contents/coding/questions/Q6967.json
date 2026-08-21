@@ -1,0 +1,130 @@
+{
+  "questionId": "Q6967",
+  "title": "Rubber Band",
+  "slug": "rubber-band",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Geometry",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Convex Hull",
+      "Winding Number",
+      "Point in Polygon"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Geometry"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "James has a board (a two-dimensional plane) with NNN nails sticking out of it and a rubber band tangled up between these nails. The rubber band can be viewed as a closed curve made up of MMM line segments (a closed polyline with MMM vertices). None of the nails intersect the rubber band, but the rubber band may intersect itself.\n\nJames wants to move the rubber band away from the nails. Specifically, the rubber band is removed if there is a line which does not intersect the rubber band or any of the nails and splits the board into two half-planes such that one half-plane contains all nails and the other half-plane contains the whole rubber band.\n\nJames can deform, stretch and shrink the rubber band in any way he wants, as long as it does not intersect with any nail (no point of the rubber band coincides with any nail) at any time during performing the deformations. However, he is not allowed to pick up the rubber band from the board (all deformations must occur in the given 2D plane).\n\nGiven the positions of the nails and the shape of the rubber band, determine if James will be able to remove the rubber band.",
+    "constraints": [
+      "1 <= T <= 100",
+      "1 <= N <= 1000",
+      "3 <= M <= 3000",
+      "|x|, |y| <= 100",
+      "The distance of any point on the rubber band from any nail is at least 10^-4"
+    ],
+    "inputFormat": "The first line contains a single integer T denoting the number of test cases. Each test case starts with an integer N, the number of nails, followed by N lines, each containing two space-separated real numbers x and y denoting the coordinates of a nail. Then, an integer M, the number of vertices of the rubber band, followed by M lines, each containing two space-separated real numbers x and y denoting the coordinates of a vertex of the rubber band.",
+    "outputFormat": "For each test case, print a single line containing the string 'YES' if James can remove the rubber band or 'NO' if he cannot.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n1\n90 90\n3\n0 0\n10 0\n5 5\n1\n0.6 0\n6\n-2 2\n2 -1\n-1 1\n-1 -1\n2 1\n-2 -2",
+        "output": "YES\nNO",
+        "explanation": "Explanation: Example case 1: The rubber band is already separated from the only nail at position (90,90). Example case 2: The input corresponds to the image below."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n0 0\n3\n0 0\n1 0\n0 1",
+        "expectedOutput": "NO",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n1\n100 100\n3\n0 0\n100 0\n0 100",
+        "expectedOutput": "YES",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n2\n0 0\n1 1\n3\n0 0\n1 0\n0 1",
+        "expectedOutput": "NO",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n3\n0 0\n1 1\n2 2\n4\n0 0\n1 0\n0 1\n1 1",
+        "expectedOutput": "NO",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n3\n0 0\n1 1\n2 2\n4\n0 0\n2 0\n0 2\n2 2",
+        "expectedOutput": "YES",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To determine if James can remove the rubber band, we need to check if the nails are inside the rubber band. We can use the concept of the winding number to check if a point is inside a polygon. If the winding number of a point with respect to the rubber band is 0, then the point is outside the rubber band. Otherwise, it is inside. We calculate the winding number for each nail. If all nails have a winding number of 0, then James can remove the rubber band.",
+    "timeComplexity": "O(T * (N * M + M * log M)) — where T is the number of test cases, N is the number of nails, and M is the number of vertices of the rubber band. The time complexity is dominated by the calculation of the winding number for each nail and the sorting of the vertices of the rubber band.",
+    "spaceComplexity": "O(N + M) — where N is the number of nails and M is the number of vertices of the rubber band. The space complexity is dominated by the storage of the nails and the vertices of the rubber band.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <math.h>\n#define EPS 1e-8\n#define PI 3.14159265358979323846\n\n// Structure to represent a point\ntypedef struct {\n    double x, y;\n} Point;\n\n// Function to calculate the cross product of two vectors\ndouble crossProduct(Point p1, Point p2, Point p3) {\n    return (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x);\n}\n\n// Function to calculate the winding number of a point with respect to a polygon\nint windingNumber(Point p, Point *polygon, int n) {\n    int wn = 0;\n    for (int i = 0; i < n; i++) {\n        if (polygon[i].y <= p.y) {\n            if (polygon[(i + 1) % n].y > p.y && crossProduct(polygon[i], polygon[(i + 1) % n], p) > 0) {\n                wn++;\n            }\n        } else {\n            if (polygon[(i + 1) % n].y <= p.y && crossProduct(polygon[i], polygon[(i + 1) % n], p) < 0) {\n                wn--;\n            }\n        }\n    }\n    return wn;\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int N;\n        scanf(\"%d\", &N);\n        Point nails[N];\n        for (int i = 0; i < N; i++) {\n            scanf(\"%lf %lf\", &nails[i].x, &nails[i].y);\n        }\n        int M;\n        scanf(\"%d\", &M);\n        Point rubberBand[M];\n        for (int i = 0; i < M; i++) {\n            scanf(\"%lf %lf\", &rubberBand[i].x, &rubberBand[i].y);\n        }\n        int canRemove = 1;\n        for (int i = 0; i < N; i++) {\n            if (windingNumber(nails[i], rubberBand, M) != 0) {\n                canRemove = 0;\n                break;\n            }\n        }\n        if (canRemove) {\n            printf(\"YES\\n\");\n        } else {\n            printf(\"NO\\n\");\n        }\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\n#include <cmath>\nusing namespace std;\n\n// Structure to represent a point\nstruct Point {\n    double x, y;\n};\n\n// Function to calculate the cross product of two vectors\ndouble crossProduct(Point p1, Point p2, Point p3) {\n    return (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x);\n}\n\n// Function to calculate the winding number of a point with respect to a polygon\nint windingNumber(Point p, vector<Point> polygon) {\n    int wn = 0;\n    for (int i = 0; i < polygon.size(); i++) {\n        if (polygon[i].y <= p.y) {\n            if (polygon[(i + 1) % polygon.size()].y > p.y && crossProduct(polygon[i], polygon[(i + 1) % polygon.size()], p) > 0) {\n                wn++;\n            }\n        } else {\n            if (polygon[(i + 1) % polygon.size()].y <= p.y && crossProduct(polygon[i], polygon[(i + 1) % polygon.size()], p) < 0) {\n                wn--;\n            }\n        }\n    }\n    return wn;\n}\n\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        int N;\n        cin >> N;\n        vector<Point> nails(N);\n        for (int i = 0; i < N; i++) {\n            cin >> nails[i].x >> nails[i].y;\n        }\n        int M;\n        cin >> M;\n        vector<Point> rubberBand(M);\n        for (int i = 0; i < M; i++) {\n            cin >> rubberBand[i].x >> rubberBand[i].y;\n        }\n        int canRemove = 1;\n        for (int i = 0; i < N; i++) {\n            if (windingNumber(nails[i], rubberBand) != 0) {\n                canRemove = 0;\n                break;\n            }\n        }\n        if (canRemove) {\n            cout << \"YES\" << endl;\n        } else {\n            cout << \"NO\" << endl;\n        }\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    // Structure to represent a point\n    static class Point {\n        double x, y;\n        Point(double x, double y) {\n            this.x = x;\n            this.y = y;\n        }\n    }\n\n    // Function to calculate the cross product of two vectors\n    static double crossProduct(Point p1, Point p2, Point p3) {\n        return (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x);\n    }\n\n    // Function to calculate the winding number of a point with respect to a polygon\n    static int windingNumber(Point p, Point[] polygon) {\n        int wn = 0;\n        for (int i = 0; i < polygon.length; i++) {\n            if (polygon[i].y <= p.y) {\n                if (polygon[(i + 1) % polygon.length].y > p.y && crossProduct(polygon[i], polygon[(i + 1) % polygon.length], p) > 0) {\n                    wn++;\n                }\n            } else {\n                if (polygon[(i + 1) % polygon.length].y <= p.y && crossProduct(polygon[i], polygon[(i + 1) % polygon.length], p) < 0) {\n                    wn--;\n                }\n            }\n        }\n        return wn;\n    }\n\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int T = scanner.nextInt();\n        while (T-- > 0) {\n            int N = scanner.nextInt();\n            Point[] nails = new Point[N];\n            for (int i = 0; i < N; i++) {\n                nails[i] = new Point(scanner.nextDouble(), scanner.nextDouble());\n            }\n            int M = scanner.nextInt();\n            Point[] rubberBand = new Point[M];\n            for (int i = 0; i < M; i++) {\n                rubberBand[i] = new Point(scanner.nextDouble(), scanner.nextDouble());\n            }\n            int canRemove = 1;\n            for (int i = 0; i < N; i++) {\n                if (windingNumber(nails[i], rubberBand) != 0) {\n                    canRemove = 0;\n                    break;\n                }\n            }\n            if (canRemove == 1) {\n                System.out.println(\"YES\");\n            } else {\n                System.out.println(\"NO\");\n            }\n        }\n    }\n}",
+      "Python3": "import sys\n\n# Structure to represent a point\nclass Point:\n    def __init__(self, x, y):\n        self.x = x\n        self.y = y\n\n# Function to calculate the cross product of two vectors\ndef crossProduct(p1, p2, p3):\n    return (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x)\n\n# Function to calculate the winding number of a point with respect to a polygon\ndef windingNumber(p, polygon):\n    wn = 0\n    for i in range(len(polygon)):\n        if polygon[i].y <= p.y:\n            if polygon[(i + 1) % len(polygon)].y > p.y and crossProduct(polygon[i], polygon[(i + 1) % len(polygon)], p) > 0:\n                wn += 1\n        else:\n            if polygon[(i + 1) % len(polygon)].y <= p.y and crossProduct(polygon[i], polygon[(i + 1) % len(polygon)], p) < 0:\n                wn -= 1\n    return wn\n\nT = int(input())\nwhile T > 0:\n    N = int(input())\n    nails = [Point(*map(float, input().split())) for _ in range(N)]\n    M = int(input())\n    rubberBand = [Point(*map(float, input().split())) for _ in range(M)]\n    canRemove = 1\n    for i in range(N):\n        if windingNumber(nails[i], rubberBand) != 0:\n            canRemove = 0\n            break\n    if canRemove == 1:\n        print('YES')\n    else:\n        print('NO')\n    T -= 1",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf8').trim().split('\\n');\nlet idx = 0;\n\n// Structure to represent a point\nclass Point {\n    constructor(x, y) {\n        this.x = x;\n        this.y = y;\n    }\n}\n\n// Function to calculate the cross product of two vectors\nfunction crossProduct(p1, p2, p3) {\n    return (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x);\n}\n\n// Function to calculate the winding number of a point with respect to a polygon\nfunction windingNumber(p, polygon) {\n    let wn = 0;\n    for (let i = 0; i < polygon.length; i++) {\n        if (polygon[i].y <= p.y) {\n            if (polygon[(i + 1) % polygon.length].y > p.y && crossProduct(polygon[i], polygon[(i + 1) % polygon.length], p) > 0) {\n                wn++;\n            }\n        } else {\n            if (polygon[(i + 1) % polygon.length].y <= p.y && crossProduct(polygon[i], polygon[(i + 1) % polygon.length], p) < 0) {\n                wn--;\n            }\n        }\n    }\n    return wn;\n}\n\nlet T = parseInt(input[idx++]);\nwhile (T-- > 0) {\n    let N = parseInt(input[idx++]);\n    let nails = [];\n    for (let i = 0; i < N; i++) {\n        let [x, y] = input[idx++].split(' ').map(Number);\n        nails.push(new Point(x, y));\n    }\n    let M = parseInt(input[idx++]);\n    let rubberBand = [];\n    for (let i = 0; i < M; i++) {\n        let [x, y] = input[idx++].split(' ').map(Number);\n        rubberBand.push(new Point(x, y));\n    }\n    let canRemove = 1;\n    for (let i = 0; i < N; i++) {\n        if (windingNumber(nails[i], rubberBand) != 0) {\n            canRemove = 0;\n            break;\n        }\n    }\n    if (canRemove == 1) {\n        console.log('YES');\n    } else {\n        console.log('NO');\n    }\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

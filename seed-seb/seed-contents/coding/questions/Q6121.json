@@ -1,0 +1,139 @@
+{
+  "questionId": "Q6121",
+  "title": "Train Partner",
+  "slug": "train-partner",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Implementation",
+    "difficulty": "Easy",
+    "isPremium": true,
+    "tags": [
+      "Mapping",
+      "Modular Arithmetic",
+      "Array"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Ad-hoc & Implementation"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Rahul and Rashi are off to the wedding of a close relative. This time they have to travel without their guardians. Rahul got very interested in the arrangement of seats inside the train coach.\n\nThe entire coach could be viewed as an arrangement of consecutive blocks of size 8.  \n\n\n`\nBerth Number   \tCompartment\n``1 -  8               1\n\n9 - 16               2\n\n17 - 24               3\n\n... and so on\n`\n\n\n\nEach of these size-8 blocks are further arranged as:\n\n\n`\n 1LB,  2MB,  3UB,  4LB,  5MB,  6UB,  7SL,  8SU  \n 9LB, 10MB, ...\n ...   \n ...\n`Here `LB` denotes lower berth, `MB` middle berth and `UB` upper berth.\n\nThe following berths are called **Train-Partners**:\n\n`\n3UB   |  6UB  \n2MB   |  5MB  \n1LB   |  4LB  \n7SL   |  8SU  \n`and the pattern is repeated for every set of 8 berths.\n\nRahul and Rashi are playing this game of finding the train partner of each berth. Can you write a program to do the same?",
+    "constraints": [
+      "1 ≤ T ≤ 100",
+      "1 ≤ N ≤ 500"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains a single integer N (1 ≤ N ≤ 500) representing a berth number.",
+    "outputFormat": "For each test case output on a separate line the berth number of its train‑partner followed immediately by the berth type (LB, MB, UB, SL or SU).",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n1\n5\n3",
+        "output": "4LB\n2MB\n6UB",
+        "explanation": "Berth 1 (position 0) partners with position 3 → berth 4, type LB. Berth 5 (position 4) partners with position 1 → berth 2, type MB. Berth 3 (position 2) partners with position 5 → berth 6, type UB."
+      },
+      {
+        "id": "sample_2",
+        "input": "2\n7\n8",
+        "output": "8SU\n7SL",
+        "explanation": "Position 6 (berth 7) partners with position 7 → berth 8, type SU. Position 7 (berth 8) partners with position 6 → berth 7, type SL."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n256",
+        "output": "255SL",
+        "explanation": "256 is the 8th berth of block 31 (zero‑based). Its partner position is 6, giving berth 255 with type SL."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1",
+        "expectedOutput": "4LB",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n500",
+        "expectedOutput": "497LB",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n8",
+        "expectedOutput": "7SL",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n123",
+        "expectedOutput": "126UB",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n256",
+        "expectedOutput": "255SL",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The seats repeat every 8 berths. For a given berth N we compute its block index (zero‑based) as (N‑1)/8 and its position inside the block as (N‑1)%8. The partner positions inside a block are fixed: 0↔3, 1↔4, 2↔5, 6↔7. Using a small lookup array we obtain the partner position, then reconstruct the partner berth number as block*8 + partnerPos + 1. The berth type for the partner is taken from another lookup array indexed by partnerPos. This yields O(1) work per query.",
+    "timeComplexity": "O(T) – constant work for each of the T test cases.",
+    "spaceComplexity": "O(1) – only a few fixed size arrays are used.",
+    "code": {
+      "C": "#include <stdio.h>\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    const int partnerPos[8] = {3,4,5,0,1,2,7,6};\n    const char *type[8] = {\"LB\",\"MB\",\"UB\",\"LB\",\"MB\",\"UB\",\"SL\",\"SU\"};\n    while (T--) {\n        int N;\n        scanf(\"%d\", &N);\n        int block = (N - 1) / 8;\n        int pos = (N - 1) % 8;\n        int pPos = partnerPos[pos];\n        int partnerN = block * 8 + pPos + 1;\n        printf(\"%d%s\\n\", partnerN, type[pPos]);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    const int partnerPos[8] = {3,4,5,0,1,2,7,6};\n    const string type[8] = {\"LB\",\"MB\",\"UB\",\"LB\",\"MB\",\"UB\",\"SL\",\"SU\"};\n    while(T--) {\n        long long N; cin>>N;\n        long long block = (N-1)/8;\n        int pos = (int)((N-1)%8);\n        int pPos = partnerPos[pos];\n        long long partnerN = block*8 + pPos + 1;\n        cout << partnerN << type[pPos] << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        int T = Integer.parseInt(br.readLine().trim());\n        int[] partnerPos = {3,4,5,0,1,2,7,6};\n        String[] type = {\"LB\",\"MB\",\"UB\",\"LB\",\"MB\",\"UB\",\"SL\",\"SU\"};\n        StringBuilder sb = new StringBuilder();\n        for (int i = 0; i < T; i++) {\n            long N = Long.parseLong(br.readLine().trim());\n            long block = (N - 1) / 8;\n            int pos = (int)((N - 1) % 8);\n            int pPos = partnerPos[pos];\n            long partnerN = block * 8 + pPos + 1;\n            sb.append(partnerN).append(type[pPos]);\n            if (i + 1 < T) sb.append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef main():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    partner = [3,4,5,0,1,2,7,6]\n    btype = ['LB','MB','UB','LB','MB','UB','SL','SU']\n    out = []\n    for _ in range(T):\n        N = int(next(it))\n        block = (N-1)//8\n        pos = (N-1)%8\n        p = partner[pos]\n        partnerN = block*8 + p + 1\n        out.append(f\"{partnerN}{btype[p]}\")\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    main()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nconst partner = [3,4,5,0,1,2,7,6];\nconst type = ['LB','MB','UB','LB','MB','UB','SL','SU'];\nlet out = [];\nfor (let i = 0; i < T; i++) {\n  const N = Number(input[idx++]);\n  const block = Math.floor((N - 1) / 8);\n  const pos = (N - 1) % 8;\n  const p = partner[pos];\n  const partnerN = block * 8 + p + 1;\n  out.push(partnerN + type[p]);\n}\nconsole.log(out.join('\\n'));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

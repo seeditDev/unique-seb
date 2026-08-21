@@ -1,0 +1,142 @@
+{
+  "questionId": "Q8699",
+  "title": "Sort the array",
+  "slug": "sort-the-array",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Sorting",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Permutation Cycles",
+      "Greedy",
+      "Array"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Graphs"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef gave you an array AAA of length NNN which contains pairwise **distinct** elements. You can perform the following operations on the array:\n\n\nSelect two distinct indices i,ji,ji,j and swap Ai,AjA_i,A_jAi​,Aj​\nHe then asked you to find the **minimum** number of operations to sort the array.\n\n\nInput Format\n\nFirst-line will contain TTT, the number of test cases. Then the test cases follow.\nEach test case contains two lines of input.\nThe first line of every test case contains an integer NNN - the length of array.\nThe second line of every test case contains NNN integers - A1,A2,..,AN A_1,A_2,..,A_NA1​,A2​,..,AN​ denoting the integers in the array.\n\n\nOutput Format\nFor each test case, output in a single line- the answer to the iii-th test case.",
+    "constraints": [
+      "1 <= T <= 1500",
+      "1 <= N <= 200000",
+      "1 <= Ai <= 10^9",
+      "All Ai are distinct",
+      "Sum of N over all test cases <= 5*10^5"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case consists of two lines: the first line contains an integer N, the length of the array. The second line contains N distinct integers A1, A2, ..., AN.",
+    "outputFormat": "For each test case output a single line containing the minimum number of swaps required to sort the array in non‑decreasing order.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4\n2\n2 1\n4\n2 4 3 1\n5\n7 1 3 10 2\n2\n1 2",
+        "output": "1\n2\n3\n0",
+        "explanation": "Test case 1: swap positions 1 and 2.\\nTest case 2: swap (1,4) then (2,4).\\nTest case 3: three swaps are needed.\\nTest case 4: already sorted, zero swaps."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n3\n3 2 1",
+        "output": "1",
+        "explanation": "The permutation consists of a 2‑cycle (positions 1 and 3) and a fixed point; only one swap is required."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\\n6\\n4 3 2 1 6 5",
+        "output": "3",
+        "explanation": "Cycles: (1 4), (2 3), (5 6) each of length 2 → 1 swap per cycle, total 3 swaps."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The array can be viewed as a permutation that maps each current index to the index where its element should be in the sorted order. Decomposing this permutation into cycles gives the answer: a cycle of length L can be sorted with L‑1 swaps. Therefore the minimum number of swaps equals N minus the number of cycles. The algorithm: 1) copy the array with original indices, 2) sort the copy to know the target position of each element, 3) build an array pos where pos[i] is the index where element at i should go, 4) run a DFS/while loop over unvisited indices to count cycle lengths and accumulate swaps.",
+    "timeComplexity": "O(N log N) per test case for sorting, plus O(N) for cycle detection. Overall O( Σ N log N ).",
+    "spaceComplexity": "O(N) for auxiliary arrays (sorted copy, position mapping, visited flags).",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\ntypedef struct {int val; int idx;} Pair;\nint cmp(const void *a, const void *b){return ((Pair*)a)->val - ((Pair*)b)->val;}\nint main(){int T; if(scanf(\"%d\", &T)!=1) return 0; while(T--){int N; scanf(\"%d\", &N); int *arr = (int*)malloc(N*sizeof(int)); Pair *p = (Pair*)malloc(N*sizeof(Pair)); for(int i=0;i<N;++i){scanf(\"%d\", &arr[i]); p[i].val = arr[i]; p[i].idx = i;}\n qsort(p, N, sizeof(Pair), cmp);\n int *pos = (int*)malloc(N*sizeof(int)); for(int i=0;i<N;++i) pos[p[i].idx] = i;\n char *vis = (char*)calloc(N, sizeof(char)); long long swaps = 0;\n for(int i=0;i<N;++i) if(!vis[i]){int cur=i; int len=0; while(!vis[cur]){vis[cur]=1; cur = pos[cur]; ++len;} if(len>0) swaps += len-1; }\n printf(\"%lld\\n\", swaps);\n free(arr); free(p); free(pos); free(vis);\n }\n return 0; }\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){ios::sync_with_stdio(false);cin.tie(nullptr);\nint T; if(!(cin>>T)) return 0; while(T--){int N;cin>>N;vector<long long>a(N);for(int i=0;i<N;++i)cin>>a[i];\nvector<pair<long long,int>> v(N);\nfor(int i=0;i<N;++i) v[i]={a[i],i};\nsort(v.begin(),v.end());\nvector<int> pos(N);\nfor(int i=0;i<N;++i) pos[v[i].second]=i;\nvector<char> vis(N,0);\nlong long swaps=0;\nfor(int i=0;i<N;++i) if(!vis[i]){int cur=i;int len=0;while(!vis[cur]){vis[cur]=1;cur=pos[cur];++len;} if(len>0) swaps+=len-1;}\ncout<<swaps<<\"\\n\";}\nreturn 0;}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner(System.in);\n        int T = fs.nextInt();\n        StringBuilder sb = new StringBuilder();\n        while (T-- > 0) {\n            int N = fs.nextInt();\n            long[] a = new long[N];\n            for (int i = 0; i < N; i++) a[i] = fs.nextLong();\n            Pair[] p = new Pair[N];\n            for (int i = 0; i < N; i++) p[i] = new Pair(a[i], i);\n            Arrays.sort(p, Comparator.comparingLong(o -> o.val));\n            int[] pos = new int[N];\n            for (int i = 0; i < N; i++) pos[p[i].idx] = i;\n            boolean[] vis = new boolean[N];\n            long swaps = 0;\n            for (int i = 0; i < N; i++) if (!vis[i]) {\n                int cur = i;\n                int len = 0;\n                while (!vis[cur]) {\n                    vis[cur] = true;\n                    cur = pos[cur];\n                    len++;\n                }\n                if (len > 0) swaps += len - 1;\n            }\n            sb.append(swaps).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n    static class Pair { long val; int idx; Pair(long v, int i){val=v; idx=i;} }\n    static class FastScanner {\n        private final InputStream in;\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        FastScanner(InputStream in){this.in=in;}\n        private int readByte() throws IOException {\n            if (ptr >= len) { len = in.read(buffer); ptr = 0; if (len <= 0) return -1; }\n            return buffer[ptr++];\n        }\n        long nextLong() throws IOException { int c; do { c = readByte(); } while (c <= ' ');\n            boolean neg = false; if (c == '-') { neg = true; c = readByte(); }\n            long val = 0; while (c > ' ') { val = val * 10 + (c - '0'); c = readByte(); }\n            return neg ? -val : val; }\n        int nextInt() throws IOException { return (int) nextLong(); }\n    }\n}\n",
+      "Python3": "#!/usr/bin/env python3\nimport sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it))\n        arr = [int(next(it)) for _ in range(N)]\n        # pair value with original index\n        sorted_pairs = sorted((val, idx) for idx, val in enumerate(arr))\n        pos = [0] * N\n        for new_idx, (_, old_idx) in enumerate(sorted_pairs):\n            pos[old_idx] = new_idx\n        visited = [False] * N\n        swaps = 0\n        for i in range(N):\n            if not visited[i]:\n                cur = i\n                length = 0\n                while not visited[cur]:\n                    visited[cur] = True\n                    cur = pos[cur]\n                    length += 1\n                if length > 0:\n                    swaps += length - 1\n        out_lines.append(str(swaps))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet outputs = [];\nfor (let t = 0; t < T; ++t) {\n  const N = Number(input[idx++]);\n  const arr = new Array(N);\n  for (let i = 0; i < N; ++i) arr[i] = Number(input[idx++]);\n  const pairs = arr.map((v, i) => ({val: v, idx: i}));\n  pairs.sort((a, b) => a.val - b.val);\n  const pos = new Array(N);\n  for (let i = 0; i < N; ++i) pos[pairs[i].idx] = i;\n  const visited = new Array(N).fill(false);\n  let swaps = 0;\n  for (let i = 0; i < N; ++i) {\n    if (!visited[i]) {\n      let cur = i;\n      let len = 0;\n      while (!visited[cur]) {\n        visited[cur] = true;\n        cur = pos[cur];\n        ++len;\n      }\n      if (len > 0) swaps += len - 1;\n    }\n  }\n  outputs.push(String(swaps));\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

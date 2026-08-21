@@ -1,0 +1,126 @@
+{
+  "questionId": "Q8259",
+  "title": "Problem Difficulties",
+  "slug": "problem-difficulties",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Greedy",
+    "difficulty": "Easy",
+    "isPremium": true,
+    "tags": [
+      "Frequency Counting",
+      "Greedy"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Ad-hoc & Implementation"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You have prepared four problems. The difficulty levels of the problems are A1,A2,A3,A4A_1, A_2, A_3, A_4A1​,A2​,A3​,A4​ respectively. A problem set comprises at least two problems and no two problems in a problem set should have the same difficulty level. A problem can belong to at most one problem set. Find the maximum number of problem sets you can create using the four problems.\n\n\nInput Format\n\nThe first line of the input contains a single integer TTT denoting the number of test cases. The description of TTT test cases follows.\nThe first and only line of each test case contains four space-separated integers A1A_1A1​, A2A_2A2​, A3A_3A3​, A4A_4A4​,  denoting the difficulty level of four problems.\n\n\nOutput Format\nFor each test case, print a single line containing one integer - the maximum number of problem sets you can create using the four problems.",
+    "constraints": [
+      "1 <= T <= 1000",
+      "1 <= A1, A2, A3, A4 <= 10"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains four space‑separated integers A1, A2, A3, A4 – the difficulty levels of the four problems.",
+    "outputFormat": "For each test case output a single integer on its own line – the maximum number of problem sets that can be formed.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n1 4 3 2\n4 5 5 5\n2 2 2 2",
+        "output": "2\n1\n0",
+        "explanation": "Test case 1: all four difficulties are distinct, so we can form two sets, e.g., [1,4] and [3,2].\\nTest case 2: frequencies are (1,3). Only one set can be formed using the distinct pair (4,5).\\nTest case 3: all four difficulties are equal, no valid set can be created."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n7 7 7 7",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary – all distinct",
+        "input": "1\n10 9 8 7",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "three equal, one different",
+        "input": "1\n5 5 5 2",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "two pairs of equal values",
+        "input": "1\n3 3 4 4",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "one pair and two distinct singles",
+        "input": "1\n6 6 7 8",
+        "expectedOutput": "2",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each test case count how many times each difficulty appears. Let maxFreq be the largest frequency among the four numbers. The answer follows directly:\n- If maxFreq == 4 (all four difficulties equal) → no set can be formed, answer 0.\n- If maxFreq == 3 (three equal, one different) → only one set can be formed using the distinct pair, answer 1.\n- Otherwise (maxFreq <= 2) we can always split the four problems into two sets of size two with distinct difficulties, answer 2.\nThis works because each set needs at least two problems with different difficulties and each problem can belong to at most one set.",
+    "timeComplexity": "O(1) per test case (only a few integer comparisons). Overall O(T).",
+    "spaceComplexity": "O(1) extra space.",
+    "code": {
+      "C": "#include <stdio.h>\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    while(T--){\n        int a[4];\n        for(int i=0;i<4;i++) scanf(\"%d\", &a[i]);\n        int freq[4]; // at most 4 distinct values\n        int distinct=0;\n        for(int i=0;i<4;i++){\n            int found=0;\n            for(int j=0;j<distinct;j++) if(a[i]==freq[j]){found=j; break;}\n            if(found==0 && (distinct==0 || a[i]!=freq[found-1])){\n                // not found, add new entry\n                freq[distinct++] = a[i];\n            }\n        }\n        // simpler: compute max frequency directly\n        int maxFreq=1;\n        for(int i=0;i<4;i++){\n            int cnt=0;\n            for(int j=0;j<4;j++) if(a[i]==a[j]) cnt++;\n            if(cnt>maxFreq) maxFreq=cnt;\n        }\n        int ans = (maxFreq==4)?0:(maxFreq==3)?1:2;\n        printf(\"%d\\n\", ans);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int a[4]; for(int i=0;i<4;i++) cin>>a[i];\n        unordered_map<int,int> mp;\n        int maxFreq=0;\n        for(int x: a){\n            maxFreq = max(maxFreq, ++mp[x]);\n        }\n        int ans = (maxFreq==4)?0:(maxFreq==3)?1:2;\n        cout<<ans<<\"\\n\";\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st;\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder sb = new StringBuilder();\n        while (T-- > 0) {\n            st = new StringTokenizer(br.readLine());\n            int[] a = new int[4];\n            for (int i = 0; i < 4; i++) a[i] = Integer.parseInt(st.nextToken());\n            HashMap<Integer,Integer> map = new HashMap<>();\n            int maxFreq = 0;\n            for (int x : a) {\n                int cnt = map.getOrDefault(x, 0) + 1;\n                map.put(x, cnt);\n                if (cnt > maxFreq) maxFreq = cnt;\n            }\n            int ans = (maxFreq == 4) ? 0 : (maxFreq == 3) ? 1 : 2;\n            sb.append(ans).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out = []\n    for _ in range(T):\n        a = [int(next(it)) for _ in range(4)]\n        freq = {}\n        max_freq = 0\n        for x in a:\n            freq[x] = freq.get(x, 0) + 1\n            if freq[x] > max_freq:\n                max_freq = freq[x]\n        if max_freq == 4:\n            out.append('0')\n        elif max_freq == 3:\n            out.append('1')\n        else:\n            out.append('2')\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    solve()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet results = [];\nfor (let t = 0; t < T; t++) {\n  const a = [Number(input[idx++]), Number(input[idx++]), Number(input[idx++]), Number(input[idx++])];\n  const freq = new Map();\n  let maxFreq = 0;\n  for (const x of a) {\n    const cnt = (freq.get(x) || 0) + 1;\n    freq.set(x, cnt);\n    if (cnt > maxFreq) maxFreq = cnt;\n  }\n  let ans;\n  if (maxFreq === 4) ans = 0;\n  else if (maxFreq === 3) ans = 1;\n  else ans = 2;\n  results.push(String(ans));\n}\nconsole.log(results.join('\\n'));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "questionId": "Q2849",
+  "title": "Chef and Reversing",
+  "slug": "chef-and-reversing",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graphs",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Graphs",
+      "BFS",
+      "Graph Reversal"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Graphs"
+    ]
+  },
+  "content": {
+    "problemStatement": "Sometimes mysteries happen. Chef found a directed graph with **N** vertices and **M** edges in his kitchen! \n\nThe evening was boring and chef has nothing else to do, so to entertain himself, Chef thought about a question \"What is the minimum number of edges he needs to reverse in order to have at least one path from vertex **1** to vertex **N**, where the vertices are numbered from **1** to **N**.",
+    "constraints": [
+      "1 \u2264 N, M \u2264 100000",
+      "1 \u2264 Xi, Yi \u2264 N",
+      "There can be multiple edges connecting the same pair of vertices",
+      "There can be self loops too i.e., Xi = Yi"
+    ],
+    "inputFormat": "The first line contains two space-separated integers N and M, denoting the number of vertices and the number of edges in the graph respectively. The next M lines contain two space-separated integers Xi and Yi, denoting that the i-th edge connects vertices from Xi to Yi.",
+    "outputFormat": "The minimum number of edges that need to be reversed in order to have at least one path from vertex 1 to vertex N. If there is no way of having at least one path from 1 to N, print -1.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "7 7\n1 2 \n3 2\n3 4\n7 4\n6 2\n5 6\n7 5",
+        "output": "2",
+        "explanation": "We can consider two paths from 1 to 7: 1-2-3-4-7 and 1-2-6-5-7. In the first one, we need to revert edges (3-2) and (7-4). In the second one, we need to revert edges (6-2), (5-6), and (7-5). So the answer is min(2, 3) = 2."
+      },
+      {
+        "id": "sample_2",
+        "input": "5 4\n1 2\n2 3\n3 4\n4 5",
+        "output": "0",
+        "explanation": "There is already a path from 1 to 5: 1-2-3-4-5. So, we don't need to reverse any edges."
+      },
+      {
+        "id": "sample_3",
+        "input": "3 2\n1 2\n2 3",
+        "output": "0",
+        "explanation": "There is already a path from 1 to 3: 1-2-3. So, we don't need to reverse any edges."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1 0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "100000 100000\n1 2\n2 3\n3 4\n4 5\n5 6\n6 7\n7 8\n8 9\n9 10\n10 100000",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "5 5\n1 1\n2 2\n3 3\n4 4\n5 5",
+        "expectedOutput": "-1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "5 4\n1 2\n2 3\n3 4\n4 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "10 10\n1 2\n2 3\n3 4\n4 5\n5 6\n6 7\n7 8\n8 9\n9 10\n10 1",
+        "expectedOutput": "0",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved using a Breadth-First Search (BFS) algorithm. We start from vertex 1 and try to reach vertex N. We maintain a distance array to keep track of the minimum number of edges that need to be reversed to reach each vertex. We use a queue to perform the BFS traversal.",
+    "timeComplexity": "O(N + M) per test case, O(T * (N + M)) total",
+    "spaceComplexity": "O(N + M) \u2014 for the adjacency list and the distance array",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <limits.h>\n#include <stdbool.h>\n#define N 200001\n#define INF 1000000000\ntypedef struct {\n    int node;\n    int weight;\n} Pair;\ntypedef struct Node {\n    Pair pair;\n    struct Node *next;\n} Node;\nvoid add_edge(Node* adj[], int u, int v, int weight) {\n    Node *new_node = (Node *)malloc(sizeof(Node));\n    new_node->pair.node = v;\n    new_node->pair.weight = weight;\n    new_node->next = adj[u];\n    adj[u] = new_node;\n}\nvoid bfs(int v, Node* adj[], bool vis[], int d[], int n) {\n    int deque[N];\n    int front = N / 2;\n    int back = N / 2;\n    deque[back++] = v;\n    d[v] = 0;\n    while (front < back) {\n        int u = deque[front++];\n        if (vis[u]) {\n            continue;\n        }\n        vis[u] = true;\n        Node *ptr = adj[u];\n        while (ptr != NULL) {\n            int node = ptr->pair.node;\n            int weight = ptr->pair.weight;\n            if (weight == 0) {\n                deque[--front] = node;\n                if (d[node] > d[u]) {\n                    d[node] = d[u];\n                }\n            } else {\n                deque[back++] = node;\n                if (d[node] > d[u] + 1) {\n                    d[node] = d[u] + 1;\n                }\n            }\n            ptr = ptr->next;\n        }\n    }\n}\nint main() {\n    int t;\n    scanf(\"%d\", &t);\n    while (t--) {\n        int n, m;\n        scanf(\"%d %d\", &n, &m);\n        Node* adj[N];\n        bool vis[N];\n        int d[N];\n        for (int i = 1; i <= n; i++) {\n            adj[i] = NULL;\n            d[i] = INF;\n            vis[i] = false;\n        }\n        for (int i = 0; i < m; i++) {\n            int x, y;\n            scanf(\"%d %d\", &x, &y);\n            add_edge(adj, x, y, 0);\n            add_edge(adj, y, x, 1);\n        }\n        bfs(1, adj, vis, d, n);\n        if (d[n] == INF) {\n            printf(\"-1\\n\");\n        } else {\n            printf(\"%d\\n\", d[n]);\n        }\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nconst int N = 2e5 + 1;\nconst int INF = 1e9;\nvector<pair<int, int>> adj[N];\nvector<bool> vis(N, 0);\nint d[N];\nvoid bfs(int v) {\n    deque<int> q;\n    q.push_back(v);\n    d[v] = 0;\n    while (!q.empty()) {\n        int u = q.front();\n        q.pop_front();\n        if (vis[u]) {\n            continue;\n        }\n        vis[u] = 1;\n        for (auto x : adj[u]) {\n            int node = x.first;\n            int weight = x.second;\n            if (weight == 0) {\n                q.push_front(node);\n                d[node] = min(d[node], d[u]);\n            } else {\n                q.push_back(node);\n                d[node] = min(d[node], d[u] + 1);\n            }\n        }\n    }\n}\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(NULL);\n    int t;\n    cin >> t;\n    while (t--) {\n        int n, m;\n        cin >> n >> m;\n        for (int i = 1; i <= n; i++) {\n            adj[i].clear();\n            d[i] = INF;\n        }\n        for (int i = 0; i < m; i++) {\n            int x, y;\n            cin >> x >> y;\n            adj[x].push_back({y, 0});\n            adj[y].push_back({x, 1});\n        }\n        bfs(1);\n        if (d[n] == INF) {\n            cout << \"-1\";\n        } else {\n            cout << d[n];\n        }\n        cout << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.*;\npublic class Main {\n    static int N = 200001;\n    static int INF = 1000000000;\n    static List<Pair>[] adj = new ArrayList[N];\n    static boolean[] vis = new boolean[N];\n    static int[] d = new int[N];\n    static class Pair {\n        int node;\n        int weight;\n        Pair(int node, int weight) {\n            this.node = node;\n            this.weight = weight;\n        }\n    }\n    public static void bfs(int v) {\n        Deque<Integer> q = new ArrayDeque<>();\n        q.add(v);\n        d[v] = 0;\n        while (!q.isEmpty()) {\n            int u = q.poll();\n            if (vis[u]) {\n                continue;\n            }\n            vis[u] = true;\n            for (Pair x : adj[u]) {\n                int node = x.node;\n                int weight = x.weight;\n                if (weight == 0) {\n                    q.offerFirst(node);\n                    d[node] = Math.min(d[node], d[u]);\n                } else {\n                    q.offerLast(node);\n                    d[node] = Math.min(d[node], d[u] + 1);\n                }\n            }\n        }\n    }\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int t = scanner.nextInt();\n        while (t-- > 0) {\n            int n = scanner.nextInt();\n            int m = scanner.nextInt();\n            for (int i = 1; i <= n; i++) {\n                adj[i] = new ArrayList<>();\n                d[i] = INF;\n            }\n            for (int i = 0; i < m; i++) {\n                int x = scanner.nextInt();\n                int y = scanner.nextInt();\n                adj[x].add(new Pair(y, 0));\n                adj[y].add(new Pair(x, 1));\n            }\n            bfs(1);\n            if (d[n] == INF) {\n                System.out.println(\"-1\");\n            } else {\n                System.out.println(d[n]);\n            }\n        }\n    }\n}",
+      "Python3": "from collections import deque\nN = 200001\nINF = 1000000000\nadj = [[] for _ in range(N)]\nvis = [False] * N\nd = [INF] * N\nclass Pair:\n    def __init__(self, node, weight):\n        self.node = node\n        self.weight = weight\ndef bfs(v):\n    q = deque()\n    q.append(v)\n    d[v] = 0\n    while q:\n        u = q.popleft()\n        if vis[u]:\n            continue\n        vis[u] = True\n        for x in adj[u]:\n            node, weight = x.node, x.weight\n            if weight == 0:\n                q.appendleft(node)\n                d[node] = min(d[node], d[u])\n            else:\n                q.append(node)\n                d[node] = min(d[node], d[u] + 1)\nimport sys\ninput = sys.stdin.readline\nfor _ in range(int(input())):\n    n, m = map(int, input().split())\n    for i in range(1, n + 1):\n        adj[i] = []\n    for _ in range(m):\n        x, y = map(int, input().split())\n        adj[x].append(Pair(y, 0))\n        adj[y].append(Pair(x, 1))\n    bfs(1)\n    if d[n] == INF:\n        print(\"-1\")\n    else:\n        print(d[n])",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst N = 200001;\nconst INF = 1000000000;\nconst adj = Array(N).fill(0).map(() => []);\nconst vis = Array(N).fill(false);\nconst d = Array(N).fill(INF);\nclass Pair {\n    constructor(node, weight) {\n        this.node = node;\n        this.weight = weight;\n    }\n}\nfunction bfs(v) {\n    const q = [];\n    q.push(v);\n    d[v] = 0;\n    while (q.length > 0) {\n        const u = q.shift();\n        if (vis[u]) {\n            continue;\n        }\n        vis[u] = true;\n        for (const x of adj[u]) {\n            const node = x.node;\n            const weight = x.weight;\n            if (weight === 0) {\n                q.unshift(node);\n                d[node] = Math.min(d[node], d[u]);\n            } else {\n                q.push(node);\n                d[node] = Math.min(d[node], d[u] + 1);\n            }\n        }\n    }\n}\nconst t = parseInt(lines[idx++]);\nfor (let i = 0; i < t; i++) {\n    const [n, m] = lines[idx++].trim().split(' ').map(Number);\n    for (let j = 1; j <= n; j++) {\n        adj[j] = [];\n    }\n    for (let j = 0; j < m; j++) {\n        const [x, y] = lines[idx++].trim().split(' ').map(Number);\n        adj[x].push(new Pair(y, 0));\n        adj[y].push(new Pair(x, 1));\n    }\n    bfs(1);\n    if (d[n] === INF) {\n        console.log('-1');\n    } else {\n        console.log(d[n]);\n    }\n}"
+    }
+  }
+}

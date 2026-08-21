@@ -1,0 +1,118 @@
+{
+  "questionId": "Q3578",
+  "title": "Mixing flavors",
+  "slug": "mixing-flavors",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Arrays",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Sliding Window",
+      "Bitwise XOR",
+      "Arrays"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Data Structures"
+    ]
+  },
+  "content": {
+    "problemStatement": "There are **N** ice-creams placed in a row in a shop, where the **i**-th has cost **C[i]** and flavor **F[i]**. Chef wants to buy some **consecutive segment** of ice-creams so that their total cost doesn't exceed his budget **K**, and he can mix some subset of bought ice-creams to make a new ice-cream with maximum possible flavor.\n\nMixing m ice-creams of flavors **A1, A2, .., Am** will result in an ice-cream of flavor equal to **A1 ^ A2 ^ ... ^ Am** where **^** is the xor operation. \n\nWhat is maximum possible flavor that Chef can get?\nIt's guaranteed that at least one ice-cream has cost that doesn't exceed Chef's budget.",
+    "constraints": [
+      "1 \u2264 T \u2264 10,000",
+      "1 \u2264 N \u2264 100,000",
+      "1 \u2264 K \u2264 10^14",
+      "1 \u2264 F[i] \u2264 10^9",
+      "1 \u2264 C[i] \u2264 10^9",
+      "C[i] \u2264 K for at least one i"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case starts with a line containing two integers N and K, where N is the number of ice creams and K is the budget. The next N lines contain two integers each, representing the cost and flavor of each ice cream.",
+    "outputFormat": "For each test case, output the maximum possible flavor that the chef can get.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n5 15\n2 4\n7 1\n5 9\n15 6\n3 12\n3 1000\n123 8\n99999 1\n80 7",
+        "output": "13\n8",
+        "explanation": "Explanation:\nTest case 1: The binary representations of the 5 flavors, in order, are: (0100, 0001, 1001, 0110, 1100), and the corresponding prices are (2,7,5,15,3).\nIf Chef buys only the 5th ice-cream with cost 3 and flavor 12. But if Chef buys the first 3 ice-creams, his total cost is 2+7+5 = 14, which is within his budget of 15, and hence valid. Now, from these three bought ice-creams, he can choose to mix just the first and third, and get a flavor of 0100^1001 = 1101, which is  13. You can verify that this is the best that he can do.\nTest case 2: Chef can afford the first or the last ice-cream. He could afford them both but he must buy a consecutive segment of ice-creams while the cost of the second ice-cream is beyond his budget.\nIt's optimal to buy the first ice-cream only and use its flavor only, what gives us the answer 8."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1\n1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n100000 10000000000000\n10000000000000 1000000000",
+        "expectedOutput": "1000000000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n2 10\n5 3\n5 5",
+        "expectedOutput": "6",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n3 15\n2 4\n7 1\n5 9",
+        "expectedOutput": "13",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n4 20\n1 1\n2 2\n3 3\n4 4",
+        "expectedOutput": "7",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a sliding window approach. We maintain a window of ice creams that we can afford, and for each window, we calculate the maximum flavor we can get by trying all possible subsets of ice creams in the window and calculating their XOR. We keep track of the maximum flavor seen so far.",
+    "timeComplexity": "O(T * N * 2^N) \u2014 for each test case, we iterate over all possible windows of ice creams, and for each window, we try all possible subsets of ice creams.",
+    "spaceComplexity": "O(N) \u2014 we need to store the costs and flavors of the ice creams.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdint.h>\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int N, K;\n        scanf(\"%d %d\", &N, &K);\n        int64_t costs[N], flavors[N];\n        for (int i = 0; i < N; i++) {\n            scanf(\"%lld %d\", &costs[i], &flavors[i]);\n        }\n        int max_flavor = 0;\n        for (int i = 0; i < N; i++) {\n            int64_t sum = 0;\n            for (int j = i; j < N; j++) {\n                sum += costs[j];\n                if (sum > K) break;\n                int flavor = 0;\n                for (int mask = 0; mask < (1 << (j - i + 1)); mask++) {\n                    int curr_flavor = 0;\n                    for (int k = 0; k < j - i + 1; k++) {\n                        if ((mask & (1 << k)) != 0) {\n                            curr_flavor ^= flavors[i + k];\n                        }\n                    }\n                    max_flavor = (max_flavor > curr_flavor) ? max_flavor : curr_flavor;\n                }\n            }\n        }\n        printf(\"%d\\n\", max_flavor);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <cstdint>\n\nint main() {\n    int T;\n    std::cin >> T;\n    while (T--) {\n        int N, K;\n        std::cin >> N >> K;\n        std::int64_t costs[N], flavors[N];\n        for (int i = 0; i < N; i++) {\n            std::cin >> costs[i] >> flavors[i];\n        }\n        int max_flavor = 0;\n        for (int i = 0; i < N; i++) {\n            std::int64_t sum = 0;\n            for (int j = i; j < N; j++) {\n                sum += costs[j];\n                if (sum > K) break;\n                int flavor = 0;\n                for (int mask = 0; mask < (1 << (j - i + 1)); mask++) {\n                    int curr_flavor = 0;\n                    for (int k = 0; k < j - i + 1; k++) {\n                        if ((mask & (1 << k)) != 0) {\n                            curr_flavor ^= flavors[i + k];\n                        }\n                    }\n                    max_flavor = (max_flavor > curr_flavor) ? max_flavor : curr_flavor;\n                }\n            }\n        }\n        std::cout << max_flavor << std::endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int T = scanner.nextInt();\n        while (T-- > 0) {\n            int N = scanner.nextInt();\n            int K = scanner.nextInt();\n            long[] costs = new long[N];\n            int[] flavors = new int[N];\n            for (int i = 0; i < N; i++) {\n                costs[i] = scanner.nextLong();\n                flavors[i] = scanner.nextInt();\n            }\n            int maxFlavor = 0;\n            for (int i = 0; i < N; i++) {\n                long sum = 0;\n                for (int j = i; j < N; j++) {\n                    sum += costs[j];\n                    if (sum > K) break;\n                    int flavor = 0;\n                    for (int mask = 0; mask < (1 << (j - i + 1)); mask++) {\n                        int currFlavor = 0;\n                        for (int k = 0; k < j - i + 1; k++) {\n                            if ((mask & (1 << k)) != 0) {\n                                currFlavor ^= flavors[i + k];\n                            }\n                        }\n                        maxFlavor = Math.max(maxFlavor, currFlavor);\n                    }\n                }\n            }\n            System.out.println(maxFlavor);\n        }\n    }\n}",
+      "Python3": "import sys\n\nT = int(input())\nfor _ in range(T):\n    N, K = map(int, input().split())\n    costs = []\n    flavors = []\n    for _ in range(N):\n        cost, flavor = map(int, input().split())\n        costs.append(cost)\n        flavors.append(flavor)\n    max_flavor = 0\n    for i in range(N):\n        sum = 0\n        for j in range(i, N):\n            sum += costs[j]\n            if sum > K: break\n            flavor = 0\n            for mask in range(1 << (j - i + 1)):\n                curr_flavor = 0\n                for k in range(j - i + 1):\n                    if (mask & (1 << k)) != 0:\n                        curr_flavor ^= flavors[i + k]\n                max_flavor = max(max_flavor, curr_flavor)\n    print(max_flavor)",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst readline = () => lines[idx++];\n\nconst T = parseInt(readline());\nfor (let i = 0; i < T; i++) {\n    const [N, K] = readline().split(' ').map(Number);\n    const costs = [];\n    const flavors = [];\n    for (let j = 0; j < N; j++) {\n        const [cost, flavor] = readline().split(' ').map(Number);\n        costs.push(cost);\n        flavors.push(flavor);\n    }\n    let maxFlavor = 0;\n    for (let j = 0; j < N; j++) {\n        let sum = 0;\n        for (let k = j; k < N; k++) {\n            sum += costs[k];\n            if (sum > K) break;\n            let flavor = 0;\n            for (let mask = 0; mask < (1 << (k - j + 1)); mask++) {\n                let currFlavor = 0;\n                for (let l = 0; l < k - j + 1; l++) {\n                    if ((mask & (1 << l)) !== 0) {\n                        currFlavor ^= flavors[j + l];\n                    }\n                }\n                maxFlavor = Math.max(maxFlavor, currFlavor);\n            }\n        }\n    }\n    console.log(maxFlavor);\n}"
+    }
+  }
+}

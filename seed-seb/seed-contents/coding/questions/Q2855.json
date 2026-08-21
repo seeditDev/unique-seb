@@ -1,0 +1,127 @@
+{
+  "questionId": "Q2855",
+  "title": "Chef and Digit Jumps",
+  "slug": "chef-and-digit-jumps",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Graph",
+      "BFS",
+      "Dynamic Programming",
+      "Shortest Path"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Graphs"
+    ]
+  },
+  "content": {
+    "problemStatement": "Chef loves games! But he likes to invent his own. Now he plays game \"Digit Jump\". Chef has a sequence of digits S1,S2,\u2026,SNS_{1}, S_{2}, \\ldots , S_{N}S1\u200b,S2\u200b,\u2026,SN\u200b. He is staying in the first digit S1S_{1}S1\u200b and wants to reach the last digit SNS_{N}SN\u200b in the minimal number of jumps.\n\nWhile staying in some index iii Chef can jump into i\u22121i - 1i\u22121 and i+1i + 1i+1, but he can't jump out from sequence. Or he can jump into any digit with the same value SiS_iSi\u200b.\n\nHelp Chef to find the minimal number of jumps he need to reach digit SNS_{N}SN\u200b from digit S1S_1S1\u200b.&nbsp;",
+    "constraints": [
+      "1 <= N <= 10^5",
+      "Each symbol of S is a digit from 0 to 9"
+    ],
+    "inputFormat": "Input contains a single line consisting of a string S of length N - the sequence of digits.",
+    "outputFormat": "In a single line print a single integer - the minimal number of jumps Chef needs to reach digit SN from digit S1.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "01234567890",
+        "output": "1",
+        "explanation": "Chef can directly jump from the first digit (it is 0) to the last (as it is also 0)."
+      },
+      {
+        "id": "sample_2",
+        "input": "012134444444443",
+        "output": "4",
+        "explanation": "Chef should follow the following path: 1-2-4-5-15."
+      },
+      {
+        "id": "sample_3",
+        "input": "1111111111",
+        "output": "0",
+        "explanation": "Chef is already at the last digit."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "012345678901234567890",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "0000000000",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1234567890",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "9876543210",
+        "expectedOutput": "1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a Breadth-First Search (BFS) algorithm. We start from the first digit and try to reach the last digit in the minimum number of jumps. We can jump to the previous or next digit, or to any digit with the same value. We use a queue to keep track of the digits to visit and a set to keep track of the visited digits.",
+    "timeComplexity": "O(N) - where N is the length of the string S. This is because in the worst case, we might need to visit all digits in the string.",
+    "spaceComplexity": "O(N) - where N is the length of the string S. This is because we need to store all digits in the queue and the set.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#define MAX 100005\n\nint main() {\n    char s[MAX];\n    scanf(\"%s\", s);\n    int n = strlen(s);\n    int jumps = 0;\n    int visited[n];\n    for (int i = 0; i < n; i++) visited[i] = 0;\n    int queue[n];\n    int front = 0, rear = 0;\n    queue[rear++] = 0;\n    visited[0] = 1;\n    while (front < rear) {\n        int u = queue[front++];\n        if (u == n - 1) break;\n        if (u > 0 && !visited[u - 1]) {\n            queue[rear++] = u - 1;\n            visited[u - 1] = 1;\n        }\n        if (u < n - 1 && !visited[u + 1]) {\n            queue[rear++] = u + 1;\n            visited[u + 1] = 1;\n        }\n        for (int i = 0; i < n; i++) {\n            if (s[i] == s[u] && !visited[i]) {\n                queue[rear++] = i;\n                visited[i] = 1;\n            }\n        }\n        jumps++;\n    }\n    printf(\"%d\\n\", jumps);\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <queue>\n#include <vector>\nusing namespace std;\n\nint main() {\n    string s;\n    cin >> s;\n    int n = s.length();\n    int jumps = 0;\n    vector<bool> visited(n, false);\n    queue<int> q;\n    q.push(0);\n    visited[0] = true;\n    while (!q.empty()) {\n        int size = q.size();\n        for (int i = 0; i < size; i++) {\n            int u = q.front();\n            q.pop();\n            if (u == n - 1) break;\n            if (u > 0 && !visited[u - 1]) {\n                q.push(u - 1);\n                visited[u - 1] = true;\n            }\n            if (u < n - 1 && !visited[u + 1]) {\n                q.push(u + 1);\n                visited[u + 1] = true;\n            }\n            for (int j = 0; j < n; j++) {\n                if (s[j] == s[u] && !visited[j]) {\n                    q.push(j);\n                    visited[j] = true;\n                }\n            }\n        }\n        jumps++;\n    }\n    cout << jumps << endl;\n    return 0;\n}",
+      "Java": "import java.util.LinkedList;\nimport java.util.Queue;\nimport java.util.Scanner;\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        String s = sc.next();\n        int n = s.length();\n        int jumps = 0;\n        boolean[] visited = new boolean[n];\n        Queue<Integer> q = new LinkedList<>();\n        q.add(0);\n        visited[0] = true;\n        while (!q.isEmpty()) {\n            int size = q.size();\n            for (int i = 0; i < size; i++) {\n                int u = q.poll();\n                if (u == n - 1) break;\n                if (u > 0 && !visited[u - 1]) {\n                    q.add(u - 1);\n                    visited[u - 1] = true;\n                }\n                if (u < n - 1 && !visited[u + 1]) {\n                    q.add(u + 1);\n                    visited[u + 1] = true;\n                }\n                for (int j = 0; j < n; j++) {\n                    if (s.charAt(j) == s.charAt(u) && !visited[j]) {\n                        q.add(j);\n                        visited[j] = true;\n                    }\n                }\n            }\n            jumps++;\n        }\n        System.out.println(jumps);\n    }\n}",
+      "Python3": "from collections import deque\n\ns = input()\nn = len(s)\njumps = 0\nvisited = [False] * n\nq = deque([0])\nvisited[0] = True\nwhile q:\n    size = len(q)\n    for _ in range(size):\n        u = q.popleft()\n        if u == n - 1: break\n        if u > 0 and not visited[u - 1]:\n            q.append(u - 1)\n            visited[u - 1] = True\n        if u < n - 1 and not visited[u + 1]:\n            q.append(u + 1)\n            visited[u + 1] = True\n        for j in range(n):\n            if s[j] == s[u] and not visited[j]:\n                q.append(j)\n                visited[j] = True\n    jumps += 1\nprint(jumps)",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nfunction nextLine() {\n    return input[idx++];\n}\n\nlet s = nextLine();\nlet n = s.length;\nlet jumps = 0;\nlet visited = new Array(n).fill(false);\nlet q = [0];\nvisited[0] = true;\nwhile (q.length > 0) {\n    let size = q.length;\n    for (let i = 0; i < size; i++) {\n        let u = q.shift();\n        if (u == n - 1) break;\n        if (u > 0 && !visited[u - 1]) {\n            q.push(u - 1);\n            visited[u - 1] = true;\n        }\n        if (u < n - 1 && !visited[u + 1]) {\n            q.push(u + 1);\n            visited[u + 1] = true;\n        }\n        for (let j = 0; j < n; j++) {\n            if (s[j] == s[u] && !visited[j]) {\n                q.push(j);\n                visited[j] = true;\n            }\n        }\n    }\n    jumps++;\n}\nconsole.log(jumps);"
+    }
+  }
+}

@@ -1,0 +1,126 @@
+{
+  "questionId": "Q5655",
+  "title": "Andrew and the Balls",
+  "slug": "andrew-and-the-balls",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Inclusion‑Exclusion",
+      "Combinatorics",
+      "Factorials",
+      "Modular Arithmetic"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Andrew likes colored balls very much.\n\nHe has **N** different colors of balls, all colors are numbered from **1** to **N**, inclusive. There are **C1** balls of the first color, **C2** balls of the second color, ..., **CN** balls of the **N**th color. All balls of the same color are identical.\n\nNow he wants to arrange all the balls in a row in such a way that no two consecutive balls have the same color. But he wonders in how many ways can he arrange all the balls. Help him to find the number of ways of arranging all the balls. The number can be very large, so you must output this number modulo **1000000007** (**109+7**).",
+    "constraints": [
+      "1 ≤ T ≤ 7",
+      "1 ≤ N ≤ 200",
+      "1 ≤ ΣCi ≤ 200"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case: the first line contains an integer N (number of colors). The second line contains N space‑separated integers C1 … CN, where Ci is the number of balls of color i. It is guaranteed that ΣCi ≤ 200.",
+    "outputFormat": "For each test case output a single line containing the number of possible arrangements in which no two consecutive balls have the same color, modulo 1000000007.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n2\n1 2\n3\n3 1 2",
+        "output": "1\n10",
+        "explanation": "For the first test case, there is only one way to arrange the balls: color-2 color-1 color-2. For the second test case, there are 10 ways to arrange the balls."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Let total = ΣCi. Using inclusion‑exclusion we merge some adjacent equal balls of each colour. For colour i we may merge ki pairs (0 ≤ ki ≤ Ci‑1). After merging, colour i contributes (Ci‑ki) blocks. The number of ways to choose which pairs are merged is C(Ci‑1, ki). The sign of the term is (‑1)^{ki}. After all colours are processed we have M = total‑K blocks, where K = Σki. The number of permutations of these blocks is M! divided by the product of (Ci‑ki)! (because blocks of the same colour are identical). Therefore\n\nanswer = Σ_{k1…kN} (‑1)^{K} * (M)! / Π_i (Ci‑ki)! * Π_i C(Ci‑1, ki)\n\nWe compute this sum with DP over colours. Let dp[l] be the accumulated sum of the fraction part for a current total length l (i.e. Σ (‑1)^{K} * Π C(Ci‑1, ki) / Π (Ci‑ki)! ). Initially dp[0]=1. For each colour i we build a new array ndp: for every existing length l and every possible ki we add\n\nterm = dp[l] * C(Ci‑1, ki) * invFact[Ci‑ki] * (‑1)^{ki}\n\nto ndp[l + (Ci‑ki)]. After processing all colours, the final answer is Σ_{l=0}^{total} dp[l] * fact[l] (because fact[l] = l! restores the missing factorial). All factorials and inverse factorials are pre‑computed up to 200. The algorithm runs in O(N * total^2) ≤ 8·10^6 operations and uses O(total) memory.\n\nEdge cases: if any colour count exceeds (total+1)/2 the answer becomes 0 automatically, which the formula also yields.",
+    "timeComplexity": "O(N * total^2) ≤ O(200 * 200^2) ≈ 8·10^6 operations per test case.",
+    "spaceComplexity": "O(total) ≤ O(200) for the DP arrays plus O(total) for factorial tables.",
+    "code": {
+      "C": "// COMPLETE, COMPILABLE C code\n#include <stdio.h>\n#include <stdlib.h>\n#define MOD 1000000007\n\nlong long modPow(long long a, long long e) {\n    long long r = 1;\n    while (e) {\n        if (e & 1) r = r * a % MOD;\n        a = a * a % MOD;\n        e >>= 1;\n    }\n    return r;\n}\n\nint main() {\n    int T; if (scanf(\"%d\", &T)!=1) return 0;\n    while (T--) {\n        int N; scanf(\"%d\", &N);\n        int C[205];\n        int total = 0;\n        for (int i = 0; i < N; ++i) { scanf(\"%d\", &C[i]); total += C[i]; }\n        // factorials\n        long long fact[205], invFact[205];\n        fact[0] = 1;\n        for (int i = 1; i <= total; ++i) fact[i] = fact[i-1] * i % MOD;\n        invFact[total] = modPow(fact[total], MOD-2);\n        for (int i = total; i > 0; --i) invFact[i-1] = invFact[i] * i % MOD;\n        // DP\n        long long *dp = (long long*)calloc(total+1, sizeof(long long));\n        long long *ndp = (long long*)calloc(total+1, sizeof(long long));\n        dp[0] = 1;\n        int curMax = 0;\n        for (int idx = 0; idx < N; ++idx) {\n            int c = C[idx];\n            for (int i = 0; i <= total; ++i) ndp[i] = 0;\n            for (int len = 0; len <= curMax; ++len) if (dp[len]) {\n                for (int k = 0; k <= c-1; ++k) {\n                    int blocks = c - k;\n                    int nlen = len + blocks;\n                    long long ways = dp[len];\n                    // C(c-1, k)\n                    long long comb = fact[c-1] * invFact[k] % MOD * invFact[c-1-k] % MOD;\n                    ways = ways * comb % MOD;\n                    ways = ways * invFact[blocks] % MOD; // divide by (c-k)!\n                    if (k & 1) ways = (MOD - ways) % MOD; // sign\n                    ndp[nlen] = (ndp[nlen] + ways) % MOD;\n                }\n            }\n            curMax += c; // after processing this colour maximum possible length\n            long long *tmp = dp; dp = ndp; ndp = tmp;\n        }\n        long long ans = 0;\n        for (int len = 0; len <= total; ++len) {\n            ans = (ans + dp[len] * fact[len]) % MOD;\n        }\n        printf(\"%lld\\n\", ans);\n        free(dp); free(ndp);\n    }\n    return 0;\n}\n",
+      "C++": ""
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

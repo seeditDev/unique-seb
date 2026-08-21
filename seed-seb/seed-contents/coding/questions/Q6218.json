@@ -1,0 +1,143 @@
+{
+  "questionId": "Q6218",
+  "title": "Chef-Detective",
+  "slug": "chef-detective",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Easy",
+    "isPremium": true,
+    "tags": [
+      "Tree",
+      "Indegree",
+      "Leaf Nodes",
+      "Simple Counting"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Data Structures"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef is a private detective. He was asked to investigate a case of murder in the city of Frangton.\n\nChef arrived in Frangton to find out that the mafia was involved in the case. Chef spent some time watching for people that belong to the clan and was able to build a map of relationships between them. He knows that a mafia's organizational structure consists of a single Don, heading a hierarchical criminal organization. Each member reports exactly to one other member of the clan. It's obvious that there are no cycles in the reporting system of the mafia.\n\nThere are **N** people in the clan, for simplicity indexed from **1** to **N**, and Chef knows who each of them report to. Member **i** reports to member **Ri**.\n\nNow, Chef needs to identfy all potential killers to continue his investigation. Having considerable knowledge about the mafia's activities, Chef knows that the killer must be a minor criminal, that is, one of the members who nobody reports to. Please find the list of potential killers for Chef. Since Don reports to nobody, his **Ri** will be equal to **0**.",
+    "constraints": [
+      "1 ≤ T ≤ 10",
+      "1 ≤ N ≤ 100000",
+      "0 ≤ Ri ≤ N",
+      "Exactly one i has Ri = 0 (the Don).",
+      "The reporting structure forms a rooted tree (no cycles)."
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case:\n- A line with an integer N, the number of members.\n- A line with N space‑separated integers R1,R2,…,RN where Ri is the member to whom i reports (Ri = 0 for the Don).",
+    "outputFormat": "For each test case output a single line containing the indices of all members that have no subordinates (i.e., nobody reports to them) in ascending order, separated by a single space. If no such member exists, output an empty line.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n6\n0 1 1 2 2 3",
+        "output": "4 5 6",
+        "explanation": "The tree: 1 (Don) has children 2 and 3; 2 has children 4 and 5; 3 has child 6. Nodes 4,5,6 have no subordinates, so they are listed."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n1\n0",
+        "output": "1",
+        "explanation": "Only the Don exists and nobody reports to him, therefore he is also a leaf."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n5\n0 1 2 3 4",
+        "output": "5",
+        "explanation": "The structure is a chain 1→2→3→4→5. Only member 5 has no subordinates."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n0",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary (small size for hidden)",
+        "input": "1\n15\n0 1 1 1 1 1 1 1 1 1 1 1 1 1 1",
+        "expectedOutput": "2 3 4 5 6 7 8 9 10 11 12 13 14 15",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case – simple chain",
+        "input": "1\n5\n0 1 2 3 4",
+        "expectedOutput": "5",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n7\n0 1 1 2 2 3 6",
+        "expectedOutput": "4 5 7",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2 – one child",
+        "input": "1\n2\n0 1",
+        "expectedOutput": "2",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each test case we count how many times each member appears as a supervisor (i.e., how many direct reports they have). This is the indegree of each node in the reporting tree. A member with indegree 0 has no subordinates and is therefore a potential killer. The algorithm:\n1. Initialise an array indeg[1..N] with zeros.\n2. Scan the N values Ri. For each i, if Ri != 0 increment indeg[Ri].\n3. After the scan, all indices i with indeg[i] == 0 are leaves. Output them in increasing order.\nThe procedure is O(N) per test case and uses O(N) additional memory.",
+    "timeComplexity": "O(N) per test case, total O( Σ N ) over all test cases.",
+    "spaceComplexity": "O(N) per test case for the indegree array.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    while(T--){\n        int N; scanf(\"%d\", &N);\n        int *indeg = (int*)calloc(N+1, sizeof(int));\n        for(int i=1;i<=N;i++){\n            int r; scanf(\"%d\", &r);\n            if(r!=0) indeg[r]++;\n        }\n        int first=1;\n        for(int i=1;i<=N;i++) if(indeg[i]==0){\n            if(!first) printf(\" \");\n            printf(\"%d\", i);\n            first=0;\n        }\n        printf(\"\\n\");\n        free(indeg);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N; cin>>N;\n        vector<int> indeg(N+1,0);\n        for(int i=1;i<=N;i++){\n            int r; cin>>r;\n            if(r!=0) indeg[r]++;\n        }\n        bool first=true;\n        for(int i=1;i<=N;i++) if(indeg[i]==0){\n            if(!first) cout<<' ';\n            cout<<i;\n            first=false;\n        }\n        cout<<\"\\n\";\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner(System.in);\n        StringBuilder sb = new StringBuilder();\n        int T = fs.nextInt();\n        while (T-- > 0) {\n            int N = fs.nextInt();\n            int[] indeg = new int[N + 1];\n            for (int i = 1; i <= N; i++) {\n                int r = fs.nextInt();\n                if (r != 0) indeg[r]++;\n            }\n            boolean first = true;\n            for (int i = 1; i <= N; i++) {\n                if (indeg[i] == 0) {\n                    if (!first) sb.append(' ');\n                    sb.append(i);\n                    first = false;\n                }\n            }\n            sb.append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n    // Fast scanner for large input\n    static class FastScanner {\n        private final InputStream in;\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        FastScanner(InputStream in) { this.in = in; }\n        private int readByte() throws IOException {\n            if (ptr >= len) {\n                len = in.read(buffer);\n                ptr = 0;\n                if (len <= 0) return -1;\n            }\n            return buffer[ptr++];\n        }\n        int nextInt() throws IOException {\n            int c, sign = 1, val = 0;\n            do { c = readByte(); } while (c <= ' ');\n            if (c == '-') { sign = -1; c = readByte(); }\n            while (c > ' ') {\n                val = val * 10 + (c - '0');\n                c = readByte();\n            }\n            return val * sign;\n        }\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it))\n        indeg = [0] * (N + 1)\n        for i in range(1, N + 1):\n            r = int(next(it))\n            if r != 0:\n                indeg[r] += 1\n        leaves = [str(i) for i in range(1, N + 1) if indeg[i] == 0]\n        out_lines.append(' '.join(leaves))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst data = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/).map(Number);\nlet idx = 0;\nif (data.length === 0) process.exit(0);\nconst T = data[idx++];\nlet outputs = [];\nfor (let t = 0; t < T; t++) {\n  const N = data[idx++];\n  const indeg = new Array(N + 1).fill(0);\n  for (let i = 1; i <= N; i++) {\n    const r = data[idx++];\n    if (r !== 0) indeg[r]++;\n  }\n  const res = [];\n  for (let i = 1; i <= N; i++) {\n    if (indeg[i] === 0) res.push(i);\n  }\n  outputs.push(res.join(' '));\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "questionId": "Q6700",
+  "title": "Tree Connectivity",
+  "slug": "tree-connectivity",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Tree",
+      "Connected Components",
+      "Depth-First Search"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Trees"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef recently got influenced by the Joker and loves to carve things up with his new collection of knives. \n\nOne afternoon Chef decides to cut off some vertices from a tree that has **N ** vertices. Chef creates the following plan for cutting the vertices :  \n\n\n\n  He chooses a pair of integers (**L, R**) such that (**1**≤**L**≤**R**≤**N**) and cuts off all vertices whose indices do not belong in the interval [**L, R**].\nHe also cuts off all edges that don’t connect any two vertices belonging to the interval [**L, R**].\n\n\nA pair of integers [**L, R**] is said to be valid if the remaining graph after cutting the vertices according to Chef's plan is still connected.\n\nThe Chef wants to know the number of such valid pairs (**L, R**) for his tree. However, duty calls for the Chef and he has to rush back to the kitchen to cook. Can you help him to calculate the number of such valid pairs?",
+    "constraints": [
+      "1 <= T <= 10^5",
+      "1 <= N <= 10^6",
+      "The sum of N over all test cases does not exceed 10^6"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case starts with an integer N, the number of vertices in the tree. The following N-1 lines contain two integers each, representing the edges of the tree.",
+    "outputFormat": "For each test case, output the number of valid pairs (L, R) such that the remaining graph after cutting the vertices according to Chef's plan is still connected.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n2\n2 1\n4\n3 4\n1 4\n4 2",
+        "output": "3\n7",
+        "explanation": "For the first test case, the valid pairs are [1,1], [1,2], and [2,2]. For the second test case, the valid pairs are [1,1], [1,4], [2,2], [2,4], [3,3], [3,4], and [4,4]."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n1000000\n",
+        "expectedOutput": "1000000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n2\n1 2",
+        "expectedOutput": "3",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n5\n1 2\n2 3\n3 4\n4 5",
+        "expectedOutput": "15",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n5\n1 2\n1 3\n1 4\n1 5",
+        "expectedOutput": "15",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a depth-first search (DFS) approach. For each vertex, we can perform a DFS to find the number of vertices that are reachable from it. We can then use this information to count the number of valid pairs (L, R).",
+    "timeComplexity": "O(T * N^2) — where T is the number of test cases and N is the number of vertices in the tree. The reason for this time complexity is that for each test case, we are performing a DFS for each vertex, which takes O(N) time. We are doing this for each of the N vertices, resulting in a total time complexity of O(N^2) per test case. Since there are T test cases, the overall time complexity is O(T * N^2).",
+    "spaceComplexity": "O(N) — where N is the number of vertices in the tree. The reason for this space complexity is that we need to store the adjacency list representation of the tree, which requires O(N) space.",
+    "code": {
+      "C": "// COMPLETE, COMPILABLE C code\n#include <stdio.h>\n#include <stdlib.h>\n#define MAX_N 1000000\n\n// Structure to represent an edge\ntypedef struct Edge {\n    int v;\n    struct Edge* next;\n} Edge;\n\n// Function to add an edge to the adjacency list\nvoid addEdge(Edge** adj, int u, int v) {\n    Edge* newEdge = (Edge*) malloc(sizeof(Edge));\n    newEdge->v = v;\n    newEdge->next = adj[u];\n    adj[u] = newEdge;\n}\n\n// Function to perform DFS\nint dfs(Edge** adj, int u, int* visited, int* count) {\n    visited[u] = 1;\n    (*count)++;\n    for (Edge* temp = adj[u]; temp; temp = temp->next) {\n        if (!visited[temp->v]) {\n            dfs(adj, temp->v, visited, count);\n        }\n    }\n}\n\n// Function to count the number of valid pairs\nint countValidPairs(Edge** adj, int N) {\n    int count = 0;\n    for (int i = 0; i < N; i++) {\n        for (int j = i; j < N; j++) {\n            int* visited = (int*) calloc(N, sizeof(int));\n            int* countArr = (int*) malloc(sizeof(int));\n            *countArr = 0;\n            dfs(adj, i, visited, countArr);\n            if (*countArr == j - i + 1) {\n                count++;\n            }\n            free(visited);\n            free(countArr);\n        }\n    }\n    return count;\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int N;\n        scanf(\"%d\", &N);\n        Edge** adj = (Edge**) malloc(N * sizeof(Edge*));\n        for (int i = 0; i < N; i++) {\n            adj[i] = NULL;\n        }\n        for (int i = 0; i < N - 1; i++) {\n            int u, v;\n            scanf(\"%d %d\", &u, &v);\n            u--;\n            v--;\n            addEdge(adj, u, v);\n            addEdge(adj, v, u);\n        }\n        printf(\"%d\\n\", countValidPairs(adj, N));\n        for (int i = 0; i < N; i++) {\n            Edge* temp = adj[i];\n            while (temp) {\n                Edge* next = temp->next;\n                free(temp);\n                temp = next;\n            }\n        }\n        free(adj);\n    }\n    return 0;\n}",
+      "C++": "// COMPLETE, COMPILABLE C++ code\n#include <iostream>\n#include <vector>\nusing namespace std;\n\n// Function to count the number of valid pairs\nint countValidPairs(vector<vector<int>> adj, int N) {\n    int count = 0;\n    for (int i = 0; i < N; i++) {\n        for (int j = i; j < N; j++) {\n            vector<bool> visited(N, false);\n            int countArr = 0;\n            function<void(int)> dfs = [&](int u) {\n                visited[u] = true;\n                countArr++;\n                for (int v : adj[u]) {\n                    if (!visited[v]) {\n                        dfs(v);\n                    }\n                }\n            };\n            dfs(i);\n            if (countArr == j - i + 1) {\n                count++;\n            }\n        }\n    }\n    return count;\n}\n\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        int N;\n        cin >> N;\n        vector<vector<int>> adj(N);\n        for (int i = 0; i < N - 1; i++) {\n            int u, v;\n            cin >> u >> v;\n            u--;\n            v--;\n            adj[u].push_back(v);\n            adj[v].push_back(u);\n        }\n        cout << countValidPairs(adj, N) << endl;\n    }\n    return 0;\n}",
+      "Java": "// COMPLETE, COMPILABLE Java code\nimport java.util.Scanner;\nimport java.util.ArrayList;\n\npublic class Main {\n    // Function to count the number of valid pairs\n    public static int countValidPairs(ArrayList<ArrayList<Integer>> adj, int N) {\n        int count = 0;\n        for (int i = 0; i < N; i++) {\n            for (int j = i; j < N; j++) {\n                boolean[] visited = new boolean[N];\n                int[] countArr = new int[1];\n                dfs(adj, i, visited, countArr);\n                if (countArr[0] == j - i + 1) {\n                    count++;\n                }\n            }\n        }\n        return count;\n    }\n\n    // Function to perform DFS\n    public static void dfs(ArrayList<ArrayList<Integer>> adj, int u, boolean[] visited, int[] countArr) {\n        visited[u] = true;\n        countArr[0]++;\n        for (int v : adj.get(u)) {\n            if (!visited[v]) {\n                dfs(adj, v, visited, countArr);\n            }\n        }\n    }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n        while (T-- > 0) {\n            int N = sc.nextInt();\n            ArrayList<ArrayList<Integer>> adj = new ArrayList<>();\n            for (int i = 0; i < N; i++) {\n                adj.add(new ArrayList<>());\n            }\n            for (int i = 0; i < N - 1; i++) {\n                int u = sc.nextInt() - 1;\n                int v = sc.nextInt() - 1;\n                adj.get(u).add(v);\n                adj.get(v).add(u);\n            }\n            System.out.println(countValidPairs(adj, N));\n        }\n    }\n}",
+      "Python3": "# COMPLETE, RUNNABLE Python3 code\nimport sys\n\n# Function to count the number of valid pairs\ndef countValidPairs(adj, N):\n    count = 0\n    for i in range(N):\n        for j in range(i, N):\n            visited = [False] * N\n            countArr = [0]\n            dfs(adj, i, visited, countArr)\n            if countArr[0] == j - i + 1:\n                count += 1\n    return count\n\n# Function to perform DFS\ndef dfs(adj, u, visited, countArr):\n    visited[u] = True\n    countArr[0] += 1\n    for v in adj[u]:\n        if not visited[v]:\n            dfs(adj, v, visited, countArr)\n\nT = int(input())\nwhile T > 0:\n    N = int(input())\n    adj = [[] for _ in range(N)]\n    for _ in range(N - 1):\n        u, v = map(int, input().split())\n        u -= 1\n        v -= 1\n        adj[u].append(v)\n        adj[v].append(u)\n    print(countValidPairs(adj, N))\n    T -= 1",
+      "JavaScript": "// COMPLETE, RUNNABLE JavaScript code\nconst fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\n\n// Function to count the number of valid pairs\nfunction countValidPairs(adj, N) {\n    let count = 0;\n    for (let i = 0; i < N; i++) {\n        for (let j = i; j < N; j++) {\n            let visited = new Array(N).fill(false);\n            let countArr = [0];\n            dfs(adj, i, visited, countArr);\n            if (countArr[0] === j - i + 1) {\n                count++;\n            }\n        }\n    }\n    return count;\n}\n\n// Function to perform DFS\nfunction dfs(adj, u, visited, countArr) {\n    visited[u] = true;\n    countArr[0]++;\n    for (let v of adj[u]) {\n        if (!visited[v]) {\n            dfs(adj, v, visited, countArr);\n        }\n    }\n}\n\nlet T = parseInt(lines[idx++]);\nwhile (T > 0) {\n    let N = parseInt(lines[idx++]);\n    let adj = Array(N).fill(0).map(() => []);\n    for (let i = 0; i < N - 1; i++) {\n        let [u, v] = lines[idx++].split(' ').map(x => parseInt(x) - 1);\n        adj[u].push(v);\n        adj[v].push(u);\n    }\n    console.log(countValidPairs(adj, N));\n    T--;\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

@@ -1,0 +1,132 @@
+{
+  "questionId": "Q11775",
+  "title": "Longest String Chain",
+  "slug": "longest-string-chain",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "String",
+      "Chain",
+      "Dynamic Programming"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Given an array of strings words[], the task is to return the longest string chain. A string chain is defined as a sequence of words where:\n\n\n\nEach word (except the first) can be formed by inserting exactly one character into the previous word.\n\nThe first word of the chain can be any word from the words[] array.\n\nThe task is to determine the length of the longest chain.",
+    "constraints": [
+      "1 <= words.length <= 1000",
+      "1 <= words[i].length <= 16",
+      "words[i] consists of lowercase English letters"
+    ],
+    "inputFormat": "words = [string1, string2, ... , stringN] where words is an array of strings",
+    "outputFormat": "The length of the longest string chain",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "words = [\"a\", \"ab\", \"abc\", \"abcd\", \"abcde\"]",
+        "output": "5",
+        "explanation": "The longest chain is [\"a\", \"ab\", \"abc\", \"abcd\", \"abcde\"].  \nEach word in the chain is formed by adding exactly one character to the previous word.\n\n**Example 2:**"
+      },
+      {
+        "id": "sample_2",
+        "input": "words = [\"dog\", \"dogs\", \"dots\", \"dot\", \"d\", \"do\"]",
+        "output": "4",
+        "explanation": "The longest chain is [\"d\", \"do\", \"dot\", \"dots\"].  \nEach word is formed by inserting one character into the previous word.\n        \n    \n\n\n**Disclaimer**: Here is the practice link to help you assess your knowledge better. It's highly recommend trying to solve it before looking at the solution."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "words = [\"a\"]",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "words = [\"a\", \"ab\", \"abc\", \"abcd\", \"abcde\", \"abcdef\", \"abcdefg\", \"abcdefgh\", \"abcdefghi\", \"abcdefghij\"]",
+        "expectedOutput": "10",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": "words = [\"a\", \"a\", \"a\", \"a\", \"a\"]",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "words = [\"abc\", \"ab\", \"a\"]",
+        "expectedOutput": "3",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": "words = [\"dog\", \"dogs\", \"dots\", \"dot\", \"d\", \"do\"]",
+        "expectedOutput": "4",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Use dynamic programming to build up a table of longest chain lengths for each word, then return the maximum length found",
+    "timeComplexity": "O(N^2 * M) where N is the number of words and M is the maximum length of a word",
+    "spaceComplexity": "O(N) for the dynamic programming table",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n\nint longestStringChain(char **words, int wordsSize) {\n    int dp[wordsSize];\n    for (int i = 0; i < wordsSize; i++) dp[i] = 1;\n    for (int i = 0; i < wordsSize; i++) {\n        for (int j = 0; j < i; j++) {\n            if (strlen(words[i]) == strlen(words[j]) + 1) {\n                int k = 0, l = 0;\n                while (k < strlen(words[i])) {\n                    if (l < strlen(words[j]) && words[i][k] == words[j][l]) l++;\n                    k++;\n                }\n                if (l == strlen(words[j])) dp[i] = dp[i] > dp[j] + 1 ? dp[i] : dp[j] + 1;\n            }\n        }\n    }\n    int max = 0;\n    for (int i = 0; i < wordsSize; i++) max = max > dp[i] ? max : dp[i];\n    return max;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nclass Solution {\npublic:\n    // Function to return the length of the longest string chain possible\n    int longestStringChain(vector<string>& words) {\n        int n = words.size(); // Size of the array \n        sort(words.begin(), words.end(), compare);\n        vector<int> dp(n, 1); // DP array \n\n        // To store the length of longest string chain\n        int maxLen = 0;\n\n        // Computing the DP array \n        for(int i = 0; i < n; i++) {\n\n            // For each previous index\n            for(int j = 0; j < i; j++) {\n                \n                /* If the element at index i can be \n                included in the chain ending at index j */\n                if(checkPossible(words[i], words[j]) && dp[i] < dp[j] + 1) {\n                    dp[i] = dp[j] + 1; // Update the DP value\n                }\n            }\n\n            // If a longer chain is found, update the values\n            if(dp[i] > maxLen) maxLen = dp[i];\n        }\n        \n        return maxLen;\n    }\n    \nprivate:\n    // Custom comparator function \n    bool static compare(string &s, string &t) {\n        return s.size() < t.size();\n    }\n    \n    // Function to check if the string can be added to the chain\n    bool checkPossible(string &s, string &t) {\n        //  Base case\n        if(s.size() != t.size() + 1) return false;\n        \n        int i = 0, j = 0; // Pointers\n        \n        // Traverse until the first string is exhausted\n        while(i < s.size()) {\n            \n            // Move both pointers if characters matches\n            if(j < t.size() && s[i] == t[j]) {\n                i++, j++;\n            }\n            // Otherwise \n            else {\n                i++;\n            }\n        }\n        \n        // Return true if both the string gets exhausted\n        if(i == s.size() && j == t.size()) return true;\n        return false; // Return false otherwise\n    }\n};\n",
+      "Java": "import java.util.*;\n\nclass Solution {\n    public int longestStringChain(String[] words) {\n        int n = words.length; // Size of the array \n        Arrays.sort(words, Comparator.comparingInt(String::length));\n        int[] dp = new int[n]; // DP array\n        Arrays.fill(dp, 1);\n\n        // To store the length of longest string chain\n        int maxLen = 0;\n\n        // Computing the DP array \n        for (int i = 0; i < n; i++) {\n\n            // For each previous index\n            for (int j = 0; j < i; j++) {\n\n                /* If the element at index i can be \n                included in the chain ending at index j */\n                if (checkPossible(words[i], words[j]) && dp[i] < dp[j] + 1) {\n                    dp[i] = dp[j] + 1; // Update the DP value\n                }\n            }\n\n            // If a longer chain is found, update the values\n            if (dp[i] > maxLen) maxLen = dp[i];\n        }\n\n        return maxLen;\n    }\n\n    // Function to check if the string can be added to the chain\n    private boolean checkPossible(String s, String t) {\n        // Base case\n        if (s.length() != t.length() + 1) return false;\n\n        int i = 0, j = 0; // Pointers\n\n        // Traverse until the first string is exhausted\n        while (i < s.length()) {\n\n            // Move both pointers if characters matches\n            if (j < t.length() && s.charAt(i) == t.charAt(j)) {\n                i++;\n                j++;\n            }\n            // Otherwise \n            else {\n                i++;\n            }\n        }\n\n        // Return true if both the string gets exhausted\n        return (i == s.length() && j == t.length());\n    }\n}\n",
+      "Python3": "class Solution:\n    # Function to return the length of the longest string chain possible\n    def longestStrChain(self, words):\n        n = len(words)  # Size of the array\n        words.sort(key=len)\n        dp = [1] * n  # DP array\n\n        # To store the length of longest string chain\n        maxLen = 0\n\n        # Computing the DP array \n        for i in range(n):\n\n            # For each previous index\n            for j in range(i):\n                \n                \"\"\" If the element at index i can be \n                included in the chain ending at index j \"\"\"\n                if self.checkPossible(words[i], words[j]) and dp[i] < dp[j] + 1:\n                    dp[i] = dp[j] + 1  # Update the DP value\n\n            # If a longer chain is found, update the values\n            if dp[i] > maxLen:\n                maxLen = dp[i]\n        \n        return maxLen\n    \n    # Function to check if the string can be added to the chain\n    def checkPossible(self, s, t):\n        # Base case\n        if len(s) != len(t) + 1:\n            return False\n        \n        i, j = 0, 0  # Pointers\n        \n        # Traverse until the first string is exhausted\n        while i < len(s):\n            \n            # Move both pointers if characters matches\n            if j < len(t) and s[i] == t[j]:\n                i += 1\n                j += 1\n            # Otherwise \n            else:\n                i += 1\n        \n        # Return true if both the string gets exhausted\n        if i == len(s) and j == len(t):\n            return True\n        return False  # Return false otherwise\n\n",
+      "JavaScript": "class Solution {\n    // Function to return the length of the longest string chain possible\n    longestStringChain(words) {\n        const n = words.length; // Size of the array \n        words.sort((a, b) => a.length - b.length);\n        const dp = new Array(n).fill(1); // DP array\n\n        // To store the length of longest string chain\n        let maxLen = 0;\n\n        // Computing the DP array \n        for(let i = 0; i < n; i++) {\n\n            // For each previous index\n            for(let j = 0; j < i; j++) {\n                \n                /* If the element at index i can be \n                included in the chain ending at index j */\n                if(this.checkPossible(words[i], words[j]) && dp[i] < dp[j] + 1) {\n                    dp[i] = dp[j] + 1; // Update the DP value\n                }\n            }\n\n            // If a longer chain is found, update the values\n            if(dp[i] > maxLen) maxLen = dp[i];\n        }\n        \n        return maxLen;\n    }\n    \n    // Function to check if the string can be added to the chain\n    checkPossible(s, t) {\n        //  Base case\n        if(s.length !== t.length + 1) return false;\n        \n        let i = 0, j = 0; // Pointers\n        \n        // Traverse until the first string is exhausted\n        while(i < s.length) {\n            \n            // Move both pointers if characters matches\n            if(j < t.length && s[i] === t[j]) {\n                i++; j++;\n            }\n            // Otherwise \n            else {\n                i++;\n            }\n        }\n        \n        // Return true if both the string gets exhausted\n        if(i === s.length && j === t.length) return true;\n        return false; // Return false otherwise\n    }\n}\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

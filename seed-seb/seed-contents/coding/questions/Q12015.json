@@ -1,0 +1,211 @@
+{
+  "questionId": "Q12015",
+  "title": "Maximum Xor with an element from an array",
+  "slug": "maximum-xor-with-an-element-from-array",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Bit Manipulation",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Trie",
+      "Offline Queries",
+      "Bitwise XOR"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Given an array of non-negative integers and an array of queries where each query is a pair of two non-negative integers ie. [Xi, Ai], the answer to the ith query is the maximum bitwise XOR value of the Xi with any integer less than or equal to Ai in the array. Return an array consisting of the results of these queries. \n\nNote: If all integers are greater than Ai in the array then the answer to this query will be -1.",
+    "constraints": [
+      "1 <= arr.length <= 10^5",
+      "1 <= queries.length <= 10^5",
+      "0 <= arr[i] <= 2^31 - 1",
+      "0 <= queries[i][0] <= 2^31 - 1",
+      "0 <= queries[i][1] <= 2^31 - 1"
+    ],
+    "inputFormat": "The input consists of two parameters: arr and queries. arr is a list of non-negative integers and queries is a list of pairs where each pair contains two non-negative integers.",
+    "outputFormat": "The function should return a list of integers where each integer is the maximum bitwise XOR value of the corresponding query's first element with any integer less than or equal to the query's second element in the array.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": {
+          "arr": [
+            0
+          ],
+          "queries": [
+            [
+              0,
+              0
+            ]
+          ]
+        },
+        "expectedOutput": [
+          -1
+        ],
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": {
+          "arr": [
+            "2**31 - 1"
+          ],
+          "queries": [
+            [
+              0,
+              "2**31 - 1"
+            ]
+          ]
+        },
+        "expectedOutput": [
+          "2**31 - 1"
+        ],
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": {
+          "arr": [
+            1,
+            1,
+            1
+          ],
+          "queries": [
+            [
+              1,
+              1
+            ],
+            [
+              1,
+              1
+            ],
+            [
+              1,
+              1
+            ]
+          ]
+        },
+        "expectedOutput": [
+          1,
+          1,
+          1
+        ],
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case/empty-like",
+        "input": {
+          "arr": [],
+          "queries": [
+            [
+              0,
+              0
+            ]
+          ]
+        },
+        "expectedOutput": [
+          -1
+        ],
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": {
+          "arr": [
+            3,
+            10,
+            5,
+            25,
+            2,
+            8
+          ],
+          "queries": [
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              0,
+              3
+            ],
+            [
+              3,
+              3
+            ]
+          ]
+        },
+        "expectedOutput": [
+          -1,
+          -1,
+          3,
+          3
+        ],
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Use a Trie data structure to store the binary representation of the numbers in the array. Then, for each query, find the maximum XOR value by traversing the Trie and choosing the opposite bit at each step.",
+    "timeComplexity": "O(N log M + Q log M)",
+    "spaceComplexity": "O(N log M)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\n// Structure for a trie node\ntypedef struct Node {\n    struct Node* links[2];\n} Node;\n\n// Function to create a new trie node\nNode* createNode() {\n    Node* node = (Node*) malloc(sizeof(Node));\n    node->links[0] = NULL;\n    node->links[1] = NULL;\n    return node;\n}\n\n// Function to insert a number into the trie\nvoid insert(Node* root, int num) {\n    Node* node = root;\n    for (int i = 31; i >= 0; i--) {\n        int bit = (num >> i) & 1;\n        if (node->links[bit] == NULL) {\n            node->links[bit] = createNode();\n        }\n        node = node->links[bit];\n    }\n}\n\n// Function to find maximum XOR for a given number\nint findMax(Node* root, int num) {\n    Node* node = root;\n    int maxNum = 0;\n    for (int i = 31; i >= 0; i--) {\n        int bit = (num >> i) & 1;\n        if (node->links[1 - bit] != NULL) {\n            maxNum = maxNum | (1 << i);\n            node = node->links[1 - bit];\n        } else {\n            node = node->links[bit];\n        }\n    }\n    return maxNum;\n}\n\n// Function to perform offline max XOR queries\nint* maxXorQueries(int* arr, int arrSize, int** queries, int queriesSize, int* queriesColSize, int* returnSize) {\n    // Sort array\n    for (int i = 0; i < arrSize - 1; i++) {\n        for (int j = i + 1; j < arrSize; j++) {\n            if (arr[i] > arr[j]) {\n                int temp = arr[i];\n                arr[i] = arr[j];\n                arr[j] = temp;\n            }\n        }\n    }\n\n    // Store queries with index\n    int** offlineQueries = (int**) malloc(queriesSize * sizeof(int*));\n    for (int i = 0; i < queriesSize; i++) {\n        offlineQueries[i] = (int*) malloc(3 * sizeof(int));\n        offlineQueries[i][0] = queries[i][1];\n        offlineQueries[i][1] = queries[i][0];\n        offlineQueries[i][2] = i;\n    }\n\n    // Sort queries based on m\n    for (int i = 0; i < queriesSize - 1; i++) {\n        for (int j = i + 1; j < queriesSize; j++) {\n            if (offlineQueries[i][0] > offlineQueries[j][0]) {\n                int* temp = offlineQueries[i];\n                offlineQueries[i] = offlineQueries[j];\n                offlineQueries[j] = temp;\n            }\n        }\n    }\n\n    // Result array\n    int* ans = (int*) malloc(queriesSize * sizeof(int));\n\n    // Trie object\n    Node* trie = createNode();\n\n    // Array pointer\n    int i = 0;\n\n    // Process queries\n    for (int k = 0; k < queriesSize; k++) {\n        while (i < arrSize && arr[i] <= offlineQueries[k][0]) {\n            insert(trie, arr[i]);\n            i++;\n        }\n        if (i != 0) {\n            ans[offlineQueries[k][2]] = findMax(trie, offlineQueries[k][1]);\n        } else {\n            ans[offlineQueries[k][2]] = -1;\n        }\n    }\n\n    *returnSize = queriesSize;\n    return ans;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\n// Structure for a trie node\nstruct Node {\n    Node* links[2];\n    Node() {\n        links[0] = NULL;\n        links[1] = NULL;\n    }\n};\n\n// Function to insert a number into the trie\nvoid insert(Node* root, int num) {\n    Node* node = root;\n    for (int i = 31; i >= 0; i--) {\n        int bit = (num >> i) & 1;\n        if (node->links[bit] == NULL) {\n            node->links[bit] = new Node();\n        }\n        node = node->links[bit];\n    }\n}\n\n// Function to find maximum XOR for a given number\nint findMax(Node* root, int num) {\n    Node* node = root;\n    int maxNum = 0;\n    for (int i = 31; i >= 0; i--) {\n        int bit = (num >> i) & 1;\n        if (node->links[1 - bit] != NULL) {\n            maxNum = maxNum | (1 << i);\n            node = node->links[1 - bit];\n        } else {\n            node = node->links[bit];\n        }\n    }\n    return maxNum;\n}\n\n// Function to perform offline max XOR queries\nvector<int> maxXorQueries(vector<int>& arr, vector<vector<int>>& queries) {\n    // Sort array\n    sort(arr.begin(), arr.end());\n\n    // Store queries with index\n    vector<pair<int, pair<int, int>>> offlineQueries;\n    for (int i = 0; i < queries.size(); i++) {\n        offlineQueries.push_back({queries[i][1], {queries[i][0], i}});\n    }\n\n    // Sort queries based on m\n    sort(offlineQueries.begin(), offlineQueries.end());\n\n    // Result array\n    vector<int> ans(queries.size(), 0);\n\n    // Trie object\n    Node* trie = new Node();\n\n    // Array pointer\n    int i = 0;\n\n    // Process queries\n    for (int k = 0; k < offlineQueries.size(); k++) {\n        while (i < arr.size() && arr[i] <= offlineQueries[k].first) {\n            insert(trie, arr[i]);\n            i++;\n        }\n        if (i != 0) {\n            ans[offlineQueries[k].second.second] = findMax(trie, offlineQueries[k].second.first);\n        } else {\n            ans[offlineQueries[k].second.second] = -1;\n        }\n    }\n    return ans;\n}",
+      "Java": "import java.util.*;\n\n// Structure for a trie node\nclass Node {\n    Node[] links = new Node[2];\n    Node() {\n        links[0] = null;\n        links[1] = null;\n    }\n}\n\n// Function to insert a number into the trie\nvoid insert(Node root, int num) {\n    Node node = root;\n    for (int i = 31; i >= 0; i--) {\n        int bit = (num >> i) & 1;\n        if (node.links[bit] == null) {\n            node.links[bit] = new Node();\n        }\n        node = node.links[bit];\n    }\n}\n\n// Function to find maximum XOR for a given number\nint findMax(Node root, int num) {\n    Node node = root;\n    int maxNum = 0;\n    for (int i = 31; i >= 0; i--) {\n        int bit = (num >> i) & 1;\n        if (node.links[1 - bit] != null) {\n            maxNum = maxNum | (1 << i);\n            node = node.links[1 - bit];\n        } else {\n            node = node.links[bit];\n        }\n    }\n    return maxNum;\n}\n\n// Function to perform offline max XOR queries\npublic List<Integer> maxXorQueries(List<Integer> arr, List<List<Integer>> queries) {\n    // Sort array\n    Collections.sort(arr);\n\n    // Store queries with index\n    List<int[]> offlineQueries = new ArrayList<>();\n    for (int i = 0; i < queries.size(); i++) {\n        offlineQueries.add(new int[]{queries.get(i).get(1), queries.get(i).get(0), i});\n    }\n\n    // Sort queries based on m\n    offlineQueries.sort(Comparator.comparingInt(a -> a[0]));\n\n    // Result array\n    List<Integer> ans = new ArrayList<>(Collections.nCopies(queries.size(), 0));\n\n    // Trie object\n    Node trie = new Node();\n\n    // Array pointer\n    int i = 0;\n\n    // Process queries\n    for (int[] query : offlineQueries) {\n        while (i < arr.size() && arr.get(i) <= query[0]) {\n            insert(trie, arr.get(i));\n            i++;\n        }\n        if (i != 0) {\n            ans.set(query[2], findMax(trie, query[1]));\n        } else {\n            ans.set(query[2], -1);\n        }\n    }\n    return ans;\n}",
+      "Python3": "class Node:\n    def __init__(self):\n        self.links = [None, None]\n\n# Function to insert a number into the trie\ndef insert(root, num):\n    node = root\n    for i in range(31, -1, -1):\n        bit = (num >> i) & 1\n        if node.links[bit] is None:\n            node.links[bit] = Node()\n        node = node.links[bit]\n\n# Function to find maximum XOR for a given number\ndef findMax(root, num):\n    node = root\n    maxNum = 0\n    for i in range(31, -1, -1):\n        bit = (num >> i) & 1\n        if node.links[1 - bit] is not None:\n            maxNum = maxNum | (1 << i)\n            node = node.links[1 - bit]\n        else:\n            node = node.links[bit]\n    return maxNum\n\n# Function to perform offline max XOR queries\ndef maxXorQueries(arr, queries):\n    # Sort array\n    arr.sort()\n\n    # Store queries with index\n    offlineQueries = []\n    for idx, (x, m) in enumerate(queries):\n        offlineQueries.append((m, x, idx))\n\n    # Sort queries based on m\n    offlineQueries.sort()\n\n    # Result array\n    ans = [0] * len(queries)\n\n    # Trie object\n    trie = Node()\n\n    # Array pointer\n    i = 0\n\n    # Process queries\n    for m, x, idx in offlineQueries:\n        while i < len(arr) and arr[i] <= m:\n            insert(trie, arr[i])\n            i += 1\n        if i != 0:\n            ans[idx] = findMax(trie, x)\n        else:\n            ans[idx] = -1\n    return ans",
+      "JavaScript": "class Node {\n    constructor() {\n        this.links = [null, null];\n    }\n}\n\n// Function to insert a number into the trie\nfunction insert(root, num) {\n    let node = root;\n    for (let i = 31; i >= 0; i--) {\n        let bit = (num >> i) & 1;\n        if (node.links[bit] === null) {\n            node.links[bit] = new Node();\n        }\n        node = node.links[bit];\n    }\n}\n\n// Function to find maximum XOR for a given number\nfunction findMax(root, num) {\n    let node = root;\n    let maxNum = 0;\n    for (let i = 31; i >= 0; i--) {\n        let bit = (num >> i) & 1;\n        if (node.links[1 - bit] !== null) {\n            maxNum = maxNum | (1 << i);\n            node = node.links[1 - bit];\n        } else {\n            node = node.links[bit];\n        }\n    }\n    return maxNum;\n}\n\n// Function to perform offline max XOR queries\nfunction maxXorQueries(arr, queries) {\n    // Sort array\n    arr.sort((a, b) => a - b);\n\n    // Store queries with index\n    let offlineQueries = queries.map((q, idx) => [q[1], q[0], idx]);\n\n    // Sort queries based on m\n    offlineQueries.sort((a, b) => a[0] - b[0]);\n\n    // Result array\n    let ans = Array(queries.length).fill(0);\n\n    // Trie object\n    let trie = new Node();\n\n    // Array pointer\n    let i = 0;\n\n    // Process queries\n    for (let [m, x, idx] of offlineQueries) {\n        while (i < arr.length && arr[i] <= m) {\n            insert(trie, arr[i]);\n            i++;\n        }\n        if (i !== 0) {\n            ans[idx] = findMax(trie, x);\n        } else {\n            ans[idx] = -1;\n        }\n    }\n    return ans;\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

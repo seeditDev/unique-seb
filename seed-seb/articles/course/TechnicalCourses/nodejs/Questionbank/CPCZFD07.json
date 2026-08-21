@@ -1,0 +1,82 @@
+{
+  "questionId": "CPCZFD07",
+  "title": "Creating and verifying JWTs",
+  "slug": "cpczfd07",
+  "version": 1,
+  "createdAt": "2026-07-13",
+  "updatedAt": "2026-07-13",
+  "source": {
+    "platform": "SEED-IT",
+    "courseSlug": "nodejs",
+    "contestCode": "GCCUYC",
+    "module": "User Authentication",
+    "submodule": "Session & Token Management",
+    "contentType": "mcq",
+    "originalUrl": "https://www.codechef.com/learn/course/nodejs/GCCUYC/problems/CPCZFD07"
+  },
+  "metadata": {
+    "category": "Concept",
+    "difficulty": "Beginner",
+    "isPremium": false,
+    "tags": [
+      "javascript"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "User Authentication",
+      "Session & Token Management"
+    ],
+    "QBCategory": "SEED-IT"
+  },
+  "content": {
+    "problemStatement": "Now that we understand the structure of a JSON Web Token (JWT), let's get practical. In this lesson, we'll learn how to create (or \"sign\") and verify JWTs within our Node.js and Express applications.\n\n### The Tool for the Job: `jsonwebtoken`\n\nTo work with JWTs in Node.js, we don't have to build everything from scratch. We can use a popular and trusted library called `jsonwebtoken`. Think of it like using Mongoose for MongoDB or Express for our web server—it simplifies a complex task.\n\nFirst, you'll need to install it in your project using `npm`, just like you did for Express or Mongoose:\n```bash\nnpm install jsonwebtoken\n```\n\n### Creating (Signing) a JWT\n\nWhen a user successfully authenticates (for example, by providing the correct username and password, a concept from \"Authentication Basics\"), we need to create a token for them. This process is called **signing**. We use the `jwt.sign()` method for this.\n\nLet's look at the main parts needed to create a token:\n\n1.  **Payload**: This is the data we want to store inside the token. A common and secure practice is to include the user's unique `_id` from our MongoDB database. **Important:** Never put sensitive information like passwords in the payload!\n2.  **Secret Key**: This is a secret string that only our server knows. It's used to create the signature part of the JWT, ensuring that nobody else can create valid tokens for our application. This key should be long, complex, and stored securely (for example, in an environment variable), not written directly in your code.\n3.  **Options**: We can specify extra options, like how long the token should be valid. Setting an expiration time is crucial for security.\n\nHere's how you would sign a token in your code:\n\n```javascript\n// Import the library at the top of your file\nconst jwt = require('jsonwebtoken');\n\n// Imagine we found a user in our database after they logged in\nconst userFromDB = {\n  _id: '60c72b2f9b1d8c001f8e4a3c', // This is the user's MongoDB ID\n  username: 'testuser'\n};\n\n// 1. The payload for our token\nconst payload = { \n  id: userFromDB._id \n};\n\n// 2. Our secret key (should be from an environment variable in a real app!)\nconst secretKey = 'this-is-a-super-secret-key-that-should-be-long';\n\n// 3. Options, like setting an expiration time (e.g., '1h' for 1 hour, '7d' for 7 days)\nconst options = { \n  expiresIn: '1h' \n};\n\n// Creating the token by signing the payload with the secret key\nconst token = jwt.sign(payload, secretKey, options);\n\nconsole.log(token);\n// Output will be a long string like: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYwYzcyYjJmOWI...\n```\nThis `token` is what we would send back to the user's browser or mobile app after they log in.\n\n### Verifying a JWT\n\nWhen the user makes a new request to a part of our API, they will send this token back to us (usually in a request header, which we learned about in \"Handling Requests & Data\"). Our server then needs to **verify** it to make sure it's valid and hasn't been changed.\n\nFor this, we use the `jwt.verify()` method. It needs two things:\n\n1.  **The Token**: The token string sent by the user.\n2.  **The Secret Key**: The **exact same** secret key we used to sign the token. If the key is different, verification will fail.\n\nHere's how verification works:\n\n```javascript\n// Let's use the token we created above\nconst receivedToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYwYzcyYjJmOWI...';\n\n// The same secret key is needed for verification\nconst secretKey = 'this-is-a-super-secret-key-that-should-be-long';\n\ntry {\n  // Verifying the token. If it's valid, it returns the decoded payload.\n  const decodedPayload = jwt.verify(receivedToken, secretKey);\n\n  console.log('Token is valid!');\n  console.log(decodedPayload);\n  // Output: { id: '60c72b2f9b1d8c001f8e4a3c', iat: 1623668527, exp: 1623672127 }\n  \n  // We can now trust this ID and use it to find the user in our database\n  // For example: User.findById(decodedPayload.id)\n\n} catch (error) {\n  // If verification fails, the library throws an error\n  console.error('Token is not valid:', error.message);\n  // The error message could be 'invalid signature' or 'jwt expired'\n}\n```\n\nNotice we use a `try...catch` block. This is a great way to handle potential errors, a concept from \"Asynchronous JavaScript Basics\". If `jwt.verify()` fails, our `catch` block will run. If it succeeds, we get the original payload back and can be confident that the request is coming from an authenticated user.\n\nThis process of signing and verifying tokens is the core mechanism we'll use in the next lessons to build a full login/logout system and protect our API routes.",
+    "constraints": [
+      "Time Limit: 1s",
+      "Memory Limit: 256MB"
+    ],
+    "inputFormat": "Standard input",
+    "outputFormat": "Standard output",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "input": "",
+        "expectedOutput": "expected",
+        "weight": 100
+      }
+    ],
+    "totalTestCases": 1,
+    "totalWeight": 100
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      100
+    ],
+    "maxScore": 100
+  },
+  "judging": {
+    "timeLimitMs": 1000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // Write your C code here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your C++ code here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) {\n        // Write your Java code here\n    }\n}",
+    "Python3": "# Write your Python code here\n",
+    "JavaScript": "// Write your JavaScript code here\n",
+    "Go": "package main\n\nimport \"fmt\"\n\nfunc main() {\n    // Write your Go code here\n}",
+    "Rust": "fn main() {\n    // Write your Rust code here\n}",
+    "C#": "using System;\n\nclass Program {\n    static void Main() {\n        // Write your C# code here\n    }\n}",
+    "SQL": "-- Write your SQL query here\n"
+  }
+}

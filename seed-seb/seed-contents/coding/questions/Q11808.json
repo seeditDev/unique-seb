@@ -1,0 +1,242 @@
+{
+  "questionId": "Q11808",
+  "title": "Find eventual safe states",
+  "slug": "find-eventual-safe-states",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Graph Theory",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Directed Graph",
+      "Topological Sorting",
+      "Eventual Safe Nodes"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "A directed graph of V vertices and E edges is given in the form of an adjacency\n    list adj. Each node of the graph is labeled with a distinct integer in the range 0 to V - 1. A node is a terminal\n    node if there are no outgoing edges. A node is a safe node if every possible path starting from that node leads to a\n    terminal node. You have to return an array containing all the safe nodes of the graph. The answer should be sorted\n    in ascending order.",
+    "constraints": [
+      "1 <= V <= 10^5",
+      "0 <= E <= V*(V-1)",
+      "0 <= node <= V-1"
+    ],
+    "inputFormat": "The input will contain an integer V representing the number of vertices in the graph, followed by an adjacency list representation of the graph.",
+    "outputFormat": "The output should be a sorted array of integers representing the eventual safe nodes in the graph.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": {
+          "V": 1,
+          "adj": [
+            []
+          ]
+        },
+        "expectedOutput": [
+          0
+        ],
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": {
+          "V": 10,
+          "adj": [
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ],
+            [
+              4
+            ],
+            [
+              5
+            ],
+            [
+              6
+            ],
+            [
+              7
+            ],
+            [
+              8
+            ],
+            [
+              9
+            ],
+            []
+          ]
+        },
+        "expectedOutput": [
+          9
+        ],
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": {
+          "V": 5,
+          "adj": [
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3
+            ],
+            [
+              4
+            ],
+            []
+          ]
+        },
+        "expectedOutput": [
+          4
+        ],
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case / empty-like",
+        "input": {
+          "V": 5,
+          "adj": [
+            [],
+            [],
+            [],
+            [],
+            []
+          ]
+        },
+        "expectedOutput": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": {
+          "V": 12,
+          "adj": [
+            [
+              1
+            ],
+            [
+              2
+            ],
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              5
+            ],
+            [
+              6
+            ],
+            [
+              6
+            ],
+            [
+              7
+            ],
+            [],
+            [
+              1,
+              9
+            ],
+            [
+              10
+            ],
+            [
+              8
+            ],
+            [
+              9
+            ]
+          ]
+        },
+        "expectedOutput": [
+          6,
+          7,
+          8,
+          9,
+          10,
+          11
+        ],
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a topological sorting approach with a reverse graph. We first build the reverse graph and calculate the indegree of each node. Then, we use a queue to process the nodes with no outgoing edges (indegree 0) and decrease the indegree of their parent nodes. If the indegree of a parent node becomes 0, we add it to the queue.",
+    "timeComplexity": "O(V + E)",
+    "spaceComplexity": "O(V + E)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\n// Function to find all eventual safe nodes in a directed graph\nvoid eventualSafeNodes(int V, int** adj) {\n    int* indegree = (int*)malloc(V * sizeof(int));\n    int** adjRev = (int**)malloc(V * sizeof(int*));\n    for (int i = 0; i < V; i++) {\n        adjRev[i] = (int*)malloc(V * sizeof(int));\n    }\n    // Build the reverse graph and calculate indegrees\n    for (int i = 0; i < V; i++) {\n        for (int j = 0; j < V; j++) {\n            if (adj[i][j] == 1) {\n                indegree[i]++;\n                adjRev[j][i] = 1;\n            }\n        }\n    }\n    // Process the queue to find all safe nodes\n    int* q = (int*)malloc(V * sizeof(int));\n    int front = 0, rear = 0;\n    for (int i = 0; i < V; i++) {\n        if (indegree[i] == 0) {\n            q[rear++] = i;\n        }\n    }\n    while (front < rear) {\n        int node = q[front++];\n        printf(\"%d \", node);\n        for (int i = 0; i < V; i++) {\n            if (adjRev[node][i] == 1) {\n                indegree[i]--;\n                if (indegree[i] == 0) {\n                    q[rear++] = i;\n                }\n            }\n        }\n    }\n    printf(\"\\n\");\n}\n\nint main() {\n    int V = 12;\n    int** adj = (int**)malloc(V * sizeof(int*));\n    for (int i = 0; i < V; i++) {\n        adj[i] = (int*)malloc(V * sizeof(int));\n    }\n    // Initialize adjacency matrix\n    for (int i = 0; i < V; i++) {\n        for (int j = 0; j < V; j++) {\n            adj[i][j] = 0;\n        }\n    }\n    // Example input (Adjacency matrix)\n    adj[0][1] = 1;\n    adj[1][2] = 1;\n    adj[2][3] = 1;\n    adj[2][4] = 1;\n    adj[3][4] = 1;\n    adj[4][5] = 1;\n    adj[5][6] = 1;\n    adj[6][7] = 1;\n    adj[8][1] = 1;\n    adj[8][9] = 1;\n    adj[9][10] = 1;\n    adj[10][8] = 1;\n    adj[11][9] = 1;\n    eventualSafeNodes(V, adj);\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nclass Solution {\npublic:\n    // Function to find all eventual safe nodes in a directed graph\n    vector<int> eventualSafeNodes(int V, vector<int> adj[]) {\n        vector<int> adjRev[V];  // Reverse adjacency list\n        int indegree[V] = {0};  // Indegree array to track nodes with no outgoing edges\n\n        // Build the reverse graph and calculate indegrees\n        for (int i = 0; i < V; i++) {\n            for (auto it : adj[i]) {\n                adjRev[it].push_back(i);  // Reverse the direction of edges\n                indegree[i]++;  // Increment indegree for the current node\n            }\n        }\n\n        queue<int> q;  // Queue to store nodes with no outgoing edges (safe nodes)\n        vector<int> safeNodes;\n\n        // Add all nodes with 0 indegree to the queue\n        for (int i = 0; i < V; i++) {\n            if (indegree[i] == 0) {\n                q.push(i);\n            }\n        }\n\n        // Process the queue to find all safe nodes\n        while (!q.empty()) {\n            int node = q.front();\n            q.pop();\n            safeNodes.push_back(node);  // This node is safe\n            for (auto it : adjRev[node]) {\n                indegree[it]--;  // Decrease indegree of the parent nodes\n                if (indegree[it] == 0) {\n                    q.push(it);  // If indegree becomes 0, it is a safe node\n                }\n            }\n        }\n\n        sort(safeNodes.begin(), safeNodes.end());  // Sort the safe nodes\n        return safeNodes;\n    }\n};\n\nint main() {\n    // Adjacency list representation of the graph\n    vector<int> adj[12] = {{1}, {2}, {3, 4}, {4, 5}, {6}, {6}, {7}, {}, {1, 9}, {10},\n                           {8}, {9}};\n    int V = 12;  // Number of nodes in the graph\n\n    Solution obj;\n    vector<int> safeNodes = obj.eventualSafeNodes(V, adj);  // Call function to get safe nodes\n\n    for (auto node : safeNodes) {\n        cout << node << \" \";  // Print the safe nodes\n    }\n    cout << endl;\n\n    return 0;\n}",
+      "Java": "import java.util.*;\n\nclass Solution {\n    // Function to find all eventual safe nodes in a directed graph\n    public List<Integer> eventualSafeNodes(int V, List<Integer>[] adj) {\n        List<Integer>[] adjRev = new List[V];  // Reverse adjacency list\n        int[] indegree = new int[V];  // Indegree array to track nodes with no outgoing edges\n\n        // Initialize reverse adjacency list\n        for (int i = 0; i < V; i++) {\n            adjRev[i] = new ArrayList<>();\n        }\n\n        // Build the reverse graph and calculate indegrees\n        for (int i = 0; i < V; i++) {\n            for (int neighbor : adj[i]) {\n                adjRev[neighbor].add(i);  // Reverse the direction of edges\n                indegree[i]++;  // Increment indegree for the current node\n            }\n        }\n\n        Queue<Integer> q = new LinkedList<>();  // Queue to store nodes with no outgoing edges\n        List<Integer> safeNodes = new ArrayList<>();\n\n        // Add all nodes with 0 indegree to the queue\n        for (int i = 0; i < V; i++) {\n            if (indegree[i] == 0) {\n                q.offer(i);\n            }\n        }\n\n        // Process the queue to find all safe nodes\n        while (!q.isEmpty()) {\n            int node = q.poll();\n            safeNodes.add(node);  // This node is safe\n            for (int parent : adjRev[node]) {\n                indegree[parent]--;  // Decrease indegree of the parent nodes\n                if (indegree[parent] == 0) {\n                    q.offer(parent);  // If indegree becomes 0, it is a safe node\n                }\n            }\n        }\n\n        Collections.sort(safeNodes);  // Sort the safe nodes\n        return safeNodes;\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        // Adjacency list representation of the graph\n        List<Integer>[] adj = new ArrayList[12];\n        for (int i = 0; i < 12; i++) {\n            adj[i] = new ArrayList<>();\n        }\n\n        adj[0].add(1);\n        adj[1].add(2);\n        adj[2].add(3);\n        adj[2].add(4);\n        adj[3].add(4);\n        adj[4].add(5);\n        adj[5].add(6);\n        adj[6].add(7);\n        adj[8].add(1);\n        adj[8].add(9);\n        adj[9].add(10);\n        adj[10].add(8);\n        adj[11].add(9);\n\n        int V = 12;  // Number of nodes in the graph\n\n        Solution sol = new Solution();\n        List<Integer> safeNodes = sol.eventualSafeNodes(V, adj);  // Call function to get safe nodes\n\n        for (int node : safeNodes) {\n            System.out.print(node + \" \");  // Print the safe nodes\n        }\n        System.out.println();\n    }\n}",
+      "Python3": "from collections import deque\n\n# Function to find all eventual safe nodes in a directed graph\ndef eventualSafeNodes(V, adj):\n    adjRev = [[] for _ in range(V)]  # Reverse adjacency list\n    indegree = [0] * V  # Indegree array to track nodes with no outgoing edges\n\n    # Build the reverse graph and calculate indegrees\n    for i in range(V):\n        for neighbor in adj[i]:\n            adjRev[neighbor].append(i)  # Reverse the direction of edges\n            indegree[i] += 1  # Increment indegree for the current node\n\n    q = deque()  # Queue to store nodes with no outgoing edges\n    safeNodes = []\n\n    # Add all nodes with 0 indegree to the queue\n    for i in range(V):\n        if indegree[i] == 0:\n            q.append(i)\n\n    # Process the queue to find all safe nodes\n    while q:\n        node = q.popleft()\n        safeNodes.append(node)  # This node is safe\n        for parent in adjRev[node]:\n            indegree[parent] -= 1  # Decrease indegree of the parent nodes\n            if indegree[parent] == 0:\n                q.append(parent)  # If indegree becomes 0, it is a safe node\n\n    safeNodes.sort()  # Sort the safe nodes\n    return safeNodes\n\n# Driver code\nadj = [\n    [1], [2], [3, 4], [4, 5], [6], [6], [7], [], [1, 9], [10], [8], [9]\n]  # Example input (Adjacency list)\n\nV = 12  # Number of nodes in the graph\nsafeNodes = eventualSafeNodes(V, adj)  # Call function to get safe nodes\n\nprint(\"The eventual safe nodes are:\", *safeNodes)  # Print the safe nodes",
+      "JavaScript": "// Function to find all eventual safe nodes in a directed graph\nfunction eventualSafeNodes(V, adj) {\n    let adjRev = Array.from({ length: V }, () => []);  // Reverse adjacency list\n    let indegree = Array(V).fill(0);  // Indegree array to track nodes with no outgoing edges\n\n    // Build the reverse graph and calculate indegrees\n    for (let i = 0; i < V; i++) {\n        for (let neighbor of adj[i]) {\n            adjRev[neighbor].push(i);  // Reverse the direction of edges\n            indegree[i]++;  // Increment indegree for the current node\n        }\n    }\n\n    let q = [];  // Queue to store nodes with no outgoing edges\n    let safeNodes = [];\n\n    // Add all nodes with 0 indegree to the queue\n    for (let i = 0; i < V; i++) {\n        if (indegree[i] === 0) q.push(i);\n    }\n\n    // Process the queue to find all safe nodes\n    while (q.length > 0) {\n        let node = q.shift();\n        safeNodes.push(node);  // This node is safe\n        for (let parent of adjRev[node]) {\n            indegree[parent]--;  // Decrease indegree of the parent nodes\n            if (indegree[parent] === 0) q.push(parent);  // If indegree becomes 0, it is a safe node\n        }\n    }\n\n    safeNodes.sort((a, b) => a - b);  // Sort the safe nodes\n    return safeNodes;\n}\n\n// Driver code\nlet adj = [\n    [1], [2], [3, 4], [4, 5], [6], [6], [7], [], [1, 9], [10], [8], [9]\n];  // Example input (Adjacency list)\nlet V = 12;  // Number of nodes in the graph\nlet safeNodes = eventualSafeNodes(V, adj);  // Call function to get safe nodes\n\nconsole.log(\"The eventual safe nodes are:\", ...safeNodes);  // Print the safe nodes"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

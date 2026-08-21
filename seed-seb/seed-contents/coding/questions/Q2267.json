@@ -1,0 +1,86 @@
+{
+  "questionId": "Q2267",
+  "title": "Restaurant Expansion",
+  "slug": "restaurant-expansion",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-01",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "competitive programming",
+      "dynamic programming",
+      "Dynamic Programming"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ]
+  },
+  "content": {
+    "problemStatement": "You own a large local restaurant. Because now it is very popular, you want to expand your restaurant in a neighboring country.\n\nThe country consists N cities numbered 1 to N. There are N-1 roads connecting the cities. The country is efficiently organized, so there is exactly one path between every pairs of cities. No road will connect a city to itself.\n\nYou want to build new restaurants in some cities. From an amateur survey, for each city i you know its profit index Si, that is the profit you will get if you build a new restaurant in city i.\n\nInitially, you have C chefs in city 1. You have D days to accomplish your expansion. On each day, you may perform exactly one of these options:\n\n\n\n\nDo nothing.\nTransfer any number of chefs from a city to another city, provided that the two cities are connected by a road.\nBuild a new restaurant in a city, provided that there is at least one chef in the city. After that, all chefs in the city cannot be transferred again. You can only build one restaurant per city.\n\nAfter D days has passed, you get the profit associated with a city if the city has a restaurant. Of course, you want the maximum possible total profit. Arrange your expansion plan in order to maximize your total profit.",
+    "constraints": [
+      "1 &lt;= N &lt;= 30",
+      "1 &lt;= C &lt;= 30",
+      "1 &lt;= D &lt;= 30",
+      "-1000 &lt;= Si &lt;= 1000",
+      "1 &lt;= ui &lt;= N",
+      "1 &lt;= vi &lt;= N",
+      "ui != vi",
+      "There is exactly one path between every pair of cities"
+    ],
+    "inputFormat": "The first line contains three integers N, C, and D. The next line contains a sequence of N integers Si. The next N-1 lines contains two integers ui and vi, where ui and vi are the two cities connected by the i-th road.",
+    "outputFormat": "In the first line, output the maximum possible total profit. The next D lines contain your expansion plan. In each of the next D lines, output exactly one of the following (quotes for clarity).\n\n\n\n\n\"**nothing**\", if you plan to do nothing on that day.\n\"**transfer** a b c\", if you plan to transfer c chefs from city a to city b on that day.\n\"**build** a\", if you plan to build a new restaurant in city a on that day.\n\nIf there are several expansion plans that lead to the same maximum profit, you may output any.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4 2 5\n-10 5 2 6\n1 2\n2 3\n2 4",
+        "output": "11\ntransfer 1 2 2\ntransfer 2 4 1\nnothing\nbuild 4\nbuild 2",
+        "explanation": ""
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "input": "4 2 5\n-10 5 2 6\n1 2\n2 3\n2 4",
+        "expectedOutput": "11\ntransfer 1 2 2\ntransfer 2 4 1\nnothing\nbuild 4\nbuild 2",
+        "weight": 100
+      }
+    ],
+    "totalTestCases": 1,
+    "totalWeight": 100
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      100
+    ],
+    "maxScore": 100
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "",
+    "timeComplexity": "O(N)",
+    "spaceComplexity": "O(1)",
+    "code": {
+      "C++": "#include<stdio.h>\n\n#include<stdlib.h>\n\n#include<math.h>\n#define REP(i,a,b) for(i=a;i<b;i++)\n#define rep(i,n) REP(i,0,n)\nint N, C, D;\nint dp[31][31][31][31];\nint edge[31][31], es[31];\nint gain[31];\nint solve(int node, int chef, int day, int st, int up){\n  int i,j,k,res=0;\n  int next_node,tmp;\n  if(dp[node][chef][day][st] >= 0) return dp[node][chef][day][st];\n  if(st==es[node]){\n    if(chef && day && gain[node] > 0) res += gain[node];\n    return dp[node][chef][day][st] = res;\n  }\n  res = solve(node,chef,day,st+1,up);\n  if(edge[node][st] != up){\n    next_node = edge[node][st];\n    rep(i,chef+1) REP(j,1,day+1){\n      tmp = solve(next_node, i, j-1, 0, node) + solve(node, chef-i, day-j, st+1, up);\n      if(tmp > res) res = tmp;\n    }\n  }\n  return dp[node][chef][day][st] = res;\n}\nvoid output(int node, int chef, int day, int st, int up){\n  int i,j,k,res=solve(node,chef,day,st,up);\n  int next_node,tmp;\n  if(st==es[node]){\n    if(chef && day && gain[node] > 0){ printf(\"build %d\\n\",node+1); day--; }\n    while(day--) puts(\"nothing\");\n    return;\n  }\n  tmp = solve(node,chef,day,st+1,up);\n  if(res==tmp){\n    output(node,chef,day,st+1,up);\n    return;\n  }\n  if(edge[node][st] != up){\n    next_node = edge[node][st];\n    REP(i,1,chef+1) REP(j,1,day+1){\n      tmp = solve(next_node, i, j-1, 0, node) + solve(node, chef-i, day-j, st+1, up);\n      if(tmp == res){\n        printf(\"transfer %d %d %d\\n\",node+1,next_node+1,i);\n        output(next_node, i, j-1, 0, node);\n        output(node, chef-i, day-j, st+1, up);\n        return;\n      }\n    }\n  }\n}\nint main(){\n  int i,j,k,l,m;\n  scanf(\"%d%d%d\",&N,&C,&D);\n  rep(i,N) scanf(\"%d\",gain+i);\n  rep(i,N) es[i]=0;\n  REP(k,1,N){\n    scanf(\"%d%d\",&i,&j); i--; j--;\n    edge[i][es[i]++]=j;\n    edge[j][es[j]++]=i;\n  }\n  rep(i,N) rep(j,C+1) rep(k,D+1) rep(m,N+1) dp[i][j][k][m] = -1;\n  m = solve(0,C,D,0,-1);\n  printf(\"%d\\n\",m);\n  output(0,C,D,0,-1);\n  return 0;\n}",
+      "Python3": "import sys\nsys.setrecursionlimit(10**7)\n\nN, C, D = map(int, input().split())\ngain = list(map(int, input().split()))\n\nedge = [[] for _ in range(N)]\nes = [0] * N\n\nfor _ in range(1, N):\n    i, j = map(int, input().split())\n    i -= 1\n    j -= 1\n    edge[i].append(j)\n    edge[j].append(i)\n\nfor i in range(N):\n    es[i] = len(edge[i])\n\n# dp[node][chef][day][st]\ndp = [[[[-1 for _ in range(N + 1)] for _ in range(D + 1)] \n       for _ in range(C + 1)] for _ in range(N)]\n\ndef solve(node, chef, day, st, up):\n    if dp[node][chef][day][st] >= 0:\n        return dp[node][chef][day][st]\n\n    if st == es[node]:\n        res = 0\n        if chef and day and gain[node] > 0:\n            res += gain[node]\n        dp[node][chef][day][st] = res\n        return res\n\n    res = solve(node, chef, day, st + 1, up)\n\n    if edge[node][st] != up:\n        next_node = edge[node][st]\n        for i in range(chef + 1):\n            for j in range(1, day + 1):\n                tmp = (solve(next_node, i, j - 1, 0, node) +\n                       solve(node, chef - i, day - j, st + 1, up))\n                if tmp > res:\n                    res = tmp\n\n    dp[node][chef][day][st] = res\n    return res\n\n\ndef output(node, chef, day, st, up):\n    res = solve(node, chef, day, st, up)\n\n    if st == es[node]:\n        if chef and day and gain[node] > 0:\n            print(f\"build {node + 1}\")\n            day -= 1\n        while day > 0:\n            print(\"nothing\")\n            day -= 1\n        return\n\n    tmp = solve(node, chef, day, st + 1, up)\n    if res == tmp:\n        output(node, chef, day, st + 1, up)\n        return\n\n    if edge[node][st] != up:\n        next_node = edge[node][st]\n        for i in range(1, chef + 1):\n            for j in range(1, day + 1):\n                tmp = (solve(next_node, i, j - 1, 0, node) +\n                       solve(node, chef - i, day - j, st + 1, up))\n                if tmp == res:\n                    print(f\"transfer {node + 1} {next_node + 1} {i}\")\n                    output(next_node, i, j - 1, 0, node)\n                    output(node, chef - i, day - j, st + 1, up)\n                    return\n\n\n# Initialize DP (already done with -1)\nresult = solve(0, C, D, 0, -1)\nprint(result)\noutput(0, C, D, 0, -1)",
+      "C": "#include<stdio.h>\n#include<stdlib.h>\n#include<math.h>\n#define REP(i,a,b) for(i=a;i<b;i++)\n#define rep(i,n) REP(i,0,n)\n\nint N, C, D;\nint dp[31][31][31][31];\nint edge[31][31], es[31];\nint gain[31];\n\nint solve(int node, int chef, int day, int st, int up){\n  int i,j,k,res=0;\n  int next_node,tmp;\n\n  if(dp[node][chef][day][st] >= 0) return dp[node][chef][day][st];\n\n  if(st==es[node]){\n    if(chef && day && gain[node] > 0) res += gain[node];\n    return dp[node][chef][day][st] = res;\n  }\n\n  res = solve(node,chef,day,st+1,up);\n  if(edge[node][st] != up){\n    next_node = edge[node][st];\n    rep(i,chef+1) REP(j,1,day+1){\n      tmp = solve(next_node, i, j-1, 0, node) + solve(node, chef-i, day-j, st+1, up);\n      if(tmp > res) res = tmp;\n    }\n  }\n\n  return dp[node][chef][day][st] = res;\n}\n\nvoid output(int node, int chef, int day, int st, int up){\n  int i,j,k,res=solve(node,chef,day,st,up);\n  int next_node,tmp;\n\n  if(st==es[node]){\n    if(chef && day && gain[node] > 0){ printf(\"build %d\\n\",node+1); day--; }\n    while(day--) puts(\"nothing\");\n    return;\n  }\n\n  tmp = solve(node,chef,day,st+1,up);\n  if(res==tmp){\n    output(node,chef,day,st+1,up);\n    return;\n  }\n  \n  if(edge[node][st] != up){\n    next_node = edge[node][st];\n    REP(i,1,chef+1) REP(j,1,day+1){\n      tmp = solve(next_node, i, j-1, 0, node) + solve(node, chef-i, day-j, st+1, up);\n      if(tmp == res){\n        printf(\"transfer %d %d %d\\n\",node+1,next_node+1,i);\n        output(next_node, i, j-1, 0, node);\n        output(node, chef-i, day-j, st+1, up);\n        return;\n      }\n    }\n  }\n\n}\n\nint main(){\n  int i,j,k,l,m;\n\n  scanf(\"%d%d%d\",&N,&C,&D);\n  rep(i,N) scanf(\"%d\",gain+i);\n  rep(i,N) es[i]=0;\n  REP(k,1,N){\n    scanf(\"%d%d\",&i,&j); i--; j--;\n    edge[i][es[i]++]=j;\n    edge[j][es[j]++]=i;\n  }\n\n  rep(i,N) rep(j,C+1) rep(k,D+1) rep(m,N+1) dp[i][j][k][m] = -1;\n  m = solve(0,C,D,0,-1);\n  printf(\"%d\\n\",m);\n  output(0,C,D,0,-1);\n\n  return 0;\n}",
+      "Java": "import java.util.*;\n\npublic class Main {\n\n    static int N, C, D;\n    static int[][][][] dp;\n    static int[][] edge;\n    static int[] es;\n    static int[] gain;\n\n    static int solve(int node, int chef, int day, int st, int up) {\n        if (dp[node][chef][day][st] >= 0) return dp[node][chef][day][st];\n\n        int res = 0;\n\n        if (st == es[node]) {\n            if (chef > 0 && day > 0 && gain[node] > 0) {\n                res += gain[node];\n            }\n            return dp[node][chef][day][st] = res;\n        }\n\n        res = solve(node, chef, day, st + 1, up);\n\n        if (edge[node][st] != up) {\n            int nextNode = edge[node][st];\n\n            for (int i = 0; i <= chef; i++) {\n                for (int j = 1; j <= day; j++) {\n                    int tmp = solve(nextNode, i, j - 1, 0, node)\n                            + solve(node, chef - i, day - j, st + 1, up);\n                    if (tmp > res) res = tmp;\n                }\n            }\n        }\n\n        return dp[node][chef][day][st] = res;\n    }\n\n    static void output(int node, int chef, int day, int st, int up) {\n        int res = solve(node, chef, day, st, up);\n\n        if (st == es[node]) {\n            if (chef > 0 && day > 0 && gain[node] > 0) {\n                System.out.println(\"build \" + (node + 1));\n                day--;\n            }\n            while (day-- > 0) {\n                System.out.println(\"nothing\");\n            }\n            return;\n        }\n\n        int tmp = solve(node, chef, day, st + 1, up);\n        if (res == tmp) {\n            output(node, chef, day, st + 1, up);\n            return;\n        }\n\n        if (edge[node][st] != up) {\n            int nextNode = edge[node][st];\n\n            for (int i = 1; i <= chef; i++) {\n                for (int j = 1; j <= day; j++) {\n                    tmp = solve(nextNode, i, j - 1, 0, node)\n                            + solve(node, chef - i, day - j, st + 1, up);\n\n                    if (tmp == res) {\n                        System.out.println(\"transfer \" + (node + 1) + \" \" + (nextNode + 1) + \" \" + i);\n                        output(nextNode, i, j - 1, 0, node);\n                        output(node, chef - i, day - j, st + 1, up);\n                        return;\n                    }\n                }\n            }\n        }\n    }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n\n        N = sc.nextInt();\n        C = sc.nextInt();\n        D = sc.nextInt();\n\n        gain = new int[N];\n        for (int i = 0; i < N; i++) {\n            gain[i] = sc.nextInt();\n        }\n\n        edge = new int[N][N];\n        es = new int[N];\n\n        for (int k = 1; k < N; k++) {\n            int i = sc.nextInt() - 1;\n            int j = sc.nextInt() - 1;\n\n            edge[i][es[i]++] = j;\n            edge[j][es[j]++] = i;\n        }\n\n        dp = new int[N][C + 1][D + 1][N + 1];\n\n        for (int i = 0; i < N; i++) {\n            for (int j = 0; j <= C; j++) {\n                for (int k = 0; k <= D; k++) {\n                    Arrays.fill(dp[i][j][k], -1);\n                }\n            }\n        }\n\n        int result = solve(0, C, D, 0, -1);\n        System.out.println(result);\n        output(0, C, D, 0, -1);\n\n        sc.close();\n    }\n}"
+    }
+  }
+}

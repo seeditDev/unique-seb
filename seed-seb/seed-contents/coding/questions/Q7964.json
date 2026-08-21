@@ -1,0 +1,132 @@
+{
+  "questionId": "Q7964",
+  "title": "Maximum Size",
+  "slug": "maximum-size",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Game Theory | Graph",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Connected Components",
+      "Greedy",
+      "Sorting",
+      "DFS",
+      "BFS"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Graphs"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef is playing an easier variation of the board game ‘Risk’ with his friend Mike. There is an N∗MN * MN∗M grid, depicting the world map. Each cell of the grid is either 111 or 000 where 111 denotes that there is land on this cell, while 000 denotes water.\n\nIn a turn, a player can capture an uncaptured cell that has land, and keep capturing neighbouring cells that share a side with it if they are on land. A cell once captured by a player can't be captured again by another player. The game continues till no uncaptured cell has land. Each player wants to be in control of as many cells of land as possible in total when the game finishes. Find the maximum number of cells of land that Chef can capture if he plays second, and both players play optimally.\n\n###Input:\n\n\nFirst line will contain TTT, number of testcases. Then the testcases follow.\nEach testcase contains N+1N + 1N+1 lines of input.\nFirst line will contain 222 space separated integers NNN and MMM denoting the size of the grid.\nEach of the next NNN lines contains a binary string of length MMM depicting the map.\n###Output:\r\nFor each testcase, output in a single line answer to the problem.\n\n###Constraints\n\n\n1≤N,M≤1051 \\leq N, M \\leq 10^51≤N,M≤105\nEach character in the grid is either 000 or 111\nThere's atleast 111 land on the grid\nSum of N∗MN * MN∗M over all testcases is almost 10610^6106.",
+    "constraints": [
+      "1 ≤ T ≤ 10",
+      "1 ≤ N, M ≤ 10^5",
+      "The total number of cells over all test cases does not exceed 10^6",
+      "Each character of the grid is either '0' or '1'",
+      "There is at least one cell with '1' in each test case"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, the first line contains two integers N and M – the number of rows and columns of the grid. Then follow N lines, each a binary string of length M consisting of characters '0' (water) or '1' (land).",
+    "outputFormat": "For each test case output a single integer – the maximum number of land cells Chef (the second player) can capture when both players play optimally.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n4 4\n1001\n0110\n0110\n1001\n2 2\n11\n11\n3 3\n100\n010\n001",
+        "output": "2\n0\n1",
+        "explanation": "Test case 1: component sizes are [4,1,1,1,1]; Chef gets the 2 smallest isolated cells → 2. Test case 2: only one component of size 4, Chef gets none → 0. Test case 3: three isolated cells, Chef gets the middle one → 1."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Each turn a player captures an entire 4‑directionally connected component of land because after picking any cell they can keep expanding to all reachable land cells. Hence the game reduces to a turn‑based picking of piles where the size of a pile equals the size of a connected component. With optimal play both players will always pick the currently largest remaining component – any deviation would give the opponent a chance to take a larger pile later. Therefore, after computing all component sizes, sort them in non‑increasing order. Mike (first player) obtains the piles at even indices (0,2,4,…), Chef obtains the piles at odd indices (1,3,5,…). The answer is the sum of the sizes at odd positions. The algorithm: 1) Run a DFS/BFS over the grid to find all connected components of '1' and store their sizes. 2) Sort the list of sizes descending. 3) Accumulate sizes at odd indices. Complexity is linear in the number of cells for the DFS/BFS plus O(k log k) for sorting, where k is the number of components (k ≤ number of cells). This satisfies the constraints.",
+    "timeComplexity": "O(N·M + K log K) per test case, where K is the number of land components (K ≤ N·M).",
+    "spaceComplexity": "O(N·M) for the visited array and O(K) for the list of component sizes.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\ntypedef struct {int r,c;} Cell;\n\nint main(){\n    int T; if(scanf(\"%d\",&T)!=1) return 0;\n    while(T--){\n        int N,M; scanf(\"%d %d\",&N,&M);\n        char **grid = (char**)malloc(N*sizeof(char*));\n        for(int i=0;i<N;i++){\n            grid[i]=(char*)malloc((M+1)*sizeof(char));\n            scanf(\"%s\",grid[i]);\n        }\n        char *vis = (char*)calloc(N*M, sizeof(char));\n        int *sizes = (int*)malloc(N*M*sizeof(int));\n        int szCount=0;\n        int dr[4]={-1,1,0,0};\n        int dc[4]={0,0,-1,1};\n        Cell *stack = (Cell*)malloc(N*M*sizeof(Cell));\n        for(int i=0;i<N;i++){\n            for(int j=0;j<M;j++){\n                if(grid[i][j]=='1' && !vis[i*M+j]){\n                    int top=0; long long curSize=0;\n                    stack[top++] = (Cell){i,j};\n                    vis[i*M+j]=1;\n                    while(top){\n                        Cell cur = stack[--top];\n                        curSize++;\n                        for(int d=0;d<4;d++){\n                            int nr=cur.r+dr[d], nc=cur.c+dc[d];\n                            if(nr>=0 && nr<N && nc>=0 && nc<M && grid[nr][nc]=='1' && !vis[nr*M+nc]){\n                                vis[nr*M+nc]=1;\n                                stack[top++] = (Cell){nr,nc};\n                            }\n                        }\n                    }\n                    sizes[szCount++] = (int)curSize;\n                }\n            }\n        }\n        // sort descending\n        qsort(sizes, szCount, sizeof(int), (int(*)(const void*,const void*))\n            [](const int *a, const int *b){return (*b)-(*a);});\n        long long chef=0;\n        for(int i=1;i<szCount;i+=2) chef+=sizes[i];\n        printf(\"%lld\\n\", chef);\n        for(int i=0;i<N;i++) free(grid[i]);\n        free(grid); free(vis); free(sizes); free(stack);\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N,M; cin>>N>>M;\n        vector<string> g(N);\n        for(int i=0;i<N;i++) cin>>g[i];\n        vector<int> comp;\n        vector<char> vis(N*M,0);\n        int dr[4] = {-1,1,0,0};\n        int dc[4] = {0,0,-1,1};\n        for(int i=0;i<N;i++){\n            for(int j=0;j<M;j++) if(g[i][j]=='1' && !vis[i*M+j]){\n                int sz=0;\n                queue<pair<int,int>> q; q.push({i,j}); vis[i*M+j]=1;\n                while(!q.empty()){\n                    auto [r,c]=q.front(); q.pop(); sz++;\n                    for(int d=0;d<4;d++){\n                        int nr=r+dr[d], nc=c+dc[d];\n                        if(nr>=0 && nr<N && nc>=0 && nc<M && g[nr][nc]=='1' && !vis[nr*M+nc]){\n                            vis[nr*M+nc]=1; q.push({nr,nc});\n                        }\n                    }\n                }\n                comp.push_back(sz);\n            }\n        }\n        sort(comp.begin(), comp.end(), greater<int>());\n        long long chef=0;\n        for(size_t i=1;i<comp.size();i+=2) chef+=comp[i];\n        cout<<chef<<\"\\n\";\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    static class FastScanner {\n        private final BufferedInputStream in = new BufferedInputStream(System.in);\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        private int readByte() throws IOException {\n            if (ptr >= len) {\n                len = in.read(buffer);\n                ptr = 0;\n                if (len <= 0) return -1;\n            }\n            return buffer[ptr++];\n        }\n        int nextInt() throws IOException {\n            int c, sign = 1, val = 0;\n            do { c = readByte(); } while (c <= ' ');\n            if (c == '-') { sign = -1; c = readByte(); }\n            while (c > ' ') { val = val * 10 + c - '0'; c = readByte(); }\n            return val * sign;\n        }\n        String next() throws IOException {\n            int c;\n            do { c = readByte(); } while (c <= ' ');\n            StringBuilder sb = new StringBuilder();\n            while (c > ' ') { sb.append((char)c); c = readByte(); }\n            return sb.toString();\n        }\n    }\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner();\n        int T = fs.nextInt();\n        StringBuilder out = new StringBuilder();\n        while (T-- > 0) {\n            int N = fs.nextInt();\n            int M = fs.nextInt();\n            char[][] g = new char[N][M];\n            for (int i = 0; i < N; i++) {\n                String s = fs.next();\n                g[i] = s.toCharArray();\n            }\n            boolean[] vis = new boolean[N * M];\n            int[] dr = {-1, 1, 0, 0};\n            int[] dc = {0, 0, -1, 1};\n            ArrayList<Integer> comps = new ArrayList<>();\n            ArrayDeque<int[]> q = new ArrayDeque<>();\n            for (int i = 0; i < N; i++) {\n                for (int j = 0; j < M; j++) {\n                    if (g[i][j] == '1' && !vis[i * M + j]) {\n                        int sz = 0;\n                        q.clear();\n                        q.add(new int[]{i, j});\n                        vis[i * M + j] = true;\n                        while (!q.isEmpty()) {\n                            int[] cur = q.poll();\n                            int r = cur[0], c = cur[1];\n                            sz++;\n                            for (int d = 0; d < 4; d++) {\n                                int nr = r + dr[d];\n                                int nc = c + dc[d];\n                                if (nr >= 0 && nr < N && nc >= 0 && nc < M && g[nr][nc] == '1' && !vis[nr * M + nc]) {\n                                    vis[nr * M + nc] = true;\n                                    q.add(new int[]{nr, nc});\n                                }\n                            }\n                        }\n                        comps.add(sz);\n                    }\n                }\n            }\n            comps.sort(Collections.reverseOrder());\n            long chef = 0;\n            for (int i = 1; i < comps.size(); i += 2) chef += comps.get(i);\n            out.append(chef).append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}\n",
+      "Python3": "import sys\nfrom collections import deque\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it)); M = int(next(it))\n        grid = [list(next(it).strip()) for _ in range(N)]\n        visited = [[False]*M for _ in range(N)]\n        comp_sizes = []\n        for i in range(N):\n            for j in range(M):\n                if grid[i][j] == '1' and not visited[i][j]:\n                    q = deque([(i,j)])\n                    visited[i][j] = True\n                    sz = 0\n                    while q:\n                        r,c = q.popleft()\n                        sz += 1\n                        for dr,dc in ((1,0),(-1,0),(0,1),(0,-1)):\n                            nr, nc = r+dr, c+dc\n                            if 0 <= nr < N and 0 <= nc < M and grid[nr][nc] == '1' and not visited[nr][nc]:\n                                visited[nr][nc] = True\n                                q.append((nr,nc))\n                    comp_sizes.append(sz)\n        comp_sizes.sort(reverse=True)\n        chef = sum(comp_sizes[i] for i in range(1, len(comp_sizes), 2))\n        out_lines.append(str(chef))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet outputs = [];\nfor (let t = 0; t < T; t++) {\n  const N = Number(input[idx++]);\n  const M = Number(input[idx++]);\n  const grid = [];\n  for (let i = 0; i < N; i++) grid.push(input[idx++]);\n  const visited = Array.from({length: N}, () => Array(M).fill(false));\n  const sizes = [];\n  const dr = [-1, 1, 0, 0];\n  const dc = [0, 0, -1, 1];\n  for (let r = 0; r < N; r++) {\n    for (let c = 0; c < M; c++) {\n      if (grid[r][c] === '1' && !visited[r][c]) {\n        let sz = 0;\n        const q = [[r, c]];\n        visited[r][c] = true;\n        while (q.length) {\n          const [cr, cc] = q.pop();\n          sz++;\n          for (let d = 0; d < 4; d++) {\n            const nr = cr + dr[d];\n            const nc = cc + dc[d];\n            if (nr >= 0 && nr < N && nc >= 0 && nc < M && grid[nr][nc] === '1' && !visited[nr][nc]) {\n              visited[nr][nc] = true;\n              q.push([nr, nc]);\n            }\n          }\n        }\n        sizes.push(sz);\n      }\n    }\n  }\n  sizes.sort((a, b) => b - a);\n  let chef = 0;\n  for (let i = 1; i < sizes.length; i += 2) chef += sizes[i];\n  outputs.push(String(chef));\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

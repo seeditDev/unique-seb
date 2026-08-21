@@ -1,0 +1,132 @@
+{
+  "questionId": "Q1327",
+  "title": "Galactic Network",
+  "slug": "galactic-network",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Graphs",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "Union Find",
+      "Graphs",
+      "Graph Traversal",
+      "DSU",
+      "Connected Components"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Graphs"
+    ]
+  },
+  "content": {
+    "problemStatement": "You are given **N planets** (represented as nodes) and **M connections** between some pairs of planets (represented as undirected edges).\n\nA **group** (connected component) is defined as a set of planets where each planet is reachable from any other planet in the same set via the given connections. Planets in different groups cannot reach each other through the existing connections.\n\nYour task is to **find the number of disconnected groups (connected components) in the galaxy network** based on the given connections.\n\n\nInput Format\n\nThe first line contains two space-separated integers, `N` and `M`, representing the number of planets and connections.\nPlanets are numbered from `1` to `N`.\nThe next `M` lines describe the connections, each containing two integers, `u` and `v`, representing a bidirectional connection between planets `u` and `v`.\nEach connection links two distinct planets, and at most one connection exists between any two planets.\n\n\nOutput Format\n\nOn a single line, print a single integer - the number of connected components.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 200000",
+      "0 <= M <= 200000",
+      "1 <= u, v <= N",
+      "u != v",
+      "At most one connection between any pair of planets"
+    ],
+    "inputFormat": "First line contains an integer T, the number of test cases. Each test case starts with a line containing two integers N and M \u2013 the number of planets and the number of connections. The next M lines each contain two integers u and v (1\u2011based), denoting an undirected connection between planets u and v.",
+    "outputFormat": "For each test case output a single line containing the number of connected components in the given galaxy network.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n5 6\n1 2\n2 3\n1 3\n3 5\n2 4\n4 5\n4 2\n1 2\n3 4\n6 5\n1 2\n2 3\n3 4\n4 5\n5 6",
+        "output": "1\n2\n1",
+        "explanation": "Test case 1: all five planets are connected, so one component. Test case 2: edges (1,2) and (3,4) create two groups, no isolated planets, so two components. Test case 3: a chain connects all six planets, giving one component."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n4 0",
+        "output": "4",
+        "explanation": "No connections exist, each of the four planets forms its own component."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n7 4\n1 2\n2 3\n4 5\n5 6",
+        "output": "3",
+        "explanation": "Component A = {1,2,3}, Component B = {4,5,6}, Component C = {7} (isolated)."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 0",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary (compact)",
+        "input": "1\n15 14\n1 2\n2 3\n3 4\n4 5\n5 6\n6 7\n7 8\n8 9\n9 10\n10 11\n11 12\n12 13\n13 14\n14 15",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case (all isolated)",
+        "input": "1\n5 0",
+        "expectedOutput": "5",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case (multiple components with isolated nodes)",
+        "input": "1\n7 3\n1 2\n2 3\n4 5",
+        "expectedOutput": "4",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "1\n1 0",
+        "expectedOutput": "1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The planets and connections form an undirected graph. Two planets belong to the same group iff they are in the same connected component. We can maintain a Disjoint Set Union (DSU) structure: initially each planet is its own set. For every connection (u,v) we unite the sets containing u and v. After processing all edges, the number of distinct roots in the DSU equals the number of connected components. DSU with union by size (or rank) and path compression works in almost O(1) amortised time, giving overall O(N+M) per test case.",
+    "timeComplexity": "O(N + M) per test case (amortised), O(total N + total M) for the whole input",
+    "spaceComplexity": "O(N) for the DSU arrays per test case",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\ntypedef struct {int parent; int size;} DSU;\n\nint find(DSU *d, int x) {\n    if (d[x].parent != x) d[x].parent = find(d, d[x].parent);\n    return d[x].parent;\n}\n\nvoid unite(DSU *d, int a, int b) {\n    int ra = find(d, a), rb = find(d, b);\n    if (ra == rb) return;\n    if (d[ra].size < d[rb].size) {\n        d[ra].parent = rb;\n        d[rb].size += d[ra].size;\n    } else {\n        d[rb].parent = ra;\n        d[ra].size += d[rb].size;\n    }\n}\n\nint main() {\n    int T; if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        int N, M; scanf(\"%d %d\", &N, &M);\n        DSU *dsu = (DSU*)malloc((N + 1) * sizeof(DSU));\n        for (int i = 1; i <= N; ++i) { dsu[i].parent = i; dsu[i].size = 1; }\n        for (int i = 0; i < M; ++i) {\n            int u, v; scanf(\"%d %d\", &u, &v);\n            unite(dsu, u, v);\n        }\n        int components = 0;\n        for (int i = 1; i <= N; ++i) if (find(dsu, i) == i) ++components;\n        printf(\"%d\\n\", components);\n        free(dsu);\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nstruct DSU {\n    vector<int> parent, sz;\n    DSU(int n = 0) { init(n); }\n    void init(int n) {\n        parent.resize(n + 1);\n        sz.assign(n + 1, 1);\n        iota(parent.begin(), parent.end(), 0);\n    }\n    int find(int x) { return parent[x] == x ? x : parent[x] = find(parent[x]); }\n    void unite(int a, int b) {\n        a = find(a); b = find(b);\n        if (a == b) return;\n        if (sz[a] < sz[b]) swap(a, b);\n        parent[b] = a; sz[a] += sz[b];\n    }\n};\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if (!(cin >> T)) return 0;\n    while (T--) {\n        int N, M; cin >> N >> M;\n        DSU dsu(N);\n        for (int i = 0; i < M; ++i) {\n            int u, v; cin >> u >> v;\n            dsu.unite(u, v);\n        }\n        int components = 0;\n        for (int i = 1; i <= N; ++i) if (dsu.find(i) == i) ++components;\n        cout << components << '\\n';\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    static class DSU {\n        int[] parent, size;\n        DSU(int n) {\n            parent = new int[n + 1];\n            size = new int[n + 1];\n            for (int i = 1; i <= n; i++) {\n                parent[i] = i;\n                size[i] = 1;\n            }\n        }\n        int find(int x) {\n            if (parent[x] != x) parent[x] = find(parent[x]);\n            return parent[x];\n        }\n        void unite(int a, int b) {\n            int ra = find(a), rb = find(b);\n            if (ra == rb) return;\n            if (size[ra] < size[rb]) {\n                parent[ra] = rb;\n                size[rb] += size[ra];\n            } else {\n                parent[rb] = ra;\n                size[ra] += size[rb];\n            }\n        }\n    }\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st = new StringTokenizer(br.readLine());\n        int T = Integer.parseInt(st.nextToken());\n        StringBuilder sb = new StringBuilder();\n        while (T-- > 0) {\n            st = new StringTokenizer(br.readLine());\n            int N = Integer.parseInt(st.nextToken());\n            int M = Integer.parseInt(st.nextToken());\n            DSU dsu = new DSU(N);\n            for (int i = 0; i < M; i++) {\n                st = new StringTokenizer(br.readLine());\n                int u = Integer.parseInt(st.nextToken());\n                int v = Integer.parseInt(st.nextToken());\n                dsu.unite(u, v);\n            }\n            int components = 0;\n            for (int i = 1; i <= N; i++) if (dsu.find(i) == i) components++;\n            sb.append(components).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}\n",
+      "Python3": "import sys\n\ndef find(parent, x):\n    while parent[x] != x:\n        parent[x] = parent[parent[x]]\n        x = parent[x]\n    return x\n\ndef union(parent, size, a, b):\n    ra, rb = find(parent, a), find(parent, b)\n    if ra == rb:\n        return\n    if size[ra] < size[rb]:\n        ra, rb = rb, ra\n    parent[rb] = ra\n    size[ra] += size[rb]\n\ndef main():\n    data = sys.stdin.buffer.read().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it)); M = int(next(it))\n        parent = list(range(N + 1))\n        size = [1] * (N + 1)\n        for _ in range(M):\n            u = int(next(it)); v = int(next(it))\n            union(parent, size, u, v)\n        components = sum(1 for i in range(1, N + 1) if find(parent, i) == i)\n        out_lines.append(str(components))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    main()\n",
+      "JavaScript": "const fs = require('fs');\nconst data = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nfunction find(parent, x) {\n  while (parent[x] !== x) {\n    parent[x] = parent[parent[x]];\n    x = parent[x];\n  }\n  return x;\n}\nfunction union(parent, size, a, b) {\n  let ra = find(parent, a);\n  let rb = find(parent, b);\n  if (ra === rb) return;\n  if (size[ra] < size[rb]) {\n    [ra, rb] = [rb, ra];\n  }\n  parent[rb] = ra;\n  size[ra] += size[rb];\n}\nconst T = Number(data[idx++]);\nlet outputs = [];\nfor (let t = 0; t < T; t++) {\n  const N = Number(data[idx++]);\n  const M = Number(data[idx++]);\n  const parent = new Array(N + 1);\n  const size = new Array(N + 1).fill(1);\n  for (let i = 1; i <= N; i++) parent[i] = i;\n  for (let i = 0; i < M; i++) {\n    const u = Number(data[idx++]);\n    const v = Number(data[idx++]);\n    union(parent, size, u, v);\n  }\n  let components = 0;\n  for (let i = 1; i <= N; i++) if (find(parent, i) === i) components++;\n  outputs.push(String(components));\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  }
+}

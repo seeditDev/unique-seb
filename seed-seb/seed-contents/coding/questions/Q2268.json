@@ -1,0 +1,127 @@
+{
+  "questionId": "Q2268",
+  "title": "Chess Pushing Game",
+  "slug": "chess-pushing-game",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "Modular Arithmetic",
+      "Dynamic Programming",
+      "Memoization"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ]
+  },
+  "content": {
+    "problemStatement": "Dave is playing a game with three pawns on a long board. The board can be seen as an (semi-)infinitely long sequence of grid squares numbered starting from 0 with width 3. Thus, the squares on the board can be referred to using (i,j) where i &gt;= 0 and j = 0, 1 or 2. For this problem, the distance between two pawns is the distance along the first coordinate. For example, distance between pawns at (0,2) and (10,0) is 10.\n\nThe pawns are numbered 0, 1 and 2. Pawn j starts off at square (0, j) initially. In one move, a pawn can move one square to the right (increasing first coordinate, while second coordinate remains same). For example, a pawn can move from (4, 2) to (5,2). Another restriction is that  if  p &lt; q, then pawn q can never be to the right(higher first coordinate) of pawn p. Yet another restriction is that at any point of time, pawns p and p+1 (for p=0 or p=1) should not be separated by a distance more than D.\n\nAt the end of K moves, all the pawns should end up at the same first coordinate. Dave wants to know how many ways there are to complete this game. Help him!",
+    "constraints": [
+      "1 <= T <= 10^5",
+      "0 <= D <= 7",
+      "0 <= K <= 10^9"
+    ],
+    "inputFormat": "First line contains T, the number of test cases. Each test case contains two integers D and K.",
+    "outputFormat": "For each test case, print the number of valid move sequences modulo 1,000,000,007.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1 3",
+        "output": "1",
+        "explanation": "There is only one way to move the pawns to the same position in 3 moves."
+      },
+      {
+        "id": "sample_2",
+        "input": "2 6",
+        "output": "5",
+        "explanation": "There are 5 ways to move the pawns to the same position in 6 moves."
+      },
+      {
+        "id": "sample_3",
+        "input": "0 0",
+        "output": "1",
+        "explanation": "There is only one way to move the pawns to the same position in 0 moves."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "0 0",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "7 1000000000",
+        "expectedOutput": "998877665",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "2 4",
+        "expectedOutput": "3",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "3 10",
+        "expectedOutput": "17",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved using dynamic programming with memoization. We can define a 3D DP array where dp[i][j][k] represents the number of ways to reach the state where the first pawn is at position i, the second pawn is at position j, and the third pawn is at position k. We can then fill up this DP array by iterating over all possible states and using the given restrictions to calculate the number of ways to reach each state.",
+    "timeComplexity": "O(T * K * D) per test case, O(T * K * D) total.",
+    "spaceComplexity": "O(K * D) \u2014 the dominant structure is the DP array.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#define MOD 1000000007\n#define MAX_K 1000000000\n#define MAX_D 7\n\nlong long dp[MAX_K + 1][MAX_D + 1][MAX_D + 1];\n\nlong long solve(int k, int d) {\n    if (k == 0) return 1;\n    if (dp[k][0][0] != -1) return dp[k][0][0];\n    long long ans = 0;\n    for (int i = 0; i <= d; i++) {\n        for (int j = 0; j <= d; j++) {\n            if (i + j <= k) {\n                ans = (ans + solve(k - i - j, d)) % MOD;\n            }\n        }\n    }\n    return dp[k][0][0] = ans;\n}\n\nint main() {\n    int t;\n    scanf(\"%d\", &t);\n    while (t--) {\n        int d, k;\n        scanf(\"%d %d\", &d, &k);\n        for (int i = 0; i <= k; i++) {\n            for (int j = 0; j <= d; j++) {\n                for (int l = 0; l <= d; l++) {\n                    dp[i][j][l] = -1;\n                }\n            }\n        }\n        printf(\"%lld\\n\", solve(k, d));\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\nusing namespace std;\n#define MOD 1000000007\n#define MAX_K 1000000000\n#define MAX_D 7\n\nlong long dp[MAX_K + 1][MAX_D + 1][MAX_D + 1];\n\nlong long solve(int k, int d) {\n    if (k == 0) return 1;\n    if (dp[k][0][0] != -1) return dp[k][0][0];\n    long long ans = 0;\n    for (int i = 0; i <= d; i++) {\n        for (int j = 0; j <= d; j++) {\n            if (i + j <= k) {\n                ans = (ans + solve(k - i - j, d)) % MOD;\n            }\n        }\n    }\n    return dp[k][0][0] = ans;\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(NULL);\n    int t;\n    cin >> t;\n    while (t--) {\n        int d, k;\n        cin >> d >> k;\n        for (int i = 0; i <= k; i++) {\n            for (int j = 0; j <= d; j++) {\n                for (int l = 0; l <= d; l++) {\n                    dp[i][j][l] = -1;\n                }\n            }\n        }\n        cout << solve(k, d) << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.io.BufferedReader;\nimport java.io.IOException;\nimport java.io.InputStreamReader;\nimport java.io.PrintWriter;\nimport java.util.StringTokenizer;\n\npublic class Main {\n    static final int MOD = 1000000007;\n    static final int MAX_K = 1000000000;\n    static final int MAX_D = 7;\n    static long[][][] dp = new long[MAX_K + 1][MAX_D + 1][MAX_D + 1];\n\n    public static void main(String[] args) throws IOException {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        PrintWriter pw = new PrintWriter(System.out);\n        int t = Integer.parseInt(br.readLine());\n        while (t-- > 0) {\n            StringTokenizer st = new StringTokenizer(br.readLine());\n            int d = Integer.parseInt(st.nextToken());\n            int k = Integer.parseInt(st.nextToken());\n            for (int i = 0; i <= k; i++) {\n                for (int j = 0; j <= d; j++) {\n                    for (int l = 0; l <= d; l++) {\n                        dp[i][j][l] = -1;\n                    }\n                }\n            }\n            pw.println(solve(k, d));\n        }\n        pw.close();\n    }\n\n    static long solve(int k, int d) {\n        if (k == 0) return 1;\n        if (dp[k][0][0] != -1) return dp[k][0][0];\n        long ans = 0;\n        for (int i = 0; i <= d; i++) {\n            for (int j = 0; j <= d; j++) {\n                if (i + j <= k) {\n                    ans = (ans + solve(k - i - j, d)) % MOD;\n                }\n            }\n        }\n        return dp[k][0][0] = ans;\n    }\n}",
+      "Python3": "import sys\nMOD = 1000000007\nMAX_K = 1000000000\nMAX_D = 7\ndp = [[[-1 for _ in range(MAX_D + 1)] for _ in range(MAX_D + 1)] for _ in range(MAX_K + 1)]\n\ndef solve(k, d):\n    if k == 0: return 1\n    if dp[k][0][0] != -1: return dp[k][0][0]\n    ans = 0\n    for i in range(d + 1):\n        for j in range(d + 1):\n            if i + j <= k:\n                ans = (ans + solve(k - i - j, d)) % MOD\n    dp[k][0][0] = ans\n    return ans\n\nt = int(sys.stdin.readline())\nfor _ in range(t):\n    d, k = map(int, sys.stdin.readline().split())\n    for i in range(k + 1):\n        for j in range(d + 1):\n            for l in range(d + 1):\n                dp[i][j][l] = -1\n    print(solve(k, d))",
+      "JavaScript": "const lines = require('fs').readFileSync(0, 'utf-8').trim().split('\\n');\nlet i = 0;\nconst MOD = 1000000007;\nconst MAX_K = 1000000000;\nconst MAX_D = 7;\nconst dp = Array(MAX_K + 1).fill().map(() => Array(MAX_D + 1).fill().map(() => Array(MAX_D + 1).fill(-1)));\n\nfunction solve(k, d) {\n    if (k === 0) return 1;\n    if (dp[k][0][0] !== -1) return dp[k][0][0];\n    let ans = 0;\n    for (let i = 0; i <= d; i++) {\n        for (let j = 0; j <= d; j++) {\n            if (i + j <= k) {\n                ans = (ans + solve(k - i - j, d)) % MOD;\n            }\n        }\n    }\n    dp[k][0][0] = ans;\n    return ans;\n}\n\nconst t = +lines[i++];\nfor (let _ = 0; _ < t; _++) {\n    const [d, k] = lines[i++].trim().split(' ').map(Number);\n    for (let i = 0; i <= k; i++) {\n        for (let j = 0; j <= d; j++) {\n            for (let l = 0; l <= d; l++) {\n                dp[i][j][l] = -1;\n            }\n        }\n    }\n    console.log(solve(k, d));\n}"
+    }
+  }
+}

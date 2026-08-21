@@ -1,0 +1,115 @@
+{
+  "questionId": "Q3154",
+  "title": "Fenwick Iterations",
+  "slug": "fenwick-iterations",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Bit Manipulation",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "Binary String",
+      "Bit Manipulation",
+      "Popcount",
+      "Fenwick Tree",
+      "Prefix Sum",
+      "Large Number Handling"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Data Structures"
+    ]
+  },
+  "content": {
+    "problemStatement": "Chef has just learned a new data structure - Fenwick tree. This data structure holds information about array of **N** elements and can process two types of operations:\n\n\n\nAdd some value to **i**th element of the array\nCalculate sum of all elements on any prefix of the array\nBoth operations take O(log N) time. This data structure is also well known for its low memory usage. To be more precise, it needs exactly the same amount of memory as that of array.\n\n\n\nGiven some array **A**, first we build data structure in some other array **T**. **Ti** stores the sum of the elements **Astart**, **Astart + 1**, ..., **Ai**. Index **start** is calculated with formula **start = Fdown(i) = (i &amp; (i + 1))**. Here \"&amp;\" denotes bitwise **AND** operation.\n\nSo, in order to find a sum of elements **A0**, **A1**, ..., **AL** you start with index **L** and calculate sum of **TL + TFdown(L)-1 + TFdown(Fdown(L)-1)-1 + ... + TFdown(Fdown(...(Fdown(L)-1)-1)-1**. Usually it is performed with cycle that goes from **L** down to **0** with function Fdown and sums some elements from T. Chef wants to verify that the time complexity to calculate sum of **A0**, **A1**, **A2**, ..., **AL** is **O(log L)**. In order to do so, he wonders how many times he has to access array **T** to calculate this sum. Help him to find this out.\n\nSince Chef works with really big indices. The value of **L** can be very large and is provided to you in binary representation as concatenation of strings **L1**, **L2** repeated **N** times and string **L3**.",
+    "constraints": [
+      "1 <= T <= 300",
+      "1 <= |L1|, |L2|, |L3| <= 1000",
+      "1 <= N <= 10^6",
+      "The total length |L1| + |L2|*N + |L3| can be up to about 10^9, therefore the whole binary string cannot be stored explicitly."
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains three binary strings L1, L2, L3 (consisting only of characters '0' and '1') and an integer N separated by spaces. The binary representation of the index L is obtained by concatenating L1, then L2 repeated N times, then L3.",
+    "outputFormat": "For each test case output a single line containing the number of accesses to array T performed by the Fenwick tree while computing the prefix sum up to index L. This number equals the popcount (number of set bits) of L+1.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4\n001 100 011 4\n1000 1101 100 3\n1010 001 101 4\n010 101 000 4",
+        "output": "6\n12\n8\n10",
+        "explanation": "Clear explanation: state WHICH values map to WHICH outputs and WHY"
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The Fenwick sum loop:\n    while (i >= 0) { ans++; i = (i & (i+1)) - 1; }\nremoves the lowest set bit of (i+1) in each iteration. Hence the number of iterations equals the number of set bits in (L+1). Therefore the answer is popcount(L+1).\n\nLet pop(L) be the number of '1's in L and tz(L) be the number of trailing '1's at the end of L. Adding 1 to L flips all trailing '1's to '0' and turns the first preceding '0' into '1' (or creates a new leading '1' if L consists only of '1's). Consequently:\n    pop(L+1) = pop(L) - tz(L) + 1.\nThus we only need pop(L) and tz(L).\n\nBoth values can be obtained without constructing L:\n* pop(L) = pop(L1) + N * pop(L2) + pop(L3).\n* To compute tz(L) we examine the suffix of the concatenation:\n  1. Count trailing '1's in L3.\n  2. If L3 is entirely '1's, continue with the repeated L2 blocks from the last one backwards.\n     - If L2 is all '1's, each full block contributes |L2| trailing ones; we can add |L2| * N at once.\n     - Otherwise only the last block can contribute its suffix of consecutive '1's; add that suffix length and stop.\n  3. If all L2 blocks are exhausted and still all ones, process L1 similarly.\nThe algorithm runs in O(|L1| + |L2| + |L3|) time per test case and uses O(1) extra memory.\n\nFinally answer = pop(L) - tz(L) + 1 (the formula also works when L is all '1's, giving answer 1).",
+    "timeComplexity": "O(|L1| + |L2| + |L3|) per test case, because all operations are simple scans of the three short strings. The factor N is handled only by arithmetic, not by iteration.",
+    "spaceComplexity": "O(1) additional space (only a few counters and boolean flags).",
+    "code": {
+      "C": ""
+    }
+  }
+}

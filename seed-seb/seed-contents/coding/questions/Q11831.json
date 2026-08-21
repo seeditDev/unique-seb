@@ -1,0 +1,238 @@
+{
+  "questionId": "Q11831",
+  "title": "Bridges in graph",
+  "slug": "find-bridges-in-a-graph",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Graphs",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Depth-First Search",
+      "Bridges in a Graph"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "There are n servers numbered from 0 to n - 1 connected by undirected server-to-server connections forming a network where connections[i] = [ai, bi] represents a connection between servers ai and bi. Any server can reach other servers directly or indirectly through the network.A critical connection is a connection that, if removed, will make some servers unable to reach some other servers. Return all critical connections in the network in any order.",
+    "constraints": [
+      "1 <= n <= 10^5",
+      "0 <= connections.length <= n * (n - 1) / 2",
+      "0 <= connections[i][0], connections[i][1] < n",
+      "connections[i][0] != connections[i][1]"
+    ],
+    "inputFormat": "The input will contain two parameters: n (the number of servers) and connections (a list of server connections where each connection is represented as a list of two integers).",
+    "outputFormat": "The output should be a list of critical connections in the network, where each connection is represented as a list of two integers.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": {
+          "n": 2,
+          "connections": [
+            [
+              0,
+              1
+            ]
+          ]
+        },
+        "expectedOutput": [
+          [
+            0,
+            1
+          ]
+        ],
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": {
+          "n": 100000,
+          "connections": [
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              2,
+              0
+            ],
+            [
+              0,
+              3
+            ]
+          ]
+        },
+        "expectedOutput": [
+          [
+            0,
+            3
+          ]
+        ],
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": {
+          "n": 5,
+          "connections": [
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              2,
+              3
+            ],
+            [
+              3,
+              4
+            ]
+          ]
+        },
+        "expectedOutput": [
+          [
+            0,
+            1
+          ],
+          [
+            1,
+            2
+          ],
+          [
+            2,
+            3
+          ],
+          [
+            3,
+            4
+          ]
+        ],
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case / empty-like / negative if allowed",
+        "input": {
+          "n": 1,
+          "connections": []
+        },
+        "expectedOutput": [],
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": {
+          "n": 6,
+          "connections": [
+            [
+              0,
+              1
+            ],
+            [
+              1,
+              2
+            ],
+            [
+              2,
+              0
+            ],
+            [
+              1,
+              3
+            ],
+            [
+              3,
+              4
+            ],
+            [
+              4,
+              5
+            ]
+          ]
+        },
+        "expectedOutput": [
+          [
+            1,
+            3
+          ],
+          [
+            3,
+            4
+          ],
+          [
+            4,
+            5
+          ]
+        ],
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a depth-first search (DFS) algorithm to traverse the graph and identify the critical connections. We will use the concept of discovery time and low-link value to determine if an edge is a bridge.",
+    "timeComplexity": "O(n + m)",
+    "spaceComplexity": "O(n + m)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\n// Define the structure for a graph edge\ntypedef struct Edge {\n    int src, dest;\n} Edge;\n\n// Define the structure for a graph\ntypedef struct Graph {\n    int V, E;\n    Edge* edge;\n} Graph;\n\n// Function to create a graph\nGraph* createGraph(int vertices, int edges) {\n    Graph* graph = (Graph*) malloc(sizeof(Graph));\n    graph->V = vertices;\n    graph->E = edges;\n    graph->edge = (Edge*) malloc(edges * sizeof(Edge));\n    return graph;\n}\n\n// Function to find bridges in a graph\nvoid findBridges(Graph* graph) {\n    int* tin = (int*) malloc(graph->V * sizeof(int));\n    int* low = (int*) malloc(graph->V * sizeof(int));\n    int* vis = (int*) malloc(graph->V * sizeof(int));\n    int time = 0;\n\n    // Initialize the arrays\n    for (int i = 0; i < graph->V; i++) {\n        tin[i] = -1;\n        low[i] = -1;\n        vis[i] = 0;\n    }\n\n    // Perform DFS to find bridges\n    for (int i = 0; i < graph->V; i++) {\n        if (vis[i] == 0) {\n            dfs(graph, i, -1, &time, tin, low, vis);\n        }\n    }\n}\n\n// Function to perform DFS\nvoid dfs(Graph* graph, int u, int parent, int* time, int* tin, int* low, int* vis) {\n    vis[u] = 1;\n    tin[u] = *time;\n    low[u] = *time;\n    (*time)++;\n\n    for (int i = 0; i < graph->E; i++) {\n        int v = (graph->edge[i].src == u) ? graph->edge[i].dest : graph->edge[i].src;\n        if (v == parent) continue;\n        if (vis[v] == 0) {\n            dfs(graph, v, u, time, tin, low, vis);\n            low[u] = min(low[u], low[v]);\n            if (low[v] > tin[u]) {\n                printf(\"Bridge: %d - %d\\n\", u, v);\n            }\n        } else if (tin[v] < tin[u]) {\n            low[u] = min(low[u], tin[v]);\n        }\n    }\n}\n\n// Function to find the minimum of two numbers\nint min(int a, int b) {\n    return (a < b) ? a : b;\n}\n\nint main() {\n    int vertices = 5;\n    int edges = 6;\n    Graph* graph = createGraph(vertices, edges);\n    graph->edge[0].src = 0;\n    graph->edge[0].dest = 1;\n    graph->edge[1].src = 1;\n    graph->edge[1].dest = 2;\n    graph->edge[2].src = 2;\n    graph->edge[2].dest = 0;\n    graph->edge[3].src = 1;\n    graph->edge[3].dest = 3;\n    graph->edge[4].src = 3;\n    graph->edge[4].dest = 4;\n    graph->edge[5].src = 4;\n    graph->edge[5].dest = 3;\n    findBridges(graph);\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nclass Solution {\nprivate:\n    int timer = 1; // Global timer to assign discovery times\n\n    // Depth-First Search (DFS) to find bridges\n    void dfs(int node, int parent, vector<int> &vis,\n             vector<int> adj[], int tin[], int low[],\n             vector<vector<int>> &bridges) {\n        vis[node] = 1;                 // Mark current node as visited\n        tin[node] = low[node] = timer; // Set discovery time and low-link value\n        timer++;\n\n        for (auto it : adj[node]) {    // Explore all adjacent nodes\n            if (it == parent) continue; // Skip the edge to parent\n\n            if (vis[it] == 0) {\n                // If neighbor is unvisited, recurse\n                dfs(it, node, vis, adj, tin, low, bridges);\n\n                // Update low-link value of current node\n                low[node] = min(low[node], low[it]);\n\n                // Check if the edge is a bridge\n                if (low[it] > tin[node]) {\n                    bridges.push_back({it, node});\n                }\n            } else {\n                // Back edge: update low-link value\n                low[node] = min(low[node], low[it]);\n            }\n        }\n    }\n\npublic:\n    vector<vector<int>> criticalConnections(int n,\n        vector<vector<int>>& connections) {\n\n        // Step 1: Build adjacency list\n        vector<int> adj[n];\n        for (auto it : connections) {\n            int u = it[0], v = it[1];\n            adj[u].push_back(v);\n            adj[v].push_back(u);\n        }\n\n        // Step 2: Initialize helper arrays\n        vector<int> vis(n, 0);\n        int tin[n]; // Discovery time\n        int low[n]; // Lowest reachable time\n        vector<vector<int>> bridges;\n\n        // Step 3: Run DFS (assuming graph is connected)\n        dfs(0, -1, vis, adj, tin, low, bridges);\n\n        return bridges;\n    }\n};\n\nint main() {\n    int n = 4;\n    vector<vector<int>> connections = {\n        {0, 1}, {1, 2}, {2, 0}, {1, 3}\n    };\n\n    Solution obj;\n    vector<vector<int>> bridges = obj.criticalConnections(n, connections);\n\n    cout << \"Critical Connections (Bridges): \";\n    for (auto it : bridges) {\n        cout << \"[\" << it[0] << \", \" << it[1] << \"] \";\n    }\n    cout << endl;\n\n    return 0;\n}",
+      "Java": "import java.util.*;\n\nclass Solution {\n    private int timer = 1; // Global timer for discovery times\n\n    // Depth-First Search to find bridges\n    private void dfs(int node, int parent, boolean[] vis,\n                     List<List<Integer>> adj, int[] tin, int[] low,\n                     List<List<Integer>> bridges) {\n        vis[node] = true;            // Mark as visited\n        tin[node] = low[node] = timer++; // Set discovery and low-link time\n\n        for (int neighbor : adj.get(node)) { // Explore neighbors\n            if (neighbor == parent) continue; // Skip parent\n\n            if (!vis[neighbor]) {\n                // Recurse on unvisited neighbor\n                dfs(neighbor, node, vis, adj, tin, low, bridges);\n\n                // Update low-link value\n                low[node] = Math.min(low[node], low[neighbor]);\n\n                // Check if it's a bridge\n                if (low[neighbor] > tin[node]) {\n                    bridges.add(Arrays.asList(neighbor, node));\n                }\n            } else {\n                // Back edge: update low-link\n                low[node] = Math.min(low[node], low[neighbor]);\n            }\n        }\n    }\n\n    public List<List<Integer>> criticalConnections(int n, int[][] connections) {\n        // Step 1: Build adjacency list\n        List<List<Integer>> adj = new ArrayList<>();\n        for (int i = 0; i < n; i++) adj.add(new ArrayList<>());\n\n        for (int[] conn : connections) {\n            int u = conn[0], v = conn[1];\n            adj.get(u).add(v);\n            adj.get(v).add(u);\n        }\n\n        // Step 2: Initialize helper arrays\n        boolean[] vis = new boolean[n];\n        int[] tin = new int[n];\n        int[] low = new int[n];\n        List<List<Integer>> bridges = new ArrayList<>();\n\n        // Step 3: Run DFS\n        dfs(0, -1, vis, adj, tin, low, bridges);\n\n        return bridges;\n    }\n\n    public static void main(String[] args) {\n        int n = 4;\n        int[][] connections = {{0,1},{1,2},{2,0},{1,3}};\n\n        Solution obj = new Solution();\n        List<List<Integer>> bridges = obj.criticalConnections(n, connections);\n\n        System.out.println(\"Critical Connections (Bridges): \" + bridges);\n    }\n}",
+      "Python3": "from typing import List\n\nclass Solution:\n    def __init__(self):\n        self.timer = 1  # Global timer for discovery times\n\n    def dfs(self, node: int, parent: int, vis: List[int],\n            adj: List[List[int]], tin: List[int], low: List[int],\n            bridges: List[List[int]]) -> None:\n        vis[node] = 1                     # Mark as visited\n        tin[node] = low[node] = self.timer  # Set discovery & low-link value\n        self.timer += 1\n\n        for neighbor in adj[node]:        # Explore neighbors\n            if neighbor == parent:\n                continue\n\n            if vis[neighbor] == 0:\n                # Recursive DFS call\n                self.dfs(neighbor, node, vis, adj, tin, low, bridges)\n\n                # Update low-link value\n                low[node] = min(low[node], low[neighbor])\n\n                # If the lowest reachable node from neighbor is higher than discovery time of node\n                if low[neighbor] > tin[node]:\n                    bridges.append([neighbor, node])\n            else:\n                # Back edge\n                low[node] = min(low[node], low[neighbor])\n\n    def criticalConnections(self, n: int, connections: List[List[int]]) -> List[List[int]]:\n        # Step 1: Build adjacency list\n        adj = [[] for _ in range(n)]\n        for u, v in connections:\n            adj[u].append(v)\n            adj[v].append(u)\n\n        # Step 2: Initialize helper arrays\n        vis = [0] * n\n        tin = [0] * n\n        low = [0] * n\n        bridges = []\n\n        # Step 3: Run DFS\n        self.dfs(0, -1, vis, adj, tin, low, bridges)\n        return bridges\n\n# Driver Code\nif __name__ == \"__main__\":\n    n = 4\n    connections = [[0,1],[1,2],[2,0],[1,3]]\n    obj = Solution()\n    print(\"Critical Connections (Bridges):\", obj.criticalConnections(n, connections))",
+      "JavaScript": "class Solution {\n    constructor() {\n        this.timer = 1; // Global timer for discovery times\n    }\n\n    // DFS to find bridges\n    dfs(node, parent, vis, adj, tin, low, bridges) {\n        vis[node] = 1;                  // Mark visited\n        tin[node] = low[node] = this.timer++; // Set discovery & low-link\n\n        for (let neighbor of adj[node]) {\n            if (neighbor === parent) continue; // Skip parent edge\n\n            if (vis[neighbor] === 0) {\n                // Recursive DFS call\n                this.dfs(neighbor, node, vis, adj, tin, low, bridges);\n\n                // Update low-link value\n                low[node] = Math.min(low[node], low[neighbor]);\n\n                // Check if it's a bridge\n                if (low[neighbor] > tin[node]) {\n                    bridges.push([neighbor, node]);\n                }\n            } else {\n                // Back edge\n                low[node] = Math.min(low[node], low[neighbor]);\n            }\n        }\n    }\n\n    criticalConnections(n, connections) {\n        // Step 1: Build adjacency list\n        const adj = Array.from({ length: n }, () => []);\n        for (let [u, v] of connections) {\n            adj[u].push(v);\n            adj[v].push(u);\n        }\n\n        // Step 2: Initialize helper arrays\n        const vis = new Array(n).fill(0);\n        const tin = new Array(n).fill(0);\n        const low = new Array(n).fill(0);\n        const bridges = [];\n\n        // Step 3: Run DFS\n        this.dfs(0, -1, vis, adj, tin, low, bridges);\n        return bridges;\n    }\n}\n\n// Driver Code\nconst n = 4;\nconst connections = [[0,1],[1,2],[2,0],[1,3]];\nconst obj = new Solution();\nconsole.log(\"Critical Connections (Bridges):\", obj.criticalConnections(n, connections));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

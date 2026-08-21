@@ -1,0 +1,128 @@
+{
+  "questionId": "Q5600",
+  "title": "Many Chefs",
+  "slug": "many-chefs",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings | Greedy",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Greedy",
+      "String Replacement",
+      "Lexicographically Smallest"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Greedy Algorithms"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef Ciel wants to put a fancy neon signboard over the entrance of her restaurant. She has not enough money to buy the new one so she bought some old neon signboard through the internet. Ciel was quite disappointed when she received her order - some of its letters were broken. But she realized that this is even better - she could replace each broken letter by any letter she wants. So she decided to do such a replacement that the resulting signboard will contain the word **\"CHEF\"** as many times as possible.\n\nWe can model the signboard as a string **S** having capital letters from **'A'** to **'Z'**, inclusive, and question marks **'?'**. Letters in the string indicate the intact letters at the signboard, while question marks indicate broken letters. So Ciel will replace each question mark with some capital letter and her goal is to get the string that contains as many substrings equal to **\"CHEF\"** as possible. If there exist several such strings, she will choose the lexicographically smallest one.\n\n**Note 1.** The string **S = S1...SN** has the substring **\"CHEF\"** if for some **i** we have **SiSi+1Si+2Si+3 = \"CHEF\"**. The number of times **\"CHEF\"** is the substring of **S** is the number of those **i** for which **SiSi+1Si+2Si+3 = \"CHEF\"**.\n\n**Note 2.** The string **A = A1...AN** is called lexicographically smaller than the string **B = B1...BN** if there exists **K** from **1** to **N**, inclusive, such that **Ai = Bi** for **i = 1, ..., K-1**, and **AK &lt; BK**. In particular, **A** is lexicographically smaller than **B** if **A1 &lt; B1**. We compare capital letters by their positions in the English alphabet. So **'A'** is the smallest letter, **'B'** is the second smallest letter, ..., **'Z'** is the largest letter.",
+    "constraints": [
+      "1 <= T <= 2013",
+      "1 <= |S| <= 2013",
+      "S contains only characters 'A'-'Z' and '?'"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains a string S consisting of uppercase letters 'A'-'Z' and the character '?'.",
+    "outputFormat": "For each test case output a single line – the lexicographically smallest string that can be obtained by replacing every '?' with an uppercase letter such that the number of substrings equal to \"CHEF\" is maximized.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "5\n????CIELIS???E?\n????CIELISOUR???F\nT?KEITE?SY\n????????\n???C???",
+        "output": "CHEFCIELISACHEF\\nCHEFCIELISOURCHEF\\nTAKEITEASY\\nCHEFCHEF\\nAAACHEF",
+        "explanation": "The algorithm places \"CHEF\" at the rightmost possible positions, then fills remaining '?' with 'A'. The resulting strings contain the maximum possible number of \"CHEF\" substrings and are lexicographically minimal among them."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n?",
+        "expectedOutput": "A",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary (all '?')",
+        "input": "1\n????????????",
+        "expectedOutput": "CHEFCHEFCHEF",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case with existing letters",
+        "input": "1\nC?E?",
+        "expectedOutput": "CHEF",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case with mixed letters",
+        "input": "1\nAB?D?F?CHE?",
+        "expectedOutput": "ABADAFACHEF",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "1\n?",
+        "expectedOutput": "A",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "We scan the string from right to left. For each position i (0‑based) where i <= N‑4 we check the four characters S[i..i+3]. If each of them is either '?' or already equals the corresponding character of the pattern \"CHEF\", we can turn this segment into a new occurrence of \"CHEF\" – we overwrite the four positions with 'C','H','E','F'. Doing the scan from right to left guarantees that we never destroy a placement that could be made later, therefore the number of occurrences is maximal. After the scan all remaining '?' are replaced by 'A', the smallest possible letter, which yields the lexicographically smallest string among all strings with the maximal number of \"CHEF\" substrings. The algorithm runs in O(N) per test case and uses O(1) additional memory.",
+    "timeComplexity": "O(N) per test case, where N is the length of the string.",
+    "spaceComplexity": "O(1) extra space (the string is modified in place).",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        char S[2015];\n        scanf(\"%s\", S);\n        int N = strlen(S);\n        const char *pat = \"CHEF\";\n        for (int i = N - 4; i >= 0; --i) {\n            int ok = 1;\n            for (int j = 0; j < 4; ++j) {\n                char c = S[i + j];\n                if (c != '?' && c != pat[j]) { ok = 0; break; }\n            }\n            if (ok) {\n                for (int j = 0; j < 4; ++j) S[i + j] = pat[j];\n            }\n        }\n        for (int i = 0; i < N; ++i) if (S[i] == '?') S[i] = 'A';\n        printf(\"%s\\n\", S);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    const string pat = \"CHEF\";\n    while(T--) {\n        string S; cin>>S;\n        int N = S.size();\n        for(int i=N-4;i>=0;--i){\n            bool ok=true;\n            for(int j=0;j<4;++j){\n                if(S[i+j]!='?' && S[i+j]!=pat[j]){ok=false;break;}\n            }\n            if(ok){\n                for(int j=0;j<4;++j) S[i+j]=pat[j];\n            }\n        }\n        for(char &c: S) if(c=='?') c='A';\n        cout<<S<<\"\\n\";\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder out = new StringBuilder();\n        final char[] pat = {'C','H','E','F'};\n        for (int tc = 0; tc < T; ++tc) {\n            String line = br.readLine();\n            char[] s = line.toCharArray();\n            int n = s.length;\n            for (int i = n - 4; i >= 0; --i) {\n                boolean ok = true;\n                for (int j = 0; j < 4; ++j) {\n                    if (s[i + j] != '?' && s[i + j] != pat[j]) { ok = false; break; }\n                }\n                if (ok) {\n                    for (int j = 0; j < 4; ++j) s[i + j] = pat[j];\n                }\n            }\n            for (int i = 0; i < n; ++i) if (s[i] == '?') s[i] = 'A';\n            out.append(new String(s)).append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef solve():\n    data = sys.stdin.read().splitlines()\n    if not data: return\n    t = int(data[0])\n    pat = 'CHEF'\n    out = []\n    for i in range(1, t+1):\n        s = list(data[i].strip())\n        n = len(s)\n        for pos in range(n-4, -1, -1):\n            ok = True\n            for j in range(4):\n                if s[pos+j] != '?' and s[pos+j] != pat[j]:\n                    ok = False\n                    break\n            if ok:\n                for j in range(4):\n                    s[pos+j] = pat[j]\n        for k in range(n):\n            if s[k] == '?':\n                s[k] = 'A'\n        out.append(''.join(s))\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    solve()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst T = parseInt(input[idx++], 10);\nconst pat = ['C','H','E','F'];\nlet results = [];\nfor (let tc = 0; tc < T; ++tc) {\n  let arr = input[idx++].split('');\n  const n = arr.length;\n  for (let i = n - 4; i >= 0; --i) {\n    let ok = true;\n    for (let j = 0; j < 4; ++j) {\n      if (arr[i + j] !== '?' && arr[i + j] !== pat[j]) { ok = false; break; }\n    }\n    if (ok) {\n      for (let j = 0; j < 4; ++j) arr[i + j] = pat[j];\n    }\n  }\n  for (let i = 0; i < n; ++i) if (arr[i] === '?') arr[i] = 'A';\n  results.push(arr.join(''));\n}\nconsole.log(results.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

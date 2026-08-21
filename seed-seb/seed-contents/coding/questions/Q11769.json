@@ -1,0 +1,119 @@
+{
+  "questionId": "Q11769",
+  "title": "Best time to buy and sell stock IV",
+  "slug": "best-time-to-buy-and-sell-stock-iv",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Stock Buy Sell",
+      "K Transactions",
+      "Memoization"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "We are given an array Arr[] of length n. It represents the price of a stock on ‘n’ days. The following guidelines need to be followed\n\n\n\n\nWe can buy and sell the stock any number of times.In order to sell the stock, we need to first buy it on the same or any previous day.We can’t buy a stock again after buying it once. In other words, we first buy a stock and then sell it. After selling we can buy and sell again. But we can’t sell before buying and can’t buy before selling any previously bought stock.We can do at most K transactions.\n\n\n\n</p",
+    "constraints": [
+      "1 <= n <= 10^5",
+      "1 <= k <= 10^2",
+      "1 <= prices[i] <= 10^5"
+    ],
+    "inputFormat": "The first line contains an integer 'n' representing the number of days. The second line contains 'n' space-separated integers representing the stock prices for each day. The third line contains an integer 'k' representing the maximum number of transactions allowed.",
+    "outputFormat": "The maximum possible profit that can be achieved.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "1\n10\n1",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "5\n10 20 30 40 50\n2",
+        "expectedOutput": "60",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform prices",
+        "input": "5\n10 10 10 10 10\n2",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "4\n1 2 3 4\n0",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "mixed case",
+        "input": "8\n3 3 5 0 0 3 1 4\n2",
+        "expectedOutput": "6",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Use a 3D DP array to store the maximum profit for each day, buy/sell state, and number of transactions. Fill the DP array using a recursive approach with memoization.",
+    "timeComplexity": "O(n * 2 * k)",
+    "spaceComplexity": "O(n * 2 * k)",
+    "code": {
+      "C": "#include <stdio.h>\nint maxProfit(int* prices, int pricesSize, int k) {\n    int dp[pricesSize][2][k + 1];\n    for (int i = 0; i < pricesSize; i++) {\n        for (int j = 0; j < 2; j++) {\n            for (int l = 0; l <= k; l++) {\n                dp[i][j][l] = -1;\n            }\n        }\n    }\n    return getAns(prices, pricesSize, 0, 0, k, dp);\n}\n\nint getAns(int* prices, int n, int ind, int buy, int cap, int*** dp) {\n    if (ind == n || cap == 0) return 0;\n    if (dp[ind][buy][cap] != -1) return dp[ind][buy][cap];\n    int profit;\n    if (buy == 0) {\n        profit = max(0 + getAns(prices, n, ind + 1, 0, cap, dp), -prices[ind] + getAns(prices, n, ind + 1, 1, cap, dp));\n    } else {\n        profit = max(0 + getAns(prices, n, ind + 1, 1, cap, dp), prices[ind] + getAns(prices, n, ind + 1, 0, cap - 1, dp));\n    }\n    dp[ind][buy][cap] = profit;\n    return profit;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nclass StockBuySell{\npublic:\n    int getAns(vector<int>& Arr, int n, int ind, int buy, int cap, vector<vector<vector<int>>>& dp) {\n        // Base case\n        if (ind == n || cap == 0) return 0;\n        \n        // Check if the result is already computed\n        if (dp[ind][buy][cap] != -1)\n            return dp[ind][buy][cap];\n        \n        int profit;\n        \n        if (buy == 0) { // We can buy the stock\n            profit = max(0 + getAns(Arr, n, ind + 1, 0, cap, dp),\n                         -Arr[ind] + getAns(Arr, n, ind + 1, 1, cap, dp));\n        }\n        \n        if (buy == 1) { // We can sell the stock\n            profit = max(0 + getAns(Arr, n, ind + 1, 1, cap, dp),\n                         Arr[ind] + getAns(Arr, n, ind + 1, 0, cap - 1, dp));\n        }\n        \n        // Store the result in the DP array and return\n        return dp[ind][buy][cap] = profit;\n    }\n    \n    int maximumProfit(vector<int>& prices, int n, int k) {\n        // Creating a 3D DP array of size [n][2][k+1]\n        vector<vector<vector<int>>> dp(n,\n                                        vector<vector<int>>(2, vector<int>(k + 1, -1)));\n        \n        return getAns(prices, n, 0, 0, k, dp);\n    }\n};",
+      "Java": "import java.util.Arrays;\npublic class StockBuySell {\n    \n    // Function to calculate the maximum profit\n    public static int maximumProfit(int[] prices, int n, int k) {\n        // Creating a 3D array dp of size [n][2][k+1]\n        int[][][] dp = new int[n][2][k + 1];\n        \n        // Initialize dp with -1 to mark states as not calculated yet\n        for (int i = 0; i < n; i++) {\n            for (int j = 0; j < 2; j++) {\n                Arrays.fill(dp[i][j], -1);\n            }\n        }\n        \n        return getAns(prices, n, 0, 0, k, dp);\n    }\n    \n    // Recursive function to calculate the maximum profit\n    public static int getAns(int[] prices, int n, int ind, int buy, int cap, int[][][] dp) {\n        // Base case\n        if (ind == n || cap == 0) {\n            return 0;\n        }\n        \n        // If the result is already calculated, return it\n        if (dp[ind][buy][cap] != -1) {\n            return dp[ind][buy][cap];\n        }\n        \n        int profit;\n        \n        if (buy == 0) { // We can buy the stock\n            profit = Math.max(0 + getAns(prices, n, ind + 1, 0, cap, dp),\n                             -prices[ind] + getAns(prices, n, ind + 1, 1, cap, dp));\n        } else { // We can sell the stock\n            profit = Math.max(0 + getAns(prices, n, ind + 1, 1, cap, dp),\n                             prices[ind] + getAns(prices, n, ind + 1, 0, cap - 1, dp));\n        }\n        \n        // Store the result in dp and return it\n        dp[ind][buy][cap] = profit;\n        return profit;\n    }\n}",
+      "Python3": "class StockBuySell:\n    def get_max_profit(self, prices, n, ind, buy, cap, dp):\n        # Base case: if we reach the end of the array or have no more capital left\n        if ind == n or cap == 0:\n            return 0\n        \n        # Check if the result is already calculated\n        if dp[ind][buy][cap] != -1:\n            return dp[ind][buy][cap]\n        \n        # Initialize profit\n        profit = 0\n        \n        if buy == 0:  # We can buy the stock\n            profit = max(\n                0 + self.get_max_profit(prices, n, ind + 1, 0, cap, dp),\n                -prices[ind] + self.get_max_profit(prices, n, ind + 1, 1, cap, dp)\n            )\n        \n        if buy == 1:  # We can sell the stock\n            profit = max(\n                0 + self.get_max_profit(prices, n, ind + 1, 1, cap, dp),\n                prices[ind] + self.get_max_profit(prices, n, ind + 1, 0, cap - 1, dp)\n            )\n        \n        # Memoize the result and return\n        dp[ind][buy][cap] = profit\n        return profit\n    \n    def maximum_profit(self, prices, n, k):\n        # Creating a 3D dp array of size [n][2][k+1]\n        dp = [[[(-1) for _ in range(k + 1)] for _ in range(2)] for _ in range(n)]\n        \n        return self.get_max_profit(prices, n, 0, 0, k, dp)",
+      "JavaScript": "class StockBuySell{\n    function maximumProfit(prices, n, k) {\n        // Creating a 3D array dp of size [n][2][k+1] and initializing with -1\n        let dp = new Array(n);\n        for (let i = 0; i < n; i++) {\n            dp[i] = new Array(2);\n            for (let j = 0; j < 2; j++) {\n                dp[i][j] = new Array(k + 1).fill(-1);\n            }\n        }\n        \n        // Define a recursive function to calculate maximum profit\n        function getAns(ind, buy, cap) {\n            // Base case\n            if (ind === n || cap === 0) return 0;\n            \n            // Check if the result is already computed and stored in dp\n            if (dp[ind][buy][cap] !== -1) return dp[ind][buy][cap];\n            \n            let profit;\n            \n            if (buy === 0) { // We can buy the stock\n                profit = Math.max(\n                    0 + getAns(ind + 1, 0, cap),\n                    -prices[ind] + getAns(ind + 1, 1, cap)\n                );\n            }\n            \n            if (buy === 1) { // We can sell the stock\n                profit = Math.max(\n                    0 + getAns(ind + 1, 1, cap),\n                    prices[ind] + getAns(ind + 1, 0, cap - 1)\n                );\n            }\n            \n            // Store the result in dp and return it\n            dp[ind][buy][cap] = profit;\n            return profit;\n        }\n        \n        // Call the recursive function to compute the maximum profit\n        return getAns(0, 0, k);\n    }\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

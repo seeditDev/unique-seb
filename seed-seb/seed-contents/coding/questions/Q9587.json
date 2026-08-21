@@ -1,0 +1,142 @@
+{
+  "questionId": "Q9587",
+  "title": "Balanced Suffix",
+  "slug": "balanced-suffix",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Greedy | Strings",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Lexicographically smallest",
+      "Greedy construction",
+      "Frequency balance"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Constructive Algorithms"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You're given a string SSS of length NNN and an integer KKK.\n\nLet CCC denote the **set** of all characters in SSS. The string SSS is called good if, for **every** suffix of S:\n\n\nThe difference between the frequencies of any two characters in CCC does not exceed KKK.\n\nIn particular, if the set CCC has a single element, the string SSS is good.\nFind whether there exists a rearrangement of SSS which is good.\n\nIf multiple such rearrangements exist, print the **lexicographically smallest** rearrangement.\n\nIf no such rearrangement exists, print −1-1−1 instead.\n\nNote that a suffix of a string is obtained by deleting some (possibly **zero**) characters from the beginning of the string. For example, the suffixes of S=abcaS = abcaS=abca are {a,ca,bca,abca}\\{a, ca, bca, abca\\}{a,ca,bca,abca}.\n\n\nInput Format\n\nThe first line of input will contain a single integer TTT, denoting the number of test cases.\nEach test case consists of two lines of input.\n\nThe first line of each test case contains two space-separated integers NNN and KKK — the length of the string and the positive integer as mentioned in the statement, respectively.\nThe next line consists of a string SSS of length NNN containing lowercase English alphabets only.\n\n\n\n\nOutput Format\nFor each test case, output on a new line the lexicographically smallest good rearrangement of SSS.\n\n\nIf no such rearrangement exists, print −1-1−1 instead.",
+    "constraints": [
+      "1 ≤ T ≤ 2000",
+      "1 ≤ N ≤ 10^5",
+      "1 ≤ K ≤ N",
+      "S consists only of lowercase English letters",
+      "∑ N over all test cases ≤ 2·10^5"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case consists of two lines. The first line contains two integers N and K. The second line contains a string S of length N consisting of lowercase English letters.",
+    "outputFormat": "For each test case output a single line – the lexicographically smallest rearrangement of S that satisfies the suffix‑balance condition, or -1 if no such rearrangement exists.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4\\n3 1\\naaa\\n4 2\\nbaba\\n4 1\\nbabb\\n7 2\\nabcbcac",
+        "output": "aaa\\naabb\\n-1\\nabcabcc",
+        "explanation": "Test case 1: only character a, any arrangement works, smallest is aaa.\\nTest case 2: frequencies a=2,b=2, K=2. Greedy picks a then a then b then b giving aabb, which satisfies the suffix balance and is lexicographically minimal.\\nTest case 3: a=1,b=3, K=1. After any first character the remaining counts differ by more than 1, so no arrangement exists.\\nTest case 4: a=2,b=2,c=3, K=2. Greedy construction yields abcabcc, which meets the condition and is the smallest possible."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\\n1 1\\nz",
+        "output": "z",
+        "explanation": "Single character string is always good; the only arrangement is z."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\\n3 0\\nabc",
+        "output": "-1",
+        "explanation": "K=0 forces all remaining counts to be equal at every step. After removing any character the counts become (0,1,1) which violates the condition, so no good rearrangement exists."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\\n1 1\\na",
+        "expectedOutput": "a",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\\n5 5\\nabcde",
+        "expectedOutput": "abcde",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case all same char",
+        "input": "1\\n6 2\\nbbbbbb",
+        "expectedOutput": "bbbbbb",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "balanced frequencies",
+        "input": "1\\n6 1\\naabbcc",
+        "expectedOutput": "aabbcc",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "impossible due to large gap",
+        "input": "1\\n4 0\\naabc",
+        "expectedOutput": "-1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For a string to be good, after any prefix is removed the remaining suffix must contain frequencies of all characters from the original set C whose difference between maximum and minimum does not exceed K. Therefore while we build the answer from left to right we must keep the multiset of *remaining* characters balanced.\n\nLet freq[c] be the current remaining count of character c. At each step we try characters in alphabetical order. For a candidate character x with freq[x]>0 we temporarily decrease freq[x] by one and compute current max = max_{c∈C} freq[c] and min = min_{c∈C} freq[c]. If max‑min ≤ K the choice is feasible – we permanently place x and continue. If no character is feasible the required arrangement does not exist.\n\nBecause there are only 26 possible characters, recomputing max and min after each tentative decrement costs O(26). The whole construction therefore runs in O(26·N) = O(N) per test case, easily fast enough for the given limits.\n\nIf the construction finishes, the built string is the lexicographically smallest feasible one because at every position we chose the smallest character that keeps a solution possible.\n\nIf at any position no character keeps the balance, no rearrangement can satisfy the condition (proof by contradiction: any valid rearrangement would have a first character that is feasible, contradicting the exhaustive check).",
+    "timeComplexity": "O(N·Alphabet) = O(N) per test case (Alphabet = 26).",
+    "spaceComplexity": "O(Alphabet) = O(1) additional memory besides the input string.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n\nint main(){\n    int T; if(scanf(\"%d\",&T)!=1) return 0;\n    while(T--){\n        int N,K; scanf(\"%d %d\",&N,&K);\n        char s[100005]; scanf(\"%s\",s);\n        int freq[26]={0};\n        for(int i=0;i<N;i++) freq[s[i]-'a']++;\n        int distinct=0; for(int i=0;i<26;i++) if(freq[i]) distinct++;\n        char ans[100005]; int pos=0; int possible=1;\n        while(N>0 && possible){\n            int placed=0;\n            for(int c=0;c<26;c++) if(freq[c]){\n                freq[c]--;\n                int mx=0,mn=1e9;\n                for(int j=0;j<26;j++) if(freq[j]|| (freq[j]==0 && (freq[j]+0)>=0 && (freq[j]+0)<=N)){\n                    // consider only characters that were present originally (freq[j] may become 0)\n                    mx = mx>freq[j]?mx:freq[j];\n                    mn = mn<freq[j]?mn:freq[j];\n                }\n                if(mx-mn<=K){\n                    ans[pos++]=c+'a';\n                    placed=1; break;\n                }\n                freq[c]++; // revert\n            }\n            if(!placed){ possible=0; }\n            N--;\n        }\n        if(!possible) printf(\"-1\\n\");\n        else{ ans[pos]='\\0'; printf(\"%s\\n\",ans); }\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N,K; cin>>N>>K; string S; cin>>S;\n        array<int,26> freq{}; for(char ch:S) freq[ch-'a']++;\n        string ans; ans.reserve(N);\n        bool ok=true;\n        for(int rem=N; rem>0; --rem){\n            bool placed=false;\n            for(int c=0;c<26;c++) if(freq[c]){\n                freq[c]--;\n                int mx=0,mn=INT_MAX;\n                for(int j=0;j<26;j++) if(freq[j]|| true){ // all 26 letters, zero counts are allowed\n                    mx=max(mx,freq[j]);\n                    mn=min(mn,freq[j]);\n                }\n                if(mx-mn<=K){\n                    ans.push_back('a'+c);\n                    placed=true; break;\n                }\n                freq[c]++;\n            }\n            if(!placed){ ok=false; break; }\n        }\n        if(!ok) cout<<-1<<'\\n';\n        else cout<<ans<<'\\n';\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder out = new StringBuilder();\n        int T = Integer.parseInt(br.readLine().trim());\n        while (T-- > 0) {\n            StringTokenizer st = new StringTokenizer(br.readLine());\n            int N = Integer.parseInt(st.nextToken());\n            int K = Integer.parseInt(st.nextToken());\n            String S = br.readLine().trim();\n            int[] freq = new int[26];\n            for (char ch : S.toCharArray()) freq[ch - 'a']++;\n            StringBuilder ans = new StringBuilder(N);\n            boolean possible = true;\n            for (int rem = N; rem > 0; rem--) {\n                boolean placed = false;\n                for (int c = 0; c < 26; c++) if (freq[c] > 0) {\n                    freq[c]--;\n                    int mx = 0, mn = Integer.MAX_VALUE;\n                    for (int j = 0; j < 26; j++) {\n                        mx = Math.max(mx, freq[j]);\n                        mn = Math.min(mn, freq[j]);\n                    }\n                    if (mx - mn <= K) {\n                        ans.append((char) ('a' + c));\n                        placed = true;\n                        break;\n                    }\n                    freq[c]++;\n                }\n                if (!placed) { possible = false; break; }\n            }\n            out.append(possible ? ans.toString() : \"-1\").append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}\n",
+      "Python3": "import sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data: return\n    it = iter(data)\n    T = int(next(it))\n    out = []\n    for _ in range(T):\n        N = int(next(it)); K = int(next(it))\n        S = next(it)\n        freq = [0]*26\n        for ch in S:\n            freq[ord(ch)-97] += 1\n        ans = []\n        possible = True\n        for rem in range(N,0,-1):\n            placed = False\n            for c in range(26):\n                if freq[c]==0: continue\n                freq[c] -= 1\n                mx = max(freq)\n                mn = min(freq)\n                if mx - mn <= K:\n                    ans.append(chr(c+97))\n                    placed = True\n                    break\n                freq[c] += 1\n            if not placed:\n                possible = False\n                break\n        out.append(''.join(ans) if possible else '-1')\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0,'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet outputs = [];\nfor(let t=0;t<T;t++){\n  const N = Number(input[idx++]);\n  const K = Number(input[idx++]);\n  const S = input[idx++];\n  const freq = Array(26).fill(0);\n  for(const ch of S) freq[ch.charCodeAt(0)-97]++;\n  let ans = '';\n  let possible = true;\n  for(let rem=N; rem>0; rem--){\n    let placed = false;\n    for(let c=0;c<26;c++) if(freq[c]>0){\n      freq[c]--;\n      const mx = Math.max(...freq);\n      const mn = Math.min(...freq);\n      if(mx - mn <= K){\n        ans += String.fromCharCode(97+c);\n        placed = true;\n        break;\n      }\n      freq[c]++;\n    }\n    if(!placed){ possible = false; break; }\n  }\n  outputs.push(possible ? ans : '-1');\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

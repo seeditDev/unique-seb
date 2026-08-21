@@ -1,0 +1,117 @@
+{
+  "questionId": "Q1726",
+  "title": "Chef Finds Maximal Rectangle",
+  "slug": "chef-finds-maximal-rectangle",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Arrays",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "DP",
+      "Monotonic Stack",
+      "Largest Rectangle in Binary Matrix",
+      "Histogram",
+      "Arrays"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ]
+  },
+  "content": {
+    "problemStatement": "Chef has discovered a mysterious binary grid filled with `0`s and `1`s. Chef wants to find the largest rectangular area in this grid that contains only `1`s. This will help Chef unlock a secret treasure hidden beneath the grid. Help Chef by writing a function that calculates the area of the largest rectangle consisting solely of `1`s in the given binary matrix.\n\nFunction DeclarationFunction NamefindMaxRectangleAreafindMaxRectangleAreafindMaxRectangleArea - This function calculates the area of the largest rectangle containing only 111s in a given binary matrix.\n\nParameters\nbinaryMatrixbinaryMatrixbinaryMatrix (list of lists of char): A 2D binary matrix where each element is either 000 or 111. Represents the input grid to analyze.\nReturn Value\nReturns an intintint\nThe return value is the maximal rectangle area consisting solely of 111s within the binary matrix\nRepresents the size (number of cells) of the largest such rectangle found\nInput Format\nThe first line contains a single integer TTT \u2014 the number of test cases.\nFor each test case:\n\nThe first line contains two integers rowsrowsrows and colscolscols \u2014 the number of rows and columns in Chef's binary matrix.\nThe next rowsrowsrows lines each contain a string of length colscolscols consisting of characters 000 or 111, representing the binary matrix.\n\n\nOutput Format\nFor each test case, print a single line containing the area of the largest rectangle of 111s found in Chef's binary matrix.\nConstraints\n1\u2264T\u22641051 \\leq T \\leq 10^51\u2264T\u2264105\n1\u2264rows,cols\u22642001 \\leq rows, cols \\leq 2001\u2264rows,cols\u2264200\nEach element of `binaryMatrix` is either 000 or 111\nHelp Chef find the largest rectangle of 111s and claim the hidden treasure!",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= rows, cols <= 200",
+      "Each matrix element is either 0 or 1"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, the first line contains two integers rows and cols. Then follow rows lines, each containing cols integers (0 or 1) separated by spaces, representing the binary matrix.",
+    "outputFormat": "For each test case output a single line with one integer \u2013 the maximal area of a rectangle consisting only of 1s in the given matrix.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\\n4 4\\n1 0 1 1\\n1 1 1 1\\n1 1 1 0\\n0 1 1 1\\n3 3\\n0 0 0\\n0 0 0\\n0 0 0",
+        "output": "6\\n0",
+        "explanation": "First matrix has a maximal rectangle of size 2 rows \u00d7 3 columns = 6. Second matrix contains only 0s, so the answer is 0."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each row we treat the column heights of consecutive 1s up to that row as a histogram. The maximal rectangle ending at the current row equals the largest rectangle in that histogram, which can be found in O(cols) using a monotonic increasing stack. We update the heights row by row and keep the global maximum. This yields O(rows * cols) time and O(cols) extra space per test case.",
+    "timeComplexity": "O(rows * cols) per test case",
+    "spaceComplexity": "O(cols) auxiliary space",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nint maxRectangleInHistogram(int *height, int n) {\n    int *stack = (int*)malloc(n * sizeof(int));\n    int top = -1, maxArea = 0, i = 0;\n    while (i < n) {\n        if (top == -1 || height[stack[top]] <= height[i]) {\n            stack[++top] = i++;\n        } else {\n            int tp = stack[top--];\n            int width = (top == -1) ? i : i - stack[top] - 1;\n            int area = height[tp] * width;\n            if (area > maxArea) maxArea = area;\n        }\n    }\n    while (top != -1) {\n        int tp = stack[top--];\n        int width = (top == -1) ? i : i - stack[top] - 1;\n        int area = height[tp] * width;\n        if (area > maxArea) maxArea = area;\n    }\n    free(stack);\n    return maxArea;\n}\n\nint main() {\n    int T; scanf(\"%d\", &T);\n    while (T--) {\n        int rows, cols; scanf(\"%d %d\", &rows, &cols);\n        int *height = (int*)calloc(cols, sizeof(int));\n        int maxArea = 0;\n        for (int i = 0; i < rows; ++i) {\n            for (int j = 0; j < cols; ++j) {\n                int val; scanf(\"%d\", &val);\n                if (val == 1) height[j] += 1; else height[j] = 0;\n            }\n            int cur = maxRectangleInHistogram(height, cols);\n            if (cur > maxArea) maxArea = cur;\n        }\n        printf(\"%d\\n\", maxArea);\n        free(height);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nint maxHistogram(const vector<int>& h) {\n    stack<int> st;\n    int maxA = 0, i = 0, n = h.size();\n    while (i < n) {\n        if (st.empty() || h[st.top()] <= h[i]) st.push(i++);\n        else {\n            int tp = st.top(); st.pop();\n            int width = st.empty() ? i : i - st.top() - 1;\n            maxA = max(maxA, h[tp] * width);\n        }\n    }\n    while (!st.empty()) {\n        int tp = st.top(); st.pop();\n        int width = st.empty() ? i : i - st.top() - 1;\n        maxA = max(maxA, h[tp] * width);\n    }\n    return maxA;\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; cin >> T;\n    while (T--) {\n        int rows, cols; cin >> rows >> cols;\n        vector<int> height(cols, 0);\n        int ans = 0;\n        for (int i = 0; i < rows; ++i) {\n            for (int j = 0; j < cols; ++j) {\n                int v; cin >> v;\n                height[j] = (v == 1) ? height[j] + 1 : 0;\n            }\n            ans = max(ans, maxHistogram(height));\n        }\n        cout << ans << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    private static int maxHistogram(int[] h) {\n        Deque<Integer> stack = new ArrayDeque<>();\n        int maxA = 0, i = 0, n = h.length;\n        while (i < n) {\n            if (stack.isEmpty() || h[stack.peek()] <= h[i]) {\n                stack.push(i++);\n            } else {\n                int tp = stack.pop();\n                int width = stack.isEmpty() ? i : i - stack.peek() - 1;\n                maxA = Math.max(maxA, h[tp] * width);\n            }\n        }\n        while (!stack.isEmpty()) {\n            int tp = stack.pop();\n            int width = stack.isEmpty() ? i : i - stack.peek() - 1;\n            maxA = Math.max(maxA, h[tp] * width);\n        }\n        return maxA;\n    }\n\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st = new StringTokenizer(br.readLine());\n        int T = Integer.parseInt(st.nextToken());\n        StringBuilder sb = new StringBuilder();\n        while (T-- > 0) {\n            st = new StringTokenizer(br.readLine());\n            int rows = Integer.parseInt(st.nextToken());\n            int cols = Integer.parseInt(st.nextToken());\n            int[] height = new int[cols];\n            int ans = 0;\n            for (int i = 0; i < rows; ++i) {\n                st = new StringTokenizer(br.readLine());\n                for (int j = 0; j < cols; ++j) {\n                    int v = Integer.parseInt(st.nextToken());\n                    height[j] = (v == 1) ? height[j] + 1 : 0;\n                }\n                ans = Math.max(ans, maxHistogram(height));\n            }\n            sb.append(ans).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef max_histogram(heights):\n    stack = []\n    max_area = 0\n    i = 0\n    n = len(heights)\n    while i < n:\n        if not stack or heights[stack[-1]] <= heights[i]:\n            stack.append(i)\n            i += 1\n        else:\n            tp = stack.pop()\n            width = i if not stack else i - stack[-1] - 1\n            max_area = max(max_area, heights[tp] * width)\n    while stack:\n        tp = stack.pop()\n        width = i if not stack else i - stack[-1] - 1\n        max_area = max(max_area, heights[tp] * width)\n    return max_area\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out = []\n    for _ in range(T):\n        rows = int(next(it)); cols = int(next(it))\n        height = [0] * cols\n        best = 0\n        for _ in range(rows):\n            for j in range(cols):\n                val = int(next(it))\n                height[j] = height[j] + 1 if val == 1 else 0\n            best = max(best, max_histogram(height))\n        out.append(str(best))\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    solve()",
+      "JavaScript": "const fs = require('fs');\nconst data = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nfunction maxHistogram(h) {\n  const stack = [];\n  let maxA = 0, i = 0, n = h.length;\n  while (i < n) {\n    if (stack.length === 0 || h[stack[stack.length - 1]] <= h[i]) {\n      stack.push(i++);\n    } else {\n      const tp = stack.pop();\n      const width = stack.length === 0 ? i : i - stack[stack.length - 1] - 1;\n      maxA = Math.max(maxA, h[tp] * width);\n    }\n  }\n  while (stack.length) {\n    const tp = stack.pop();\n    const width = stack.length === 0 ? i : i - stack[stack.length - 1] - 1;\n    maxA = Math.max(maxA, h[tp] * width);\n  }\n  return maxA;\n}\nif (data.length === 0) process.exit(0);\nconst T = parseInt(data[idx++], 10);\nlet outputs = [];\nfor (let t = 0; t < T; ++t) {\n  const rows = parseInt(data[idx++], 10);\n  const cols = parseInt(data[idx++], 10);\n  const height = new Array(cols).fill(0);\n  let best = 0;\n  for (let i = 0; i < rows; ++i) {\n    for (let j = 0; j < cols; ++j) {\n      const val = parseInt(data[idx++], 10);\n      height[j] = val === 1 ? height[j] + 1 : 0;\n    }\n    best = Math.max(best, maxHistogram(height));\n  }\n  outputs.push(String(best));\n}\nconsole.log(outputs.join('\\n'));"
+    }
+  }
+}

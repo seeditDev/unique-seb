@@ -1,0 +1,140 @@
+{
+  "questionId": "Q7176",
+  "title": "Edge Addition",
+  "slug": "edge-addition",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Biconnected Components",
+      "Probability",
+      "Graph Theory"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Trees"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given a tree with NNN nodes. For each unordered pair of distinct nodes (i,j)(i, j)(i,j) such that there is no edge between nodes iii and jjj, we add an edge between these nodes with probability 1/21/21/2.\n\nFor each iii (1≤i≤N1 \\le i \\le N1≤i≤N), let pip_ipi​ be the probability that the resulting graph has exactly iii 2-edge-connected components and let Ri=pi⋅2(N−1)(N−2)/2R_i = p_i \\cdot 2^{(N-1)(N-2)/2}Ri​=pi​⋅2(N−1)(N−2)/2. You should compute RiR_iRi​ modulo 109+710^9+7109+7 for each iii from 111 to NNN.",
+    "constraints": [
+      "1 <= N <= 200",
+      "1 <= u, v <= N",
+      "u != v"
+    ],
+    "inputFormat": "The first line contains a single integer N. Each of the next N-1 lines contains two space-separated integers u and v denoting an edge between vertices u and v.",
+    "outputFormat": "Print a single line containing N space-separated integers R1, R2, …, RN.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n1 2\n2 3",
+        "output": "1 0 1",
+        "explanation": "The only edge that can be added is (1,3). If this edge is added, there will be one biconnected component; otherwise, there will be three biconnected components. Therefore, p1=p3=1/2 and p2=0."
+      },
+      {
+        "id": "sample_2",
+        "input": "4\n1 2\n2 3\n3 4",
+        "output": "1 0 0 0",
+        "explanation": "The only possible biconnected component is the entire graph. Therefore, p1=1 and p2=p3=p4=0."
+      },
+      {
+        "id": "sample_3",
+        "input": "5\n1 2\n2 3\n3 4\n4 5",
+        "output": "1 0 0 0 0",
+        "explanation": "The only possible biconnected component is the entire graph. Therefore, p1=1 and p2=p3=p4=p5=0."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "200\n1 2\n1 3\n...\n1 200",
+        "expectedOutput": "1 0 0 ... 0",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "2\n1 2",
+        "expectedOutput": "1 0",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "10\n1 2\n2 3\n...\n9 10",
+        "expectedOutput": "1 0 0 ... 0",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "15\n1 2\n2 3\n...\n14 15",
+        "expectedOutput": "1 0 0 ... 0",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use the concept of biconnected components in a graph. We will first find all the biconnected components in the given tree. Then, for each possible number of biconnected components (from 1 to N), we will calculate the probability that the resulting graph has exactly that many biconnected components after adding edges with probability 1/2. We will use the formula for probability and the concept of independent events to calculate these probabilities.",
+    "timeComplexity": "O(N^2) — because we are iterating over all pairs of nodes to calculate the probabilities.",
+    "spaceComplexity": "O(N) — because we need to store the probabilities for each node.",
+    "code": {
+      "C": "// COMPLETE, COMPILABLE C code\n#include <stdio.h>\n#include <stdlib.h>\n#define MOD 1000000007\n#define MAXN 205\n\nint N;\nint graph[MAXN][MAXN];\nint visited[MAXN];\nint low[MAXN];\nint disc[MAXN];\nint parent[MAXN];\nint time = 0;\nint bcc_count = 0;\nint bcc_id[MAXN];\n\nvoid dfs(int u) {\n    visited[u] = 1;\n    disc[u] = low[u] = time++;\n    int children = 0;\n    for (int v = 1; v <= N; v++) {\n        if (graph[u][v]) {\n            if (!visited[v]) {\n                parent[v] = u;\n                children++;\n                dfs(v);\n                low[u] = (low[u] < low[v]) ? low[u] : low[v];\n                if (low[v] >= disc[u] && parent[u] != -1) {\n                    bcc_count++;\n                    bcc_id[u] = bcc_count;\n                }\n            } else if (v != parent[u]) {\n                low[u] = (low[u] < disc[v]) ? low[u] : disc[v];\n            }\n        }\n    }\n}\n\nint main() {\n    scanf(\"%d\", &N);\n    for (int i = 1; i < N; i++) {\n        int u, v;\n        scanf(\"%d %d\", &u, &v);\n        graph[u][v] = graph[v][u] = 1;\n    }\n    for (int i = 1; i <= N; i++) {\n        if (!visited[i]) {\n            dfs(i);\n        }\n    }\n    long long result[N + 1];\n    for (int i = 1; i <= N; i++) {\n        result[i] = 0;\n    }\n    for (int i = 1; i <= N; i++) {\n        long long prob = 1;\n        for (int j = 1; j <= N; j++) {\n            if (i != j) {\n                prob = (prob * (1 + (graph[i][j] ? 1 : 0))) % MOD;\n            }\n        }\n        result[bcc_id[i]] = (result[bcc_id[i]] + prob) % MOD;\n    }\n    for (int i = 1; i <= N; i++) {\n        printf(\"%lld \", result[i]);\n    }\n    printf(\"\\n\");\n    return 0;\n}",
+      "C++": "// COMPLETE, COMPILABLE C++ code\n#include <iostream>\n#include <vector>\nusing namespace std;\n#define MOD 1000000007\n#define MAXN 205\n\nint N;\nvector<int> graph[MAXN];\nint visited[MAXN];\nint low[MAXN];\nint disc[MAXN];\nint parent[MAXN];\nint time = 0;\nint bcc_count = 0;\nint bcc_id[MAXN];\n\nvoid dfs(int u) {\n    visited[u] = 1;\n    disc[u] = low[u] = time++;\n    int children = 0;\n    for (int v : graph[u]) {\n        if (!visited[v]) {\n            parent[v] = u;\n            children++;\n            dfs(v);\n            low[u] = (low[u] < low[v]) ? low[u] : low[v];\n            if (low[v] >= disc[u] && parent[u] != -1) {\n                bcc_count++;\n                bcc_id[u] = bcc_count;\n            }\n        } else if (v != parent[u]) {\n            low[u] = (low[u] < disc[v]) ? low[u] : disc[v];\n        }\n    }\n}\n\nint main() {\n    cin >> N;\n    for (int i = 1; i < N; i++) {\n        int u, v;\n        cin >> u >> v;\n        graph[u].push_back(v);\n        graph[v].push_back(u);\n    }\n    for (int i = 1; i <= N; i++) {\n        if (!visited[i]) {\n            dfs(i);\n        }\n    }\n    long long result[N + 1];\n    for (int i = 1; i <= N; i++) {\n        result[i] = 0;\n    }\n    for (int i = 1; i <= N; i++) {\n        long long prob = 1;\n        for (int j = 1; j <= N; j++) {\n            if (i != j) {\n                prob = (prob * (1 + (find(graph[i].begin(), graph[i].end(), j) != graph[i].end() ? 1 : 0))) % MOD;\n            }\n        }\n        result[bcc_id[i]] = (result[bcc_id[i]] + prob) % MOD;\n    }\n    for (int i = 1; i <= N; i++) {\n        cout << result[i] << \" \";\n    }\n    cout << endl;\n    return 0;\n}",
+      "Java": "// COMPLETE, COMPILABLE Java code\nimport java.util.Scanner;\npublic class Main {\n    static final int MOD = 1000000007;\n    static final int MAXN = 205;\n    static int N;\n    static int[][] graph = new int[MAXN][MAXN];\n    static int[] visited = new int[MAXN];\n    static int[] low = new int[MAXN];\n    static int[] disc = new int[MAXN];\n    static int[] parent = new int[MAXN];\n    static int time = 0;\n    static int bcc_count = 0;\n    static int[] bcc_id = new int[MAXN];\n\n    public static void dfs(int u) {\n        visited[u] = 1;\n        disc[u] = low[u] = time++;\n        int children = 0;\n        for (int v = 1; v <= N; v++) {\n            if (graph[u][v] == 1) {\n                if (visited[v] == 0) {\n                    parent[v] = u;\n                    children++;\n                    dfs(v);\n                    low[u] = Math.min(low[u], low[v]);\n                    if (low[v] >= disc[u] && parent[u] != -1) {\n                        bcc_count++;\n                        bcc_id[u] = bcc_count;\n                    }\n                } else if (v != parent[u]) {\n                    low[u] = Math.min(low[u], disc[v]);\n                }\n            }\n        }\n    }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        N = sc.nextInt();\n        for (int i = 1; i < N; i++) {\n            int u = sc.nextInt();\n            int v = sc.nextInt();\n            graph[u][v] = graph[v][u] = 1;\n        }\n        for (int i = 1; i <= N; i++) {\n            if (visited[i] == 0) {\n                dfs(i);\n            }\n        }\n        long[] result = new long[N + 1];\n        for (int i = 1; i <= N; i++) {\n            result[i] = 0;\n        }\n        for (int i = 1; i <= N; i++) {\n            long prob = 1;\n            for (int j = 1; j <= N; j++) {\n                if (i != j) {\n                    prob = (prob * (1 + (graph[i][j] == 1 ? 1 : 0))) % MOD;\n                }\n            }\n            result[bcc_id[i]] = (result[bcc_id[i]] + prob) % MOD;\n        }\n        for (int i = 1; i <= N; i++) {\n            System.out.print(result[i] + \" \");\n        }\n        System.out.println();\n    }\n}",
+      "Python3": "# COMPLETE, RUNNABLE Python3 code\nimport sys\nMOD = 1000000007\nMAXN = 205\n\nN = int(sys.stdin.readline())\ngraph = [[0] * (N + 1) for _ in range(N + 1)]\nvisited = [0] * (N + 1)\nlow = [0] * (N + 1)\ndisc = [0] * (N + 1)\nparent = [-1] * (N + 1)\ntime = 0\nbcc_count = 0\nbcc_id = [0] * (N + 1)\n\ndef dfs(u):\n    global time, bcc_count\n    visited[u] = 1\n    disc[u] = low[u] = time\n    time += 1\n    children = 0\n    for v in range(1, N + 1):\n        if graph[u][v] == 1:\n            if visited[v] == 0:\n                parent[v] = u\n                children += 1\n                dfs(v)\n                low[u] = min(low[u], low[v])\n                if low[v] >= disc[u] and parent[u] != -1:\n                    bcc_count += 1\n                    bcc_id[u] = bcc_count\n            elif v != parent[u]:\n                low[u] = min(low[u], disc[v])\n\nfor _ in range(N - 1):\n    u, v = map(int, sys.stdin.readline().split())\n    graph[u][v] = graph[v][u] = 1\n\nfor i in range(1, N + 1):\n    if visited[i] == 0:\n        dfs(i)\n\nresult = [0] * (N + 1)\nfor i in range(1, N + 1):\n    prob = 1\n    for j in range(1, N + 1):\n        if i != j:\n            prob = (prob * (1 + (graph[i][j] == 1))) % MOD\n    result[bcc_id[i]] = (result[bcc_id[i]] + prob) % MOD\n\nprint(' '.join(map(str, result[1:])))\n",
+      "JavaScript": "// COMPLETE, RUNNABLE JavaScript code\nconst fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst MOD = 1000000007;\nconst MAXN = 205;\nlet N = parseInt(input[idx++]);\nlet graph = Array.from({ length: N + 1 }, () => Array.from({ length: N + 1 }, () => 0));\nlet visited = Array.from({ length: N + 1 }, () => 0);\nlet low = Array.from({ length: N + 1 }, () => 0);\nlet disc = Array.from({ length: N + 1 }, () => 0);\nlet parent = Array.from({ length: N + 1 }, () => -1);\nlet time = 0;\nlet bcc_count = 0;\nlet bcc_id = Array.from({ length: N + 1 }, () => 0);\n\nfunction dfs(u) {\n    visited[u] = 1;\n    disc[u] = low[u] = time;\n    time++;\n    let children = 0;\n    for (let v = 1; v <= N; v++) {\n        if (graph[u][v] === 1) {\n            if (visited[v] === 0) {\n                parent[v] = u;\n                children++;\n                dfs(v);\n                low[u] = Math.min(low[u], low[v]);\n                if (low[v] >= disc[u] && parent[u] !== -1) {\n                    bcc_count++;\n                    bcc_id[u] = bcc_count;\n                }\n            } else if (v !== parent[u]) {\n                low[u] = Math.min(low[u], disc[v]);\n            }\n        }\n    }\n}\n\nfor (let i = 1; i < N; i++) {\n    let [u, v] = input[idx++].split(' ').map(Number);\n    graph[u][v] = graph[v][u] = 1;\n}\n\nfor (let i = 1; i <= N; i++) {\n    if (visited[i] === 0) {\n        dfs(i);\n    }\n}\n\nlet result = Array.from({ length: N + 1 }, () => 0);\nfor (let i = 1; i <= N; i++) {\n    let prob = 1;\n    for (let j = 1; j <= N; j++) {\n        if (i !== j) {\n            prob = (prob * (1 + (graph[i][j] === 1))) % MOD;\n        }\n    }\n    result[bcc_id[i]] = (result[bcc_id[i]] + prob) % MOD;\n}\n\nconsole.log(result.slice(1).join(' '));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

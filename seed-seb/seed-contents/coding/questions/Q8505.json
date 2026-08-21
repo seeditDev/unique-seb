@@ -1,0 +1,129 @@
+{
+  "questionId": "Q8505",
+  "title": "Brutal-Xors",
+  "slug": "brutal-xors",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math | Bit Manipulation",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "XOR",
+      "Bitwise Operations",
+      "Counting",
+      "Logarithms",
+      "Modular Exponentiation"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Bit Manipulation"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given an integer NNN. Find the number of distinct XORs it is possible to make using two positive integers no larger than NNN.\n\nFormally, let SSS be the **set**\nS={x⊕y∣1≤x,y≤N}S = \\{x\\oplus y \\mid 1 \\leq x, y \\leq N\\}S={x⊕y∣1≤x,y≤N}\n\nwhere ⊕\\oplus⊕ denotes the bitwise XOR operation.\n\nFind ∣S∣|S|∣S∣ (where ∣S∣|S|∣S∣ denotes the size of set SSS. Note that a set, by definition, has no repeated elements). The answer might be large, so output it modulo 109+710^9 + 7109+7.\n\n\nInput Format\n\nThe first line of input contains a single integer TTT, denoting the number of test cases. The description of TTT test cases follows.\nEach test case consists of a single line of input, which contains one integer NNN.\n\n\nOutput Format\nFor each test case, output a single line containing the answer, modulo 109+710^9 + 7109+7.",
+    "constraints": [
+      "1 ≤ T ≤ 10^5",
+      "1 ≤ N ≤ 10^12"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains a single integer N.",
+    "outputFormat": "For each test case output a single line with the number of distinct values of x⊕y (1 ≤ x, y ≤ N), modulo 1000000007.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n1\n3\n7",
+        "output": "1\n4\n8",
+        "explanation": "Explanation:\nTest Case 1: N=1N = 1N=1, so the only XOR we can possibly make is 1⊕1=01 \\oplus 1 = 01⊕1=0. Thus, the answer is 111.\nTest Case 2: N=3N = 3N=3, which gives us S={0,1,2,3}S = \\{0, 1, 2, 3\\}S={0,1,2,3} as the set of possible XORs. Thus, the answer is ∣S∣=4|S| = 4∣S∣=4."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Let k = floor(log2 N). For N ≥ 3 the set {x⊕y | 1 ≤ x, y ≤ N} contains every integer from 0 to 2^{k+1}-1, therefore its size is 2^{k+1}. The only exceptions are N = 1 and N = 2: for N = 1 only 0 can be formed (size 1) and for N = 2 only 0 and 3 can be formed (size 2). Hence:\n- if N == 1 → answer = 1\n- else if N == 2 → answer = 2\n- else answer = 2^{k+1} (mod 1e9+7)\nThe exponent k+1 is at most 40, so fast modular exponentiation suffices. The algorithm runs in O(T) time (each test case needs only a log2 computation and a modular power) and O(1) extra space.",
+    "timeComplexity": "O(T) – each test case does O(1) work (log2 via built‑in, modular exponentiation with at most 40 iterations).",
+    "spaceComplexity": "O(1) – only a few variables are stored.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdint.h>\n#define MOD 1000000007ULL\n\nstatic uint64_t mod_pow(uint64_t base, uint64_t exp) {\n    uint64_t res = 1ULL;\n    while (exp) {\n        if (exp & 1ULL) res = (res * base) % MOD;\n        base = (base * base) % MOD;\n        exp >>= 1ULL;\n    }\n    return res;\n}\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        unsigned long long N;\n        scanf(\"%llu\", &N);\n        if (N == 1ULL) {\n            printf(\"1\\n\");\n        } else if (N == 2ULL) {\n            printf(\"2\\n\");\n        } else {\n            int k = 63 - __builtin_clzll(N); // floor(log2 N)\n            uint64_t ans = mod_pow(2ULL, (uint64_t)k + 1ULL);\n            printf(\"%llu\\n\", ans);\n        }\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nconst long long MOD = 1000000007LL;\n\nlong long modPow(long long b, long long e) {\n    long long r = 1;\n    while (e) {\n        if (e & 1) r = r * b % MOD;\n        b = b * b % MOD;\n        e >>= 1;\n    }\n    return r;\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while (T--) {\n        unsigned long long N; cin >> N;\n        if (N == 1ULL) cout << 1 << '\\n';\n        else if (N == 2ULL) cout << 2 << '\\n';\n        else {\n            int k = 63 - __builtin_clzll(N); // floor(log2 N)\n            cout << modPow(2, k + 1) << '\\n';\n        }\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    static final long MOD = 1_000_000_007L;\n    static long modPow(long base, long exp) {\n        long res = 1L;\n        while (exp > 0) {\n            if ((exp & 1L) == 1L) res = (res * base) % MOD;\n            base = (base * base) % MOD;\n            exp >>= 1;\n        }\n        return res;\n    }\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder out = new StringBuilder();\n        int T = Integer.parseInt(br.readLine().trim());\n        for (int t = 0; t < T; t++) {\n            long N = Long.parseLong(br.readLine().trim());\n            if (N == 1L) out.append(1).append('\\n');\n            else if (N == 2L) out.append(2).append('\\n');\n            else {\n                int k = 63 - Long.numberOfLeadingZeros(N); // floor(log2 N)\n                long ans = modPow(2L, k + 1);\n                out.append(ans).append('\\n');\n            }\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "import sys\nMOD = 1_000_000_007\n\ndef mod_pow(b, e):\n    res = 1\n    while e:\n        if e & 1:\n            res = (res * b) % MOD\n        b = (b * b) % MOD\n        e >>= 1\n    return res\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out = []\n    for _ in range(T):\n        N = int(next(it))\n        if N == 1:\n            out.append('1')\n        elif N == 2:\n            out.append('2')\n        else:\n            k = N.bit_length() - 1  # floor(log2 N)\n            out.append(str(mod_pow(2, k + 1)))\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    solve()",
+      "JavaScript": "const fs = require('fs');\nconst MOD = 1000000007n;\nfunction modPow(base, exp) {\n  let b = BigInt(base) % MOD;\n  let e = BigInt(exp);\n  let res = 1n;\n  while (e > 0n) {\n    if (e & 1n) res = (res * b) % MOD;\n    b = (b * b) % MOD;\n    e >>= 1n;\n  }\n  return res;\n}\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet out = [];\nfor (let i = 0; i < T; i++) {\n  const N = BigInt(input[idx++]);\n  if (N === 1n) out.push('1');\n  else if (N === 2n) out.push('2');\n  else {\n    const k = N.toString(2).length - 1; // floor(log2 N)\n    out.push(modPow(2, k + 1).toString());\n  }\n}\nconsole.log(out.join('\\n'));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

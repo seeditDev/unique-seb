@@ -1,0 +1,131 @@
+{
+  "questionId": "Q7958",
+  "title": "Cheating Time",
+  "slug": "cheating-time",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Greedy | Sorting",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Intervals",
+      "Sorting",
+      "Greedy",
+      "Union of intervals"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Greedy Algorithms"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef's college is conducting an online exam, where his camera will be monitored by one or more invigilators (supervisors). Once again, Chef failed to prepare for the exam on time and decided to google answers during it.\n\nThe exam starts at time 000 and ends at time FFF minutes. Chef needs a total of KKK minutes of googling during the exam in order to pass it. There are NNN invigilators (numbered 111 through NNN); for each valid iii, the iii-th invigilator monitors Chef's camera during the time interval starting at SiS_iSi​ minutes since the start of the exam and ending at EiE_iEi​ minutes (where 0≤Si≤Ei≤F0 \\leq S_i \\leq E_i \\leq F0≤Si​≤Ei​≤F). He was resourceful enough to somehow get hold of these times and now he wants to know if he would be able to pass the exam if he googles the answers during the times when no one is looking at his camera.\n\n**Note:** The time of googling need not be continuous and there can be multiple invigilators at some interval of time.",
+    "constraints": [
+      "1 ≤ T ≤ 10^5",
+      "1 ≤ N ≤ 10^5 (sum of N over all test cases ≤ 2·10^5)",
+      "1 ≤ F ≤ 10^9",
+      "0 ≤ K ≤ F",
+      "0 ≤ Si ≤ Ei ≤ F"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case: the first line contains three integers N, K and F. Then N lines follow, each containing two integers Si and Ei denoting the start and end minute (0 ≤ Si ≤ Ei ≤ F) of the i‑th invigilator's monitoring interval.",
+    "outputFormat": "For each test case output a single line containing \"YES\" if Chef can find at least K minutes during which no invigilator is watching, otherwise output \"NO\".",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n1 10 10\n0 10\n2 2 10\n0 5\n7 10\n2 2 100\n0 5\n5 10",
+        "output": "NO\nYES\nYES",
+        "explanation": "Explanation:\nExample case 1: There is no point during the exam when Chef is not monitored, so he is unable to google even for a single second and will fail the exam.\nExample case 2: Chef can google for 222 minutes (in the time interval [5,7][5, 7][5,7], when he is not monitored) and hence will be able to pass the exam.\nExample case 3: Chef can google for 222 minutes (in the time interval [10,12][10, 12][10,12]) and hence will be able to pass the exam."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each test case we need the total time that is *not* covered by any monitoring interval. The union of all intervals can be obtained by sorting them by start time and merging overlapping or adjacent intervals. While merging we accumulate the total length of the merged intervals (covered time). The free time equals F minus this covered time. If free time ≥ K we answer YES, otherwise NO. This is optimal because merging intervals is the standard way to compute the measure of a union of 1‑dimensional segments.",
+    "timeComplexity": "O(N log N) per test case due to sorting (overall O((ΣN) log N)).",
+    "spaceComplexity": "O(N) for storing the intervals of a test case.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\ntypedef struct { long long s, e; } Interval;\nint cmp(const void *a, const void *b) {\n    Interval *x = (Interval *)a, *y = (Interval *)b;\n    if (x->s != y->s) return (x->s < y->s) ? -1 : 1;\n    return (x->e < y->e) ? -1 : (x->e > y->e);\n}\nint main() {\n    int T; if (scanf(\"%d\", &T)!=1) return 0;\n    while (T--) {\n        int N; long long K, F; scanf(\"%d %lld %lld\", &N, &K, &F);\n        Interval *arr = (Interval*)malloc(N * sizeof(Interval));\n        for (int i = 0; i < N; ++i) scanf(\"%lld %lld\", &arr[i].s, &arr[i].e);\n        qsort(arr, N, sizeof(Interval), cmp);\n        long long covered = 0;\n        long long curL = -1, curR = -1;\n        for (int i = 0; i < N; ++i) {\n            if (curL == -1) { curL = arr[i].s; curR = arr[i].e; }\n            else if (arr[i].s <= curR) { if (arr[i].e > curR) curR = arr[i].e; }\n            else { covered += curR - curL; curL = arr[i].s; curR = arr[i].e; }\n        }\n        if (curL != -1) covered += curR - curL;\n        long long freeTime = F - covered;\n        printf(freeTime >= K ? \"YES\\n\" : \"NO\\n\");\n        free(arr);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N; long long K,F; cin>>N>>K>>F;\n        vector<pair<long long,long long>> seg(N);\n        for(int i=0;i<N;++i) cin>>seg[i].first>>seg[i].second;\n        sort(seg.begin(), seg.end());\n        long long covered=0;\n        long long curL=-1, curR=-1;\n        for(auto &p: seg){\n            if(curL==-1){curL=p.first; curR=p.second;}\n            else if(p.first<=curR){\n                if(p.second>curR) curR=p.second;\n            }else{\n                covered+=curR-curL;\n                curL=p.first; curR=p.second;\n            }\n        }\n        if(curL!=-1) covered+=curR-curL;\n        long long freeTime=F-covered;\n        cout<<(freeTime>=K?\"YES\":\"NO\")<<'\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    static class FastScanner {\n        private final BufferedInputStream in = new BufferedInputStream(System.in);\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        private int readByte() throws IOException {\n            if (ptr >= len) {\n                len = in.read(buffer);\n                ptr = 0;\n                if (len <= 0) return -1;\n            }\n            return buffer[ptr++];\n        }\n        long nextLong() throws IOException {\n            int c; do { c = readByte(); } while (c <= ' ');\n            boolean neg = false;\n            if (c == '-') { neg = true; c = readByte(); }\n            long val = 0;\n            while (c > ' ') {\n                val = val * 10 + (c - '0');\n                c = readByte();\n            }\n            return neg ? -val : val;\n        }\n        int nextInt() throws IOException { return (int) nextLong(); }\n    }\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner();\n        int T = fs.nextInt();\n        StringBuilder sb = new StringBuilder();\n        while (T-- > 0) {\n            int N = fs.nextInt();\n            long K = fs.nextLong();\n            long F = fs.nextLong();\n            long[][] seg = new long[N][2];\n            for (int i = 0; i < N; ++i) {\n                seg[i][0] = fs.nextLong();\n                seg[i][1] = fs.nextLong();\n            }\n            Arrays.sort(seg, Comparator.comparingLong(a -> a[0]));\n            long covered = 0;\n            long curL = -1, curR = -1;\n            for (long[] p : seg) {\n                if (curL == -1) { curL = p[0]; curR = p[1]; }\n                else if (p[0] <= curR) { if (p[1] > curR) curR = p[1]; }\n                else { covered += curR - curL; curL = p[0]; curR = p[1]; }\n            }\n            if (curL != -1) covered += curR - curL;\n            long free = F - covered;\n            sb.append(free >= K ? \"YES\" : \"NO\").append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys\n\ndef solve():\n    data = sys.stdin.buffer.read().split()\n    it = iter(data)\n    t = int(next(it))\n    out_lines = []\n    for _ in range(t):\n        n = int(next(it)); K = int(next(it)); F = int(next(it))\n        intervals = []\n        for __ in range(n):\n            s = int(next(it)); e = int(next(it))\n            intervals.append((s, e))\n        intervals.sort()\n        covered = 0\n        curL = curR = None\n        for s, e in intervals:\n            if curL is None:\n                curL, curR = s, e\n            elif s <= curR:\n                if e > curR:\n                    curR = e\n            else:\n                covered += curR - curL\n                curL, curR = s, e\n        if curL is not None:\n            covered += curR - curL\n        free = F - covered\n        out_lines.append(\"YES\" if free >= K else \"NO\")\n    sys.stdout.write(\"\\n\".join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst data = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(data[idx++]);\nlet out = [];\nfor (let tc = 0; tc < T; ++tc) {\n  const N = Number(data[idx++]);\n  const K = Number(data[idx++]);\n  const F = Number(data[idx++]);\n  let intervals = new Array(N);\n  for (let i = 0; i < N; ++i) {\n    const s = Number(data[idx++]);\n    const e = Number(data[idx++]);\n    intervals[i] = [s, e];\n  }\n  intervals.sort((a, b) => a[0] - b[0]);\n  let covered = 0;\n  let curL = null, curR = null;\n  for (const [s, e] of intervals) {\n    if (curL === null) { curL = s; curR = e; }\n    else if (s <= curR) { if (e > curR) curR = e; }\n    else { covered += curR - curL; curL = s; curR = e; }\n  }\n  if (curL !== null) covered += curR - curL;\n  const free = F - covered;\n  out.push(free >= K ? 'YES' : 'NO');\n}\nconsole.log(out.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

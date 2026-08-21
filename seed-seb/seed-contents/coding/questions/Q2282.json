@@ -1,0 +1,118 @@
+{
+  "questionId": "Q2282",
+  "title": "Pairing Chefs",
+  "slug": "pairing-chefs",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graphs",
+    "difficulty": "Easy",
+    "isPremium": false,
+    "tags": [
+      "Graphs",
+      "Graph Matching",
+      "Power of Two Weights",
+      "Maximum Weight Matching",
+      "Greedy"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Flow & Matching"
+    ]
+  },
+  "content": {
+    "problemStatement": "The Chef's latest idea is that some cooks might work better in pairs. So, he is going to experiment by pairing up some of his employees to see if the quality of the food prepared in his kitchen increases. However, only some pairs of employees are compatible. Two employees that are not compatible cannot be paired together.\n\n\n\nFor each pair of compatible employees, the Chef has assigned a number estimating how well the overall quality of the food might increase. Of course, each employee can only be paired with at most one other employee. Furthermore, it is ok to not pair some employees. So, your goal is to help the Chef decide how to pair the employees to maximize the total amount that the overall quality of food increases.",
+    "constraints": [
+      "1 \u2264 T \u2264 50",
+      "2 \u2264 n \u2264 1000",
+      "1 \u2264 m \u2264 10000",
+      "All pair indices are distinct"
+    ],
+    "inputFormat": "The first line contains an integer T (1 \u2264 T \u2264 50), the number of test cases. Each test case starts with two integers n and m (2 \u2264 n \u2264 1000, 1 \u2264 m \u2264 10000). n is the number of employees numbered from 0 to n\u20111 and m is the number of compatible pairs. The next m lines each contain two distinct integers ui vi (0 \u2264 ui,vi < n) describing a compatible pair. The i\u2011th line (0\u2011based) corresponds to pair index i and has weight 2^i. No pair appears twice (in any order).",
+    "outputFormat": "For each test case output a single line containing the indices of the chosen pairs in increasing order, separated by a single space. If no pair is chosen output an empty line (this never happens for the given constraints because m \u2265 1).",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\\n4 5\\n0 1\\n1 2\\n2 3\\n1 3\\n3 0\\n4 3\\n0 1\\n2 3\\n2 1",
+        "output": "1 4\\n2",
+        "explanation": "Test case 1: edges are indexed 0..4. Greedy scans from 4 downwards. Edge 4 (3\u20110) is taken, then edge 1 (1\u20112) is taken. Sorted indices: 1 4. Test case 2: only edge 2 (2\u20111) can be taken without conflict, so output is 2."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Because the weight of pair i is 2^i, a higher index always outweighs the sum of all lower\u2011index pairs. Therefore the optimal solution is to consider the pairs in decreasing order of index and take a pair if both its employees are still free. This greedy choice is optimal: if we ever skipped a higher\u2011index pair while it was feasible, replacing any set of lower\u2011index pairs by it would strictly increase the total weight. The algorithm runs in O(m) time per test case.\n\nAlgorithm:\n1. For each test case read n, m and store the edges in an array edges[0\u2026m\u20111].\n2. Create a boolean array used[0\u2026n\u20111] initially false.\n3. Iterate i from m\u20111 down to 0:\n   \u2022 let (u,v) = edges[i].\n   \u2022 if !used[u] && !used[v] then mark used[u]=used[v]=true and push i into answer list.\n4. After the loop sort the answer list in ascending order (required by the output format).\n5. Print the indices separated by spaces.\n\nComplexities:\n- Time: O(m log m_ans) \u2248 O(m) because the answer size \u2264 n/2 \u2264 500, sorting is negligible.\n- Space: O(n + m) for the edge list and the used array.",
+    "timeComplexity": "O(m) per test case (dominant work is a single scan of all edges).",
+    "spaceComplexity": "O(n + m) \u2013 storage for edges and the used flag array.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    while(T--){\n        int n,m; scanf(\"%d %d\", &n, &m);\n        int *u = (int*)malloc(m * sizeof(int));\n        int *v = (int*)malloc(m * sizeof(int));\n        for(int i=0;i<m;i++) scanf(\"%d %d\", &u[i], &v[i]);\n        char *used = (char*)calloc(n, sizeof(char));\n        int *ans = (int*)malloc(m * sizeof(int));\n        int ansCnt = 0;\n        for(int i=m-1;i>=0;i--){\n            if(!used[u[i]] && !used[v[i]]){\n                used[u[i]] = used[v[i]] = 1;\n                ans[ansCnt++] = i;\n            }\n        }\n        // sort ascending (answer size \u2264 n/2 \u2264 500)\n        for(int i=0;i<ansCnt;i++)\n            for(int j=i+1;j<ansCnt;j++)\n                if(ans[i] > ans[j]){int tmp=ans[i]; ans[i]=ans[j]; ans[j]=tmp;}\n        for(int i=0;i<ansCnt;i++){\n            if(i) printf(\" \");\n            printf(\"%d\", ans[i]);\n        }\n        printf(\"\\n\");\n        free(u); free(v); free(used); free(ans);\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int n,m; cin>>n>>m;\n        vector<pair<int,int>> e(m);\n        for(int i=0;i<m;i++) cin>>e[i].first>>e[i].second;\n        vector<char> used(n,0);\n        vector<int> ans;\n        for(int i=m-1;i>=0;i--){\n            int a=e[i].first, b=e[i].second;\n            if(!used[a] && !used[b]){\n                used[a]=used[b]=1;\n                ans.push_back(i);\n            }\n        }\n        sort(ans.begin(), ans.end());\n        for(size_t i=0;i<ans.size();i++){\n            if(i) cout<<' ';\n            cout<<ans[i];\n        }\n        cout<<'\\n';\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner(System.in);\n        int T = fs.nextInt();\n        StringBuilder out = new StringBuilder();\n        while (T-- > 0) {\n            int n = fs.nextInt();\n            int m = fs.nextInt();\n            int[] u = new int[m];\n            int[] v = new int[m];\n            for (int i = 0; i < m; i++) {\n                u[i] = fs.nextInt();\n                v[i] = fs.nextInt();\n            }\n            boolean[] used = new boolean[n];\n            ArrayList<Integer> ans = new ArrayList<>();\n            for (int i = m - 1; i >= 0; i--) {\n                if (!used[u[i]] && !used[v[i]]) {\n                    used[u[i]] = true;\n                    used[v[i]] = true;\n                    ans.add(i);\n                }\n            }\n            Collections.sort(ans);\n            for (int i = 0; i < ans.size(); i++) {\n                if (i > 0) out.append(' ');\n                out.append(ans.get(i));\n            }\n            out.append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n    // Fast scanner for large input\n    static class FastScanner {\n        private final InputStream in;\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        FastScanner(InputStream in) { this.in = in; }\n        private int readByte() throws IOException {\n            if (ptr >= len) {\n                len = in.read(buffer);\n                ptr = 0;\n                if (len <= 0) return -1;\n            }\n            return buffer[ptr++];\n        }\n        int nextInt() throws IOException {\n            int c, sign = 1, val = 0;\n            do { c = readByte(); } while (c <= ' ');\n            if (c == '-') { sign = -1; c = readByte(); }\n            while (c > ' ') {\n                val = val * 10 + (c - '0');\n                c = readByte();\n            }\n            return val * sign;\n        }\n    }\n}\n",
+      "Python3": "import sys\n\ndef solve():\n    data = sys.stdin.buffer.read().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        n = int(next(it)); m = int(next(it))\n        edges = [(int(next(it)), int(next(it))) for _ in range(m)]\n        used = [False] * n\n        ans = []\n        for i in range(m-1, -1, -1):\n            u, v = edges[i]\n            if not used[u] and not used[v]:\n                used[u] = used[v] = True\n                ans.append(i)\n        ans.sort()\n        out_lines.append(' '.join(map(str, ans)))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst data = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/).map(Number);\nlet idx = 0;\nconst T = data[idx++];\nlet outputs = [];\nfor (let t = 0; t < T; t++) {\n  const n = data[idx++];\n  const m = data[idx++];\n  const edges = new Array(m);\n  for (let i = 0; i < m; i++) {\n    const u = data[idx++];\n    const v = data[idx++];\n    edges[i] = [u, v];\n  }\n  const used = new Array(n).fill(false);\n  const ans = [];\n  for (let i = m - 1; i >= 0; i--) {\n    const [u, v] = edges[i];\n    if (!used[u] && !used[v]) {\n      used[u] = used[v] = true;\n      ans.push(i);\n    }\n  }\n  ans.sort((a, b) => a - b);\n  outputs.push(ans.join(' '));\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  }
+}

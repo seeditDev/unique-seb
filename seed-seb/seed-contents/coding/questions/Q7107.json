@@ -1,0 +1,134 @@
+{
+  "questionId": "Q7107",
+  "title": "Longest Palindrome",
+  "slug": "longest-palindrome",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-03",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Longest Palindromic Substring",
+      "Manacher's Algorithm",
+      "Two‑Pointer"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Strings"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "As we all know, a palindrome is a word that equals its reverse. Here are some examples of palindromes: `malayalam`, `gag`, `appa`, `amma`.\n\nWe consider any sequence consisting of the letters of the English alphabet to be a word. So `axxb`,`abbba` and `bbbccddx` are words for our purpose. And `aaabbaaa`, `abbba` and `bbb` are examples of palindromes.\n\nBy a subword of a word, we mean a contiguous subsequence of the word. For example the subwords of the word abbba are `a`, `b`, `ab`, `bb`, `ba`, `abb`, `bbb`, `bba`, `abbb`, `bbba` and `abbba`.\n\nIn this task you will given a word and you must find the longest subword of this word that is also a palindrome.\n\nFor example if the given word is `abbba` then the answer is `abbba`. If the given word is `abcbcabbacba` then the answer is `bcabbacb`.\n\nInput:The first line of the input contains a single integer NNN indicating the length of the word. The following line contains a single word of length NNN, made up of the letters `a`,`b`,..., `z`.\n\nOutput:The first line of the output must contain a single integer indicating the length of the longest subword of the given word that is a palindrome. The second line must contain a subword that is a palindrome and which of maximum length. If there is more than one subword palindrome of maximum length, it suffices to print out any one.",
+    "constraints": [
+      "1 ≤ T ≤ 10",
+      "1 ≤ N ≤ 50000",
+      "The word consists only of lowercase English letters."
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, the first line contains an integer N (1 ≤ N ≤ 50000) – the length of the word. The second line contains a word of exactly N lowercase letters (a‑z).",
+    "outputFormat": "For each test case output two lines. The first line contains the length of the longest palindromic subword. The second line contains one such subword (any one if several exist).",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n5\nabbba",
+        "output": "5\nabbba",
+        "explanation": "The whole word \"abbba\" is a palindrome, so the longest palindromic subword has length 5."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\\n12\\nabcbcabbacba",
+        "output": "8\nbcabbacb",
+        "explanation": "The substring from position 3 to 10 (0‑based) is \"bcabbacb\", which reads the same backwards and is the longest possible."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each test case we apply Manacher's algorithm, which finds the longest palindromic substring in linear time. The algorithm builds two auxiliary arrays – one for odd length centers and one for even length centers – while maintaining the rightmost reached palindrome. While scanning the string we update the current palindrome radius using previously computed values and try to expand further. The maximum radius gives the longest palindrome; its start index is computed from the centre and radius. The overall complexity per test case is O(N) time and O(N) additional memory.",
+    "timeComplexity": "O(N) per test case, where N is the length of the word.",
+    "spaceComplexity": "O(N) per test case for the auxiliary radius arrays.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n\nvoid solveCase() {\n    int N; char s[50005];\n    if (scanf(\"%d\", &N)!=1) return;\n    scanf(\"%s\", s);\n    int n = N;\n    int d1[50005]; // odd\n    int l=0, r=-1;\n    for (int i=0;i<n;i++){\n        int k = (i>r) ? 1 : (d1[l+r-i] < r-i+1 ? d1[l+r-i] : r-i+1);\n        while (i-k>=0 && i+k<n && s[i-k]==s[i+k]) k++;\n        d1[i]=k;\n        if (i+k-1>r){ l=i-k+1; r=i+k-1; }\n    }\n    int d2[50005]; // even\n    l=0; r=-1;\n    for (int i=0;i<n;i++){\n        int k = (i>r) ? 0 : (d2[l+r-i+1] < r-i+1 ? d2[l+r-i+1] : r-i+1);\n        while (i-k-1>=0 && i+k<n && s[i-k-1]==s[i+k]) k++;\n        d2[i]=k;\n        if (i+k-1>r){ l=i-k; r=i+k-1; }\n    }\n    int bestLen=0, bestStart=0;\n    for (int i=0;i<n;i++){\n        int len = 2*d1[i]-1;\n        if (len>bestLen){ bestLen=len; bestStart=i-d1[i]+1; }\n        len = 2*d2[i];\n        if (len>bestLen){ bestLen=len; bestStart=i-d2[i]; }\n    }\n    printf(\"%d\\n\", bestLen);\n    for (int i=0;i<bestLen;i++) putchar(s[bestStart+i]);\n    putchar('\\n');\n}\n\nint main(){\n    int T; if (scanf(\"%d\", &T)!=1) return 0;\n    while (T--) solveCase();\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\npair<int,int> longestPal(const string &s){\n    int n=s.size();\n    vector<int> d1(n), d2(n);\n    int l=0,r=-1;\n    for(int i=0;i<n;i++){\n        int k = (i>r)?1:min(d1[l+r-i], r-i+1);\n        while(i-k>=0 && i+k<n && s[i-k]==s[i+k]) ++k;\n        d1[i]=k;\n        if(i+k-1>r){ l=i-k+1; r=i+k-1; }\n    }\n    l=0; r=-1;\n    for(int i=0;i<n;i++){\n        int k = (i>r)?0:min(d2[l+r-i+1], r-i+1);\n        while(i-k-1>=0 && i+k<n && s[i-k-1]==s[i+k]) ++k;\n        d2[i]=k;\n        if(i+k-1>r){ l=i-k; r=i+k-1; }\n    }\n    int bestLen=0,bestStart=0;\n    for(int i=0;i<n;i++){\n        int len=2*d1[i]-1;\n        if(len>bestLen){ bestLen=len; bestStart=i-d1[i]+1; }\n        len=2*d2[i];\n        if(len>bestLen){ bestLen=len; bestStart=i-d2[i]; }\n    }\n    return {bestStart,bestLen};\n}\n\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N; string s; cin>>N>>s;\n        auto res=longestPal(s);\n        cout<<res.second<<\"\\n\"<<s.substr(res.first,res.second)<<\"\\n\";\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    private static int[] d1, d2;\n    private static int[] longestPal(String s){\n        int n = s.length();\n        d1 = new int[n];\n        d2 = new int[n];\n        int l=0, r=-1;\n        for(int i=0;i<n;i++){\n            int k = (i>r) ? 1 : Math.min(d1[l+r-i], r-i+1);\n            while(i-k>=0 && i+k<n && s.charAt(i-k)==s.charAt(i+k)) k++;\n            d1[i]=k;\n            if(i+k-1>r){ l=i-k+1; r=i+k-1; }\n        }\n        l=0; r=-1;\n        for(int i=0;i<n;i++){\n            int k = (i>r) ? 0 : Math.min(d2[l+r-i+1], r-i+1);\n            while(i-k-1>=0 && i+k<n && s.charAt(i-k-1)==s.charAt(i+k)) k++;\n            d2[i]=k;\n            if(i+k-1>r){ l=i-k; r=i+k-1; }\n        }\n        int bestLen=0, bestStart=0;\n        for(int i=0;i<n;i++){\n            int len = 2*d1[i]-1;\n            if(len>bestLen){ bestLen=len; bestStart=i-d1[i]+1; }\n            len = 2*d2[i];\n            if(len>bestLen){ bestLen=len; bestStart=i-d2[i]; }\n        }\n        return new int[]{bestStart,bestLen};\n    }\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st = new StringTokenizer(br.readLine());\n        int T = Integer.parseInt(st.nextToken());\n        StringBuilder out = new StringBuilder();\n        for(int tc=0; tc<T; tc++){\n            int N = Integer.parseInt(br.readLine().trim());\n            String s = br.readLine().trim();\n            int[] res = longestPal(s);\n            out.append(res[1]).append('\\n');\n            out.append(s.substring(res[0], res[0]+res[1])).append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef manacher(s: str):\n    n = len(s)\n    d1 = [0]*n\n    l = 0\n    r = -1\n    for i in range(n):\n        k = 1 if i>r else min(d1[l+r-i], r-i+1)\n        while i-k >=0 and i+k < n and s[i-k]==s[i+k]:\n            k += 1\n        d1[i] = k\n        if i+k-1 > r:\n            l = i-k+1\n            r = i+k-1\n    d2 = [0]*n\n    l = 0\n    r = -1\n    for i in range(n):\n        k = 0 if i>r else min(d2[l+r-i+1], r-i+1)\n        while i-k-1 >=0 and i+k < n and s[i-k-1]==s[i+k]:\n            k += 1\n        d2[i] = k\n        if i+k-1 > r:\n            l = i-k\n            r = i+k-1\n    best_len = 0\n    best_start = 0\n    for i in range(n):\n        cur = 2*d1[i]-1\n        if cur > best_len:\n            best_len = cur\n            best_start = i-d1[i]+1\n        cur = 2*d2[i]\n        if cur > best_len:\n            best_len = cur\n            best_start = i-d2[i]\n    return best_start, best_len\n\ndef main():\n    data = sys.stdin.read().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it))\n        s = next(it)\n        start, length = manacher(s)\n        out_lines.append(str(length))\n        out_lines.append(s[start:start+length])\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    main()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet output = [];\nfunction manacher(s){\n  const n = s.length;\n  const d1 = new Array(n).fill(0);\n  let l=0, r=-1;\n  for(let i=0;i<n;i++){\n    let k = (i>r)?1:Math.min(d1[l+r-i], r-i+1);\n    while(i-k>=0 && i+k<n && s[i-k]===s[i+k]) k++;\n    d1[i]=k;\n    if(i+k-1>r){ l=i-k+1; r=i+k-1; }\n  }\n  const d2 = new Array(n).fill(0);\n  l=0; r=-1;\n  for(let i=0;i<n;i++){\n    let k = (i>r)?0:Math.min(d2[l+r-i+1], r-i+1);\n    while(i-k-1>=0 && i+k<n && s[i-k-1]===s[i+k]) k++;\n    d2[i]=k;\n    if(i+k-1>r){ l=i-k; r=i+k-1; }\n  }\n  let bestLen=0, bestStart=0;\n  for(let i=0;i<n;i++){\n    let len = 2*d1[i]-1;\n    if(len>bestLen){ bestLen=len; bestStart=i-d1[i]+1; }\n    len = 2*d2[i];\n    if(len>bestLen){ bestLen=len; bestStart=i-d2[i]; }\n  }\n  return {start:bestStart, len:bestLen};\n}\nfor(let t=0;t<T;t++){\n  const N = Number(input[idx++]);\n  const s = input[idx++];\n  const res = manacher(s);\n  output.push(String(res.len));\n  output.push(s.slice(res.start, res.start+res.len));\n}\nconsole.log(output.join('\\n'));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

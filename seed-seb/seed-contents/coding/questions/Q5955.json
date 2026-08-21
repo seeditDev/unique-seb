@@ -1,0 +1,138 @@
+{
+  "questionId": "Q5955",
+  "title": "Steady tables",
+  "slug": "steady-tables",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Memoization",
+      "Modular Arithmetic"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Let's consider a rectangular table **R** consisting of **N** rows and **M** columns. Rows are enumerated from **1**  to **N** from top to bottom. Columns are enumerated from 1 to **M** from left to right. Each element of **R** is a non-negative integer. **R** is called **steady** if the sum of elements in the **ith** row is not less then the sum of elements in the **(i-1)th** row for each **i** where **2 ≤ i ≤ N** and the sum of elements in the **Nth** row is less than or equal to **M**. Your task is to find the number of different steady tables of size **N x M** modulo **1 000 000 000**.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N, M <= 2000"
+    ],
+    "inputFormat": "The first line contains T, the number of test cases. Each test case contains two space-separated integers N and M, denoting the number of rows and columns respectively.",
+    "outputFormat": "For each test case, print the number of different steady tables of size N x M modulo 1,000,000,000.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n1 1\n2 2\n2 3",
+        "output": "2\n25\n273",
+        "explanation": "Explanation: Test case 1: There are only 2 such grids possible: 0 and 1. Test case 2: There are 25 such grids possible. Test case 3: There are 273 such grids possible."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n3 4",
+        "output": "3432",
+        "explanation": "Explanation: There are 3432 such grids possible."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n1 10",
+        "output": "11",
+        "explanation": "Explanation: There are 11 such grids possible: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n2000 2000",
+        "expectedOutput": "1000000000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "1\n1 10",
+        "expectedOutput": "11",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "1\n2 3",
+        "expectedOutput": "273",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "3\n1 1\n2 2\n2 3",
+        "expectedOutput": "2\n25\n273",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved using dynamic programming. We create a 2D array dp where dp[i][j] represents the number of steady tables of size i x j. We iterate over each cell in the table and for each cell, we calculate the number of steady tables by considering all possible sums of the previous row that are less than or equal to the current sum. We use modular arithmetic to avoid overflow.",
+    "timeComplexity": "O(T * N * M^2) per test case, O(T * N * M^2) total.",
+    "spaceComplexity": "O(N * M) — the dominant structure is the 2D dp array.",
+    "code": {
+      "C": "#include <stdio.h>\n#define MOD 1000000000\nint dp[2001][2001];\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int N, M;\n        scanf(\"%d %d\", &N, &M);\n        for (int i = 0; i <= N; i++) {\n            for (int j = 0; j <= M; j++) {\n                dp[i][j] = 0;\n            }\n        }\n        dp[0][0] = 1;\n        for (int i = 1; i <= N; i++) {\n            for (int j = 0; j <= M; j++) {\n                for (int k = 0; k <= j; k++) {\n                    dp[i][j] = (dp[i][j] + dp[i - 1][k]) % MOD;\n                }\n            }\n        }\n        int ans = 0;\n        for (int j = 0; j <= M; j++) {\n            ans = (ans + dp[N][j]) % MOD;\n        }\n        printf(\"%d\\n\", ans);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#define MOD 1000000000\nusing namespace std;\nint dp[2001][2001];\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(NULL);\n    int T;\n    cin >> T;\n    while (T--) {\n        int N, M;\n        cin >> N >> M;\n        for (int i = 0; i <= N; i++) {\n            for (int j = 0; j <= M; j++) {\n                dp[i][j] = 0;\n            }\n        }\n        dp[0][0] = 1;\n        for (int i = 1; i <= N; i++) {\n            for (int j = 0; j <= M; j++) {\n                for (int k = 0; k <= j; k++) {\n                    dp[i][j] = (dp[i][j] + dp[i - 1][k]) % MOD;\n                }\n            }\n        }\n        int ans = 0;\n        for (int j = 0; j <= M; j++) {\n            ans = (ans + dp[N][j]) % MOD;\n        }\n        cout << ans << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    static final int MOD = 1000000000;\n    static int[][] dp = new int[2001][2001];\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n        while (T-- > 0) {\n            int N = sc.nextInt();\n            int M = sc.nextInt();\n            for (int i = 0; i <= N; i++) {\n                for (int j = 0; j <= M; j++) {\n                    dp[i][j] = 0;\n                }\n            }\n            dp[0][0] = 1;\n            for (int i = 1; i <= N; i++) {\n                for (int j = 0; j <= M; j++) {\n                    for (int k = 0; k <= j; k++) {\n                        dp[i][j] = (dp[i][j] + dp[i - 1][k]) % MOD;\n                    }\n                }\n            }\n            int ans = 0;\n            for (int j = 0; j <= M; j++) {\n                ans = (ans + dp[N][j]) % MOD;\n            }\n            System.out.println(ans);\n        }\n    }\n}",
+      "Python3": "MOD = 1000000000\nimport sys\ninput = sys.stdin.readline\ndp = [[0] * 2001 for _ in range(2001)]\nT = int(input())\nfor _ in range(T):\n    N, M = map(int, input().split())\n    for i in range(N + 1):\n        for j in range(M + 1):\n            dp[i][j] = 0\n    dp[0][0] = 1\n    for i in range(1, N + 1):\n        for j in range(M + 1):\n            for k in range(j + 1):\n                dp[i][j] = (dp[i][j] + dp[i - 1][k]) % MOD\n    ans = 0\n    for j in range(M + 1):\n        ans = (ans + dp[N][j]) % MOD\n    print(ans)",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst MOD = 1000000000;\nconst dp = Array(2001).fill(0).map(() => Array(2001).fill(0));\nconst T = parseInt(input[idx++]);\nfor (let i = 0; i < T; i++) {\n    const [N, M] = input[idx++].split(' ').map(Number);\n    for (let j = 0; j <= N; j++) {\n        for (let k = 0; k <= M; k++) {\n            dp[j][k] = 0;\n        }\n    }\n    dp[0][0] = 1;\n    for (let j = 1; j <= N; j++) {\n        for (let k = 0; k <= M; k++) {\n            for (let l = 0; l <= k; l++) {\n                dp[j][k] = (dp[j][k] + dp[j - 1][l]) % MOD;\n            }\n        }\n    }\n    let ans = 0;\n    for (let k = 0; k <= M; k++) {\n        ans = (ans + dp[N][k]) % MOD;\n    }\n    console.log(ans);\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

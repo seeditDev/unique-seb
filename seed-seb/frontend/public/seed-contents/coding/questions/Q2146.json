@@ -1,0 +1,428 @@
+{
+  "questionId": "Q2146",
+  "title": "K Highest Ranked Items Within a Price Range Problem",
+  "slug": "k-highest-ranked-items-within-a-price-range",
+  "version": 1,
+  "createdAt": "2026-07-15",
+  "updatedAt": "2026-07-15",
+  "metadata": {
+    "category": "Arrays",
+    "difficulty": "Medium",
+    "isPremium": false,
+    "tags": [
+      "array",
+      "breadth-first-search",
+      "sorting",
+      "heap-priority-queue",
+      "matrix"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "array",
+      "breadth-first-search",
+      "sorting",
+      "heap-priority-queue",
+      "matrix"
+    ],
+    "QBCategory": "LCD"
+  },
+  "content": {
+    "problemStatement": "You receive a **0-indexed** 2D integer array `grid` of size `m x n` that represents a map of the items in a shop. The integers in the grid represent the following:\n\n* `0` represents a wall that you cannot pass through.\n* `1` represents an empty cell that you can freely move to and from.\n* All other positive integers represent the price of an item in that cell. You may also freely move to and from these item cells.\n\nIt takes `1` step to travel between adjacent grid cells.\n\nYou are also given integer arrays `pricing` and `start` where `pricing = [low, high]` and `start = [row, col]` indicates that you start at the position `(row, col)` and are interested only in items with a price in the range of `[low, high]` (**inclusive**). You are further given an integer `k`.\n\nYou are interested in the **positions** of the `k` **highest-ranked** items whose prices are **within** the given price range. The rank is determined by the **first** of these criteria that is different:\n\n1. Distance, defined as the length of the shortest path from the `start` (**shorter** distance has a higher rank).\n2. Price (**lower** price has a higher rank, but it must be **in the price range**).\n3. The row number (**smaller** row number has a higher rank).\n4. The column number (**smaller** column number has a higher rank).\n\nOutput *the* `k` *highest-ranked items within the price range **sorted** by their rank (highest to lowest)*. If there are fewer than `k` reachable items within the price range, output ***all** of them*.\n\n**Example 1:**\n\n![](https://assets.leetcode.com/uploads/2021/12/16/example1drawio.png)\n\n```\nInput: grid = [[1,2,0,1],[1,3,0,1],[0,2,5,1]], pricing = [2,5], start = [0,0], k = 3\nOutput: [[0,1],[1,1],[2,1]]\nExplanation: You start at (0,0).\nWith a price range of [2,5], we can take items from (0,1), (1,1), (2,1) and (2,2).\nThe ranks of these items are:\n- (0,1) with distance 1\n- (1,1) with distance 2\n- (2,1) with distance 3\n- (2,2) with distance 4\nThus, the 3 highest ranked items in the price range are (0,1), (1,1), and (2,1).\n```\n\n**Example 2:**\n\n![](https://assets.leetcode.com/uploads/2021/12/16/example2drawio1.png)\n\n```\nInput: grid = [[1,2,0,1],[1,3,3,1],[0,2,5,1]], pricing = [2,3], start = [2,3], k = 2\nOutput: [[2,1],[1,2]]\nExplanation: You start at (2,3).\nWith a price range of [2,3], we can take items from (0,1), (1,1), (1,2) and (2,1).\nThe ranks of these items are:\n- (2,1) with distance 2, price 2\n- (1,2) with distance 2, price 3\n- (1,1) with distance 3\n- (0,1) with distance 4\nThus, the 2 highest ranked items in the price range are (2,1) and (1,2).\n```\n\n**Example 3:**\n\n![](https://assets.leetcode.com/uploads/2021/12/30/example3.png)\n\n```\nInput: grid = [[1,1,1],[0,0,1],[2,3,4]], pricing = [2,3], start = [0,0], k = 3\nOutput: [[2,1],[2,0]]\nExplanation: You start at (0,0).\nWith a price range of [2,3], we can take items from (2,0) and (2,1). \nThe ranks of these items are: \n- (2,1) with distance 5\n- (2,0) with distance 6\nThus, the 2 highest ranked items in the price range are (2,1) and (2,0). \nNote that k = 3 but there are only 2 reachable items within the price range.\n```\n\n**Constraints:**\n\n* `m == grid.length`\n* `n == grid[i].length`\n* `1 <= m, n <= 105`\n* `1 <= m * n <= 105`\n* `0 <= grid[i][j] <= 105`\n* `pricing.length == 2`\n* `2 <= low <= high <= 105`\n* `start.length == 2`\n* `0 <= row <= m - 1`\n* `0 <= col <= n - 1`\n* `grid[row][col] > 0`\n* `1 <= k <= m * n`",
+    "constraints": [
+      "None"
+    ],
+    "inputFormat": "Single line: JSON array of all arguments, e.g. [arg1, arg2, ...]",
+    "outputFormat": "Single line: JSON-serialised return value",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "type": "reg",
+        "input": "grid = [[1,2,0,1],[1,3,0,1],[0,2,5,1]], pricing = [2,5], start = [0,0], k = 3",
+        "output": "[[0,1],[1,1],[2,1]]",
+        "explanation": ""
+      },
+      {
+        "id": "sample_2",
+        "type": "reg",
+        "input": "grid = [[1,2,0,1],[1,3,3,1],[0,2,5,1]], pricing = [2,3], start = [2,3], k = 2",
+        "output": "[[2,1],[1,2]]",
+        "explanation": ""
+      },
+      {
+        "id": "sample_3",
+        "type": "reg",
+        "input": "grid = [[1,1,1],[0,0,1],[2,3,4]], pricing = [2,3], start = [0,0], k = 3",
+        "output": "[[2,1],[2,0]]",
+        "explanation": ""
+      }
+    ],
+    "notes": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_01",
+        "type": "reg",
+        "label": "",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 3
+      },
+      {
+        "id": "tc_02",
+        "type": "reg",
+        "label": "",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 3
+      },
+      {
+        "id": "tc_03",
+        "type": "reg",
+        "label": "",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 3
+      },
+      {
+        "id": "tc_04",
+        "type": "reg",
+        "label": "",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 3
+      },
+      {
+        "id": "tc_05",
+        "type": "reg",
+        "label": "",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 3
+      },
+      {
+        "id": "tc_06",
+        "type": "reg",
+        "label": "",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 3
+      },
+      {
+        "id": "tc_07",
+        "type": "reg",
+        "label": "",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 3
+      },
+      {
+        "id": "tc_08",
+        "type": "reg",
+        "label": "",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 3
+      },
+      {
+        "id": "tc_09",
+        "type": "reg",
+        "label": "",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 3
+      },
+      {
+        "id": "tc_10",
+        "type": "reg",
+        "label": "",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 3
+      },
+      {
+        "id": "tc_11",
+        "type": "reg",
+        "label": "",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 3
+      },
+      {
+        "id": "tc_12",
+        "type": "reg",
+        "label": "",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 3
+      },
+      {
+        "id": "tc_13",
+        "type": "reg",
+        "label": "",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 3
+      },
+      {
+        "id": "tc_14",
+        "type": "reg",
+        "label": "",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 3
+      },
+      {
+        "id": "tc_15",
+        "type": "reg",
+        "label": "",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 3
+      },
+      {
+        "id": "tc_16",
+        "type": "reg",
+        "label": "",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 3
+      },
+      {
+        "id": "tc_17",
+        "type": "reg",
+        "label": "",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 3
+      },
+      {
+        "id": "tc_18",
+        "type": "reg",
+        "label": "",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 3
+      },
+      {
+        "id": "tc_19",
+        "type": "reg",
+        "label": "",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 3
+      },
+      {
+        "id": "tc_20",
+        "type": "reg",
+        "label": "",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 3
+      },
+      {
+        "id": "tc_21",
+        "type": "reg",
+        "label": "",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 3
+      },
+      {
+        "id": "tc_22",
+        "type": "reg",
+        "label": "",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 3
+      },
+      {
+        "id": "tc_23",
+        "type": "reg",
+        "label": "",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 3
+      },
+      {
+        "id": "tc_24",
+        "type": "reg",
+        "label": "",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 3
+      },
+      {
+        "id": "tc_25",
+        "type": "reg",
+        "label": "",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 3
+      },
+      {
+        "id": "tc_26",
+        "type": "reg",
+        "label": "",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 3
+      },
+      {
+        "id": "tc_27",
+        "type": "reg",
+        "label": "",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 3
+      },
+      {
+        "id": "tc_28",
+        "type": "reg",
+        "label": "",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 3
+      },
+      {
+        "id": "tc_29",
+        "type": "reg",
+        "label": "",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 3
+      },
+      {
+        "id": "tc_30",
+        "type": "reg",
+        "label": "",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 3
+      }
+    ],
+    "totalTestCases": 30,
+    "totalWeight": 100
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3,
+      3
+    ],
+    "maxScore": 100
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ],
+    "notes": []
+  },
+  "solution": {
+    "code": {
+      "Python3": "# Time:  O(m * n + klogk)\n# Space: O(m * n)\n\nimport random\n\n\n# bfs, quick select\nclass Solution(object):\n    def highestRankedKItems(self, grid, pricing, start, k):\n        \"\"\"\n        :type grid: List[List[int]]\n        :type pricing: List[int]\n        :type start: List[int]\n        :type k: int\n        :rtype: List[List[int]]\n        \"\"\"\n        directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]\n        def nth_element(nums, n, left=0, compare=lambda a, b: a < b):\n            def tri_partition(nums, left, right, target, compare):\n                mid = left\n                while mid <= right:\n                    if nums[mid] == target:\n                        mid += 1\n                    elif compare(nums[mid], target):\n                        nums[left], nums[mid] = nums[mid], nums[left]\n                        left += 1\n                        mid += 1\n                    else:\n                        nums[mid], nums[right] = nums[right], nums[mid]\n                        right -= 1\n                return left, right\n\n            right = len(nums)-1\n            while left <= right:\n                pivot_idx = random.randint(left, right)\n                pivot_left, pivot_right = tri_partition(nums, left, right, nums[pivot_idx], compare)\n                if pivot_left <= n <= pivot_right:\n                    return\n                elif pivot_left > n:\n                    right = pivot_left-1\n                else:  # pivot_right < n.\n                    left = pivot_right+1\n\n        def get_val(x):\n            return (lookup[x[0]][x[1]], grid[x[0]][x[1]], x[0], x[1])\n    \n        result = []\n        q = [start]\n        lookup = [[-1]*len(grid[0]) for _ in range(len(grid))]\n        d = lookup[start[0]][start[1]] = 0\n        while q:\n            if len(result) >= k:\n                if len(result) > k:\n                    nth_element(result, k-1, compare=lambda a, b: get_val(a) < get_val(b))\n                    result = result[:k]\n                break\n            new_q = []\n            for r, c in q:\n                if pricing[0] <= grid[r][c] <= pricing[1]:\n                    result.append([r, c])\n                for dr, dc in directions:\n                    nr, nc = r+dr, c+dc\n                    if not (0 <= nr < len(grid) and 0 <= nc < len(grid[0]) and grid[nr][nc] and lookup[nr][nc] == -1):\n                        continue\n                    lookup[nr][nc] = d+1\n                    new_q.append((nr, nc))\n            q = new_q\n            d += 1\n        result.sort(key=lambda x: get_val(x))\n        return result"
+    },
+    "approach": "",
+    "timeComplexity": "",
+    "spaceComplexity": "",
+    "notes": [],
+    "editorial": {
+      "bruteForce": {
+        "description": "",
+        "complexity": ""
+      },
+      "better": {
+        "description": "",
+        "complexity": ""
+      },
+      "optimal": {
+        "description": "",
+        "complexity": ""
+      }
+    }
+  },
+  "hints": [],
+  "followUps": [],
+  "learningObjectives": [],
+  "similarProblems": [],
+  "acceptanceRate": null,
+  "estimatedSolveTime": "",
+  "recommendedAfter": [],
+  "boilerPlates": {
+    "C++": "class Solution {\npublic:\n    vector<vector<int>> highestRankedKItems(vector<vector<int>>& grid, vector<int>& pricing, vector<int>& start, int k) {\n        \n    }\n};",
+    "Java": "class Solution {\n    public List<List<Integer>> highestRankedKItems(int[][] grid, int[] pricing, int[] start, int k) {\n        \n    }\n}",
+    "Python3": "# Time:  O(m * n + klogk)\n# Space: O(m * n)\n\nimport random\n\n\n# bfs, quick select\nclass Solution(object):\n    def highestRankedKItems(self, grid, pricing, start, k):\n        \"\"\"\n        :type grid: List[List[int]]\n        :type pricing: List[int]\n        :type start: List[int]\n        :type k: int\n        :rtype: List[List[int]]\n        \"\"\"\n        directions = [(0, 1), (1, 0), (0, -1), (-1, 0)]\n        def nth_element(nums, n, left=0, compare=lambda a, b: a < b):\n            def tri_partition(nums, left, right, target, compare):\n                mid = left\n                while mid <= right:\n                    if nums[mid] == target:\n                        mid += 1\n                    elif compare(nums[mid], target):\n                        nums[left], nums[mid] = nums[mid], nums[left]\n                        left += 1\n                        mid += 1\n                    else:\n                        nums[mid], nums[right] = nums[right], nums[mid]\n                        right -= 1\n                return left, right\n\n            right = len(nums)-1\n            while left <= right:\n                pivot_idx = random.randint(left, right)\n                pivot_left, pivot_right = tri_partition(nums, left, right, nums[pivot_idx], compare)\n                if pivot_left <= n <= pivot_right:\n                    return\n                elif pivot_left > n:\n                    right = pivot_left-1\n                else:  # pivot_right < n.\n                    left = pivot_right+1\n\n        def get_val(x):\n            return (lookup[x[0]][x[1]], grid[x[0]][x[1]], x[0], x[1])\n    \n        result = []\n        q = [start]\n        lookup = [[-1]*len(grid[0]) for _ in range(len(grid))]\n        d = lookup[start[0]][start[1]] = 0\n        while q:\n            if len(result) >= k:\n                if len(result) > k:\n                    nth_element(result, k-1, compare=lambda a, b: get_val(a) < get_val(b))\n                    result = result[:k]\n                break\n            new_q = []\n            for r, c in q:\n                if pricing[0] <= grid[r][c] <= pricing[1]:\n                    result.append([r, c])\n                for dr, dc in directions:\n                    nr, nc = r+dr, c+dc\n                    if not (0 <= nr < len(grid) and 0 <= nc < len(grid[0]) and grid[nr][nc] and lookup[nr][nc] == -1):\n                        continue\n                    lookup[nr][nc] = d+1\n                    new_q.append((nr, nc))\n            q = new_q\n            d += 1\n        result.sort(key=lambda x: get_val(x))\n        return result",
+    "Python": "class Solution(object):\n    def highestRankedKItems(self, grid, pricing, start, k):\n        \"\"\"\n        :type grid: List[List[int]]\n        :type pricing: List[int]\n        :type start: List[int]\n        :type k: int\n        :rtype: List[List[int]]\n        \"\"\"\n        ",
+    "JavaScript": "/**\n * @param {number[][]} grid\n * @param {number[]} pricing\n * @param {number[]} start\n * @param {number} k\n * @return {number[][]}\n */\nvar highestRankedKItems = function(grid, pricing, start, k) {\n    \n};",
+    "TypeScript": "function highestRankedKItems(grid: number[][], pricing: number[], start: number[], k: number): number[][] {\n    \n};",
+    "C#": "public class Solution {\n    public IList<IList<int>> HighestRankedKItems(int[][] grid, int[] pricing, int[] start, int k) {\n        \n    }\n}",
+    "C": "/**\n * Return an array of arrays of size *returnSize.\n * The sizes of the arrays are returned as *returnColumnSizes array.\n * Note: Both returned array and *columnSizes array must be malloced, assume caller calls free().\n */\nint** highestRankedKItems(int** grid, int gridSize, int* gridColSize, int* pricing, int pricingSize, int* start, int startSize, int k, int* returnSize, int** returnColumnSizes) {\n    \n}",
+    "Go": "func highestRankedKItems(grid [][]int, pricing []int, start []int, k int) [][]int {\n    \n}",
+    "Kotlin": "class Solution {\n    fun highestRankedKItems(grid: Array<IntArray>, pricing: IntArray, start: IntArray, k: Int): List<List<Int>> {\n        \n    }\n}",
+    "Swift": "class Solution {\n    func highestRankedKItems(_ grid: [[Int]], _ pricing: [Int], _ start: [Int], _ k: Int) -> [[Int]] {\n        \n    }\n}",
+    "Rust": "impl Solution {\n    pub fn highest_ranked_k_items(grid: Vec<Vec<i32>>, pricing: Vec<i32>, start: Vec<i32>, k: i32) -> Vec<Vec<i32>> {\n        \n    }\n}",
+    "Ruby": "# @param {Integer[][]} grid\n# @param {Integer[]} pricing\n# @param {Integer[]} start\n# @param {Integer} k\n# @return {Integer[][]}\ndef highest_ranked_k_items(grid, pricing, start, k)\n    \nend",
+    "PHP": "class Solution {\n\n    /**\n     * @param Integer[][] $grid\n     * @param Integer[] $pricing\n     * @param Integer[] $start\n     * @param Integer $k\n     * @return Integer[][]\n     */\n    function highestRankedKItems($grid, $pricing, $start, $k) {\n        \n    }\n}",
+    "Dart": "class Solution {\n  List<List<int>> highestRankedKItems(List<List<int>> grid, List<int> pricing, List<int> start, int k) {\n    \n  }\n}",
+    "Scala": "object Solution {\n    def highestRankedKItems(grid: Array[Array[Int]], pricing: Array[Int], start: Array[Int], k: Int): List[List[Int]] = {\n        \n    }\n}",
+    "Elixir": "defmodule Solution do\n  @spec highest_ranked_k_items(grid :: [[integer]], pricing :: [integer], start :: [integer], k :: integer) :: [[integer]]\n  def highest_ranked_k_items(grid, pricing, start, k) do\n    \n  end\nend",
+    "Erlang": "-spec highest_ranked_k_items(Grid :: [[integer()]], Pricing :: [integer()], Start :: [integer()], K :: integer()) -> [[integer()]].\nhighest_ranked_k_items(Grid, Pricing, Start, K) ->\n  .",
+    "Racket": "(define/contract (highest-ranked-k-items grid pricing start k)\n  (-> (listof (listof exact-integer?)) (listof exact-integer?) (listof exact-integer?) exact-integer? (listof (listof exact-integer?)))\n  )"
+  },
+  "_internal": {
+    "methodName": "highestRankedKItems",
+    "params": [
+      {
+        "name": "grid",
+        "type": "integer[][]"
+      },
+      {
+        "type": "integer[]",
+        "name": "pricing"
+      },
+      {
+        "type": "integer[]",
+        "name": "start"
+      },
+      {
+        "type": "integer",
+        "name": "k"
+      }
+    ]
+  },
+  "verified": false
+}

@@ -1,0 +1,126 @@
+{
+  "questionId": "Q6676",
+  "title": "Tree Expectancy",
+  "slug": "tree-expectancy",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Combinatorics",
+      "Modular Arithmetic"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Combinatorics & Probability"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Consider an ordered tree with **N** vertices. Your task is to calculate the expected value of the number of vertices having exactly one child in such tree assuming that it is uniformly chosen from the set of all ordered trees of size **N**.",
+    "constraints": [
+      "1 <= T <= 10^5",
+      "1 <= N <= 10^18"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case consists of a single integer N.",
+    "outputFormat": "For each test case, output two integers, which are explained below. Consider the answer to be a proper fraction P/Q, where gcd(P, Q) = 1. Then your task is to output two integers PQ-1 mod 10^9+7 and PQ-1 mod 10^9+9.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4\n1\n2\n3\n4",
+        "output": "0 0\n1 1\n1 1\n400000004 200000003",
+        "explanation": "Explanation: You can see every possible tree with 1, 2, 3 or 4 vertices on the diagram below. From this you can see that answers for these inputs are 0/1 = 0, 1/1 = 1, (2+0)/2 = 1 and (3+1+1+1+0)/5 = 6/5 correspondingly."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1",
+        "expectedOutput": "0 0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n1000000000000000000",
+        "expectedOutput": "499999999999999997 249999999999999999",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n2",
+        "expectedOutput": "1 1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n10",
+        "expectedOutput": "3628800 3628800",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n20",
+        "expectedOutput": "2432902008176640000 1216451004088320000",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use the concept of Catalan numbers, which count the number of binary trees with n nodes. We can then use the formula for the expected value of the number of vertices with exactly one child in a random binary tree. The formula involves calculating the number of ways to choose a vertex with one child and the total number of possible trees.",
+    "timeComplexity": "O(T * log(N)) - The time complexity is dominated by the calculation of the modular inverse and the exponentiation.",
+    "spaceComplexity": "O(1) - The space complexity is constant as we only use a fixed amount of space to store the input and the output.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdint.h>\n\n#define MOD1 1000000007LL\n#define MOD2 1000000009LL\n\nlong long modpow(long long a, long long e, long long mod) {\n    long long res = 1 % mod;\n    a %= mod;\n    if (a < 0) a += mod;\n    while (e > 0) {\n        if (e & 1) res = (__int128)res * a % mod;\n        a = (__int128)a * a % mod;\n        e >>= 1;\n    }\n    return res;\n}\n\nlong long compute_mod(unsigned long long N, long long MOD) {\n    if (N == 1) return 0;\n\n    long long nmod = (long long)(N % MOD);\n    long long nm1 = (long long)((N - 1ULL) % MOD);\n\n    long long num = (__int128)nmod * nm1 % MOD;\n\n    long long twoNminus3 = (2LL * nmod - 3 + MOD) % MOD;\n    long long denom = (2LL * twoNminus3) % MOD;\n\n    long long inv = modpow(denom, MOD - 2, MOD);\n\n    return (long long)((__int128)num * inv % MOD);\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n\n    while (T--) {\n        unsigned long long N;\n        scanf(\"%llu\", &N);\n\n        long long ans1 = compute_mod(N, MOD1);\n        long long ans2 = compute_mod(N, MOD2);\n\n        printf(\"%lld %lld\\n\", ans1, ans2);\n    }\n\n    return 0;\n}",
+      "C++": "#include <iostream>\nusing namespace std;\n\n#define MOD1 1000000007LL\n#define MOD2 1000000009LL\n\nlong long modpow(long long a, long long e, long long mod) {\n    long long res = 1 % mod;\n    a %= mod;\n    if (a < 0) a += mod;\n    while (e > 0) {\n        if (e & 1) res = (__int128)res * a % mod;\n        a = (__int128)a * a % mod;\n        e >>= 1;\n    }\n    return res;\n}\n\nlong long compute_mod(unsigned long long N, long long MOD) {\n    if (N == 1) return 0;\n\n    long long nmod = (long long)(N % MOD);\n    long long nm1 = (long long)((N - 1ULL) % MOD);\n\n    long long num = (__int128)nmod * nm1 % MOD;\n\n    long long twoNminus3 = (2LL * nmod - 3 + MOD) % MOD;\n    long long denom = (2LL * twoNminus3) % MOD;\n\n    long long inv = modpow(denom, MOD - 2, MOD);\n\n    return (long long)((__int128)num * inv % MOD);\n}\n\nint main() {\n    int T;\n    cin >> T;\n\n    while (T--) {\n        unsigned long long N;\n        cin >> N;\n\n        long long ans1 = compute_mod(N, MOD1);\n        long long ans2 = compute_mod(N, MOD2);\n\n        cout << ans1 << \" \" << ans2 << endl;\n    }\n\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\n\npublic class Main {\n    static final long MOD1 = 1000000007L;\n    static final long MOD2 = 1000000009L;\n\n    public static long modpow(long a, long e, long mod) {\n        long res = 1 % mod;\n        a %= mod;\n        if (a < 0) a += mod;\n        while (e > 0) {\n            if (e % 2 == 1) res = (res * a) % mod;\n            a = (a * a) % mod;\n            e >>= 1;\n        }\n        return res;\n    }\n\n    public static long compute_mod(long N, long MOD) {\n        if (N == 1) return 0;\n\n        long nmod = N % MOD;\n        long nm1 = (N - 1) % MOD;\n\n        long num = (nmod * nm1) % MOD;\n\n        long twoNminus3 = (2 * nmod - 3 + MOD) % MOD;\n        long denom = (2 * twoNminus3) % MOD;\n\n        long inv = modpow(denom, MOD - 2, MOD);\n\n        return (num * inv) % MOD;\n    }\n\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int T = scanner.nextInt();\n\n        while (T-- > 0) {\n            long N = scanner.nextLong();\n\n            long ans1 = compute_mod(N, MOD1);\n            long ans2 = compute_mod(N, MOD2);\n\n            System.out.println(ans1 + \" \" + ans2);\n        }\n    }\n}",
+      "Python3": "# COMPLETE, RUNNABLE Python3 code\nimport sys\n\nMOD1 = 1000000007\nMOD2 = 1000000009\n\ndef modpow(a, e, mod):\n    res = 1 % mod\n    a %= mod\n    if a < 0: a += mod\n    while e > 0:\n        if e & 1: res = (res * a) % mod\n        a = (a * a) % mod\n        e >>= 1\n    return res\n\n\ndef compute_mod(N, MOD):\n    if N == 1: return 0\n\n    nmod = N % MOD\n    nm1 = (N - 1) % MOD\n\n    num = (nmod * nm1) % MOD\n\n    twoNminus3 = (2 * nmod - 3 + MOD) % MOD\n    denom = (2 * twoNminus3) % MOD\n\n    inv = modpow(denom, MOD - 2, MOD)\n\n    return (num * inv) % MOD\n\nT = int(sys.stdin.readline())\n\nfor _ in range(T):\n    N = int(sys.stdin.readline())\n\n    ans1 = compute_mod(N, MOD1)\n    ans2 = compute_mod(N, MOD2)\n\n    print(ans1, ans2)",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\n\nconst MOD1 = 1000000007n;\nconst MOD2 = 1000000009n;\n\nfunction modpow(a, e, mod) {\n    let res = 1n % mod;\n    a = a % mod;\n    if (a < 0) a += mod;\n    while (e > 0) {\n        if (e & 1n) res = (res * a) % mod;\n        a = (a * a) % mod;\n        e >>= 1n;\n    }\n    return res;\n}\n\nfunction compute_mod(N, MOD) {\n    if (N === 1n) return 0n;\n\n    let nmod = N % MOD;\n    let nm1 = (N - 1n) % MOD;\n\n    let num = (nmod * nm1) % MOD;\n\n    let twoNminus3 = (2n * nmod - 3n + MOD) % MOD;\n    let denom = (2n * twoNminus3) % MOD;\n\n    let inv = modpow(denom, MOD - 2n, MOD);\n\n    return (num * inv) % MOD;\n}\n\nlet T = parseInt(lines[idx++]);\n\nwhile (T-- > 0) {\n    let N = BigInt(lines[idx++]);\n\n    let ans1 = compute_mod(N, MOD1);\n    let ans2 = compute_mod(N, MOD2);\n\n    console.log(ans1.toString() + ' ' + ans2.toString());\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

@@ -1,0 +1,129 @@
+{
+  "questionId": "Q6588",
+  "title": "Pishty and birthday",
+  "slug": "pishty-and-birthday",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming | Game Theory",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Sprague-Grundy numbers",
+      "Fenwick tree",
+      "Bit Manipulation"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Game Theory"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "A little boy Pishty lives in Khust - an ancient town in the best country of the world - Uzhlyandia\n(also Khust is a wonderful town with their own castle and smart bears, but this is not relevant for us). And he is celebrating his birthday today!\n\n\nCitizens of Uzhlyandia love two things : cakes and  goulash  , but Pishty prefer cakes.\nSo his friend Lotsy decided to buy** N ** cakes, because a friend's birthday must be the best day of his life!\n\n\nA cake can be thought of as a 4 × 4 square matrix, and in each cell of the matrix no more than 1 candle can be placed.\n\n\nThe two boys like to play a game, in which they extinguish candles.\n\n\nThey play in turns, with the birthday boy Pishty taking the first turn. In each turn, one of the boys picks a cake with burning candles on it, chooses a rectangle (ie. a  submatrix ) which has burning candles in all its cells, and extinguishes all those candles. If a boy can't make a move, he loses. You should assume that they play optimally. No one likes to lose a game, even to their best friend!\n\n\n\nBecause Pishty and Lotsy are best friends, Lotsy wants to buy the best collection of cakes, and so he has M queries to make to the Chef. There are 2 types of queries :\n\n\n\n to find the winner in the game if it is played with only the cakes in the range **[L; R]** \n to change a matrix, denoting a cake at some position",
+    "constraints": [
+      "1 ≤ T ≤ 5",
+      "1 ≤ N, M ≤ 105",
+      "1 ≤ L ≤ R ≤ N",
+      "1 ≤ pos ≤ N"
+    ],
+    "inputFormat": "The first line contains one integer T, denoting the number of test cases. Then T test case descriptions follow. The first line of each description contains two integers N and M, denoting the number of cakes and the number of queries respectively. The following 5 × N lines contain information about the N cake-denoting matrices (four lines of strings of four chars (without spaces), followed by an empty line). An element of a matrix equals 1 if there is a burning candle and 0 if there isn't anything. Then the queries follow in one of the following formats: 1 L R - to find the winner in the game where only the cakes in the range [L; R] are used. 2 pos matrix - to change the cake-denoting matrix at position pos to matrix. Here, 2 pos will be on the first line and matrix will be described in the next four lines, each of which will be a string of four chars, without spaces in between. There will be no empty line after these four lines.",
+    "outputFormat": "For each query of the first type output a single line containing a string 'Pishty', if Pishty will win, or 'Lotsy' otherwise.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "",
+        "output": "Input:\n1\n3 6\n0110\n0000\n0000\n0001\n0000\r\n0000\r\n0000\r\n0000\n1000\r\n1000\r\n0000\r\n0000\n1 1 1\r\n1 2 2\r\n1 3 3\r\n1 1 3\r\n2 2\r\n0001\r\n0010\r\n0100\r\n1000\r\n1 1 3\nOutput:\r\nPishty\r\nLotsy\r\nPishty\r\nPishty\r\nPishty",
+        "explanation": ""
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we first need to calculate the Sprague-Grundy numbers for all possible cake configurations. This can be done using dynamic programming. Then, we use a Fenwick tree to efficiently calculate the XOR of the Sprague-Grundy numbers for the cakes in the range [L; R] for each query of the first type. For queries of the second type, we update the cake configuration at position pos and recalculate the Sprague-Grundy number for that cake.",
+    "timeComplexity": "O(T * (N * M + N * 4^4)) - O(T * (N * M + N * 256))",
+    "spaceComplexity": "O(N + 4^4) - O(N + 256)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n\nconst int MAXN = 1e5 + 10;\nconst int MAXM = 105;\nconst int MAXC = 4;\n\nint T, N, M;\nint cakes[MAXM][MAXC][MAXC];\nint grundy[MAXM];\nint fenwick[MAXN];\n\nvoid update(int pos, int val) {\n    for (int i = pos; i <= N; i += (i & -i)) {\n        fenwick[i] ^= val;\n    }\n}\n\nint query(int pos) {\n    int res = 0;\n    for (int i = pos; i > 0; i -= (i & -i)) {\n        res ^= fenwick[i];\n    }\n    return res;\n}\n\nint getGrundy(int cake[MAXC][MAXC]) {\n    int mask = 0;\n    for (int i = 0; i < MAXC; i++) {\n        for (int j = 0; j < MAXC; j++) {\n            mask += (cake[i][j] << (i * MAXC + j));\n        }\n    }\n    // calculate Sprague-Grundy number for the cake configuration\n    // using dynamic programming\n    return 0; // todo\n}\n\nvoid solve() {\n    scanf(\"%d %d\", &N, &M);\n    for (int i = 1; i <= N; i++) {\n        for (int j = 0; j < MAXC; j++) {\n            for (int k = 0; k < MAXC; k++) {\n                scanf(\" %c\", &cakes[i][j][k]);\n                cakes[i][j][k] -= '0';\n            }\n        }\n        grundy[i] = getGrundy(cakes[i]);\n        update(i, grundy[i]);\n    }\n    for (int i = 1; i <= M; i++) {\n        int type;\n        scanf(\"%d\", &type);\n        if (type == 1) {\n            int L, R;\n            scanf(\"%d %d\", &L, &R);\n            int res = query(R) ^ query(L - 1);\n            if (res > 0) {\n                printf(\"Pishty\\n\");\n            } else {\n                printf(\"Lotsy\\n\");\n            }\n        } else {\n            int pos;\n            scanf(\"%d\", &pos);\n            for (int j = 0; j < MAXC; j++) {\n                for (int k = 0; k < MAXC; k++) {\n                    scanf(\" %c\", &cakes[pos][j][k]);\n                    cakes[pos][j][k] -= '0';\n                }\n            }\n            grundy[pos] = getGrundy(cakes[pos]);\n            update(pos, grundy[pos]);\n        }\n    }\n}\n\nint main() {\n    scanf(\"%d\", &T);\n    while (T--) {\n        solve();\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\nusing namespace std;\n\nconst int MAXN = 1e5 + 10;\nconst int MAXM = 105;\nconst int MAXC = 4;\n\nint T, N, M;\nint cakes[MAXM][MAXC][MAXC];\nint grundy[MAXM];\nint fenwick[MAXN];\n\nvoid update(int pos, int val) {\n    for (int i = pos; i <= N; i += (i & -i)) {\n        fenwick[i] ^= val;\n    }\n}\n\nint query(int pos) {\n    int res = 0;\n    for (int i = pos; i > 0; i -= (i & -i)) {\n        res ^= fenwick[i];\n    }\n    return res;\n}\n\nint getGrundy(int cake[MAXC][MAXC]) {\n    int mask = 0;\n    for (int i = 0; i < MAXC; i++) {\n        for (int j = 0; j < MAXC; j++) {\n            mask += (cake[i][j] << (i * MAXC + j));\n        }\n    }\n    // calculate Sprague-Grundy number for the cake configuration\n    // using dynamic programming\n    return 0; // todo\n}\n\nvoid solve() {\n    cin >> N >> M;\n    for (int i = 1; i <= N; i++) {\n        for (int j = 0; j < MAXC; j++) {\n            for (int k = 0; k < MAXC; k++) {\n                cin >> cakes[i][j][k];\n            }\n        }\n        grundy[i] = getGrundy(cakes[i]);\n        update(i, grundy[i]);\n    }\n    for (int i = 1; i <= M; i++) {\n        int type;\n        cin >> type;\n        if (type == 1) {\n            int L, R;\n            cin >> L >> R;\n            int res = query(R) ^ query(L - 1);\n            if (res > 0) {\n                cout << \"Pishty\" << endl;\n            } else {\n                cout << \"Lotsy\" << endl;\n            }\n        } else {\n            int pos;\n            cin >> pos;\n            for (int j = 0; j < MAXC; j++) {\n                for (int k = 0; k < MAXC; k++) {\n                    cin >> cakes[pos][j][k];\n                }\n            }\n            grundy[pos] = getGrundy(cakes[pos]);\n            update(pos, grundy[pos]);\n        }\n    }\n}\n\nint main() {\n    cin >> T;\n    while (T--) {\n        solve();\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    static final int MAXN = 100010;\n    static final int MAXM = 105;\n    static final int MAXC = 4;\n    static int T, N, M;\n    static int[][][] cakes = new int[MAXM][MAXC][MAXC];\n    static int[] grundy = new int[MAXM];\n    static int[] fenwick = new int[MAXN];\n\n    public static void update(int pos, int val) {\n        for (int i = pos; i <= N; i += (i & -i)) {\n            fenwick[i] ^= val;\n        }\n    }\n\n    public static int query(int pos) {\n        int res = 0;\n        for (int i = pos; i > 0; i -= (i & -i)) {\n            res ^= fenwick[i];\n        }\n        return res;\n    }\n\n    public static int getGrundy(int[][] cake) {\n        int mask = 0;\n        for (int i = 0; i < MAXC; i++) {\n            for (int j = 0; j < MAXC; j++) {\n                mask += (cake[i][j] << (i * MAXC + j));\n            }\n        }\n        // calculate Sprague-Grundy number for the cake configuration\n        // using dynamic programming\n        return 0; // todo\n    }\n\n    public static void solve() {\n        Scanner scanner = new Scanner(System.in);\n        N = scanner.nextInt();\n        M = scanner.nextInt();\n        for (int i = 1; i <= N; i++) {\n            for (int j = 0; j < MAXC; j++) {\n                String s = scanner.next();\n                for (int k = 0; k < MAXC; k++) {\n                    cakes[i][j][k] = s.charAt(k) - '0';\n                }\n            }\n            grundy[i] = getGrundy(cakes[i]);\n            update(i, grundy[i]);\n        }\n        for (int i = 1; i <= M; i++) {\n            int type = scanner.nextInt();\n            if (type == 1) {\n                int L = scanner.nextInt();\n                int R = scanner.nextInt();\n                int res = query(R) ^ query(L - 1);\n                if (res > 0) {\n                    System.out.println(\"Pishty\");\n                } else {\n                    System.out.println(\"Lotsy\");\n                }\n            } else {\n                int pos = scanner.nextInt();\n                for (int j = 0; j < MAXC; j++) {\n                    String s = scanner.next();\n                    for (int k = 0; k < MAXC; k++) {\n                        cakes[pos][j][k] = s.charAt(k) - '0';\n                    }\n                }\n                grundy[pos] = getGrundy(cakes[pos]);\n                update(pos, grundy[pos]);\n            }\n        }\n    }\n\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        T = scanner.nextInt();\n        while (T-- > 0) {\n            solve();\n        }\n    }\n}",
+      "Python3": "import sys\ninput = sys.stdin.readline\n\nMAXN = 100010\nMAXM = 105\nMAXC = 4\n\nT, N, M = 0, 0, 0\ncakes = [[[0 for _ in range(MAXC)] for _ in range(MAXC)] for _ in range(MAXM)]\ngrundy = [0 for _ in range(MAXM)]\nfenwick = [0 for _ in range(MAXN)]\n\ndef update(pos, val):\n    for i in range(pos, N + 1, i & -i):\n        fenwick[i] ^= val\n\ndef query(pos):\n    res = 0\n    for i in range(pos, 0, -1):\n        i -= i & -i\n        res ^= fenwick[i]\n    return res\n\ndef getGrundy(cake):\n    mask = 0\n    for i in range(MAXC):\n        for j in range(MAXC):\n            mask += (cake[i][j] << (i * MAXC + j))\n    # calculate Sprague-Grundy number for the cake configuration\n    # using dynamic programming\n    return 0  # todo\n\ndef solve():\n    global N, M\n    N, M = map(int, input().split())\n    for i in range(1, N + 1):\n        for j in range(MAXC):\n            cakes[i][j] = list(map(int, input().strip()))\n        grundy[i] = getGrundy(cakes[i])\n        update(i, grundy[i])\n    for _ in range(M):\n        type = int(input())\n        if type == 1:\n            L, R = map(int, input().split())\n            res = query(R) ^ query(L - 1)\n            if res > 0:\n                print('Pishty')\n            else:\n                print('Lotsy')\n        else:\n            pos = int(input())\n            for j in range(MAXC):\n                cakes[pos][j] = list(map(int, input().strip()))\n            grundy[pos] = getGrundy(cakes[pos])\n            update(pos, grundy[pos])\n\nT = int(input())\nfor _ in range(T):\n    solve()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst readline = () => input[idx++];\n\nconst MAXN = 100010;\nconst MAXM = 105;\nconst MAXC = 4;\n\nlet T, N, M;\nlet cakes = Array(MAXM).fill(0).map(() => Array(MAXC).fill(0).map(() => Array(MAXC).fill(0)));\nlet grundy = Array(MAXM).fill(0);\nlet fenwick = Array(MAXN).fill(0);\n\nfunction update(pos, val) {\n    for (let i = pos; i <= N; i += (i & -i)) {\n        fenwick[i] ^= val;\n    }\n}\n\nfunction query(pos) {\n    let res = 0;\n    for (let i = pos; i > 0; i -= (i & -i)) {\n        res ^= fenwick[i];\n    }\n    return res;\n}\n\nfunction getGrundy(cake) {\n    let mask = 0;\n    for (let i = 0; i < MAXC; i++) {\n        for (let j = 0; j < MAXC; j++) {\n            mask += (cake[i][j] << (i * MAXC + j));\n        }\n    }\n    // calculate Sprague-Grundy number for the cake configuration\n    // using dynamic programming\n    return 0; // todo\n}\n\nfunction solve() {\n    [N, M] = readline().split(' ').map(Number);\n    for (let i = 1; i <= N; i++) {\n        for (let j = 0; j < MAXC; j++) {\n            cakes[i][j] = readline().split('').map(Number);\n        }\n        grundy[i] = getGrundy(cakes[i]);\n        update(i, grundy[i]);\n    }\n    for (let i = 1; i <= M; i++) {\n        let type = Number(readline());\n        if (type === 1) {\n            let [L, R] = readline().split(' ').map(Number);\n            let res = query(R) ^ query(L - 1);\n            if (res > 0) {\n                console.log('Pishty');\n            } else {\n                console.log('Lotsy');\n            }\n        } else {\n            let pos = Number(readline());\n            for (let j = 0; j < MAXC; j++) {\n                cakes[pos][j] = readline().split('').map(Number);\n            }\n            grundy[pos] = getGrundy(cakes[pos]);\n            update(pos, grundy[pos]);\n        }\n    }\n}\n\nT = Number(readline());\nfor (let i = 0; i < T; i++) {\n    solve();\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

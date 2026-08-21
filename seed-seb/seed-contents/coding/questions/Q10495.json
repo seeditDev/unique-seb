@@ -1,0 +1,105 @@
+{
+  "questionId": "Q10495",
+  "title": "Critical Planets",
+  "slug": "critical-planets",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-02",
+  "metadata": {
+    "category": "Graphs",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "graphs",
+      "competitive programming"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Graphs"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "The war between the Republic and the Separatists is escalating. The Separatists are on a new offensive. They have started blocking the path between the republic planets (represented by integers) so that these planets surrender due to the shortage of food and supplies. The Jedi council has taken note of the situation and they have assigned Jedi Knight Skywalker and his Padawan Ahsoka to save the critical planets from blockade (Those planets or systems of planets which can be accessed by only one path and may be lost if that path is blocked by separatist).\n\n\nSkywalker is preparing with the clone army to defend the critical paths. He has assigned Ahsoka to find the critical planets. Help Ahsoka to find the critical planets(C) in ascending order. You only need to specify those planets which have only one path between them and they cannot be accessed by any other alternative path if the only path is compromised.\n\n\nInput Format\n\n\nThe first line contains two space-separated integers MMM and NNN, where MMM denotes the number of paths\nbetween planets and NNN denotes the number of planets.\n\n\n\n\nNext MMM lines, each contains two space-separated integers, representing the planet numbers that have a path\nbetween them.\n\n\n\n\n\nOutput Format\nClines containing one integer representing the critical planet that they need to save in ascending order of the planet number if no planet is critical then print \u22121-1\u22121.",
+    "constraints": [
+      "M\u226410000M \\leq 10000M\u226410000",
+      "N\u22647000N \\leq 7000N\u22647000"
+    ],
+    "inputFormat": "",
+    "outputFormat": "",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3 4\n0 1\n1 2\n2 3",
+        "output": "0\n1\n2\n3",
+        "explanation": "Explanation:\nSince all the planets are connected with one path and cannot be accessed by any alternative paths hence all the planets are critical."
+      },
+      {
+        "id": "sample_2",
+        "input": "7 6\n0 2\n0 1\n1 2\n2 3\n4 5\n3 4\n3 5",
+        "output": "2\n3",
+        "explanation": "Explanation:\nIf the republic loses the path between 2 and 3 then the two systems of planets will not be able to communicate with each other. Hence 2 and 3 are critical planets."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "input": "3 4\n0 1\n1 2\n2 3",
+        "expectedOutput": "0\n1\n2\n3",
+        "weight": 50
+      },
+      {
+        "id": "tc_2",
+        "input": "7 6\n0 2\n0 1\n1 2\n2 3\n4 5\n3 4\n3 5",
+        "expectedOutput": "2\n3",
+        "weight": 50
+      }
+    ],
+    "totalTestCases": 2,
+    "totalWeight": 100
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      50,
+      50
+    ],
+    "maxScore": 100
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "",
+    "timeComplexity": "",
+    "spaceComplexity": "",
+    "code": {
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\n// Global variables\nconst int MAXN = 10001;\nvector<int> adj[MAXN]; // Adjacency list for graph representation\nint visited[MAXN];     // Array to keep track of visited nodes\nint in[MAXN];         // Discovery time for each node\nint low[MAXN];        // Low values for each node\nint timer;            // Timer to assign discovery times\nset<int> bridges;     // Set to store bridge edges\n\n// DFS function to explore the graph and find bridges\nvoid dfs(int node, int parent) {\n    visited[node] = 1;  // Mark the current node as visited\n    in[node] = low[node] = timer++; // Set discovery time and low value for the current node\n\n    // Traverse through all adjacent nodes\n    for (int neighbor : adj[node]) {\n        if (neighbor == parent) continue; // Skip the parent node to prevent going back\n\n        if (visited[neighbor] == 1) {\n            // If the adjacent node is already visited, update the low value\n            low[node] = min(low[node], in[neighbor]);\n        } else {\n            // Recursively perform DFS on the unvisited adjacent node\n            dfs(neighbor, node);\n\n            // Check if the current edge is a bridge\n            if (low[neighbor] > in[node]) {\n                // If it's a bridge, add both nodes to the set\n                bridges.insert(node);\n                bridges.insert(neighbor);\n            }\n\n            // Update the low value of the current node\n            low[node] = min(low[node], low[neighbor]);\n        }\n    }\n}\n\nint main() {\n    // Input: number of edges and vertices\n    int edge, vertex;\n    cin >> edge >> vertex;\n\n    // Initialize adjacency list\n    for (int i = 0; i <= vertex; i++) {\n        adj[i].clear(); // Clear previous values (if any)\n    }\n\n    // Read the edges and build the adjacency list\n    for (int i = 0; i < edge; i++) {\n        int a, b;\n        cin >> a >> b;\n        adj[a].push_back(b); // Add edge from a to b\n        adj[b].push_back(a); // Add edge from b to a (undirected graph)\n    }\n\n    // Start DFS from node 0 with no parent (-1)\n    timer = 0; // Start timer at 0\n    dfs(0, -1);\n\n    // If no bridge edges are found, output -1\n    if (bridges.empty()) {\n        cout << -1 << endl;\n    } else {\n        // Output all the bridge edges found in the graph\n        for (int i : bridges) {\n            cout << i << endl;\n        }\n    }\n\n    return 0;\n}\n",
+      "Python3": "from collections import defaultdict, deque\n\n# Create an adjacency list to represent the graph\nadj = defaultdict(list)\n\n# Arrays to track visited nodes, discovery time (in), and low values\nvisited = [0] * 100001\nin_time = [0] * 100001\nlow = [0] * 100001\n\n# Timer to assign discovery times to nodes\ntimer = 0\n\n# Set to store the bridge edges\nbridge_set = set()\n\n# DFS function to explore the graph and find bridges\ndef dfs(node, parent):\n    global timer\n    visited[node] = 1\n    \n    # Set discovery time and low value for the current node\n    in_time[node] = low[node] = timer\n    timer += 1\n\n    # Traverse all adjacent nodes\n    for neighbor in adj[node]:\n        # Skip the parent node to avoid going back\n        if neighbor == parent:\n            continue\n\n        # If the adjacent node is already visited\n        if visited[neighbor] == 1:\n            # Update the low value of the current node\n            low[node] = min(low[node], in_time[neighbor])\n        else:\n            # Recursively perform DFS on the unvisited adjacent node\n            dfs(neighbor, node)\n            \n            # Check if the current edge is a bridge\n            if low[neighbor] > in_time[node]:\n                bridge_set.add(node)\n                bridge_set.add(neighbor)\n\n            # Update the low value of the current node based on the adjacent node's low value\n            low[node] = min(low[node], low[neighbor])\n\n# Main function to handle input and output\ndef main():\n    global adj, visited, in_time, low, bridge_set\n    \n    # Input the number of edges and vertices\n    edge, vertex = map(int, input().split())\n\n    # Read edges and build the adjacency list\n    for _ in range(edge):\n        a, b = map(int, input().split())\n        adj[a].append(b)\n        adj[b].append(a)  # Since the graph is undirected\n\n    # Start DFS from node 0, assuming no parent (-1)\n    dfs(0, -1)\n\n    # If no bridges are found, print -1\n    if len(bridge_set) == 0:\n        print(-1)\n    else:\n        # Print the bridge set in sorted increasing order\n        for i in sorted(bridge_set):\n            print(i)\n\n# Entry point for the script\nif __name__ == \"__main__\":\n    main()\n",
+      "Java": "import java.util.*;\nimport java.io.*;\n\nclass Seedit {\n    // Declare adjacency list for graph representation\n    static ArrayList<Integer>[] adj = new ArrayList[100001];\n\n    // Arrays to keep track of visited nodes, discovery time (in), and low values\n    static int[] visited = new int[100001];\n    static int[] in = new int[100001];\n    static int[] low = new int[100001];\n\n    // Timer to assign discovery times to nodes\n    static int timer;\n\n    // Set to store the bridge edges\n    static Set<Integer> s = new HashSet<>();\n\n    // DFS function to explore the graph and find bridges\n    public static void dfs(int node, int pre) {\n        // Mark the current node as visited\n        visited[node] = 1;\n\n        // Set the discovery time and low value for the current node\n        in[node] = low[node] = timer++;\n        \n        // Traverse through all adjacent nodes\n        for (int i : adj[node]) {\n            // Skip the parent node to prevent going back\n            if (i == pre)\n                continue;\n\n            // If the adjacent node is already visited\n            if (visited[i] == 1) {\n                // Update the low value of the current node\n                low[node] = Math.min(low[node], in[i]);\n            } else {\n                // Recursively perform DFS on the unvisited adjacent node\n                dfs(i, node);\n\n                // Check if the current edge is a bridge\n                if (low[i] > in[node]) {\n                    // If it's a bridge, add both nodes to the set\n                    s.add(node);\n                    s.add(i);\n                }\n\n                // Update the low value of the current node based on the low value of the adjacent node\n                low[node] = Math.min(low[node], low[i]);\n            }\n        }\n    }\n\n    public static void main(String[] args) throws java.lang.Exception {\n        // Scanner object to read input\n        Scanner sc = new Scanner(System.in);\n\n        // Variables to store number of edges and vertices\n        int edge = sc.nextInt();\n        int vertex = sc.nextInt();\n\n        // Initialize adjacency list\n        for (int i = 0; i <= vertex; i++) {\n            adj[i] = new ArrayList<>();  // Initialize each ArrayList for each vertex\n        }\n\n        // Read the edges and build the adjacency list\n        for (int i = 0; i < edge; i++) {\n            int a = sc.nextInt();\n            int b = sc.nextInt();\n            adj[a].add(b); // Add edge from a to b\n            adj[b].add(a); // Add edge from b to a (undirected graph)\n        }\n\n        // Start DFS from node 0 with no parent (-1)\n        timer = 1;\n        dfs(0, -1);\n\n        // If no bridge edges are found, output -1\n        if (s.size() == 0) {\n            System.out.println(-1);\n        } else {\n            // Output all the bridge edges found in the graph\n            for (int i : s) {\n                System.out.println(i);\n            }\n        }\n\n        sc.close();\n    }\n}\n",
+      "JavaScript": "// Function to find critical planets (bridges)\nfunction findCriticalPlanets(n, edges) {\n    // Create an adjacency list with n + 1 empty arrays\n    let adj = Array.from({ length: n + 1 }, () => []);\n    \n    // Build adjacency list from edges\n    for (let [u, v] of edges) {\n        adj[u].push(v); // Add edge from u to v\n        adj[v].push(u); // Add edge from v to u (undirected graph)\n    }\n\n    // Arrays to keep track of visited nodes, discovery times, and low values\n    let visited = new Array(n + 1).fill(0);\n    let inTime = new Array(n + 1).fill(0);\n    let low = new Array(n + 1).fill(0);\n    let bridges = new Set(); // Set to store the critical planets (bridges)\n    let timer = 0; // Timer for discovery times\n\n    // Depth-First Search (DFS) function to find bridges\n    function dfs(node, parent) {\n        visited[node] = 1;\n        inTime[node] = low[node] = timer;\n        timer++; // Increment the timer for the next node\n\n        for (let neighbor of adj[node]) {\n            if (neighbor === parent) continue; // Skip the parent node\n\n            if (visited[neighbor] === 1) {\n                // Update the low value of the current node\n                low[node] = Math.min(low[node], inTime[neighbor]);\n            } else {\n                dfs(neighbor, node); // Recursively perform DFS on the unvisited neighbor\n                \n                // Check if the current edge is a bridge\n                if (low[neighbor] > inTime[node]) {\n                    bridges.add(node);\n                    bridges.add(neighbor);\n                }\n\n                // Update the low value of the current node\n                low[node] = Math.min(low[node], low[neighbor]);\n            }\n        }\n    }\n\n    // Start DFS from node 1 (assuming nodes are 1-indexed)\n    for (let i = 1; i <= n; i++) {\n        if (visited[i] === 0) {\n            dfs(i, -1); // Start DFS with no parent\n        }\n    }\n\n    // Check if there are critical planets (bridges)\n    if (bridges.size === 0) {\n        return [-1]; // No critical planets\n    }\n\n    // Convert the Set to an array and sort it before returning\n    return Array.from(bridges).sort((a, b) => a - b);\n}\n\n// Main function to handle input and invoke the critical planets finder\nfunction main() {\n    // Read input from stdin, split by lines, and trim\n    const input = require('fs').readFileSync(0, 'utf-8').trim().split('\\n');\n    \n    // Extract number of edges (m) and nodes (n) from the first line\n    const [m, n] = input[0].split(' ').map(Number);\n    \n    // Initialize edges array\n    const edges = [];\n    \n    // Read edges from subsequent lines\n    for (let i = 1; i <= m; i++) {\n        const [u, v] = input[i].split(' ').map(Number);\n        edges.push([u, v]); // Add edge to edges array\n    }\n    \n    // Find critical planets and print the result\n    const result = findCriticalPlanets(n, edges);\n    console.log(result.join(' ')); // Print the result in a single line\n}\n\n// Execute the main function\nmain();\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

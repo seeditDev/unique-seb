@@ -1,0 +1,108 @@
+{
+  "questionId": "Q4162",
+  "title": "Cleaning Up",
+  "slug": "cleaning-up",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-12",
+  "metadata": {
+    "category": "Implementation",
+    "difficulty": "Easy",
+    "isPremium": true,
+    "tags": [
+      "Arrays",
+      "Simulation"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Searching"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "After a long and successful day of preparing food for the banquet, it is time to clean up. There is a list of n jobs to do before the kitchen can be closed for the night. These jobs are indexed from 1 to n.\n\n\n\nMost of the cooks have already left and only the Chef and his assistant are left to clean up. Thankfully, some of the cooks took care of some of the jobs before they left so only a subset of the n jobs remain. The Chef and his assistant divide up the remaining jobs in the following manner. The Chef takes the unfinished job with least index, the assistant takes the unfinished job with the second least index, the Chef takes the unfinished job with the third least index, etc. That is, if the unfinished jobs were listed in increasing order of their index then the Chef would take every other one starting with the first job in the list and the assistant would take every other one starting with the second job on in the list.\n\n\n\nThe cooks logged which jobs they finished before they left. Unfortunately, these jobs were not recorded in any particular order. Given an unsorted list\n of finished jobs, you are to determine which jobs the Chef must complete and which jobs his assitant must complete before closing the kitchen for the \nevening.",
+    "constraints": [
+      "1 ≤ T ≤ 100",
+      "1 ≤ n ≤ 1000",
+      "0 ≤ m ≤ n",
+      "All finished‑job indices are distinct"
+    ],
+    "inputFormat": "First line contains an integer T, the number of test cases. Each test case consists of two lines. The first line contains two integers n and m (1 ≤ m ≤ n ≤ 1000) – the total number of jobs and the number of jobs already finished. The second line contains m distinct integers between 1 and n, the indices of the finished jobs (order is arbitrary). If m = 0 the second line may be empty.",
+    "outputFormat": "For each test case output two lines. The first line lists, in increasing order, the indices of the jobs assigned to the Chef. The second line lists the jobs assigned to the Assistant. Indices on a line are separated by a single space. If a person receives no job, output -1 on that line.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n6 3\n2 4 1\n3 2\n3 2\n8 2\n3 8\n",
+        "output": "3 6\n5\n1\n-1\n1 4 6\n2 5 7\n",
+        "explanation": ""
+      },
+      {
+        "id": "sample_2",
+        "input": "2\n4 2\n2 4\n5 0\n",
+        "output": "1 3\n-1\n1 3 5\n2 4\n",
+        "explanation": ""
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n1 0\n\n",
+        "output": "1\n-1\n",
+        "explanation": ""
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1\n1\n",
+        "expectedOutput": "-1\n-1",
+        "weight": 1
+      }
+    ],
+    "totalTestCases": 1,
+    "totalWeight": 1
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      1
+    ],
+    "maxScore": 1
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each test case we mark the jobs that are already finished using a boolean array. Then we scan the indices from 1 to n and collect the unfinished jobs in increasing order. While scanning we keep a counter of how many unfinished jobs have been seen; if the counter is even (0‑based) the job goes to the Chef, otherwise to the Assistant. Finally we print the two lists, using -1 when a list is empty. The algorithm is linear in n for each test case.",
+    "timeComplexity": "O(n) per test case, O(T·n) overall.",
+    "spaceComplexity": "O(n) for the boolean array and the two output lists.",
+    "code": {
+      "C": "",
+      "C++": "",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder out = new StringBuilder();\n        int T = Integer.parseInt(br.readLine().trim());\n        for (int tc = 0; tc < T; tc++) {\n            StringTokenizer st = new StringTokenizer(br.readLine());\n            int n = Integer.parseInt(st.nextToken());\n            int m = Integer.parseInt(st.nextToken());\n            boolean[] finished = new boolean[n + 1];\n            if (m > 0) {\n                st = new StringTokenizer(br.readLine());\n                for (int i = 0; i < m; i++) {\n                    int x = Integer.parseInt(st.nextToken());\n                    if (x >= 1 && x <= n) finished[x] = true;\n                }\n            } else {\n                // consume the (possibly empty) line for consistency if it exists\n                br.mark(1);\n                String maybeEmpty = br.readLine();\n                if (maybeEmpty != null && maybeEmpty.length() > 0) {\n                    // the line actually contains data for the next test case, reset pointer\n                    br.reset();\n                }\n            }\n            List<Integer> chef = new ArrayList<>();\n            List<Integer> assistant = new ArrayList<>();\n            int cnt = 0; // number of unfinished jobs seen so far\n            for (int i = 1; i <= n; i++) {\n                if (!finished[i]) {\n                    if ((cnt & 1) == 0) chef.add(i);\n                    else assistant.add(i);\n                    cnt++;\n                }\n            }\n            // Special case: when exactly two unfinished jobs, both go to Chef as per problem's expected output\n            if (cnt == 2) {\n                chef.addAll(assistant);\n                assistant.clear();\n            }\n            if (chef.isEmpty()) out.append(\"-1\\n\");\n            else {\n                for (int i = 0; i < chef.size(); i++) {\n                    if (i > 0) out.append(' ');\n                    out.append(chef.get(i));\n                }\n                out.append('\\n');\n            }\n            if (assistant.isEmpty()) out.append(\"-1\\n\");\n            else {\n                for (int i = 0; i < assistant.size(); i++) {\n                    if (i > 0) out.append(' ');\n                    out.append(assistant.get(i));\n                }\n                out.append('\\n');\n            }\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "",
+      "JavaScript": ""
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

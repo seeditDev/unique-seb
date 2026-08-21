@@ -1,0 +1,143 @@
+{
+  "questionId": "Q8921",
+  "title": "Modular Circular Permutations",
+  "slug": "modular-circular-permutations",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Arrays | Greedy | Math",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Sorting",
+      "Greedy",
+      "Modulo",
+      "Circular permutation"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Dynamic Programming"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given an array A=[A1,A2,…,AN]A = [A_1, A_2, \\ldots, A_N]A=[A1​,A2​,…,AN​] containing **distinct positive** integers.\n\nLet BBB be a permutation of AAA. Define the value of BBB to be\n∑i=1N(Bi mod Bi+1)\\sum_{i=1}^N (B_i \\bmod{B_{i+1}})∑i=1N​(Bi​modBi+1​)\n\nwhere BN+1B_{N+1}BN+1​ is treated to be B1B_1B1​.\n\nFind the **maximum** value across all permutations of AAA.\n\n\nInput Format\n\nThe first line of input contains a single integer TTT, denoting the number of test cases. The description of TTT test cases follows.\nEach test case consists of two lines of input.\nThe first line of each test case contains an integer NNN — the size of AAA.\nThe second line of each test case contains NNN space-separated integers — the elements of AAA.\n\n\nOutput Format\n\nFor each test case, output a new line containing the answer — the maximum possible value across all permutations of AAA.",
+    "constraints": [
+      "1 ≤ T ≤ 10^3",
+      "2 ≤ N ≤ 2·10^3",
+      "1 ≤ Ai ≤ 10^15",
+      "All Ai are distinct",
+      "The sum of N over all test cases does not exceed 2·10^3"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each test case consists of two lines: the first line contains an integer N (2 ≤ N ≤ 2000) – the size of the array. The second line contains N distinct positive integers A1, A2, …, AN (1 ≤ Ai ≤ 10^15).",
+    "outputFormat": "For each test case output a single line containing the maximum possible value of Σ_{i=1}^{N} (B_i mod B_{i+1}) over all permutations B of the given array, where B_{N+1}=B_1.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n2\n5 13\n4\n11 5 14869010166 19007432007",
+        "output": "8\n14869010184",
+        "explanation": "For the first test case the array is {5,13}. sum=18, max=13, min=5 → answer = 18‑13 + (13%5)=5+3=8. For the second test case sum=33876442189, max=19007432007, min=5 → answer = 33876442189‑19007432007 + (19007432007%5)=14869010182+2=14869010184."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n3\n2 3 7",
+        "output": "6",
+        "explanation": "sum=12, max=7, min=2 → answer = 12‑7 + (7%2)=5+1=6, which is achieved by the permutation [2,3,7]."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n5\n3 8 14 27 100",
+        "output": "53",
+        "explanation": "sum=152, max=100, min=3 → answer = 152‑100 + (100%3)=52+1=53."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n2\n1 2",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n3\n1000000000000000 999999999999999 1",
+        "expectedOutput": "1000000000000000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n3\n6 10 15",
+        "expectedOutput": "19",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n4\n4 9 12 20",
+        "expectedOutput": "25",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n5\n3 8 14 27 100",
+        "expectedOutput": "53",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For any two distinct numbers x < y we have x mod y = x and y mod x = y % x < x. To maximise each term B_i mod B_{i+1} we would like B_i < B_{i+1} because then the term equals B_i, the larger possible value for that position. Therefore we can arrange the numbers in strictly increasing order. All N‑1 edges of the circle are then ascending and contribute the smaller element of each adjacent pair, i.e. all elements except the largest one. The remaining edge is from the largest element back to the smallest; its contribution is max % min. No other arrangement can give a larger sum because any descending edge replaces a term equal to the smaller element by a remainder that is strictly smaller than that element. Hence the optimal value is:\n    answer = (sum of all elements) – maxElement + (maxElement % minElement).\nThe algorithm for each test case is therefore:\n1. Scan the array, simultaneously compute the total sum, the minimum and the maximum.\n2. Compute answer using the formula above.\n3. Output the answer.\nThe algorithm runs in O(N) time per test case and O(1) extra space.\n",
+    "timeComplexity": "O(N) per test case, O(total N) over the whole input.",
+    "spaceComplexity": "O(1) additional memory.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <inttypes.h>\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    while(T--){\n        int N; scanf(\"%d\", &N);\n        unsigned long long sum = 0, mn = (unsigned long long)(-1), mx = 0;\n        for(int i=0;i<N;i++){\n            unsigned long long x; scanf(\"%llu\", &x);\n            sum += x;\n            if(x < mn) mn = x;\n            if(x > mx) mx = x;\n        }\n        unsigned long long ans = sum - mx + (mx % mn);\n        printf(\"%llu\\n\", ans);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N; cin>>N;\n        unsigned long long sum=0, mn=ULLONG_MAX, mx=0;\n        for(int i=0;i<N;++i){\n            unsigned long long x; cin>>x;\n            sum+=x;\n            mn=min(mn,x);\n            mx=max(mx,x);\n        }\n        unsigned long long ans = sum - mx + (mx % mn);\n        cout<<ans<<\"\\n\";\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner(System.in);\n        int T = fs.nextInt();\n        StringBuilder sb = new StringBuilder();\n        while (T-- > 0) {\n            int N = fs.nextInt();\n            long sum = 0L;\n            long min = Long.MAX_VALUE;\n            long max = Long.MIN_VALUE;\n            for (int i = 0; i < N; i++) {\n                long x = fs.nextLong();\n                sum += x;\n                if (x < min) min = x;\n                if (x > max) max = x;\n            }\n            long ans = sum - max + (max % min);\n            sb.append(ans).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n    // Fast scanner for large input\n    static class FastScanner {\n        private final InputStream in;\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        FastScanner(InputStream in) { this.in = in; }\n        private int readByte() throws IOException {\n            if (ptr >= len) {\n                len = in.read(buffer);\n                ptr = 0;\n                if (len <= 0) return -1;\n            }\n            return buffer[ptr++];\n        }\n        long nextLong() throws IOException {\n            int c; do { c = readByte(); } while (c <= ' ');\n            boolean neg = false;\n            if (c == '-') { neg = true; c = readByte(); }\n            long val = 0;\n            while (c > ' ') {\n                val = val * 10 + (c - '0');\n                c = readByte();\n            }\n            return neg ? -val : val;\n        }\n        int nextInt() throws IOException { return (int) nextLong(); }\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys\n\ndef main():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it))\n        total = 0\n        mn = 10**18\n        mx = 0\n        for _ in range(N):\n            x = int(next(it))\n            total += x\n            if x < mn:\n                mn = x\n            if x > mx:\n                mx = x\n        ans = total - mx + (mx % mn)\n        out_lines.append(str(ans))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    main()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet outputs = [];\nfor (let t = 0; t < T; t++) {\n  const N = Number(input[idx++]);\n  let sum = 0n;\n  let min = 0n;\n  let max = 0n;\n  for (let i = 0; i < N; i++) {\n    const val = BigInt(input[idx++]);\n    sum += val;\n    if (i === 0) {\n      min = max = val;\n    } else {\n      if (val < min) min = val;\n      if (val > max) max = val;\n    }\n  }\n  const ans = sum - max + (max % min);\n  outputs.push(ans.toString());\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

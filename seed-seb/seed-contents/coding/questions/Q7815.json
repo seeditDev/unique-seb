@@ -1,0 +1,135 @@
+{
+  "questionId": "Q7815",
+  "title": "Maximum Candies",
+  "slug": "maximum-candies",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Greedy",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Grid",
+      "Bipartite",
+      "Math",
+      "Greedy"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Ad-hoc & Implementation"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given a matrix AAA with NNN rows (numbered 111 through NNN) and MMM columns (numbered 111 through MMM).\n\nYou need to fill the matrix with candies in such a way that:\n\n\nFor each cell, the number of candies in this cell is an integer between 000 and XXX inclusive.\nFor each pair of adjacent cells, the number of candies in one cell plus the number of candies in the other cell does not exceed YYY. Two cells are considered adjacent if they share a side.\nFind the maximum number of candies you can place in the given matrix.",
+    "constraints": [
+      "1 <= T <= 100",
+      "1 <= N, M <= 1000",
+      "1 <= X, Y <= 10^4"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains four space‑separated integers N, M, X and Y.",
+    "outputFormat": "For each test case output a single line containing the maximum total number of candies that can be placed in the N×M matrix.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n4 4 4 6\n3 4 4 5",
+        "output": "48\n30",
+        "explanation": "For the first case 2*X=8>Y=6, low=Y-X=2, larger=8, smaller=8 => 8*4+8*2=48. For the second case low=1, larger=6, smaller=6 => 6*4+6*1=30."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n2 2 2 3",
+        "output": "6",
+        "explanation": "total=4, larger=2, smaller=2, 2*X=4>Y=3, low=Y-X=1, answer=2*2+2*1=6."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1 1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n1000 1000 10000 10000",
+        "expectedOutput": "5000000000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case where Y >= 2X",
+        "input": "1\n2 3 3 7",
+        "expectedOutput": "18",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n5 5 5 8",
+        "expectedOutput": "101",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n2 2 2 3",
+        "expectedOutput": "6",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The grid is bipartite (chessboard coloring). For any adjacent cells a and b we must have a + b <= Y and each cell value is at most X. If 2*X <= Y we can set every cell to X, giving total = N*M*X. Otherwise we set the larger colour class to X and the smaller colour class to the maximum feasible value low = max(0, Y - X). The larger colour class contains ceil(N*M/2) cells, the smaller floor(N*M/2) cells. The answer is larger*X + smaller*low. This greedy choice is optimal because increasing any cell beyond these limits would violate either the per‑cell bound or an edge constraint.",
+    "timeComplexity": "O(T) – constant work per test case.",
+    "spaceComplexity": "O(1) – only a few integer variables.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdint.h>\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    while(T--){\n        long long N,M,X,Y; scanf(\"%lld %lld %lld %lld\", &N, &M, &X, &Y);\n        long long total = N * M;\n        long long larger = (total + 1) / 2; // ceil\n        long long smaller = total / 2;      // floor\n        long long ans;\n        if (2*X <= Y) {\n            ans = total * X;\n        } else {\n            long long low = Y - X;\n            if (low < 0) low = 0;\n            ans = larger * X + smaller * low;\n        }\n        printf(\"%lld\\n\", ans);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        long long N,M,X,Y; cin>>N>>M>>X>>Y;\n        long long total = N*M;\n        long long larger = (total+1)/2; // ceil\n        long long smaller = total/2;    // floor\n        long long ans;\n        if (2*X <= Y) ans = total*X;\n        else {\n            long long low = Y - X;\n            if (low < 0) low = 0;\n            ans = larger*X + smaller*low;\n        }\n        cout<<ans<<\"\\n\";\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder sb = new StringBuilder();\n        int T = Integer.parseInt(br.readLine().trim());\n        for (int t = 0; t < T; t++) {\n            StringTokenizer st = new StringTokenizer(br.readLine());\n            long N = Long.parseLong(st.nextToken());\n            long M = Long.parseLong(st.nextToken());\n            long X = Long.parseLong(st.nextToken());\n            long Y = Long.parseLong(st.nextToken());\n            long total = N * M;\n            long larger = (total + 1) / 2; // ceil\n            long smaller = total / 2;      // floor\n            long ans;\n            if (2 * X <= Y) {\n                ans = total * X;\n            } else {\n                long low = Y - X;\n                if (low < 0) low = 0;\n                ans = larger * X + smaller * low;\n            }\n            sb.append(ans).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out = []\n    for _ in range(T):\n        N = int(next(it)); M = int(next(it)); X = int(next(it)); Y = int(next(it))\n        total = N * M\n        larger = (total + 1) // 2  # ceil\n        smaller = total // 2       # floor\n        if 2 * X <= Y:\n            ans = total * X\n        else:\n            low = Y - X\n            if low < 0:\n                low = 0\n            ans = larger * X + smaller * low\n        out.append(str(ans))\n    sys.stdout.write('\\n'.join(out))\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet results = [];\nfor (let t = 0; t < T; t++) {\n  const N = Number(input[idx++]);\n  const M = Number(input[idx++]);\n  const X = Number(input[idx++]);\n  const Y = Number(input[idx++]);\n  const total = N * M;\n  const larger = Math.floor((total + 1) / 2); // ceil\n  const smaller = Math.floor(total / 2);      // floor\n  let ans;\n  if (2 * X <= Y) {\n    ans = total * X;\n  } else {\n    let low = Y - X;\n    if (low < 0) low = 0;\n    ans = larger * X + smaller * low;\n  }\n  results.push(String(ans));\n}\nconsole.log(results.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

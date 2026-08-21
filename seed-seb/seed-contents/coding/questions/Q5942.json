@@ -1,0 +1,133 @@
+{
+  "questionId": "Q5942",
+  "title": "Stringology is Magic",
+  "slug": "stringology-is-magic",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Suffix Array",
+      "LCP Array",
+      "String Comparison"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Strings"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You have been given a string **T** with **n** lowercase letters **T[1..n]**. For each substrings **T[l..r]**, we can assign them two values, **k1** and **k2**, which are defined as following.\n\n\n    **k1** is the number of different substrings which are lexicographically smaller than **T[l..r]**. There are **(n + 1) * n / 2** substrings in total.\n    **k2** indicates the number of substrings which are as same as **T[l..r]** but have smaller left subscript than **l**.\n\nIn this problem, you need to answer the following two queries:\n\n\n\n  Select **k1** **k2**: report **l** and **r**, such that **T[l..r]** are assigned values **k1** and **k2**.\n  Rank **l** **r**: output the assigned **k1** and **k2** of **T[l..r]**.",
+    "constraints": [
+      "1 <= n <= 10^6",
+      "1 <= m <= 10^6",
+      "1 <= l <= r <= n",
+      "k1, k2 are legal"
+    ],
+    "inputFormat": "First line contains a string T with n lowercase letters T[1..n]. The second line contains a number m, which represents the total number of queries. Each of the following m lines contains a query. All queries are formed as 'Select k1 k2' or 'Rank l r'.",
+    "outputFormat": "For each query, output the corresponding answer as the form 'l r' or 'k1 k2' in a single line.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "",
+        "output": "Input:\naa\n6\nSelect 1 1\nSelect 1 2\nSelect 2 1\nRank 1 1\nRank 2 2\nRank 1 2",
+        "explanation": ""
+      },
+      {
+        "id": "sample_2",
+        "input": "",
+        "output": "Output:\n1 1\n2 2\n1 2\n1 1\n1 2\n2 1",
+        "explanation": ""
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved by first constructing the suffix array and LCP array of the given string. Then, for each query, we can use the suffix array and LCP array to find the required values. For 'Select k1 k2' queries, we need to find the substring with k1 lexicographically smaller substrings and k2 same substrings with smaller left subscript. For 'Rank l r' queries, we need to calculate k1 and k2 for the substring T[l..r].",
+    "timeComplexity": "O(n log n) for constructing the suffix array and LCP array, and O(m) for processing the queries.",
+    "spaceComplexity": "O(n) for storing the suffix array and LCP array.",
+    "code": {
+      "C": "// COMPLETE, COMPILABLE C code\n#include <stdio.h>\n#include <string.h>\n#define MAXN 1000005\nchar T[MAXN];\nint SA[MAXN], LCP[MAXN];\nint cmp(int *r, int a, int b, int l)\n{\n    return strcmp(r + a, r + b) == 0 ? a + l < strlen(T) && b + l < strlen(T) && r[a + l] < r[b + l] : r[a] < r[b];\n}\nvoid make_suffix_array(int *r, char *s, int n)\n{\n    int *x = (int *)malloc(n * sizeof(int));\n    int *y = (int *)malloc(n * sizeof(int));\n    int *wa = (int *)malloc(n * sizeof(int));\n    int *wb = (int *)malloc(n * sizeof(int));\n    int *SA = (int *)malloc(n * sizeof(int));\n    int j, p, *t;\n    for (int i = 0; i < n; i++) x[i] = i;\n    for (int i = 0; i < n; i++) y[i] = s[i];\n    for (int i = 0; i < n; i++) wa[i] = wb[i] = 0;\n    for (int i = 0; i < n; i++) SA[i] = 0;\n    for (j = 1, p = 1; p < n; j *= 2, p *= 2)\n    {\n        for (int i = 0; i < n; i++) y[i] = i;\n        for (int i = (n - j); i < n; i++) y[i - (n - j)] = x[i];\n        for (int i = 0; i < n; i++) wa[i] = x[y[i]];\n        for (int i = 0; i < n; i++) wb[i] = 0;\n        for (int i = 0; i < n; i++) wb[x[i]]++;\n        for (int i = 1; i < n; i++) wb[i] += wb[i - 1];\n        for (int i = n - 1; i >= 0; i--) SA[--wb[x[y[i]]]] = y[i];\n        for (int i = 0; i < n; i++) x[i] = cmp(SA, SA[i], SA[(i + 1) % n], j);\n        t = wa; wa = wb; wb = t;\n    }\n    free(x);\n    free(y);\n    free(wa);\n    free(wb);\n}\nvoid make_lcp(int *r, char *s, int n)\n{\n    int k = 0;\n    for (int i = 0; i < n; i++) LCP[i] = 0;\n    for (int i = 0; i < n; i++)\n    {\n        if (k > 0) k--;\n        if (r[i] == n - 1)\n        {\n            k = 0;\n            continue;\n        }\n        for (int j = r[i] + 1; s[j + k] == s[r[i + 1] + k]; k++);\n        LCP[r[i]] = k;\n    }\n}\nint main()\n{\n    int m;\n    scanf(\"%s\", T);\n    int n = strlen(T);\n    make_suffix_array(T, T, n);\n    make_lcp(T, T, n);\n    scanf(\"%d\", &m);\n    for (int i = 0; i < m; i++)\n    {\n        char query[10];\n        scanf(\"%s\", query);\n        if (strcmp(query, \"Select\") == 0)\n        {\n            int k1, k2;\n            scanf(\"%d %d\", &k1, &k2);\n            // Find l and r such that T[l..r] are assigned values k1 and k2\n            int l = 0, r = 0;\n            for (int j = 0; j < n; j++)\n            {\n                for (int k = j + 1; k <= n; k++)\n                {\n                    int k1_temp = 0, k2_temp = 0;\n                    for (int p = 0; p < n; p++)\n                    {\n                        if (strcmp(T + j, T + p) < 0)\n                        {\n                            k1_temp++;\n                        }\n                        if (strcmp(T + j, T + p) == 0 && p < j)\n                        {\n                            k2_temp++;\n                        }\n                    }\n                    if (k1_temp == k1 && k2_temp == k2)\n                    {\n                        l = j + 1;\n                        r = k;\n                        break;\n                    }\n                }\n                if (l != 0 && r != 0)\n                {\n                    break;\n                }\n            }\n            printf(\"%d %d\\n\", l, r);\n        }\n        else if (strcmp(query, \"Rank\") == 0)\n        {\n            int l, r;\n            scanf(\"%d %d\", &l, &r);\n            // Calculate k1 and k2 for T[l..r]\n            int k1 = 0, k2 = 0;\n            for (int j = 0; j < n; j++)\n            {\n                if (strcmp(T + l - 1, T + j) < 0)\n                {\n                    k1++;\n                }\n                if (strcmp(T + l - 1, T + j) == 0 && j < l - 1)\n                {\n                    k2++;\n                }\n            }\n            printf(\"%d %d\\n\", k1, k2);\n        }\n    }\n    return 0;\n}",
+      "C++": "// COMPLETE, COMPILABLE C++ code\n#include <iostream>\n#include <string>\n#include <vector>\n#include <algorithm>\nusing namespace std;\n#define MAXN 1000005\nstring T;\nvector<int> SA, LCP;\nvoid make_suffix_array(string &s, vector<int> &SA)\n{\n    int n = s.size();\n    vector<int> x(n), y(n), wa(n), wb(n);\n    for (int i = 0; i < n; i++) x[i] = i;\n    for (int i = 0; i < n; i++) y[i] = s[i];\n    for (int i = 0; i < n; i++) wa[i] = wb[i] = 0;\n    for (int j = 1, p = 1; p < n; j *= 2, p *= 2)\n    {\n        for (int i = 0; i < n; i++) y[i] = i;\n        for (int i = (n - j); i < n; i++) y[i - (n - j)] = x[i];\n        for (int i = 0; i < n; i++) wa[i] = x[y[i]];\n        for (int i = 0; i < n; i++) wb[i] = 0;\n        for (int i = 0; i < n; i++) wb[x[i]]++;\n        for (int i = 1; i < n; i++) wb[i] += wb[i - 1];\n        for (int i = n - 1; i >= 0; i--) SA[--wb[x[y[i]]]] = y[i];\n        for (int i = 0; i < n; i++) x[i] = y[i] < y[i + 1] ? -1 : s[y[i]] - s[y[i + 1]];\n        swap(wa, wb);\n    }\n}\nvoid make_lcp(string &s, vector<int> &SA, vector<int> &LCP)\n{\n    int k = 0;\n    for (int i = 0; i < SA.size(); i++) LCP[i] = 0;\n    for (int i = 0; i < SA.size(); i++)\n    {\n        if (k > 0) k--;\n        if (SA[i] == s.size() - 1)\n        {\n            k = 0;\n            continue;\n        }\n        for (int j = SA[i] + 1; s[j + k] == s[SA[i + 1] + k]; k++);\n        LCP[SA[i]] = k;\n    }\n}\nint main()\n{\n    cin >> T;\n    int n = T.size();\n    SA.resize(n);\n    LCP.resize(n);\n    make_suffix_array(T, SA);\n    make_lcp(T, SA, LCP);\n    int m;\n    cin >> m;\n    for (int i = 0; i < m; i++)\n    {\n        string query;\n        cin >> query;\n        if (query == \"Select\")\n        {\n            int k1, k2;\n            cin >> k1 >> k2;\n            // Find l and r such that T[l..r] are assigned values k1 and k2\n            int l = 0, r = 0;\n            for (int j = 0; j < n; j++)\n            {\n                for (int k = j + 1; k <= n; k++)\n                {\n                    int k1_temp = 0, k2_temp = 0;\n                    for (int p = 0; p < n; p++)\n                    {\n                        if (T.substr(j, k - j) < T.substr(p, k - j))\n                        {\n                            k1_temp++;\n                        }\n                        if (T.substr(j, k - j) == T.substr(p, k - j) && p < j)\n                        {\n                            k2_temp++;\n                        }\n                    }\n                    if (k1_temp == k1 && k2_temp == k2)\n                    {\n                        l = j + 1;\n                        r = k;\n                        break;\n                    }\n                }\n                if (l != 0 && r != 0)\n                {\n                    break;\n                }\n            }\n            cout << l << \" \" << r << endl;\n        }\n        else if (query == \"Rank\")\n        {\n            int l, r;\n            cin >> l >> r;\n            // Calculate k1 and k2 for T[l..r]\n            int k1 = 0, k2 = 0;\n            for (int j = 0; j < n; j++)\n            {\n                if (T.substr(l - 1, r - l + 1) < T.substr(j, r - l + 1))\n                {\n                    k1++;\n                }\n                if (T.substr(l - 1, r - l + 1) == T.substr(j, r - l + 1) && j < l - 1)\n                {\n                    k2++;\n                }\n            }\n            cout << k1 << \" \" << k2 << endl;\n        }\n    }\n    return 0;\n}",
+      "Java": "// COMPLETE, COMPILABLE Java code\nimport java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        String T = scanner.next();\n        int n = T.length();\n        int m = scanner.nextInt();\n        for (int i = 0; i < m; i++) {\n            String query = scanner.next();\n            if (query.equals(\"Select\")) {\n                int k1 = scanner.nextInt();\n                int k2 = scanner.nextInt();\n                // Find l and r such that T[l..r] are assigned values k1 and k2\n                int l = 0, r = 0;\n                for (int j = 0; j < n; j++) {\n                    for (int k = j + 1; k <= n; k++) {\n                        int k1_temp = 0, k2_temp = 0;\n                        for (int p = 0; p < n; p++) {\n                            if (T.substring(j, k).compareTo(T.substring(p, Math.min(p + k - j, n))) < 0) {\n                                k1_temp++;\n                            }\n                            if (T.substring(j, k).equals(T.substring(p, Math.min(p + k - j, n))) && p < j) {\n                                k2_temp++;\n                            }\n                        }\n                        if (k1_temp == k1 && k2_temp == k2) {\n                            l = j + 1;\n                            r = k;\n                            break;\n                        }\n                    }\n                    if (l != 0 && r != 0) {\n                        break;\n                    }\n                }\n                System.out.println(l + \" \" + r);\n            } else if (query.equals(\"Rank\")) {\n                int l = scanner.nextInt();\n                int r = scanner.nextInt();\n                // Calculate k1 and k2 for T[l..r]\n                int k1 = 0, k2 = 0;\n                for (int j = 0; j < n; j++) {\n                    if (T.substring(l - 1, r).compareTo(T.substring(j, Math.min(j + r - l + 1, n))) < 0) {\n                        k1++;\n                    }\n                    if (T.substring(l - 1, r).equals(T.substring(j, Math.min(j + r - l + 1, n))) && j < l - 1) {\n                        k2++;\n                    }\n                }\n                System.out.println(k1 + \" \" + k2);\n            }\n        }\n    }\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

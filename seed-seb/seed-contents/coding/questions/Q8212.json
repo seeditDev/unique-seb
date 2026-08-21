@@ -1,0 +1,132 @@
+{
+  "questionId": "Q8212",
+  "title": "Even tuples",
+  "slug": "even-tuples",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Arrays | Combinatorics",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Prefix Sum",
+      "Parity",
+      "Counting Triples",
+      "Combinatorics"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Combinatorics & Probability"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given an array AAA consisting of NNN integers and QQQ queries. Each query is described by two integers LLL and RRR. For each query, output the number of tuples (i,j,k)(i, j, k)(i,j,k) such that L≤i&lt;j&lt;k≤RL\\le i\\lt j\\lt k\\le RL≤i&lt;j&lt;k≤R and Ai+Aj+AkA_i+A_j+A_kAi​+Aj​+Ak​ is an even number.\n\n\nInput Format\n\nThe first line contains an integer TTT, the number of test cases. Then the test cases follow.\nThe first line of each test case contains two integers NNN and QQQ.\nThe next line contains NNN integers A1,…,ANA_1,\\ldots,A_NA1​,…,AN​.\nThen QQQ lines follow, each containing two integers LiL_iLi​ and RiR_iRi​.\n\n\nOutput Format\nFor each query, output the number of tuples possible as mentioned in the problem statement.",
+    "constraints": [
+      "1 ≤ T ≤ 10^3",
+      "1 ≤ N, Q ≤ 10^5",
+      "0 ≤ Ai ≤ 10^6",
+      "1 ≤ L ≤ R ≤ N",
+      "Σ N over all test cases ≤ 10^6",
+      "Σ Q over all test cases ≤ 10^5"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case:\n- The first line contains two integers N and Q.\n- The second line contains N integers A1 … AN.\n- Each of the next Q lines contains two integers L and R (1‑based, L ≤ R).\nFor each query you must output the number of triples (i, j, k) such that L ≤ i < j < k ≤ R and Ai + Aj + Ak is even.",
+    "outputFormat": "For each query, output a single line containing the required number of triples.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n6 3\n1 2 3 4 5 6\n1 3\n2 5\n1 6",
+        "output": "1\n2\n10",
+        "explanation": "For each query we count odds and evens in the range and apply the formula. The results are 1, 2 and 10 respectively."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1\n2\n1 1",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary (15 elements)",
+        "input": "1\n15 1\n1 2 3 4 5 6 7 8 9 10 11 12 13 14 15\n1 15",
+        "expectedOutput": "231",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case with zeros",
+        "input": "1\n5 1\n0 1 0 1 0\n1 5",
+        "expectedOutput": "4",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case all even subarray",
+        "input": "1\n6 1\n2 4 6 8 10 12\n2 5",
+        "expectedOutput": "4",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case mixed parity",
+        "input": "1\n7 1\n1 2 3 4 5 6 7\n3 7",
+        "expectedOutput": "6",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "A sum of three numbers is even iff the count of odd numbers among them is even (0 or 2). For a range [L,R] let:\n- odd = number of odd elements in the range\n- even = length - odd\nThe answer is C(even,3) (all three even) plus C(odd,2) * even (exactly two odds and one even).\nWe can obtain odd for any range in O(1) using a prefix array prefOdd where prefOdd[i] = number of odd elements among A1…Ai. Then odd = prefOdd[R] - prefOdd[L‑1]. Compute the formula with 64‑bit integers.\nOverall per test case we spend O(N) to build the prefix array and O(1) per query, i.e. O(N+Q) time and O(N) memory.",
+    "timeComplexity": "O(N + Q) per test case",
+    "spaceComplexity": "O(N) for the prefix array",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nstatic inline long long comb3(long long x) {\n    if (x < 3) return 0;\n    return x * (x - 1) * (x - 2) / 6;\n}\nstatic inline long long comb2(long long x) {\n    if (x < 2) return 0;\n    return x * (x - 1) / 2;\n}\n\nint main() {\n    int T; if (scanf(\"%d\", &T)!=1) return 0;\n    while (T--) {\n        int N, Q; scanf(\"%d %d\", &N, &Q);\n        int *oddPref = (int*)calloc(N+1, sizeof(int));\n        for (int i = 1; i <= N; ++i) {\n            long long val; scanf(\"%lld\", &val);\n            oddPref[i] = oddPref[i-1] + (val & 1LL);\n        }\n        while (Q--) {\n            int L, R; scanf(\"%d %d\", &L, &R);\n            long long odd = oddPref[R] - oddPref[L-1];\n            long long len = R - L + 1;\n            long long even = len - odd;\n            long long ans = comb3(even) + comb2(odd) * even;\n            printf(\"%lld\\n\", ans);\n        }\n        free(oddPref);\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nstatic inline long long C3(long long x){ return x<3?0:x*(x-1)*(x-2)/6; }\nstatic inline long long C2(long long x){ return x<2?0:x*(x-1)/2; }\n\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N,Q; cin>>N>>Q;\n        vector<int> pref(N+1,0);\n        for(int i=1;i<=N;++i){\n            long long a; cin>>a;\n            pref[i]=pref[i-1]+(a&1LL);\n        }\n        while(Q--){\n            int L,R; cin>>L>>R;\n            long long odd = pref[R]-pref[L-1];\n            long long len = R-L+1;\n            long long even = len-odd;\n            long long ans = C3(even)+C2(odd)*even;\n            cout<<ans<<'\\n';\n        }\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    private static long C3(long x){ return x<3?0:x*(x-1)*(x-2)/6; }\n    private static long C2(long x){ return x<2?0:x*(x-1)/2; }\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner(System.in);\n        int T = fs.nextInt();\n        StringBuilder out = new StringBuilder();\n        while (T-- > 0) {\n            int N = fs.nextInt();\n            int Q = fs.nextInt();\n            int[] pref = new int[N+1];\n            for (int i = 1; i <= N; i++) {\n                long val = fs.nextLong();\n                pref[i] = pref[i-1] + ((val & 1L) == 1L ? 1 : 0);\n            }\n            for (int q = 0; q < Q; q++) {\n                int L = fs.nextInt();\n                int R = fs.nextInt();\n                long odd = pref[R] - pref[L-1];\n                long len = R - L + 1L;\n                long even = len - odd;\n                long ans = C3(even) + C2(odd) * even;\n                out.append(ans).append('\\n');\n            }\n        }\n        System.out.print(out.toString());\n    }\n\n    // Fast scanner based on BufferedInputStream\n    static class FastScanner {\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        private final InputStream in;\n        FastScanner(InputStream in){ this.in = in; }\n        private int readByte() throws IOException {\n            if (ptr >= len) {\n                len = in.read(buffer);\n                ptr = 0;\n                if (len <= 0) return -1;\n            }\n            return buffer[ptr++];\n        }\n        long nextLong() throws IOException {\n            int c; do { c = readByte(); } while (c <= ' ');\n            boolean neg = false;\n            if (c == '-') { neg = true; c = readByte(); }\n            long val = 0;\n            while (c > ' ') {\n                val = val * 10 + (c - '0');\n                c = readByte();\n            }\n            return neg ? -val : val;\n        }\n        int nextInt() throws IOException { return (int) nextLong(); }\n    }\n}\n",
+      "Python3": "import sys\n\ndef comb2(x):\n    return 0 if x < 2 else x * (x - 1) // 2\n\ndef comb3(x):\n    return 0 if x < 3 else x * (x - 1) * (x - 2) // 6\n\ndef solve():\n    data = list(map(int, sys.stdin.buffer.read().split()))\n    it = iter(data)\n    t = next(it)\n    out_lines = []\n    for _ in range(t):\n        n = next(it); q = next(it)\n        pref = [0]*(n+1)\n        for i in range(1, n+1):\n            val = next(it)\n            pref[i] = pref[i-1] + (val & 1)\n        for _ in range(q):\n            l = next(it); r = next(it)\n            odd = pref[r] - pref[l-1]\n            length = r - l + 1\n            even = length - odd\n            ans = comb3(even) + comb2(odd) * even\n            out_lines.append(str(ans))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst data = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/).map(Number);\nlet idx = 0;\nconst T = data[idx++];\nlet output = [];\nfunction comb2(x){ return x < 2 ? 0 : x * (x - 1) / 2; }\nfunction comb3(x){ return x < 3 ? 0 : x * (x - 1) * (x - 2) / 6; }\nfor(let tc = 0; tc < T; ++tc){\n  const N = data[idx++];\n  const Q = data[idx++];\n  const pref = new Array(N+1).fill(0);\n  for(let i = 1; i <= N; ++i){\n    const val = data[idx++];\n    pref[i] = pref[i-1] + (val & 1);\n  }\n  for(let q = 0; q < Q; ++q){\n    const L = data[idx++];\n    const R = data[idx++];\n    const odd = pref[R] - pref[L-1];\n    const len = R - L + 1;\n    const even = len - odd;\n    const ans = comb3(even) + comb2(odd) * even;\n    output.push(String(ans));\n  }\n}\nconsole.log(output.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

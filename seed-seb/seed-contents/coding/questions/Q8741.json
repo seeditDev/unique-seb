@@ -1,0 +1,129 @@
+{
+  "questionId": "Q8741",
+  "title": "Minimum Similar Substring",
+  "slug": "minimum-similar-substring",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Sliding Window",
+      "Two Pointers",
+      "Hash Map",
+      "Minimum Window Substring"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Strings"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Given two strings sss,ttt, Alice calls a string ttt similar to string sss if all the characters(including duplicates) present in the string ttt are present in string sss.\n\nFind the shortest substring of the string sss which is similar to ttt to make Alice happy.\nIf there is no such substring, print “IMPOSSIBLE” without the quotes.\n\nString aaa is a substring of string bbb if it is possible to choose several consecutive letters in bbb in such a way that they form aaa.\n\n\nInput Format\n\nThe first line will contain 2 integers ∣S∣,∣T∣|S|,|T|∣S∣,∣T∣\nThe second line contains the string SSS.\nThe third line contains the string TTT.\n\n\nOutput Format\nOutput the length of the shortest similar substring and the substring as well on different lines. If multiple answers are possible then output the earliest substring of the string sss. If there is no such substring, print “IMPOSSIBLE” without the quotes.",
+    "constraints": [
+      "1 ≤ Q ≤ 10",
+      "1 ≤ |S|, |T| ≤ 10^5",
+      "Sum of |S| over all test cases ≤ 10^6"
+    ],
+    "inputFormat": "The first line contains an integer Q, the number of test cases. For each test case:\n- A line with two integers |S| and |T| (the lengths of the strings, 1 ≤ |S|, |T| ≤ 10^5).\n- A line with the string S.\n- A line with the string T.\nAll strings consist of printable ASCII characters without spaces.",
+    "outputFormat": "For each test case output either:\n- Two lines: first the length of the shortest substring of S that is similar to T, second the substring itself; or\n- A single line containing the word IMPOSSIBLE if no such substring exists.\nOutputs for different test cases are printed consecutively.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "8 2\naabcbcde\nad",
+        "output": "6\nabcbcd",
+        "explanation": "Explanation:\nSubstrings {abcbcde,abcbcd} follow the similar substring condition out of which abcbcd is the shortest."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem is exactly the Minimum Window Substring problem. For each test case we count the required frequency of every character in T (need map). Then we slide a window [l, r) over S using two pointers. We expand r, updating a have map. When the window satisfies all required counts (i.e., for every character c, have[c] ≥ need[c]), we try to shrink l while the condition still holds, thereby obtaining the smallest window ending at r. Each time a valid window is found we compare its length with the best one seen so far; if it is shorter, or equal but starts earlier, we store it. The sliding window moves each pointer at most |S| steps, giving O(|S| + |T|) time per test case. The maps are arrays of size 128 (ASCII) for O(1) access, so the memory usage is O(1) besides the input strings.",
+    "timeComplexity": "O(|S| + |T|) per test case, overall O(total length of all S and T).",
+    "spaceComplexity": "O(1) extra (fixed size arrays of length 128) plus the input strings.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n#include <stdlib.h>\n\nint main(){\n    int Q; if(scanf(\"%d\", &Q)!=1) return 0;\n    while(Q--){\n        int n,m; scanf(\"%d %d\", &n, &m);\n        char *S = (char*)malloc((n+5)*sizeof(char));\n        char *T = (char*)malloc((m+5)*sizeof(char));\n        scanf(\"%s\", S);\n        scanf(\"%s\", T);\n        int need[128]={0}, have[128]={0};\n        int required=0;\n        for(int i=0;i<m;i++){\n            unsigned char c = T[i];\n            if(need[c]==0) required++;\n            need[c]++;\n        }\n        int formed=0, left=0, bestLen=n+1, bestStart=0;\n        for(int right=0; right<n; right++){\n            unsigned char c = S[right];\n            have[c]++;\n            if(have[c]==need[c] && need[c]>0) formed++;\n            while(formed==required && left<=right){\n                int curLen = right-left+1;\n                if(curLen<bestLen){\n                    bestLen=curLen; bestStart=left;\n                }\n                unsigned char lc = S[left];\n                if(have[lc]==need[lc] && need[lc]>0) formed--;\n                have[lc]--;\n                left++;\n            }\n        }\n        if(bestLen==n+1){\n            printf(\"IMPOSSIBLE\\n\");\n        }else{\n            printf(\"%d\\n\", bestLen);\n            for(int i=0;i<bestLen;i++) putchar(S[bestStart+i]);\n            putchar('\\n');\n        }\n        free(S); free(T);\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int Q; if(!(cin>>Q)) return 0;\n    while(Q--){\n        int n,m; cin>>n>>m;\n        string S,T; cin>>S>>T;\n        array<int,128> need{}; need.fill(0);\n        array<int,128> have{}; have.fill(0);\n        int required=0;\n        for(char ch: T){\n            unsigned char c=ch;\n            if(need[c]==0) required++;\n            need[c]++;\n        }\n        int formed=0, left=0, bestLen=n+1, bestStart=0;\n        for(int right=0; right<n; ++right){\n            unsigned char c=S[right];\n            have[c]++;\n            if(have[c]==need[c] && need[c]>0) formed++;\n            while(formed==required && left<=right){\n                int curLen=right-left+1;\n                if(curLen<bestLen){\n                    bestLen=curLen; bestStart=left;\n                }\n                unsigned char lc=S[left];\n                if(have[lc]==need[lc] && need[lc]>0) formed--;\n                have[lc]--;\n                ++left;\n            }\n        }\n        if(bestLen==n+1){\n            cout<<\"IMPOSSIBLE\\n\";\n        }else{\n            cout<<bestLen<<\"\\n\"<<S.substr(bestStart,bestLen)<<\"\\n\";\n        }\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st = new StringTokenizer(br.readLine());\n        int Q = Integer.parseInt(st.nextToken());\n        StringBuilder out = new StringBuilder();\n        while (Q-- > 0) {\n            st = new StringTokenizer(br.readLine());\n            int n = Integer.parseInt(st.nextToken());\n            int m = Integer.parseInt(st.nextToken());\n            String S = br.readLine();\n            String T = br.readLine();\n            int[] need = new int[128];\n            int[] have = new int[128];\n            int required = 0;\n            for (int i = 0; i < T.length(); i++) {\n                int c = T.charAt(i);\n                if (need[c] == 0) required++;\n                need[c]++;\n            }\n            int formed = 0, left = 0, bestLen = n + 1, bestStart = 0;\n            for (int right = 0; right < S.length(); right++) {\n                int c = S.charAt(right);\n                have[c]++;\n                if (have[c] == need[c] && need[c] > 0) formed++;\n                while (formed == required && left <= right) {\n                    int curLen = right - left + 1;\n                    if (curLen < bestLen) {\n                        bestLen = curLen;\n                        bestStart = left;\n                    }\n                    int lc = S.charAt(left);\n                    if (have[lc] == need[lc] && need[lc] > 0) formed--;\n                    have[lc]--;\n                    left++;\n                }\n            }\n            if (bestLen == n + 1) {\n                out.append(\"IMPOSSIBLE\\n\");\n            } else {\n                out.append(bestLen).append('\\n').append(S.substring(bestStart, bestStart + bestLen)).append('\\n');\n            }\n        }\n        System.out.print(out.toString());\n    }\n}\n",
+      "Python3": "import sys\n\ndef solve_one():\n    n, m = map(int, sys.stdin.readline().split())\n    S = sys.stdin.readline().strip()\n    T = sys.stdin.readline().strip()\n    need = [0]*128\n    have = [0]*128\n    required = 0\n    for ch in T:\n        idx = ord(ch)\n        if need[idx] == 0:\n            required += 1\n        need[idx] += 1\n    formed = 0\n    left = 0\n    best_len = n + 1\n    best_start = 0\n    for right, ch in enumerate(S):\n        idx = ord(ch)\n        have[idx] += 1\n        if have[idx] == need[idx] and need[idx] > 0:\n            formed += 1\n        while formed == required and left <= right:\n            cur_len = right - left + 1\n            if cur_len < best_len:\n                best_len = cur_len\n                best_start = left\n            lch = S[left]\n            lidx = ord(lch)\n            if have[lidx] == need[lidx] and need[lidx] > 0:\n                formed -= 1\n            have[lidx] -= 1\n            left += 1\n    if best_len == n + 1:\n        return \"IMPOSSIBLE\"\n    return f\"{best_len}\\n{S[best_start:best_start+best_len]}\"\n\ndef main():\n    data = sys.stdin.read().splitlines()\n    if not data:\n        return\n    q = int(data[0])\n    idx = 1\n    out_lines = []\n    for _ in range(q):\n        n, m = map(int, data[idx].split()); idx += 1\n        S = data[idx].strip(); idx += 1\n        T = data[idx].strip(); idx += 1\n        # reuse solve_one logic but with given strings\n        need = [0]*128\n        have = [0]*128\n        required = 0\n        for ch in T:\n            ci = ord(ch)\n            if need[ci] == 0:\n                required += 1\n            need[ci] += 1\n        formed = 0\n        left = 0\n        best_len = n + 1\n        best_start = 0\n        for right, ch in enumerate(S):\n            ci = ord(ch)\n            have[ci] += 1\n            if have[ci] == need[ci] and need[ci] > 0:\n                formed += 1\n            while formed == required and left <= right:\n                cur_len = right - left + 1\n                if cur_len < best_len:\n                    best_len = cur_len\n                    best_start = left\n                lch = S[left]\n                li = ord(lch)\n                if have[li] == need[li] and need[li] > 0:\n                    formed -= 1\n                have[li] -= 1\n                left += 1\n        if best_len == n + 1:\n            out_lines.append(\"IMPOSSIBLE\")\n        else:\n            out_lines.append(str(best_len))\n            out_lines.append(S[best_start:best_start+best_len])\n    sys.stdout.write(\"\\n\".join(out_lines))\n\nif __name__ == \"__main__\":\n    main()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet ptr = 0;\nconst Q = parseInt(input[ptr++]);\nlet output = [];\nfor (let tc = 0; tc < Q; tc++) {\n  const [nStr, mStr] = input[ptr++].trim().split(/\\s+/);\n  const n = parseInt(nStr), m = parseInt(mStr);\n  const S = input[ptr++] || '';\n  const T = input[ptr++] || '';\n  const need = new Array(128).fill(0);\n  const have = new Array(128).fill(0);\n  let required = 0;\n  for (let ch of T) {\n    const c = ch.charCodeAt(0);\n    if (need[c] === 0) required++;\n    need[c]++;\n  }\n  let formed = 0, left = 0, bestLen = n + 1, bestStart = 0;\n  for (let right = 0; right < S.length; right++) {\n    const c = S.charCodeAt(right);\n    have[c]++;\n    if (have[c] === need[c] && need[c] > 0) formed++;\n    while (formed === required && left <= right) {\n      const curLen = right - left + 1;\n      if (curLen < bestLen) {\n        bestLen = curLen;\n        bestStart = left;\n      }\n      const lc = S.charCodeAt(left);\n      if (have[lc] === need[lc] && need[lc] > 0) formed--;\n      have[lc]--;\n      left++;\n    }\n  }\n  if (bestLen === n + 1) {\n    output.push('IMPOSSIBLE');\n  } else {\n    output.push(String(bestLen));\n    output.push(S.substr(bestStart, bestLen));\n  }\n}\nconsole.log(output.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

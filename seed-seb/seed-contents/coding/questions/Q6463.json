@@ -1,0 +1,128 @@
+{
+  "questionId": "Q6463",
+  "title": "Chef and Finding Direction",
+  "slug": "chef-and-finding-direction",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graph",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Graph",
+      "BFS",
+      "DFS"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Flow & Matching"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef has a grid of size **N * N** with its rows numbered from **1** to **N**, and the columns also numbered from **1** to **N**. The cell at the **i**th row and the **j**th column is cell **(i,j)**. From cell **(i,j)**, you can go in one of the four directions **U L D R** (corresponding to up, left, down, right) to cells **(i-1,j)**, **(i,j-1)**, **(i+1,j)**, **(i,j+1)** respectively, and of course you cannot go outside of the grid. However, with each cell, Chef is only allowed to go in some of the four directions (at least one), which is given by a string **directs[i][j]** containing only the characters **U L D R** denoting the directions Chef can go from cell **(i,j)**. \n\n\nNow, Chef wants to choose exactly one direction to go from each cell, so that from any cell in the grid, he can come back to same cell by following the chosen directions of the cells. Please help him!",
+    "constraints": [
+      "1 ≤ T ≤ 50",
+      "2 ≤ N ≤ 150",
+      "1 ≤ length directs[i][j] ≤ 4"
+    ],
+    "inputFormat": "The first line of input contains an integer T denoting the number of test cases. The description of T test cases follows. The first line of each test case contains a single integer N denoting the size of the grid. N lines follow. Each line contains N space-separated strings denoting the given directions for that cell.",
+    "outputFormat": "For each test case, output a single line containing 'YES' if for each cell Chef can choose one and only one direction to go so that from every cell Chef can go back to that cell using chosen directions, 'NO' otherwise. If the answer is 'YES', then you must print the chosen directions in the next N lines. Each line will contain N strings. The jth string in the ith line must consist of a single character: the direction chosen for cell (i,j).",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n2\nRD D\nUR UL\n3\nRD LR DL\nRU LU LDU\nU UL L",
+        "output": "YES\nR D\nU L\nNO",
+        "explanation": "For the first test case, we can choose the directions R, D, U, L for the cells (1,1), (1,2), (2,1), (2,2) respectively. For the second test case, there is no way to choose the directions such that from any cell, we can come back to that cell using the chosen directions."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n2\nRD D\nUR UL",
+        "expectedOutput": "YES\nR D\nU L",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n150\nRD LR DL\nRU LU LDU\nU UL L",
+        "expectedOutput": "NO",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n2\nUU DD\nLL RR",
+        "expectedOutput": "NO",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n5\nRD LR DL\nRU LU LDU\nU UL L\nUU DD\nLL RR",
+        "expectedOutput": "NO",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n10\nRD LR DL\nRU LU LDU\nU UL L\nUU DD\nLL RR\nRD LR DL\nRU LU LDU\nU UL L\nUU DD\nLL RR",
+        "expectedOutput": "NO",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a graph-based approach. We can represent the grid as a directed graph, where each cell is a node and the directions are edges. We can then use a depth-first search (DFS) or breadth-first search (BFS) to traverse the graph and check if it is possible to choose one direction for each cell such that from any cell, we can come back to that cell using the chosen directions.",
+    "timeComplexity": "O(T * N^2 * 4^N) — explain: per query is O(N^2 * 4^N), total is O(T * N^2 * 4^N)",
+    "spaceComplexity": "O(N^2) — explain what dominates",
+    "code": {
+      "C": "// COMPLETE, COMPILABLE C code\n// Uses correct I/O\n// Handles all T test cases\n#include <stdio.h>\n#include <string.h>\n#define MAX 150\n#define MAX_DIR 4\n\nchar directs[MAX][MAX][MAX_DIR + 1];\nchar chosen[MAX][MAX];\nint N;\n\nvoid dfs(int i, int j) {\n    if (chosen[i][j] != 0) return;\n    for (int k = 0; k < strlen(directs[i][j]); k++) {\n        char dir = directs[i][j][k];\n        int ni = i, nj = j;\n        if (dir == 'U') ni--;\n        else if (dir == 'D') ni++;\n        else if (dir == 'L') nj--;\n        else nj++;\n        if (ni < 0 || ni >= N || nj < 0 || nj >= N) continue;\n        chosen[i][j] = dir;\n        dfs(ni, nj);\n    }\n}\n\nint main() {\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        scanf(\"%d\", &N);\n        for (int i = 0; i < N; i++) {\n            for (int j = 0; j < N; j++) {\n                scanf(\"%s\", directs[i][j]);\n            }\n        }\n        memset(chosen, 0, sizeof(chosen));\n        for (int i = 0; i < N; i++) {\n            for (int j = 0; j < N; j++) {\n                dfs(i, j);\n            }\n        }\n        int ok = 1;\n        for (int i = 0; i < N; i++) {\n            for (int j = 0; j < N; j++) {\n                if (chosen[i][j] == 0) {\n                    ok = 0;\n                    break;\n                }\n            }\n            if (!ok) break;\n        }\n        if (ok) {\n            printf(\"YES\\n\");\n            for (int i = 0; i < N; i++) {\n                for (int j = 0; j < N; j++) {\n                    printf(\"%c \", chosen[i][j]);\n                }\n                printf(\"\\n\");\n            }\n        } else {\n            printf(\"NO\\n\");\n        }\n    }\n    return 0;\n}",
+      "C++": "// COMPLETE, COMPILABLE C++ code\n// Uses correct I/O\n// Handles all T test cases\n#include <iostream>\n#include <string>\n#include <vector>\nusing namespace std;\n#define MAX 150\n#define MAX_DIR 4\n\nstring directs[MAX][MAX];\nchar chosen[MAX][MAX];\nint N;\n\nvoid dfs(int i, int j) {\n    if (chosen[i][j] != 0) return;\n    for (int k = 0; k < directs[i][j].size(); k++) {\n        char dir = directs[i][j][k];\n        int ni = i, nj = j;\n        if (dir == 'U') ni--;\n        else if (dir == 'D') ni++;\n        else if (dir == 'L') nj--;\n        else nj++;\n        if (ni < 0 || ni >= N || nj < 0 || nj >= N) continue;\n        chosen[i][j] = dir;\n        dfs(ni, nj);\n    }\n}\n\nint main() {\n    int T;\n    cin >> T;\n    while (T--) {\n        cin >> N;\n        for (int i = 0; i < N; i++) {\n            for (int j = 0; j < N; j++) {\n                cin >> directs[i][j];\n            }\n        }\n        memset(chosen, 0, sizeof(chosen));\n        for (int i = 0; i < N; i++) {\n            for (int j = 0; j < N; j++) {\n                dfs(i, j);\n            }\n        }\n        int ok = 1;\n        for (int i = 0; i < N; i++) {\n            for (int j = 0; j < N; j++) {\n                if (chosen[i][j] == 0) {\n                    ok = 0;\n                    break;\n                }\n            }\n            if (!ok) break;\n        }\n        if (ok) {\n            cout << \"YES\" << endl;\n            for (int i = 0; i < N; i++) {\n                for (int j = 0; j < N; j++) {\n                    cout << chosen[i][j] << \" \";\n                }\n                cout << endl;\n            }\n        } else {\n            cout << \"NO\" << endl;\n        }\n    }\n    return 0;\n}",
+      "Java": "// COMPLETE, COMPILABLE Java code\n// Class MUST be named Main\n// Uses correct I/O\n// Handles all T test cases\nimport java.util.Scanner;\npublic class Main {\n    static final int MAX = 150;\n    static final int MAX_DIR = 4;\n    static String[][] directs = new String[MAX][MAX];\n    static char[][] chosen = new char[MAX][MAX];\n    static int N;\n\n    public static void dfs(int i, int j) {\n        if (chosen[i][j] != 0) return;\n        for (int k = 0; k < directs[i][j].length(); k++) {\n            char dir = directs[i][j].charAt(k);\n            int ni = i, nj = j;\n            if (dir == 'U') ni--;\n            else if (dir == 'D') ni++;\n            else if (dir == 'L') nj--;\n            else nj++;\n            if (ni < 0 || ni >= N || nj < 0 || nj >= N) continue;\n            chosen[i][j] = dir;\n            dfs(ni, nj);\n        }\n    }\n\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n        while (T-- > 0) {\n            N = sc.nextInt();\n            for (int i = 0; i < N; i++) {\n                for (int j = 0; j < N; j++) {\n                    directs[i][j] = sc.next();\n                }\n            }\n            for (int i = 0; i < N; i++) {\n                for (int j = 0; j < N; j++) {\n                    chosen[i][j] = 0;\n                }\n            }\n            for (int i = 0; i < N; i++) {\n                for (int j = 0; j < N; j++) {\n                    dfs(i, j);\n                }\n            }\n            boolean ok = true;\n            for (int i = 0; i < N; i++) {\n                for (int j = 0; j < N; j++) {\n                    if (chosen[i][j] == 0) {\n                        ok = false;\n                        break;\n                    }\n                }\n                if (!ok) break;\n            }\n            if (ok) {\n                System.out.println(\"YES\");\n                for (int i = 0; i < N; i++) {\n                    for (int j = 0; j < N; j++) {\n                        System.out.print(chosen[i][j] + \" \");\n                    }\n                    System.out.println();\n                }\n            } else {\n                System.out.println(\"NO\");\n            }\n        }\n    }\n}",
+      "Python3": "# COMPLETE, RUNNABLE Python3 code\n# Uses input() or sys.stdin\n# Handles all T test cases\nimport sys\nMAX = 150\nMAX_DIR = 4\ndirects = [[\"\" for _ in range(MAX)] for _ in range(MAX)]\nchosen = [[0 for _ in range(MAX)] for _ in range(MAX)]\nN = 0\ndef dfs(i, j):\n    if chosen[i][j] != 0: return\n    for k in range(len(directs[i][j])):\n        dir = directs[i][j][k]\n        ni, nj = i, j\n        if dir == 'U': ni -= 1\n        elif dir == 'D': ni += 1\n        elif dir == 'L': nj -= 1\n        elif dir == 'R': nj += 1\n        if ni < 0 or ni >= N or nj < 0 or nj >= N: continue\n        chosen[i][j] = dir\n        dfs(ni, nj)\nT = int(input())\nwhile T > 0:\n    N = int(input())\n    for i in range(N):\n        directs[i] = input().split()\n    for i in range(N):\n        for j in range(N):\n            chosen[i][j] = 0\n    for i in range(N):\n        for j in range(N):\n            dfs(i, j)\n    ok = True\n    for i in range(N):\n        for j in range(N):\n            if chosen[i][j] == 0:\n                ok = False\n                break\n        if not ok: break\n    if ok:\n        print(\"YES\")\n        for i in range(N):\n            for j in range(N):\n                print(chosen[i][j], end=\" \")\n            print()\n    else:\n        print(\"NO\")\n    T -= 1",
+      "JavaScript": "// COMPLETE, RUNNABLE JavaScript code\n// Uses fs.readFileSync(0,'utf-8') — NEVER readline()\n// Handles all T test cases\nconst fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst MAX = 150;\nconst MAX_DIR = 4;\nlet directs = Array(MAX).fill(0).map(() => Array(MAX).fill(''));\nlet chosen = Array(MAX).fill(0).map(() => Array(MAX).fill(0));\nlet N;\nfunction dfs(i, j) {\n    if (chosen[i][j] != 0) return;\n    for (let k = 0; k < directs[i][j].length; k++) {\n        let dir = directs[i][j][k];\n        let ni = i, nj = j;\n        if (dir == 'U') ni--;\n        else if (dir == 'D') ni++;\n        else if (dir == 'L') nj--;\n        else nj++;\n        if (ni < 0 || ni >= N || nj < 0 || nj >= N) continue;\n        chosen[i][j] = dir;\n        dfs(ni, nj);\n    }\n}\nlet T = parseInt(input[idx++]);\nwhile (T-- > 0) {\n    N = parseInt(input[idx++]);\n    for (let i = 0; i < N; i++) {\n        let row = input[idx++].split(' ');\n        for (let j = 0; j < N; j++) {\n            directs[i][j] = row[j];\n        }\n    }\n    for (let i = 0; i < N; i++) {\n        for (let j = 0; j < N; j++) {\n            chosen[i][j] = 0;\n        }\n    }\n    for (let i = 0; i < N; i++) {\n        for (let j = 0; j < N; j++) {\n            dfs(i, j);\n        }\n    }\n    let ok = true;\n    for (let i = 0; i < N; i++) {\n        for (let j = 0; j < N; j++) {\n            if (chosen[i][j] == 0) {\n                ok = false;\n                break;\n            }\n        }\n        if (!ok) break;\n    }\n    if (ok) {\n        console.log('YES');\n        for (let i = 0; i < N; i++) {\n            for (let j = 0; j < N; j++) {\n                process.stdout.write(chosen[i][j] + ' ');\n            }\n            console.log();\n        }\n    } else {\n        console.log('NO');\n    }\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

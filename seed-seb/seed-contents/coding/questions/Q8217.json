@@ -1,0 +1,128 @@
+{
+  "questionId": "Q8217",
+  "title": "Chef In Infinite Plane",
+  "slug": "chef-in-infinite-plane",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math | Greedy",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Frequency Counting",
+      "Greedy",
+      "Simple Math"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Data Structures"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Chef has an integer sequence A1,A2,…,ANA_1, A_2, \\ldots, A_NA1​,A2​,…,AN​. For each index iii (1≤i≤N1 \\leq i \\leq N1≤i≤N), Chef needs to divide AiA_iAi​ into two positive integers xxx and yyy (ie. x,y&gt;0x, y &gt; 0x,y&gt;0) such that x+y=Aix + y = A_ix+y=Ai​, then place this as a point (x,y)(x, y)(x,y) in the infinite 222-dimensional coordinate plane. Help Chef to find the maximum number of distinct points that can be put in the plane, if he optimally splits the values AiA_iAi​. Note that Chef can only perform one split for each index.\n\n**Note:** Please use fast input/output methods for this problem.\n\n\nInput Format\n\nThe first line contains a single integer TTT - the number of test cases. The description of TTT test cases follows.\nThe first line of each test case contains a single integer NNN.\nThe second line contains NNN integers A1,A2,…,ANA_1, A_2, \\ldots, A_NA1​,A2​,…,AN​.\n\n\nOutput Format\nFor each test case, print a single line containing one integer — the maximum number of distinct points there can be in the infinite plane.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 200000",
+      "2 <= Ai <= 100000"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case: first line contains integer N, the length of the sequence. Second line contains N space‑separated integers A1 … AN.",
+    "outputFormat": "For each test case output a single line containing the maximum possible number of distinct points.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n6\n2 2 4 4 2 6\n2\n16 8",
+        "output": "4\n2",
+        "explanation": "For sum 2 we have three occurrences but only 1 possible point, so contributes 1. For sum 4 we have two occurrences and 3 possible points, contributes 2. For sum 6 one occurrence contributes 1. Total 4. In the second test case each sum appears once, both contribute 1, total 2."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n2",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary (few elements but large values)",
+        "input": "1\n5\n100000 100000 100000 100000 100000",
+        "expectedOutput": "5",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "frequency exceeds possibilities",
+        "input": "1\n5\n3 3 3 3 3",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n4\n2 3 4 5",
+        "expectedOutput": "4",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n6\n5 5 5 6 6 7",
+        "expectedOutput": "6",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For a fixed sum S, the possible points are (1,S‑1), (2,S‑2), …, (S‑1,1) – exactly S‑1 different points. If the value S appears cnt[S] times in the array, we can choose at most min(cnt[S], S‑1) distinct points for those occurrences. The answer is the sum of this value over all distinct sums. So we just count frequencies of each Ai and accumulate min(freq, Ai‑1). The algorithm is O(N) per test case.",
+    "timeComplexity": "O(N) per test case, where N is the length of the sequence.",
+    "spaceComplexity": "O(K) where K is the number of distinct Ai (at most 100000).",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\nint main(){\n    int T; if(scanf(\"%d\",&T)!=1) return 0;\n    while(T--){\n        int N; scanf(\"%d\",&N);\n        int maxA=100000;\n        int *freq = (int*)calloc(maxA+1,sizeof(int));\n        for(int i=0;i<N;i++){\n            int x; scanf(\"%d\",&x);\n            freq[x]++;\n        }\n        long long ans=0;\n        for(int v=2; v<=maxA; ++v){\n            if(freq[v]){\n                int possible=v-1;\n                ans+= (freq[v] < possible) ? freq[v] : possible;\n            }\n        }\n        free(freq);\n        printf(\"%lld\\n\",ans);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N; cin>>N;\n        unordered_map<int,int> freq;\n        freq.reserve(N*2);\n        for(int i=0;i<N;++i){\n            int x; cin>>x; ++freq[x];\n        }\n        long long ans=0;\n        for(auto &p:freq){\n            int val=p.first, cnt=p.second;\n            ans+= min(cnt, val-1);\n        }\n        cout<<ans<<\"\\n\";\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st;\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder sb = new StringBuilder();\n        while (T-- > 0) {\n            int N = Integer.parseInt(br.readLine().trim());\n            st = new StringTokenizer(br.readLine());\n            HashMap<Integer,Integer> freq = new HashMap<>();\n            for (int i = 0; i < N; i++) {\n                int x = Integer.parseInt(st.nextToken());\n                freq.put(x, freq.getOrDefault(x,0)+1);\n            }\n            long ans = 0;\n            for (Map.Entry<Integer,Integer> e : freq.entrySet()) {\n                int val = e.getKey();\n                int cnt = e.getValue();\n                ans += Math.min(cnt, val-1);\n            }\n            sb.append(ans).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef solve():\n    data = list(map(int, sys.stdin.read().split()))\n    it = iter(data)\n    T = next(it)\n    out = []\n    for _ in range(T):\n        N = next(it)\n        freq = {}\n        for _ in range(N):\n            x = next(it)\n            freq[x] = freq.get(x, 0) + 1\n        ans = 0\n        for val, cnt in freq.items():\n            ans += min(cnt, val-1)\n        out.append(str(ans))\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    solve()",
+      "JavaScript": "const fs = require('fs');\nconst data = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/).map(Number);\nlet idx = 0;\nconst T = data[idx++];\nlet outputs = [];\nfor (let t = 0; t < T; ++t) {\n  const N = data[idx++];\n  const freq = new Map();\n  for (let i = 0; i < N; ++i) {\n    const x = data[idx++];\n    freq.set(x, (freq.get(x) || 0) + 1);\n  }\n  let ans = 0;\n  for (const [val, cnt] of freq.entries()) {\n    ans += Math.min(cnt, val - 1);\n  }\n  outputs.push(String(ans));\n}\nconsole.log(outputs.join('\\n'));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

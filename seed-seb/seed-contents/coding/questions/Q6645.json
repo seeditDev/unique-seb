@@ -1,0 +1,128 @@
+{
+  "questionId": "Q6645",
+  "title": "Blocked websites",
+  "slug": "blocked-websites",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings | Greedy",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Trie",
+      "Prefix Tree",
+      "Greedy Algorithm"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Data Structures"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Mike is a network administrator in a university. One of his primary responsibilities in the job is to create an effective firewall so that the students are not able to visit the blocked sites in the network.\n\nThe network have access to exactly **N** sites. Some of these can be blocked. The names of the sites will be given in lowercase English letters. \n\nThe firewall will consist of several filters. A filter is a string that should be a prefix of some blocked site, and it should not be a prefix of any unblocked site. You want to minimize the sum of length of filters in the firewall so that for each of the blocked site, there should be a filter that contains the name of blocked site(filter is a prefix of blocked site).",
+    "constraints": [
+      "1 ≤ N ≤ 2 * 10^5",
+      "The sum of lengths of names of sites does not exceed 2*10^5",
+      "No two sites have the same name."
+    ],
+    "inputFormat": "The first line of the input contains an integer N denoting the number of sites in the network. Then N lines follow, each of them describes the site. Each line starts from the char C. If the site is unblocked, C is equal to '+', otherwise C is equal to '-.', followed by a string denoting the name of the site.",
+    "outputFormat": "If it is not possible to choose a set of filters and satisfy all constraints, output a single line containing an integer -1. Otherwise, in the first line print the number of filters K in the firewall. Then print K lines, in each line print the chosen filter. Please display them in lexicographical order.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4\n- codeforces\n+ seed-it\n- youtube\n+ google",
+        "output": "2\ncodef\ny",
+        "explanation": "Explanation: You can see that the filter \"codef\" is a prefix of the blocked site \"codeforces\", but not a prefix of approved sites \"seed-it\" and \"google\". Similarly, filter \"y\" is also a prefix of blocked site \"youtube\", but not a prefix of the approved sites."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n- a",
+        "expectedOutput": "1\na",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "200000\n- a\n- b\n- c\n+ d\n+ e\n+ f",
+        "expectedOutput": "3\na\nb\nc",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "2\n- a\n+ a",
+        "expectedOutput": "-1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "5\n- codeforces\n+ seed-it\n- youtube\n+ google\n- facebook",
+        "expectedOutput": "3\ncodef\ny\nface",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "10\n- a\n- b\n- c\n+ d\n+ e\n+ f\n- g\n- h\n- i\n+ j",
+        "expectedOutput": "6\na\nb\nc\ng\nh\ni",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use a Trie data structure to store all the site names. We will then iterate over each blocked site and find the shortest prefix that is not a prefix of any unblocked site. This can be done by traversing the Trie and checking if the current node has any unblocked sites. If it does, we continue to the next level of the Trie. If it doesn't, we have found the shortest prefix and we add it to our result.",
+    "timeComplexity": "O(N * M) — where N is the number of sites and M is the maximum length of a site name. This is because we are iterating over each site and each character in the site name.",
+    "spaceComplexity": "O(N * M) — where N is the number of sites and M is the maximum length of a site name. This is because we are storing all the site names in the Trie.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#define MAX 200005\n#define MAX_LEN 200005\n// Define the structure for the Trie node\ntypedef struct TrieNode {\n    struct TrieNode* children[26];\n    int isBlocked;\n} TrieNode;\n// Function to create a new Trie node\nTrieNode* createNode() {\n    TrieNode* newNode = (TrieNode*) malloc(sizeof(TrieNode));\n    for (int i = 0; i < 26; i++) {\n        newNode->children[i] = NULL;\n    }\n    newNode->isBlocked = 0;\n    return newNode;\n}\n// Function to insert a word into the Trie\nvoid insert(TrieNode* root, char* word, int isBlocked) {\n    TrieNode* current = root;\n    for (int i = 0; i < strlen(word); i++) {\n        int index = word[i] - 'a';\n        if (current->children[index] == NULL) {\n            current->children[index] = createNode();\n        }\n        current = current->children[index];\n    }\n    current->isBlocked = isBlocked;\n}\n// Function to find the shortest prefix\nvoid findPrefix(TrieNode* root, char* word, char* prefix) {\n    TrieNode* current = root;\n    for (int i = 0; i < strlen(word); i++) {\n        int index = word[i] - 'a';\n        if (current->children[index] != NULL && current->children[index]->isBlocked == 1) {\n            prefix[i] = word[i];\n            prefix[i + 1] = '\\0';\n            return;\n        }\n        current = current->children[index];\n    }\n}\nint main() {\n    int N;\n    scanf(\"%d\", &N);\n    TrieNode* root = createNode();\n    char word[MAX_LEN];\n    int isBlocked;\n    for (int i = 0; i < N; i++) {\n        scanf(\" %c %s\", &isBlocked, word);\n        if (isBlocked == '-') {\n            isBlocked = 1;\n        } else {\n            isBlocked = 0;\n        }\n        insert(root, word, isBlocked);\n    }\n    // Find the shortest prefixes for blocked sites\n    char prefix[MAX_LEN];\n    int count = 0;\n    for (int i = 0; i < N; i++) {\n        scanf(\" %c %s\", &isBlocked, word);\n        if (isBlocked == '-') {\n            findPrefix(root, word, prefix);\n            printf(\"%s\\n\", prefix);\n            count++;\n        }\n    }\n    printf(\"%d\\n\", count);\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <string>\n#include <unordered_map>\nusing namespace std;\n// Define the structure for the Trie node\nstruct TrieNode {\n    unordered_map<char, TrieNode*> children;\n    bool isBlocked;\n};\n// Function to create a new Trie node\nTrieNode* createNode() {\n    TrieNode* newNode = new TrieNode();\n    newNode->isBlocked = false;\n    return newNode;\n}\n// Function to insert a word into the Trie\nvoid insert(TrieNode* root, string word, bool isBlocked) {\n    TrieNode* current = root;\n    for (char c : word) {\n        if (current->children.find(c) == current->children.end()) {\n            current->children[c] = createNode();\n        }\n        current = current->children[c];\n    }\n    current->isBlocked = isBlocked;\n}\n// Function to find the shortest prefix\nstring findPrefix(TrieNode* root, string word) {\n    TrieNode* current = root;\n    string prefix;\n    for (char c : word) {\n        prefix += c;\n        if (current->children.find(c) != current->children.end() && current->children[c]->isBlocked) {\n            return prefix;\n        }\n        current = current->children[c];\n    }\n    return \"\";\n}\nint main() {\n    int N;\n    cin >> N;\n    TrieNode* root = createNode();\n    string word;\n    bool isBlocked;\n    for (int i = 0; i < N; i++) {\n        cin >> isBlocked >> word;\n        insert(root, word, isBlocked);\n    }\n    // Find the shortest prefixes for blocked sites\n    vector<string> prefixes;\n    for (int i = 0; i < N; i++) {\n        cin >> isBlocked >> word;\n        if (isBlocked) {\n            string prefix = findPrefix(root, word);\n            if (!prefix.empty()) {\n                prefixes.push_back(prefix);\n            }\n        }\n    }\n    cout << prefixes.size() << endl;\n    for (string prefix : prefixes) {\n        cout << prefix << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.HashMap;\nimport java.util.Map;\nimport java.util.Scanner;\npublic class Main {\n    // Define the structure for the Trie node\n    static class TrieNode {\n        Map<Character, TrieNode> children;\n        boolean isBlocked;\n        public TrieNode() {\n            children = new HashMap<>();\n            isBlocked = false;\n        }\n    }\n    // Function to create a new Trie node\n    public static TrieNode createNode() {\n        return new TrieNode();\n    }\n    // Function to insert a word into the Trie\n    public static void insert(TrieNode root, String word, boolean isBlocked) {\n        TrieNode current = root;\n        for (char c : word.toCharArray()) {\n            if (!current.children.containsKey(c)) {\n                current.children.put(c, createNode());\n            }\n            current = current.children.get(c);\n        }\n        current.isBlocked = isBlocked;\n    }\n    // Function to find the shortest prefix\n    public static String findPrefix(TrieNode root, String word) {\n        TrieNode current = root;\n        StringBuilder prefix = new StringBuilder();\n        for (char c : word.toCharArray()) {\n            prefix.append(c);\n            if (current.children.containsKey(c) && current.children.get(c).isBlocked) {\n                return prefix.toString();\n            }\n            current = current.children.get(c);\n        }\n        return \"\";\n    }\n    public static void main(String[] args) {\n        Scanner scanner = new Scanner(System.in);\n        int N = scanner.nextInt();\n        scanner.nextLine();\n        TrieNode root = createNode();\n        for (int i = 0; i < N; i++) {\n            String line = scanner.nextLine();\n            boolean isBlocked = line.charAt(0) == '-';\n            String word = line.substring(2);\n            insert(root, word, isBlocked);\n        }\n        // Find the shortest prefixes for blocked sites\n        int count = 0;\n        for (int i = 0; i < N; i++) {\n            String line = scanner.nextLine();\n            boolean isBlocked = line.charAt(0) == '-';\n            String word = line.substring(2);\n            if (isBlocked) {\n                String prefix = findPrefix(root, word);\n                if (!prefix.isEmpty()) {\n                    System.out.println(prefix);\n                    count++;\n                }\n            }\n        }\n        System.out.println(count);\n    }\n}",
+      "Python3": "class TrieNode:\n    def __init__(self):\n        self.children = {}\n        self.is_blocked = False\n\ndef create_node():\n    return TrieNode()\n\ndef insert(root, word, is_blocked):\n    current = root\n    for c in word:\n        if c not in current.children:\n            current.children[c] = create_node()\n        current = current.children[c]\n    current.is_blocked = is_blocked\n\ndef find_prefix(root, word):\n    current = root\n    prefix = ''\n    for c in word:\n        prefix += c\n        if c in current.children and current.children[c].is_blocked:\n            return prefix\n        current = current.children[c]\n    return ''\n\nN = int(input())\nroot = create_node()\nfor _ in range(N):\n    line = input().split()\n    is_blocked = line[0] == '-'\n    word = line[1]\n    insert(root, word, is_blocked)\n\n# Find the shortest prefixes for blocked sites\nprefixes = set()\nfor _ in range(N):\n    line = input().split()\n    is_blocked = line[0] == '-'\n    word = line[1]\n    if is_blocked:\n        prefix = find_prefix(root, word)\n        if prefix:\n            prefixes.add(prefix)\n\nprint(len(prefixes))\nfor prefix in sorted(prefixes):\n    print(prefix)",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nfunction readLine() {\n    return lines[idx++];\n}\nfunction readInt() {\n    return parseInt(readLine());\n}\nfunction readString() {\n    return readLine();\n}\n// Define the structure for the Trie node\nclass TrieNode {\n    constructor() {\n        this.children = {};\n        this.isBlocked = false;\n    }\n}\n// Function to create a new Trie node\nfunction createNode() {\n    return new TrieNode();\n}\n// Function to insert a word into the Trie\nfunction insert(root, word, isBlocked) {\n    let current = root;\n    for (let c of word) {\n        if (!(c in current.children)) {\n            current.children[c] = createNode();\n        }\n        current = current.children[c];\n    }\n    current.isBlocked = isBlocked;\n}\n// Function to find the shortest prefix\nfunction findPrefix(root, word) {\n    let current = root;\n    let prefix = '';\n    for (let c of word) {\n        prefix += c;\n        if (c in current.children && current.children[c].isBlocked) {\n            return prefix;\n        }\n        current = current.children[c];\n    }\n    return '';\n}\n// Main function\nfunction main() {\n    let N = readInt();\n    let root = createNode();\n    for (let i = 0; i < N; i++) {\n        let line = readString().split(' ');\n        let isBlocked = line[0] === '-';\n        let word = line[1];\n        insert(root, word, isBlocked);\n    }\n    // Find the shortest prefixes for blocked sites\n    let prefixes = new Set();\n    for (let i = 0; i < N; i++) {\n        let line = readString().split(' ');\n        let isBlocked = line[0] === '-';\n        let word = line[1];\n        if (isBlocked) {\n            let prefix = findPrefix(root, word);\n            if (prefix) {\n                prefixes.add(prefix);\n            }\n        }\n    }\n    console.log(prefixes.size);\n    for (let prefix of Array.from(prefixes).sort()) {\n        console.log(prefix);\n    }\n}\nmain();"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "questionId": "CCIVKU02M",
+  "title": "Understanding Layered Architecture (From Task API)",
+  "slug": "ccivku02m",
+  "version": 1,
+  "createdAt": "2026-07-13",
+  "updatedAt": "2026-07-13",
+  "source": {
+    "platform": "SEED-IT",
+    "courseSlug": "springboot",
+    "contestCode": "CLEARCU2",
+    "module": "Clean Architecture & Full CRUD (In-Memory)",
+    "submodule": "Layered Architecture",
+    "contentType": "mcq",
+    "originalUrl": "https://www.codechef.com/learn/course/springboot/CLEARCU2/problems/CCIVKU02M"
+  },
+  "metadata": {
+    "category": "Concept",
+    "difficulty": "Beginner",
+    "isPremium": false,
+    "tags": [
+      "python3"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Clean Architecture & Full CRUD (In-Memory)",
+      "Layered Architecture"
+    ],
+    "QBCategory": "SEED-IT"
+  },
+  "content": {
+    "problemStatement": "In the previous practice, you converted a working API into a Layered Architecture. \\\nNow let’s clearly understand:\n- What each layer does\n- How they communicate\n- How Spring connects everything automatically\n- How a request flows step by step\n\n---\n\n**What is Layered Architecture?** \\\nLayered Architecture means:\n- Dividing an application into different layers\n- Each layer has a specific responsibility\n- No layer should do everything\n\nIn our Task API, we followed this flow:\n```sss\nController → Service → Repository\n```\nEach layer has one clear job.\n\n---\n\n**Let's Understand Code Properly :** \\\n**`DemoApplication.java` (Application Start)**\n```java\n@SpringBootApplication\npublic class DemoApplication {\n\n    public static void main(String[] args) {\n        SpringApplication.run(DemoApplication.class, args);\n    }\n}\n```\n**What this does :**\n- Starts the Spring Boot application.\n- Spring scans the project and finds classes marked with:\n    - `@RestController`\n    - `@Service`\n    - `@Repository`\n- Spring automatically creates objects of those classes and connects them together.\n\nThis is why we never write `new TaskService()` manually.\n\n---\n\n**`TaskRepository.java` (Data Storage)**\n```java\n@Repository\npublic class TaskRepository {\n\n    private final List tasks = new ArrayList<>();\n}\n```\n**What this does**\n- **`@Repository` tells Spring this class manages data**.\n- Spring creates one shared object of this class.\n- tasks list works like a small in-memory database.\n\n**Saving data**\n```java\npublic void save(String title) {\n    tasks.add(title);\n}\n```\n**What happens**\n- Receives a task title.\n- Adds it into the list.\n- This is where data actually gets stored.\n\n**Getting data**\n```java\npublic List findAll() {\n    return tasks;\n}\n```\n**What happens**\n- Returns all stored tasks.\n- No logic — just gives stored data.\n\n**Repository = only store & fetch data**.\n\n---\n\n\n**`TaskService.java` (Middle Layer)**\n```java\n@Service\npublic class TaskService {\n\n    private final TaskRepository taskRepository;\n}\n```\n**What this does**\n- `@Service` tells Spring this class contains application logic.\n- Service needs Repository to access data.\n\n**Dependency Injection** (Important)\n```java\npublic TaskService(TaskRepository taskRepository) {\n    this.taskRepository = taskRepository;\n}\n```\n\n**What happens**\n- Spring automatically sends the repository object here.\n- We did NOT create it manually.\n\n**Meaning:**\n```sss\nSpring creates Repository\n        ↓\nGives it to Service\n```\nThis is called **Dependency Injection (DI)**.\n\n\n**Adding a task**\n```java\npublic void addTask(String title) {\n    taskRepository.save(title);\n}\n```\n**What happens** :\n- Controller calls this method.\n- Service forwards task to repository for saving.\n- Service itself does not store data.\n\n**Getting all tasks**\n```java\npublic List getAllTasks() {\n    return taskRepository.findAll();\n}\n```\n**What happens**\n- Service asks repository for stored tasks.\n- Returns them back to controller.\n\n**Service = middle communicator**.\n\n---\n\n**`TaskController.java` (API Layer)**\n```java\n@RestController\n@RequestMapping(\"/api/tasks\")\npublic class TaskController {\n\n    private final TaskService taskService;\n}\n```\n**What this does**\n- `@RestController` → handles HTTP requests.\n- All APIs start with `/api/tasks`.\n- Controller needs Service to perform work.\n\n\n**Dependency Injection again**\n```java\npublic TaskController(TaskService taskService) {\n    this.taskService = taskService;\n}\n```\n**What happens**\n- Spring gives Service object to Controller automatically.\n- Flow now becomes connected:\n```sss\nController → Service → Repository\n```\n\n**POST API (Add Task)**\n```java\n@PostMapping\npublic String addTask(@RequestBody String title) {\n    taskService.addTask(title);\n    return \"Task added successfully!\";\n}\n```\n\n**What happens step-by-step**\n- User sends POST request.\n- Spring reads request body into title.\n- Controller calls service:\n```java\ntaskService.addTask(title);\n```\n- Service sends data to repository.\n- Repository stores it in list.\n- Controller returns success message.\n\n**GET API (Get Tasks)**\n```java\n@GetMapping(\"/list\")\npublic List getTasks() {\n    return taskService.getAllTasks();\n}\n```\n**What happens**\n- User requests task list.\n- Controller asks Service.\n- Service asks Repository.\n- Repository returns stored list.\n- Response goes back to user as JSON.\n\n---\n\n**Full Flow When API runs:** \n\n```sss\nClient Request\n      ↓\nTaskController\n      ↓\nTaskService\n      ↓\nTaskRepository\n      ↓\nList (data stored)\n```\nResponse comes back the same way.\n\n**One Simple Rule** \\\nController never directly accesses data. \\\nAlways:\n```sss\nController → Service → Repository\n```",
+    "constraints": [
+      "Time Limit: 1s",
+      "Memory Limit: 256MB"
+    ],
+    "inputFormat": "Standard input",
+    "outputFormat": "Standard output",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "input": "",
+        "expectedOutput": "expected",
+        "weight": 100
+      }
+    ],
+    "totalTestCases": 1,
+    "totalWeight": 100
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      100
+    ],
+    "maxScore": 100
+  },
+  "judging": {
+    "timeLimitMs": 1000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // Write your C code here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your C++ code here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) {\n        // Write your Java code here\n    }\n}",
+    "Python3": "# Write your Python code here\n",
+    "JavaScript": "// Write your JavaScript code here\n",
+    "Go": "package main\n\nimport \"fmt\"\n\nfunc main() {\n    // Write your Go code here\n}",
+    "Rust": "fn main() {\n    // Write your Rust code here\n}",
+    "C#": "using System;\n\nclass Program {\n    static void Main() {\n        // Write your C# code here\n    }\n}",
+    "SQL": "-- Write your SQL query here\n"
+  }
+}

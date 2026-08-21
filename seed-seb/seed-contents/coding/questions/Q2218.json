@@ -1,0 +1,117 @@
+{
+  "questionId": "Q2218",
+  "title": "Lights Out",
+  "slug": "lights-out",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Bit Manipulation",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Bit Manipulation",
+      "Bitset",
+      "Lights Out",
+      "Sparse Linear System",
+      "GF(2)",
+      "Gaussian Elimination"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Mathematics"
+    ]
+  },
+  "content": {
+    "problemStatement": "Johnny is playing Lights Out, an electronic game consisting of an NxN grid of lights. Initially, each light may be on or off. Pressing a light will toggle it and the lights non-diagonally adjacent to it. \n\n\nThe object of the game is to try and get all the lights turned off. It is not always possible, and what's more, Johnny's game is faulty. Pressing some lights has no effect. (They can still be turned on and off if they are next to working lights.)\n\n\nHelp Johnny write a program that checks whether a puzzle can be solved or not, given the initial description of the grid and the positions of the faulty lights.",
+    "constraints": [
+      "1 \u2264 t \u2264 10",
+      "2 \u2264 N \u2264 200",
+      "0 \u2264 K \u2264 N",
+      "Each grid cell is either '0' or '1'",
+      "Faulty positions are distinct and within the grid"
+    ],
+    "inputFormat": "The first line contains an integer t (1 \u2264 t \u2264 10), the number of test cases. Each test case starts with a line containing two integers N and K (2 \u2264 N \u2264 200, 0 \u2264 K \u2264 N). The next N lines each contain a string of N characters '0' or '1' describing the initial state of the grid (row\u2011major order, '1' = on, '0' = off). The following K lines each contain two integers i and j (1\u2011based) indicating a faulty light at row i, column j. Faulty lights cannot be pressed, but they are still toggled by presses on adjacent cells.",
+    "outputFormat": "For each test case output a single line containing \"YES\" if there exists a sequence of presses that turns all lights off, otherwise output \"NO\".",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "",
+        "output": "Input:\n2\n\n3 1\n010\n111\n010\n2 2\n\n4 2\n1110\n1110\n1001\n1101\n2 2\n4 3\n\nOutput:\nNO\nYES",
+        "explanation": ""
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The puzzle can be modelled as a system of linear equations over GF(2). For every cell (i,j) we write an equation that the final state must be 0:\n    initial[i][j] + sum of presses that affect (i,j) \u2261 0 (mod 2).\nA press toggles the cell itself and its four orthogonal neighbours. Cells that are faulty are not pressable, therefore the corresponding variable is forced to 0 and does not appear as an unknown. All other cells correspond to a binary variable x_{i,j} (press or not). This yields at most N\u00b2 equations with at most N\u00b2\u2011K unknowns, each equation containing at most five variables, i.e. a very sparse matrix.\nWe solve the system with Gaussian elimination over GF(2) using bitsets. Each row of the augmented matrix is stored as a dynamic bitset (vector<unsigned long long>) where the last bit holds the right\u2011hand side. Elimination proceeds column by column, selecting a pivot row that has a 1 in the current column, swapping it to the top, and XOR\u2011ing it to all rows below that also have a 1 in the column. After the forward pass we perform a backward substitution to check for inconsistency (a row with all zero coefficients but a RHS of 1). If no inconsistency is found the system is solvable and we output \"YES\"; otherwise \"NO\".\nBecause each row contains at most five ones, the number of XOR operations is far smaller than the dense worst\u2011case bound, and the bitset representation makes each XOR cheap (word\u2011wise). The algorithm runs comfortably for N up to 200.\nTime Complexity: O(V\u00b3 / 64) in the dense worst case, where V = N\u00b2\u2011K \u2264 40000, but the actual work is proportional to the number of non\u2011zero entries (\u22485V) and easily fits within limits.\nSpace Complexity: O(V\u00b2 / 64) bits for the matrix, i.e. \u2264 40000\u202f\u00d7\u202f625\u202f\u2248\u202f25\u202fMiB.",
+    "timeComplexity": "Approximately O(N\u2074 / 64) in the worst dense case; practical runtime is far lower due to sparsity.",
+    "spaceComplexity": "O(N\u2074 / 64) bits (\u224825\u202fMiB for N=200).",
+    "code": {
+      "C": "// COMPLETE, COMPILABLE C code\n#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <stdint.h>\n\n// Simple dynamic bitset for up to 40000 variables + RHS\ntypedef struct {\n    uint64_t *bits;\n    int size; // number of 64\u2011bit words\n} Bitset;\n\nstatic inline Bitset new_bitset(int nbits) {\n    Bitset b;\n    b.size = (nbits + 63) / 64;\n    b.bits = (uint64_t*)calloc(b.size, sizeof(uint64_t));\n    return b;\n}\nstatic inline void set_bit(Bitset *b, int pos) {\n    b->bits[pos>>6] |= 1ULL << (pos & 63);\n}\nstatic inline int get_bit(const Bitset *b, int pos) {\n    return (b->bits[pos>>6] >> (pos & 63)) & 1U;\n}\nstatic inline void xor_into(Bitset *dest, const Bitset *src) {\n    for (int i=0;i<dest->size;i++) dest->bits[i] ^= src->bits[i];\n}\nstatic inline void free_bitset(Bitset *b) { free(b->bits); }\n\nint main(){\n    int T; if(scanf(\"%d\",&T)!=1) return 0;\n    while(T--){\n        int N,K; scanf(\"%d %d\",&N,&K);\n        char line[205];\n        int total = N*N;\n        int *faulty = (int*)calloc(total, sizeof(int));\n        int *init = (int*)calloc(total, sizeof(int));\n        for(int i=0;i<N;i++){\n            scanf(\"%s\",line);\n            for(int j=0;j<N;j++) init[i*N+j] = line[j]-'0';\n        }\n        for(int f=0;f<K;f++){\n            int r,c; scanf(\"%d %d\",&r,&c); r--;c--; faulty[r*N+c]=1;\n        }\n        // Map each pressable cell to a variable index\n        int *varIdx = (int*)malloc(total*sizeof(int));\n        int varCnt=0;\n        for(int i=0;i<total;i++) if(!faulty[i]) varIdx[i]=varCnt++;\n        // Build augmented matrix: rows = total equations, cols = varCnt + 1 (RHS)\n        int cols = varCnt + 1;\n        Bitset *mat = (Bitset*)malloc(total*sizeof(Bitset));\n        for(int eq=0; eq<total; ++eq){\n            mat[eq] = new_bitset(cols);\n            // RHS = initial state\n            if(init[eq]) set_bit(&mat[eq], varCnt); // last bit is RHS\n            int r = eq / N, c = eq % N;\n            // self\n            if(!faulty[eq]) set_bit(&mat[eq], varIdx[eq]);\n            // up\n            if(r>0){int nb = (r-1)*N + c; if(!faulty[nb]) set_bit(&mat[eq], varIdx[nb]);}\n            // down\n            if(r+1<N){int nb = (r+1)*N + c; if(!faulty[nb]) set_bit(&mat[eq], varIdx[nb]);}\n            // left\n            if(c>0){int nb = r*N + (c-1); if(!faulty[nb]) set_bit(&mat[eq], varIdx[nb]);}\n            // right\n            if(c+1<N){int nb = r*N + (c+1); if(!faulty[nb]) set_bit(&mat[eq], varIdx[nb]);}\n        }\n        // Gaussian elimination over GF(2)\n        int row=0, col=0;\n        int rank=0;\n        for(col=0; col<varCnt && row<total; ++col){\n            int sel = -1;\n            for(int i=row;i<total;i++) if(get_bit(&mat[i], col)){ sel=i; break; }\n            if(sel==-1) continue; // no pivot in this column\n            // swap rows\n            Bitset tmp = mat[row]; mat[row]=mat[sel]; mat[sel]=tmp;\n            // eliminate below\n            for(int i=row+1;i<total;i++) if(get_bit(&mat[i], col)) xor_into(&mat[i], &mat[row]);\n            ++row; ++rank;\n        }\n        // check for inconsistency\n        int possible = 1;\n        for(int i=rank;i<total;i++){\n            // if all variable bits are 0 but RHS is 1 -> impossible\n            int allZero = 1;\n            for(int w=0; w<mat[i].size-1; ++w){ if(mat[i].bits[w]){ allZero=0; break; } }\n            if(allZero && get_bit(&mat[i], varCnt)) { possible=0; break; }\n        }\n        printf(possible?\"YES\\n\":\"NO\\n\");\n        // free\n        for(int i=0;i<total;i++) free_bitset(&mat[i]);\n        free(mat); free(varIdx); free(faulty); free(init);\n    }\n    return 0;\n}\n",
+      "C++": ""
+    }
+  }
+}

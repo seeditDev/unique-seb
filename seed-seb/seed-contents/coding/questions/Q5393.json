@@ -1,0 +1,140 @@
+{
+  "questionId": "Q5393",
+  "title": "Subanagrams",
+  "slug": "subanagrams",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Strings",
+    "difficulty": "Easy",
+    "isPremium": true,
+    "tags": [
+      "Anagrams",
+      "Subsequences",
+      "Lexicographical Order"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Strings"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Let's start from some definitions.\n\n\nStrings **A** and **B** are called anagrams if it's possible to rearrange the letters of string **A** using all the original letters exactly once and achieve string **B**; in other words **A** and **B** are permutations of each other. For example, remote and meteor are anagrams, race and race are anagrams as well, while seat and tease aren't anagrams as tease contains an extra 'e'.\n\n\nString **A** is called a subsequence of string **B** if **A** can be obtained from **B** by removing some (possibly none) characters. For example, cat is a subsequence of scratch, rage is a subsequence of rage, and tame is not a subsequence of steam.\n\n\nString **A** is lexicographically smaller than string **B** of the same length if at the first position where **A** and **B** differ **A** contains a letter which is earlier in the alphabet than the corresponding letter in **B**.\n\n\nRecently, Ann received a set of strings consisting of small Latin letters a..z. 'What can I do with them?' -- she asked herself. 'What if I try to find the longest string which is a subsequence of every string from the set?'. Ann spent a lot of time trying to solve the problem... but all her attempts happened to be unsuccessful. She then decided to allow the sought string to be an anagram of some subsequence of every string from the set. This problem seemed to be easier to Ann, but she was too tired to solve it, so Ann asked for your help.\n\n\nSo your task is, given a set of strings, to find the longest non-empty string which satisfies Ann. Moreover, if there are many such strings, choose the lexicographically smallest one.",
+    "constraints": [
+      "1 <= N <= 100",
+      "1 <= length of each string <= 100",
+      "All strings consist only of small Latin letters a..z"
+    ],
+    "inputFormat": "First line contains N, the number of strings. Each of the next N lines contains a non-empty string consisting only of small Latin letters a..z representing a string from the set.",
+    "outputFormat": "The longest non-empty string which satisfies Ann. If there are several such strings, output the lexicographically smallest one. If there are no such strings, output 'no such string'.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\nhope\nelephant\npath",
+        "output": "hp",
+        "explanation": "The longest string that is an anagram of a subsequence of all the given strings is 'hp'."
+      },
+      {
+        "id": "sample_2",
+        "input": "2\nwall\nstep",
+        "output": "no such string",
+        "explanation": "There is no string that is an anagram of a subsequence of both 'wall' and 'step'."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\nabc",
+        "output": "abc",
+        "explanation": "The longest string that is an anagram of a subsequence of 'abc' is 'abc' itself."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\na",
+        "expectedOutput": "a",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "100\nabcdefghijklmnopqrstuvwxyz",
+        "expectedOutput": "abcdefghijklmnopqrstuvwxyz",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge case",
+        "input": "2\naaaa\naaaa",
+        "expectedOutput": "aaaa",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "2\nabc\nbca",
+        "expectedOutput": "abc",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "stress/general",
+        "input": "5\nhello\nworld\nabc\nxyz\npqr",
+        "expectedOutput": "no such string",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The problem can be solved by generating all possible substrings of the given strings, sorting them to check for anagrams, and then checking if they are subsequences of all other strings. The longest such substring that is lexicographically smallest is the answer.",
+    "timeComplexity": "O(N * M^3) per test case, where M is the maximum length of a string. This is because we are generating all substrings, sorting them, and then checking for subsequences.",
+    "spaceComplexity": "O(M) for storing the substrings and their sorted versions.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <string.h>\n#include <stdlib.h>\n#define MAX 100\n#define MAXL 100\nchar **strs;\nint n;\nvoid sort_str(char *str) {\n    int len = strlen(str);\n    for (int i = 0; i < len - 1; i++) {\n        for (int j = i + 1; j < len; j++) {\n            if (str[i] > str[j]) {\n                char temp = str[i];\n                str[i] = str[j];\n                str[j] = temp;\n            }\n        }\n    }\n}\nint is_subsequence(char *str1, char *str2) {\n    int len1 = strlen(str1);\n    int len2 = strlen(str2);\n    int i = 0;\n    int j = 0;\n    while (i < len1 && j < len2) {\n        if (str1[i] == str2[j]) {\n            i++;\n        }\n        j++;\n    }\n    return i == len1;\n}\nint main() {\n    scanf(\"%d\", &n);\n    strs = (char **)malloc(n * sizeof(char *));\n    for (int i = 0; i < n; i++) {\n        strs[i] = (char *)malloc((MAXL + 1) * sizeof(char));\n        scanf(\"%s\", strs[i]);\n    }\n    char *longest = (char *)malloc((MAXL + 1) * sizeof(char));\n    longest[0] = '\\0';\n    for (int len = 1; len <= MAXL; len++) {\n        for (int i = 0; i < n; i++) {\n            for (int j = 0; j <= strlen(strs[i]) - len; j++) {\n                char *substr = (char *)malloc((len + 1) * sizeof(char));\n                strncpy(substr, strs[i] + j, len);\n                substr[len] = '\\0';\n                sort_str(substr);\n                int is_sub = 1;\n                for (int k = 0; k < n; k++) {\n                    if (!is_subsequence(substr, strs[k])) {\n                        is_sub = 0;\n                        break;\n                    }\n                }\n                if (is_sub && strlen(substr) > strlen(longest)) {\n                    strcpy(longest, substr);\n                }\n                free(substr);\n            }\n        }\n    }\n    if (strlen(longest) == 0) {\n        printf(\"no such string\\n\");\n    } else {\n        printf(\"%s\\n\", longest);\n    }\n    for (int i = 0; i < n; i++) {\n        free(strs[i]);\n    }\n    free(strs);\n    free(longest);\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <string>\n#include <algorithm>\nusing namespace std;\n#define MAX 100\n#define MAXL 100\nstring strs[MAX];\nint n;\nbool is_subsequence(string str1, string str2) {\n    int len1 = str1.length();\n    int len2 = str2.length();\n    int i = 0;\n    int j = 0;\n    while (i < len1 && j < len2) {\n        if (str1[i] == str2[j]) {\n            i++;\n        }\n        j++;\n    }\n    return i == len1;\n}\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(NULL);\n    cin >> n;\n    for (int i = 0; i < n; i++) {\n        cin >> strs[i];\n    }\n    string longest = \"\";\n    for (int len = 1; len <= MAXL; len++) {\n        for (int i = 0; i < n; i++) {\n            for (int j = 0; j <= strs[i].length() - len; j++) {\n                string substr = strs[i].substr(j, len);\n                sort(substr.begin(), substr.end());\n                bool is_sub = true;\n                for (int k = 0; k < n; k++) {\n                    if (!is_subsequence(substr, strs[k])) {\n                        is_sub = false;\n                        break;\n                    }\n                }\n                if (is_sub && substr.length() > longest.length()) {\n                    longest = substr;\n                }\n            }\n        }\n    }\n    if (longest.length() == 0) {\n        cout << \"no such string\" << endl;\n    } else {\n        cout << longest << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Arrays;\nimport java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int n = sc.nextInt();\n        String[] strs = new String[n];\n        for (int i = 0; i < n; i++) {\n            strs[i] = sc.next();\n        }\n        String longest = \"\";\n        for (int len = 1; len <= 100; len++) {\n            for (int i = 0; i < n; i++) {\n                for (int j = 0; j <= strs[i].length() - len; j++) {\n                    String substr = strs[i].substring(j, j + len);\n                    char[] arr = substr.toCharArray();\n                    Arrays.sort(arr);\n                    String sorted = new String(arr);\n                    boolean is_sub = true;\n                    for (int k = 0; k < n; k++) {\n                        if (!isSubsequence(sorted, strs[k])) {\n                            is_sub = false;\n                            break;\n                        }\n                    }\n                    if (is_sub && sorted.length() > longest.length()) {\n                        longest = sorted;\n                    }\n                }\n            }\n        }\n        if (longest.length() == 0) {\n            System.out.println(\"no such string\");\n        } else {\n            System.out.println(longest);\n        }\n    }\n    public static boolean isSubsequence(String str1, String str2) {\n        int len1 = str1.length();\n        int len2 = str2.length();\n        int i = 0;\n        int j = 0;\n        while (i < len1 && j < len2) {\n            if (str1.charAt(i) == str2.charAt(j)) {\n                i++;\n            }\n            j++;\n        }\n        return i == len1;\n    }\n}",
+      "Python3": "import sys\nn = int(sys.stdin.readline())\nstrs = [sys.stdin.readline().strip() for _ in range(n)]\ndef is_subsequence(str1, str2):\n    len1 = len(str1)\n    len2 = len(str2)\n    i = 0\n    j = 0\n    while i < len1 and j < len2:\n        if str1[i] == str2[j]:\n            i += 1\n        j += 1\n    return i == len1\nlongest = \"\"\nfor length in range(1, 101):\n    for i in range(n):\n        for j in range(len(strs[i]) - length + 1):\n            substr = strs[i][j:j + length]\n            sorted_substr = ''.join(sorted(substr))\n            is_sub = True\n            for k in range(n):\n                if not is_subsequence(sorted_substr, strs[k]):\n                    is_sub = False\n                    break\n            if is_sub and len(sorted_substr) > len(longest):\n                longest = sorted_substr\nif longest == \"\":\n    print(\"no such string\")\nelse:\n    print(longest)",
+      "JavaScript": "const lines = require('fs').readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nfunction nextLine() {\n    return lines[idx++];\n}\nfunction isSubsequence(str1, str2) {\n    let len1 = str1.length;\n    let len2 = str2.length;\n    let i = 0;\n    let j = 0;\n    while (i < len1 && j < len2) {\n        if (str1[i] === str2[j]) {\n            i++;\n        }\n        j++;\n    }\n    return i === len1;\n}\nlet n = parseInt(nextLine());\nlet strs = [];\nfor (let i = 0; i < n; i++) {\n    strs.push(nextLine());\n}\nlet longest = \"\";\nfor (let len = 1; len <= 100; len++) {\n    for (let i = 0; i < n; i++) {\n        for (let j = 0; j <= strs[i].length - len; j++) {\n            let substr = strs[i].substring(j, j + len);\n            let sorted = substr.split('').sort().join('');\n            let isSub = true;\n            for (let k = 0; k < n; k++) {\n                if (!isSubsequence(sorted, strs[k])) {\n                    isSub = false;\n                    break;\n                }\n            }\n            if (isSub && sorted.length > longest.length) {\n                longest = sorted;\n            }\n        }\n    }\n}\nif (longest === \"\") {\n    console.log(\"no such string\");\n} else {\n    console.log(longest);\n}"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

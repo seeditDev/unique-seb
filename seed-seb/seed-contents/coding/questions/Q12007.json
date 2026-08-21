@@ -1,0 +1,118 @@
+{
+  "questionId": "Q12007",
+  "title": "Rod cutting problem",
+  "slug": "rodcuttingproblem",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Rod Cutting Problem",
+      "Memoization",
+      "DP"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Given a rod of length N inches and an array price[] where price[i] denotes the value of a piece of rod of length i inches (1-based indexing). Determine the maximum value obtainable by cutting up the rod and selling the pieces. Make any number of cuts, or none at all, and sell the resulting pieces.",
+    "constraints": [
+      "1 <= N <= 1000",
+      "1 <= price[i] <= 10^5"
+    ],
+    "inputFormat": "The first line contains an integer N, the length of the rod. The second line contains N space-separated integers, the price list where price[i] is the value of rod of length i+1.",
+    "outputFormat": "The maximum obtainable value by cutting up the rod and selling the pieces.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "1\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "8\n1 5 8 9 10 17 17 20",
+        "expectedOutput": "22",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform case",
+        "input": "5\n5 5 5 5 5",
+        "expectedOutput": "25",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case",
+        "input": "4\n1 4 1 1",
+        "expectedOutput": "4",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "mixed case",
+        "input": "6\n2 5 8 10 12 15",
+        "expectedOutput": "25",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Use dynamic programming to store the maximum obtainable value for each subproblem and avoid redundant computation.",
+    "timeComplexity": "O(N^2)",
+    "spaceComplexity": "O(N^2)",
+    "code": {
+      "C": "#include <stdio.h>\nint max(int a, int b) { return a > b ? a : b; }\nint rodCutting(int price[], int n) {\n    int dp[n + 1];\n    dp[0] = 0;\n    for (int i = 1; i <= n; i++) {\n        int max_val = -1;\n        for (int j = 1; j <= i; j++) {\n            max_val = max(max_val, price[j - 1] + dp[i - j]);\n        }\n        dp[i] = max_val;\n    }\n    return dp[n];\n}\nint main() {\n    int n;\n    scanf(\"%d\", &n);\n    int price[n];\n    for (int i = 0; i < n; i++) {\n        scanf(\"%d\", &price[i]);\n    }\n    printf(\"%d\\n\", rodCutting(price, n));\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nclass Solution {\n  public:\n    // Function to compute maximum price obtainable by cutting the rod\n    int rodCutting(vector<int> price, int n) {\n        // Initialize a DP table where dp[i][j] stores the max price \n        // using first i rod lengths to make total rod length j\n        vector<vector<int>> dp(n, vector<int>(n + 1, 0));\n\n        // Fill the base case: only using the first rod length (length = 1)\n        for(int length = 0; length <= n; length++) {\n            // We can use rod of length 1 (index 0) multiple times\n            dp[0][length] = length * price[0];\n        }\n\n        // Iterate through each rod piece starting from index 1\n        for(int i = 1; i < n; i++) {\n            for(int length = 0; length <= n; length++) {\n\n                // Option 1: Do not cut with this rod (copy from above)\n                int notTake = dp[i - 1][length];\n\n                // Option 2: Cut with current rod length (reuse allowed)\n                int take = INT_MIN;\n                int rodLength = i + 1;\n\n                // Check if this rod fits in current length\n                if(rodLength <= length) {\n                    take = price[i] + dp[i][length - rodLength];\n                }\n\n                // Store the best value in the DP table\n                dp[i][length] = max(take, notTake);\n            }\n        }\n\n        // Return the answer from the last row and column (full rod length)\n        return dp[n - 1][n];\n    }\n};\n\n// Driver code\nint main() {\n    // Length of the rod\n    int n;\n    cin >> n;\n    // Price list where price[i] is the value of rod of length i+1\n    vector<int> price(n);\n    for (int i = 0; i < n; i++) {\n        cin >> price[i];\n    }\n    // Create object of Solution class\n    Solution obj;\n\n    // Call rodCutting function and print the result\n    int maxValue = obj.rodCutting(price, n);\n    cout << \"The maximum obtainable value is: \" << maxValue << endl;\n\n    return 0;\n}",
+      "Java": "import java.util.*;\n\nclass Solution {\n    // Function to compute max value by cutting rod using top-down DP\n    public int rodCutting(int[] price, int n) {\n        // Create DP table initialized to -1\n        int[][] dp = new int[n][n + 1];\n\n        // Fill dp with -1 to indicate uncomputed subproblems\n        for (int[] row : dp) {\n            Arrays.fill(row, -1);\n        }\n\n        // Start from last index (n - 1)\n        return helper(n - 1, n, price, dp);\n    }\n\n    // Recursive helper function with memoization\n    private int helper(int i, int length, int[] price, int[][] dp) {\n        // Base case: only one rod piece of length 1\n        if (i == 0) {\n            return length * price[0];\n        }\n\n        // Return precomputed value\n        if (dp[i][length] != -1) return dp[i][length];\n\n        // Option 1: do not take current rod length\n        int notTake = helper(i - 1, length, price, dp);\n\n        // Option 2: take current rod length (if it fits)\n        int take = Integer.MIN_VALUE;\n        int rodLength = i + 1;\n        if (rodLength <= length) {\n            take = price[i] + helper(i, length - rodLength, price, dp);\n        }\n\n        // Store max of both in dp\n        return dp[i][length] = Math.max(take, notTake);\n    }\n}\n\n// Driver class\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int n = sc.nextInt();\n        int[] price = new int[n];\n        for (int i = 0; i < n; i++) {\n            price[i] = sc.nextInt();\n        }\n        Solution sol = new Solution();\n        int result = sol.rodCutting(price, n);\n        System.out.println(\"The maximum obtainable value is: \" + result);\n    }\n}",
+      "Python3": "class Solution:\n    # Function to compute max value by cutting rod using memoization\n    def rodCutting(self, price, n):\n        # Initialize a 2D dp table with -1\n        dp = [[-1] * (n + 1) for _ in range(n)]\n\n        # Call helper from last index\n        return self.helper(n - 1, n, price, dp)\n\n    # Recursive helper function with memoization\n    def helper(self, i, length, price, dp):\n        # Base case: only 1 piece of length 1\n        if i == 0:\n            return length * price[0]\n\n        # Return precomputed value\n        if dp[i][length] != -1:\n            return dp[i][length]\n\n        # Option 1: not take\n        notTake = self.helper(i - 1, length, price, dp)\n\n        # Option 2: take if rod fits\n        take = float('-inf')\n        rodLength = i + 1\n        if rodLength <= length:\n            take = price[i] + self.helper(i, length - rodLength, price, dp)\n\n        # Store and return result\n        dp[i][length] = max(take, notTake)\n        return dp[i][length]\n\n# Driver code\nimport sys\ninput = sys.stdin.readline\nn = int(input())\nprice = list(map(int, input().split()))\nsol = Solution()\nprint(\"The maximum obtainable value is:\", sol.rodCutting(price, n))",
+      "JavaScript": "class Solution {\n    // Main function to compute max rod cut value\n    rodCutting(price, n) {\n        // Initialize 2D dp array filled with -1\n        const dp = Array.from({ length: n }, () => Array(n + 1).fill(-1));\n\n        // Call recursive helper\n        return this.helper(n - 1, n, price, dp);\n    }\n\n    // Recursive helper with memoization\n    helper(i, length, price, dp) {\n        // Base case: only rod length 1 available\n        if (i === 0) {\n            return length * price[0];\n        }\n\n        // Return precomputed value\n        if (dp[i][length] !== -1) return dp[i][length];\n\n        // Option 1: do not take\n        let notTake = this.helper(i - 1, length, price, dp);\n\n        // Option 2: take if fits\n        let take = -Infinity;\n        let rodLength = i + 1;\n        if (rodLength <= length) {\n            take = price[i] + this.helper(i, length - rodLength, price, dp);\n        }\n\n        // Store and return max\n        dp[i][length] = Math.max(take, notTake);\n        return dp[i][length];\n    }\n}\n\n// Driver code\nconst readline = require('readline').createInterface({\n    input: process.stdin,\n    output: process.stdout\n});\nlet i = 0;\nlet n;\nlet price;\nreadline.on('line', line => {\n    if (i === 0) {\n        n = parseInt(line);\n    } else if (i === 1) {\n        price = line.split(' ').map(num => parseInt(num));\n        const sol = new Solution();\n        console.log(\"The maximum obtainable value is:\", sol.rodCutting(price, n));\n        readline.close();\n    }\n    i++;\n});"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

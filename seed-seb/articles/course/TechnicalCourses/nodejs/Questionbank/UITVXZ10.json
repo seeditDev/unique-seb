@@ -1,0 +1,82 @@
+{
+  "questionId": "UITVXZ10",
+  "title": "Basic query methods",
+  "slug": "uitvxz10",
+  "version": 1,
+  "createdAt": "2026-07-13",
+  "updatedAt": "2026-07-13",
+  "source": {
+    "platform": "SEED-IT",
+    "courseSlug": "nodejs",
+    "contestCode": "FHRVRX",
+    "module": "Database Integration",
+    "submodule": "Mongoose Fundamentals",
+    "contentType": "mcq",
+    "originalUrl": "https://www.codechef.com/learn/course/nodejs/FHRVRX/problems/UITVXZ10"
+  },
+  "metadata": {
+    "category": "Concept",
+    "difficulty": "Beginner",
+    "isPremium": false,
+    "tags": [
+      "javascript"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Database Integration",
+      "Mongoose Fundamentals"
+    ],
+    "QBCategory": "SEED-IT"
+  },
+  "content": {
+    "problemStatement": "Welcome! So far, you've learned how to define schemas and models with Mongoose, and perform basic Create, Read, Update, and Delete (CRUD) operations. Now, we're going to dive a bit deeper into the \"Read\" part and explore how to find or \"query\" for specific data in your MongoDB database using Mongoose. These query methods are essential tools for retrieving the exact information you need from your database.\n\nThink of your MongoDB collection (managed by a Mongoose Model) as a big digital filing cabinet full of records (documents). Basic query methods are like asking specific questions to this cabinet to pull out particular records or sets of records.\n\nLet's look at some of the most common and basic query methods. Remember, these operations interact with the database, so they are asynchronous. We'll use `async/await` (which you learned about in \"Asynchronous JavaScript Basics\") to handle them, just like you would in an Express route handler.\n\n**1. `Model.find(queryObject)`: Finding Multiple Documents**\n\nThe `find()` method is used to retrieve all documents that match the conditions specified in the `queryObject`.\n\n*   **To find all documents in a collection:**\n    You can pass an empty object `{}` or no argument at all to `find()`.\n\n    ```javascript\n    // Assuming 'User' is your Mongoose model\n    // This code would typically be inside an async function, like an Express route handler\n\n    async function getAllUsers() {\n      try {\n        const allUsers = await User.find({}); // or User.find()\n        console.log(\"All users:\", allUsers);\n        // 'allUsers' will be an array of all user documents\n        // If no users are found, it will be an empty array []\n      } catch (error) {\n        console.error(\"Error fetching users:\", error);\n      }\n    }\n    ```\n\n*   **To find documents matching specific criteria:**\n    You provide an object where keys are field names (from your schema) and values are what you're looking for.\n\n    ```javascript\n    // Assuming a User model with 'name' and 'age' fields\n\n    async function findSpecificUsers() {\n      try {\n        // Find all users named \"Alice\"\n        const alices = await User.find({ name: \"Alice\" });\n        console.log(\"Users named Alice:\", alices);\n        // 'alices' will be an array of user documents where name is \"Alice\"\n\n        // Find all users who are 25 years old\n        const usersAged25 = await User.find({ age: 25 });\n        console.log(\"Users aged 25:\", usersAged25);\n        // 'usersAged25' will be an array of user documents where age is 25\n      } catch (error) {\n        console.error(\"Error finding specific users:\", error);\n      }\n    }\n    ```\n    The `find()` method always returns an array of documents. If no documents match, it returns an empty array.\n\n**2. `Model.findOne(queryObject)`: Finding a Single Document**\n\nSometimes, you only need to find one specific document. For example, when searching for a user by a unique email address. `findOne()` retrieves the first document that matches the `queryObject`.\n\n```javascript\n// Assuming a User model with a unique 'email' field\n\nasync function findOneUserByEmail(userEmail) {\n  try {\n    const user = await User.findOne({ email: userEmail });\n    if (user) {\n      console.log(\"User found:\", user);\n      // 'user' will be a single user document object\n    } else {\n      console.log(\"User not found with email:\", userEmail);\n      // 'user' will be null if no document matches\n    }\n  } catch (error) {\n    console.error(\"Error finding user by email:\", error);\n  }\n}\n\n// Example usage:\n// findOneUserByEmail(\"test@example.com\");\n```\nIf multiple documents match the query, `findOne()` will still only return the first one it finds. If no document matches, it returns `null`.\n\n**3. `Model.findById(id)`: Finding a Document by its ID**\n\nEvery document in MongoDB has a unique `_id`. If you have this ID, `findById()` is the most straightforward way to retrieve that specific document. This is often used after creating a new document or when you get an ID from a URL parameter in an Express route.\n\n```javascript\n// Assuming 'User' is your Mongoose model\n\nasync function findUserById(userId) {\n  try {\n    const user = await User.findById(userId);\n    if (user) {\n      console.log(\"User found by ID:\", user);\n      // 'user' will be the user document object\n    } else {\n      console.log(\"User not found with ID:\", userId);\n      // 'user' will be null if no document has this ID\n    }\n  } catch (error) {\n    console.error(\"Error finding user by ID:\", error);\n    // This can also error if the userId is not a valid ObjectId format\n  }\n}\n\n// Example usage (replace 'someValidObjectIdString' with an actual ID):\n// findUserById(\"someValidObjectIdString\");\n```\nLike `findOne()`, `findById()` returns a single document or `null` if not found.\n\n**How these methods fit into your Node.js/Express application:**\n\nYou'll typically use these query methods inside your Express route handlers (which you learned about in \"Routing & Middleware\" and \"Handling Requests & Data\"). For example, when a user visits `/users`, your route handler might use `User.find({})` to fetch all users from MongoDB and then pass that data to a template (from \"Templates & Views\") to display them.\n\n```javascript\n// Simplified Express route example:\n// const express = require('express');\n// const User = require('./models/User'); // Your Mongoose User model\n// const app = express();\n\n// app.get('/users', async (req, res) => {\n//   try {\n//     const users = await User.find({});\n//     res.json(users); // Sending users back as JSON\n//     // Or you might render a template: res.render('users_list', { users });\n//   } catch (err) {\n//     res.status(500).send(\"Error fetching users\");\n//   }\n// });\n```\n\nThese basic query methods (`find()`, `findOne()`, `findById()`) are the foundational building blocks for retrieving data with Mongoose. As you progress, you'll learn more advanced querying techniques, but mastering these basics is key!",
+    "constraints": [
+      "Time Limit: 1s",
+      "Memory Limit: 256MB"
+    ],
+    "inputFormat": "Standard input",
+    "outputFormat": "Standard output",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "input": "",
+        "expectedOutput": "expected",
+        "weight": 100
+      }
+    ],
+    "totalTestCases": 1,
+    "totalWeight": 100
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      100
+    ],
+    "maxScore": 100
+  },
+  "judging": {
+    "timeLimitMs": 1000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // Write your C code here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Write your C++ code here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) {\n        // Write your Java code here\n    }\n}",
+    "Python3": "# Write your Python code here\n",
+    "JavaScript": "// Write your JavaScript code here\n",
+    "Go": "package main\n\nimport \"fmt\"\n\nfunc main() {\n    // Write your Go code here\n}",
+    "Rust": "fn main() {\n    // Write your Rust code here\n}",
+    "C#": "using System;\n\nclass Program {\n    static void Main() {\n        // Write your C# code here\n    }\n}",
+    "SQL": "-- Write your SQL query here\n"
+  }
+}

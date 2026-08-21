@@ -1,0 +1,140 @@
+{
+  "questionId": "Q8317",
+  "title": "Add and Divide",
+  "slug": "add-and-divide",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Number Theory",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "GCD",
+      "Prime Factorization",
+      "Divisibility",
+      "Math"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Mathematics"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You are given two positive integers aaa and bbb. You also have a number xxx, which is initially set to 000. At first, you can add aaa to xxx any number of times. After that, you can divide xxx by bbb any number of times as long as xxx is divisible by bbb.\n\nPrint **YES** if you can make xxx equal to 111, otherwise print **NO**.\n\n\nInput Format\n\nFirst line of input will contain TTT, the number of test cases. Then the test cases follow.\nEach test case contains a single line, two positive integers a,ba, ba,b.\n\n\nOutput Format\nFor each test case, output on one line YES if it is possible to make xxx , or NO if it is not possible to do so.\n\n\nOutput is case insensitive, which means that \"yes\", \"Yes\", \"YEs\", \"no\", \"nO\" - all such strings will be acceptable.",
+    "constraints": [
+      "1 <= T <= 100000",
+      "1 <= a, b <= 10^9"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains two positive integers a and b separated by a space.",
+    "outputFormat": "For each test case output a single line containing \"YES\" if it is possible to obtain x = 1 using the described operations, otherwise output \"NO\". The case of the letters does not matter.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "4\\n3 10\\n9 6\\n7 30\\n8 12",
+        "output": "NO\\nYES\\nNO\\nYES",
+        "explanation": "Test case 1: a=3, b=10. Prime factors of a (3) are not present in b (2·5) → NO.\\nTest case 2: a=9, b=6. 9=3^2, 6=2·3. After removing gcd=3, a becomes 3, gcd again=3, a becomes 1 → YES (9 divides 6^2 = 36).\\nTest case 3: a=7, b=30. 7 is not a factor of 30, and 30's powers never contain 7 → NO.\\nTest case 4: a=8, b=12. 8=2^3, 12=2^2·3. After two iterations of removing gcd=4 then gcd=2, a becomes 1 → YES (8 divides 12^2 = 144)."
+      },
+      {
+        "id": "sample_2",
+        "input": "2\\n1 5\\n5 1",
+        "output": "YES\\nNO",
+        "explanation": "When a=1 we already have x=1 (add once), so YES. When b=1, only powers of b are 1, so a must be 1; here a=5 → NO."
+      },
+      {
+        "id": "sample_3",
+        "input": "3\\n12 6\\n10 6\\n27 9",
+        "output": "YES\\nNO\\nYES",
+        "explanation": "12=2^2·3, 6=2·3 → 12 divides 6^2 = 36 → YES.\\n10=2·5, 6 lacks factor 5 → NO.\\n27=3^3, 9=3^2 → 27 divides 9^2 = 81 → YES."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\\n1 1",
+        "expectedOutput": "YES",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\\n1000000000 1000000000",
+        "expectedOutput": "YES",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case missing prime",
+        "input": "1\\n10 6",
+        "expectedOutput": "NO",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case with higher power needed",
+        "input": "1\\n12 6",
+        "expectedOutput": "YES",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case where a divides b directly",
+        "input": "1\\n100 10",
+        "expectedOutput": "YES",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "We can add a any number of times, obtaining a value k·a (k ≥ 0). Afterwards we may divide by b while the current value is divisible by b. After m divisions the value becomes (k·a) / b^m. We need this to equal 1, i.e. k·a = b^m for some non‑negative integers k and m. This means that a must divide some power of b. In terms of prime factors, every prime that appears in a must also appear in b. The condition can be checked by repeatedly removing the greatest common divisor of a and b from a: while g = gcd(a, b) > 1, set a = a / g. After the loop, if a becomes 1 the condition holds, otherwise it does not. The loop runs at most O(log a) times because a strictly decreases each iteration.",
+    "timeComplexity": "O(T · log(max(a, b))) – each test case performs a constant number of gcd operations, each O(log min(a, b)).",
+    "spaceComplexity": "O(1) – only a few integer variables are used.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nlong long gcd_ll(long long x, long long y) {\n    while (y) {\n        long long t = x % y;\n        x = y;\n        y = t;\n    }\n    return x;\n}\n\nint main() {\n    int T;\n    if (scanf(\"%d\", &T) != 1) return 0;\n    while (T--) {\n        long long a, b;\n        scanf(\"%lld %lld\", &a, &b);\n        long long g;\n        while ((g = gcd_ll(a, b)) > 1) {\n            a /= g;\n        }\n        if (a == 1) printf(\"YES\\n\");\n        else printf(\"NO\\n\");\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nlong long gcd_ll(long long a, long long b) {\n    while (b) {\n        long long t = a % b;\n        a = b;\n        b = t;\n    }\n    return a;\n}\n\nint main() {\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; \n    if(!(cin >> T)) return 0;\n    while (T--) {\n        long long a, b;\n        cin >> a >> b;\n        long long g;\n        while ((g = gcd_ll(a, b)) > 1) {\n            a /= g;\n        }\n        cout << (a == 1 ? \"YES\" : \"NO\") << '\\n';\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    private static long gcd(long a, long b) {\n        while (b != 0) {\n            long t = a % b;\n            a = b;\n            b = t;\n        }\n        return a;\n    }\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder sb = new StringBuilder();\n        int T = Integer.parseInt(br.readLine().trim());\n        for (int i = 0; i < T; i++) {\n            StringTokenizer st = new StringTokenizer(br.readLine());\n            long a = Long.parseLong(st.nextToken());\n            long b = Long.parseLong(st.nextToken());\n            long g;\n            while ((g = gcd(a, b)) > 1) {\n                a /= g;\n            }\n            sb.append(a == 1 ? \"YES\" : \"NO\").append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n}",
+      "Python3": "#!/usr/bin/env python3\nimport sys, math\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out = []\n    for _ in range(T):\n        a = int(next(it)); b = int(next(it))\n        while True:\n            g = math.gcd(a, b)\n            if g == 1:\n                break\n            a //= g\n        out.append('YES' if a == 1 else 'NO')\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet res = [];\nfunction gcd(a, b) {\n  while (b !== 0) {\n    const t = a % b;\n    a = b;\n    b = t;\n  }\n  return a;\n}\nfor (let i = 0; i < T; i++) {\n  let a = Number(input[idx++]);\n  const b = Number(input[idx++]);\n  while (true) {\n    const g = gcd(a, b);\n    if (g === 1) break;\n    a = Math.floor(a / g);\n  }\n  res.push(a === 1 ? 'YES' : 'NO');\n}\nconsole.log(res.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

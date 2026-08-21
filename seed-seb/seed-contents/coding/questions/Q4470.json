@@ -1,0 +1,142 @@
+{
+  "questionId": "Q4470",
+  "title": "Subset sum problem",
+  "slug": "subset-sum-problem",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Backtracking",
+    "difficulty": "Easy",
+    "isPremium": true,
+    "tags": [
+      "Backtracking",
+      "Subset Sum",
+      "Sorting",
+      "Lexicographic Order"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Recursion & Backtracking"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "You have NNN positive integers ithi^{th}ith integer begin AiA_iAi​, and a number XXX.\n\nReturn all the subsets of these NNN integers such that the sum of the integers (in the subset) is equal to XXX.\n\n\nInput Format\n\nThe first contains a two integers NNN and XXX, denoting the length of array AAA and the target sum value.\nThe second line of each test case contains NNN space-separated integers A1,A2,…,ANA_1, A_2, \\ldots, A_NA1​,A2​,…,AN​ — denoting the array AAA.\n\n\nOutput Format\nReturn the list of all the subset of integers which fulfil the target sum value.",
+    "constraints": [
+      "1 <= T <= 10",
+      "1 <= N <= 20",
+      "1 <= X <= 1000",
+      "1 <= Ai <= 1000"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case, the first line contains two integers N and X — the number of elements and the required sum. The second line contains N space‑separated positive integers A1 … AN.",
+    "outputFormat": "For each test case, output every subset whose elements sum to X. Print each subset on its own line, elements in non‑decreasing order separated by a single space. Subsets must be printed in lexicographically increasing order. If a test case has no valid subset, output nothing for that test case (i.e., print no lines).",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\\n5 4\\n1 1 2 3 4",
+        "output": "1 1 2 \\n1 3 \\n4",
+        "explanation": "After sorting the array [1,1,2,3,4] the backtracking finds three subsets that sum to 4: [1,1,2], [1,3] and [4]. They are printed in lexicographic order."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\\n3 5\\n1 2 3",
+        "output": "2 3",
+        "explanation": "Only the subset [2,3] adds up to 5."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\\n4 6\\n1 2 3 4",
+        "output": "1 2 3 \\n2 4",
+        "explanation": "Subsets [1,2,3] and [2,4] both sum to 6 and appear in lexicographic order."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each test case we first sort the array so that every generated subset is automatically in non‑decreasing order. Then we run a depth‑first search (backtracking) that decides for each index whether to skip the element or to take it. While recursing we keep the current sum and the list of chosen elements. When the current sum equals X we store a copy of the current list. If the sum exceeds X or we have processed all elements we backtrack. After the search finishes we sort the collection of found subsets lexicographically (standard vector/list comparison works because each subset is already sorted). Finally we print the subsets in that order. The algorithm explores at most 2^N states; N ≤ 20 makes this feasible.",
+    "timeComplexity": "O(2^N * N) in the worst case (each subset may be copied once). For the given limits this is well within time limits.",
+    "spaceComplexity": "O(N) for recursion stack plus O(K * L) to store K found subsets of average length L. In the worst case K can be 2^N.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nint cmp(const void *a, const void *b){\n    return (*(int*)a) - (*(int*)b);\n}\n\nvoid dfs(int idx, int n, int target, int *a, int curSum, int *cur, int curLen, int ***res, int *resSize, int *resCap){\n    if(curSum == target){\n        if(*resSize == *resCap){\n            *resCap *= 2;\n            *res = realloc(*res, (*resCap) * sizeof(int*));\n        }\n        int *subset = malloc((curLen+1) * sizeof(int)); // first element stores length\n        subset[0] = curLen;\n        for(int i=0;i<curLen;i++) subset[i+1] = cur[i];\n        (*res)[*resSize] = subset;\n        (*resSize)++;\n        return;\n    }\n    if(idx == n || curSum > target) return;\n    // skip\n    dfs(idx+1, n, target, a, curSum, cur, curLen, res, resSize, resCap);\n    // take\n    cur[curLen] = a[idx];\n    dfs(idx+1, n, target, a, curSum + a[idx], cur, curLen+1, res, resSize, resCap);\n}\n\nint subsetCmp(const void *p1, const void *p2){\n    int *a = *(int**)p1;\n    int *b = *(int**)p2;\n    int lenA = a[0];\n    int lenB = b[0];\n    int minLen = lenA < lenB ? lenA : lenB;\n    for(int i=1;i<=minLen;i++){\n        if(a[i] != b[i]) return a[i] - b[i];\n    }\n    return lenA - lenB;\n}\n\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    while(T--){\n        int N, X; scanf(\"%d %d\", &N, &X);\n        int *a = malloc(N * sizeof(int));\n        for(int i=0;i<N;i++) scanf(\"%d\", &a[i]);\n        qsort(a, N, sizeof(int), cmp);\n        int *cur = malloc(N * sizeof(int));\n        int **res = malloc(16 * sizeof(int*));\n        int resSize = 0, resCap = 16;\n        dfs(0, N, X, a, 0, cur, 0, &res, &resSize, &resCap);\n        if(resSize){\n            qsort(res, resSize, sizeof(int*), subsetCmp);\n            for(int i=0;i<resSize;i++){\n                int len = res[i][0];\n                for(int j=1;j<=len;j++) printf(\"%d \", res[i][j]);\n                printf(\"\\n\");\n                free(res[i]);\n            }\n        }\n        free(res);\n        free(a);\n        free(cur);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nvoid backtrack(int idx, const vector<int>& a, int target, vector<int>& cur, vector<vector<int>>& ans){\n    if(target==0){\n        ans.push_back(cur);\n        return;\n    }\n    if(idx==(int)a.size() || target<0) return;\n    // skip current element\n    backtrack(idx+1, a, target, cur, ans);\n    // take current element\n    cur.push_back(a[idx]);\n    backtrack(idx+1, a, target - a[idx], cur, ans);\n    cur.pop_back();\n}\n\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N, X; cin>>N>>X;\n        vector<int> a(N);\n        for(int &v: a) cin>>v;\n        sort(a.begin(), a.end());\n        vector<vector<int>> ans;\n        vector<int> cur;\n        backtrack(0, a, X, cur, ans);\n        sort(ans.begin(), ans.end());\n        for(const auto& vec: ans){\n            for(int v: vec) cout<<v<<' ';\n            cout<<\"\\n\";\n        }\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    static void dfs(int idx, int[] a, int target, List<Integer> cur, List<List<Integer>> ans){\n        if(target==0){\n            ans.add(new ArrayList<>(cur));\n            return;\n        }\n        if(idx==a.length || target<0) return;\n        // skip\n        dfs(idx+1, a, target, cur, ans);\n        // take\n        cur.add(a[idx]);\n        dfs(idx+1, a, target - a[idx], cur, ans);\n        cur.remove(cur.size()-1);\n    }\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st = new StringTokenizer(br.readLine());\n        int T = Integer.parseInt(st.nextToken());\n        StringBuilder out = new StringBuilder();\n        while(T-- > 0){\n            st = new StringTokenizer(br.readLine());\n            int N = Integer.parseInt(st.nextToken());\n            int X = Integer.parseInt(st.nextToken());\n            int[] a = new int[N];\n            st = new StringTokenizer(br.readLine());\n            for(int i=0;i<N;i++) a[i] = Integer.parseInt(st.nextToken());\n            Arrays.sort(a);\n            List<List<Integer>> ans = new ArrayList<>();\n            dfs(0, a, X, new ArrayList<>(), ans);\n            ans.sort(Comparator.comparing(Object::toString)); // lexicographic\n            for(List<Integer> list : ans){\n                for(int v : list) out.append(v).append(' ');\n                out.append('\\n');\n            }\n        }\n        System.out.print(out.toString());\n    }\n}",
+      "Python3": "import sys\n\ndef backtrack(idx, a, target, cur, res):\n    if target == 0:\n        res.append(cur.copy())\n        return\n    if idx == len(a) or target < 0:\n        return\n    # skip current\n    backtrack(idx+1, a, target, cur, res)\n    # take current\n    cur.append(a[idx])\n    backtrack(idx+1, a, target - a[idx], cur, res)\n    cur.pop()\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it)); X = int(next(it))\n        a = [int(next(it)) for _ in range(N)]\n        a.sort()\n        ans = []\n        backtrack(0, a, X, [], ans)\n        ans.sort()\n        for subset in ans:\n            out_lines.append(' '.join(map(str, subset)))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/).map(Number);\nlet pos = 0;\nconst T = input[pos++];\nlet output = [];\nfunction dfs(idx, a, target, cur, res){\n    if(target===0){\n        res.push(cur.slice());\n        return;\n    }\n    if(idx===a.length || target<0) return;\n    dfs(idx+1, a, target, cur, res); // skip\n    cur.push(a[idx]);\n    dfs(idx+1, a, target - a[idx], cur, res); // take\n    cur.pop();\n}\nfor(let t=0; t<T; t++){\n    const N = input[pos++];\n    const X = input[pos++];\n    const a = input.slice(pos, pos+N); pos+=N;\n    a.sort((x,y)=>x-y);\n    const subsets = [];\n    dfs(0, a, X, [], subsets);\n    subsets.sort((p,q)=>{\n        const len = Math.min(p.length, q.length);\n        for(let i=0;i<len;i++) if(p[i]!==q[i]) return p[i]-q[i];\n        return p.length - q.length;\n    });\n    for(const s of subsets){\n        output.push(s.join(' '));\n    }\n}\nconsole.log(output.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

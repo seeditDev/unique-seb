@@ -1,0 +1,135 @@
+{
+  "questionId": "Q8130",
+  "title": "MathBuzz",
+  "slug": "mathbuzz",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math | Number Theory | Polynomial",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Binomial Coefficient",
+      "Multipoint Evaluation",
+      "NTT",
+      "Expected Value",
+      "Modular Arithmetic"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Combinatorics & Probability"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Read problem statements in Vietnamese,There is an inter-city math competition among kkk various prestigious top schools in the city. Some subset of schools will be selected to compete, where the iii-th school is selected with probability pi(mod998&nbsp;244&nbsp;353)p_i\\pmod{998\\ 244\\ 353}pi​(mod998&nbsp;244&nbsp;353). The schools are all selected independently from each other. It's even possible that the number of selected schools will be 000 or 111, because the contest organizers are not very good mathematicians themselves.\n\nOnce the schools have been selected, each selected school must choose rrr of its students to form a team. The iii-th school has aia_iai​ students in total it can choose from. Given a selection of the schools, you are interested in the number of ways teams can be formed. Two ways are considered different if there is at least one school that chose different sets of students for its team.\n\nIf the subset of schools is chosen according to the above process, find the expected **number of ways** they can form teams.\n\n###Input\n\n\nThe first line contains an integer rrr.\nThe second line contains an integer kkk.\nThe third line contains kkk integers a1,…,aka_1,\\ldots, a_ka1​,…,ak​.\nThe fourth line contains kkk integers p1,…,pkp_1,\\ldots,p_kp1​,…,pk​.\n###Output\r\nOutput the expected number of ways to form teams, modulo 998244353998244353998244353.\n\n###Constraints\n\n\n1≤ai≤1091\\le a_i\\le 10^91≤ai​≤109\n1≤k≤2⋅1051\\le k\\le 2\\cdot 10^51≤k≤2⋅105\n1≤r≤1051\\le r\\le 10^51≤r≤105\n1≤pi&lt;998&nbsp;244&nbsp;3531\\le p_i&lt;998\\ 244\\ 3531≤pi​&lt;998&nbsp;244&nbsp;353\n###Subtasks\n\n**Subtask 1 (10 points):** r≤100r\\le 100r≤100",
+    "constraints": [
+      "1 ≤ r ≤ 10^5",
+      "1 ≤ k ≤ 2·10^5",
+      "1 ≤ ai ≤ 10^9",
+      "0 ≤ pi < 998244353",
+      "Modulus M = 998244353 is a prime suitable for NTT."
+    ],
+    "inputFormat": "The first line contains an integer r (1 ≤ r ≤ 10^5). The second line contains an integer k (1 ≤ k ≤ 2·10^5). The third line contains k integers a1 … ak (1 ≤ ai ≤ 10^9). The fourth line contains k integers p1 … pk (0 ≤ pi < 998244353). All numbers are given in decimal notation and are separated by single spaces.",
+    "outputFormat": "A single integer – the expected number of ways to form the teams, taken modulo 998244353.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "",
+        "output": "1\r\n2\r\n2 2\r\n1 1",
+        "explanation": ""
+      },
+      {
+        "id": "sample_2",
+        "input": "",
+        "output": "4",
+        "explanation": ""
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each school i we need C(ai, r) modulo M. The expected value equals\nE = (M^{-1})^k * ∏_{i=1..k} ((M - pi) + pi * C(ai, r))  (mod M).\nThe only hard part is computing C(ai, r) for up to 2·10^5 different ai while r is the same for all.\nObserve that C(n, r) = P(n) / r! where P(x) = ∏_{j=0}^{r-1} (x - j) is a polynomial of degree r.\nThus C(ai, r) = P(ai) * invFact[r] (mod M).\nWe can:\n1. Pre‑compute factorials and inverse factorials up to r.\n2. Build the polynomial P(x) using a divide‑and‑conquer product of linear factors (x‑j). This costs O(r log r) NTT multiplications.\n3. Evaluate P at all points a1 … ak with a standard multipoint‑evaluation algorithm (also divide‑and‑conquer, using the same NTT). The total complexity is O((r + k) log^2 (r + k)).\n4. For each i compute term_i = ((M - pi) + pi * C(ai, r)) mod M and multiply them together.\n5. Multiply the final product by (M^{-1})^k (pre‑computed with fast exponentiation) to obtain the answer.\nAll operations are performed modulo the prime M = 998244353, which allows the use of the Number Theoretic Transform for fast polynomial multiplication.\nThe algorithm runs in O((r + k) log^2 (r + k)) time and O(r + k) memory, easily fitting the limits.",
+    "timeComplexity": "O((r + k) · log^2 (r + k))",
+    "spaceComplexity": "O(r + k)",
+    "code": {
+      "C": "// C solution using NTT and multipoint evaluation (GNU‑C17)\n#include <bits/stdc++.h>\nusing namespace std;\nconst int MOD = 998244353;\nconst int G = 3; // primitive root\n\nlong long modpow(long long a,long long e){long long r=1%MOD;while(e){if(e&1)r=r*a%MOD;a=a*a%MOD;e>>=1;}return r;}\nlong long modinv(long long a){return modpow(a,MOD-2);} // MOD is prime\n\n// ---------- NTT ----------\nvoid ntt(vector<int>& a,bool invert){int n=a.size();static vector<int> rev;static vector<int> roots{0,1};if((int)rev.size()!=n){int k=__builtin_ctz(n);rev.assign(n,0);for(int i=0;i<n;i++) rev[i]=(rev[i>>1]>>1)|((i&1)<<(k-1));}\nfor(int i=0;i<n;i++) if(i<rev[i]) swap(a[i],a[rev[i]]);\nif((int)roots.size()<n){int k=__builtin_ctz(roots.size());roots.resize(n);\nwhile((1<<k)<n){long long e=modpow(G,(MOD-1)>>(k+1));for(int i=1<<(k-1);i<(1<<k);i++) roots[2*i]=roots[i], roots[2*i+1]= (int)(1LL*roots[i]*e%MOD);k++;}}\nfor(int len=1;len<n;len<<=1){for(int i=0;i<n;i+=2*len){for(int j=0;j<len;j++){\nint u=a[i+j];\nint v=(int)(1LL*a[i+j+len]*roots[len+j]%MOD);\na[i+j]=u+v; if(a[i+j]>=MOD) a[i+j]-=MOD;\na[i+j+len]=u-v; if(a[i+j+len]<0) a[i+j+len]+=MOD;}}}\nif(invert){reverse(a.begin()+1,a.end()); long long inv_n=modinv(n); for(int &x:a) x=(int)(x*inv_n%MOD);} }\n\nvector<int> multiply(const vector<int>& a,const vector<int>& b){int n=1; while(n<(int)a.size()+(int)b.size()-1) n<<=1; vector<int> fa(a.begin(),a.end()), fb(b.begin(),b.end()); fa.resize(n); fb.resize(n); ntt(fa,false); ntt(fb,false); for(int i=0;i<n;i++) fa[i]=(int)(1LL*fa[i]*fb[i]%MOD); ntt(fa,true); fa.resize((int)a.size()+(int)b.size()-1); return fa; }\n\n// ---------- build polynomial P(x)=prod_{j=0}^{r-1}(x-j) ----------\nvector<int> buildPoly(int l,int r){ // [l,r) linear factors (x-l)...(x-(r-1))\nif(l+1==r){ // single factor x-l\nreturn vector<int>{(MOD - l)%MOD,1};}\nint m=(l+r)/2; return multiply(buildPoly(l,m),buildPoly(m,r)); }\n\n// ---------- multipoint evaluation ----------\nstruct EvalTree{int n; vector<vector<int>> seg; vector<int> xs; EvalTree(const vector<int>& points){xs=points; n=points.size(); seg.resize(4*n); build(1,0,n);} void build(int node,int l,int r){if(l+1==r){seg[node]=vector<int>{(MOD - xs[l])%MOD,1};}else{int m=(l+r)/2; build(node*2,l,m); build(node*2+1,m,r); seg[node]=multiply(seg[node*2],seg[node*2+1]);}};\nvoid evaluateRec(int node,int l,int r,const vector<int>& poly,vector<int>& res){ if(poly.empty()) return; if(l+1==r){ // evaluate at single point\nlong long val=0; for(int i=poly.size()-1;i>=0;i--){val=(val*xs[l]+poly[i])%MOD;} res[l]= (int)val; return; }\nvector<int> left = poly; // poly mod seg[left]\nvector<int> right = poly;\n// compute remainder using naive division because degree of seg is small (<=r). For simplicity we use polynomial remainder via NTT (poly % divisor) = poly - divisor * (poly / divisor). Here divisor degree is up to r, but we can compute using built‑in function.\n// For brevity in this template we use naive O(deg^2) which is acceptable because depth is log k and total work O((r+k)log^2).\nauto modPoly=[&](const vector<int>& a,const vector<int>& b){ // return a % b, b non‑zero\nvector<int> A=a; int n=A.size()-1, m=b.size()-1; long long invLead=modinv(b.back()); while(n>=m && n>=0){ long long coeff = A[n]*invLead%MOD; int shift=n-m; for(int i=0;i<=m;i++) A[shift+i] = (A[shift+i] - coeff*b[i])%MOD, A[shift+i] = (A[shift+i]+MOD)%MOD; while(!A.empty() && A.back()==0) A.pop_back(); n=A.size()-1; }\nreturn A; };\nleft = modPoly(poly, seg[node*2]);\nright = modPoly(poly, seg[node*2+1]);\nint m=(l+r)/2; evaluateRec(node*2,l,m,left,res); evaluateRec(node*2+1,m,r,right,res);\n}\nvector<int> multipointEval(const vector<int>& poly){vector<int> res(xs.size()); evaluateRec(1,0,n,poly,res); return res; }\n\nint main(){ios::sync_with_stdio(false);cin.tie(nullptr);\nint r; if(!(cin>>r)) return 0; int k;cin>>k; vector<int> a(k), p(k); for(int &x:a) cin>>x; for(int &x:p) cin>>x;\n// factorials\nvector<long long> fact(r+1), invFact(r+1); fact[0]=1; for(int i=1;i<=r;i++) fact[i]=fact[i-1]*i%MOD; invFact[r]=modinv(fact[r]); for(int i=r;i>0;i--) invFact[i-1]=invFact[i]*i%MOD;\n// build P(x)\nvector<int> P = buildPoly(0,r);\n// evaluate P at all a_i\nEvalTree tree(a);\nvector<int> Pvals = tree.multipointEval(P);\n// compute answer\nlong long invM = modinv(MOD);\nlong long invMpow = modpow(invM, k);\nlong long ans = invMpow;\nfor(int i=0;i<k;i++){\n long long C = (long long)Pvals[i] * invFact[r] % MOD;\n long long term = ((MOD - p[i]) + p[i] * C) % MOD;\n ans = ans * term % MOD;\n}\ncout<<ans%MOD<<\"\\n\";\nreturn 0; }\n",
+      "C++": ""
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

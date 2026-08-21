@@ -1,0 +1,116 @@
+{
+  "questionId": "Q3434",
+  "title": "Mock Turtle",
+  "slug": "mock-turtle",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Catalan Numbers",
+      "Modular Arithmetic",
+      "Dynamic Programming"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Data Structures"
+    ]
+  },
+  "content": {
+    "problemStatement": "The Mock Turtle went to the ocean's school to become a true turtle! However instead of practicing the usual operations of addition, subtraction and division taught by the lecturers, she was always playing with parentheses.\n\n\n\nA parentheses is defined using the following rules:\n\n\n\nAn empty string is a parentheses.\nIf **X** is a parentheses, then **(X)** is also a parentheses\nIf **X** and **Y** are parentheses, then **XY** is also a parentheses\nEvery parentheses can be created using the previous rules only.\n\n\n\nA parentheses contains **k** blocks if it can be represented as the concatenation of exactly **k** non empty parentheses, but can not be represented as the concatenation of more than **k** non empty parentheses. For example ()(()) contains two blocks (i.e. () and (())) and (()()) contains just one block.\n\n\n\nEvery time Alice meets with the Mock Turtle they create two arrays of integers **a** and **b** both of length **N**, and play the following game **T** times: \n\n\n\nFirst Alice thinks of two integers **L** and **R**, then the Mock Turtle chooses two integers **i, j** such that **L \u2264 i, j \u2264 R** and builds all the parentheses of length **ai** that contains **bj** blocks. Since the Mock Turtle loves building parentheses, she will choose **i, j** in such a way that number of parentheses of length **ai** that contains **bj** blocks are maximized.",
+    "constraints": [
+      "1 <= N, T <= 10^5",
+      "1 <= ai, bi <= 2*10^5",
+      "ai is even",
+      "1 <= L <= R <= N"
+    ],
+    "inputFormat": "The first line contains two integers N and T. The following two lines contain N space-separated integers representing the elements of arrays a and b respectively. Then follows T lines, each one having two integers L and R representing one game.",
+    "outputFormat": "For each game, output a single line containing the answer to the problem modulo 10^9+7.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "5 2\n4 6 2 4 8\n3 3 3 3 3\n2 4\n1 5",
+        "output": "1\n3",
+        "explanation": "For the first query, the Mock Turtle can build only the parentheses ()()(). For the second query, the three possible parentheses are ()()(()), ()(())(), (())()()"
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1 1\n2\n1\n1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "100000 1\n400000\n100000\n1 100000",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "5 2\n4 6 2 4 8\n3 3 3 3 3\n2 4\n1 5",
+        "expectedOutput": "1\n3",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "10 2\n4 6 2 4 8 10 12 14 16 18\n3 3 3 3 3 3 3 3 3 3\n2 4\n1 10",
+        "expectedOutput": "1\n10",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "20 2\n4 6 2 4 8 10 12 14 16 18 20 22 24 26 28 30 32 34 36 38\n3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3\n2 4\n1 20",
+        "expectedOutput": "1\n20",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we can use the concept of Catalan numbers. The number of ways to build a parentheses of length 2n that contains k blocks is given by the (n, k)th Catalan number. We can calculate the Catalan numbers using dynamic programming and then use them to find the answer for each query.",
+    "timeComplexity": "O(T * N * log(10^9+7)) \u2014 explain: per query is O(N * log(10^9+7)), total is O(T * N * log(10^9+7))",
+    "spaceComplexity": "O(N) \u2014 explain: we need to store the arrays a and b, and the Catalan numbers",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#define MOD 1000000007\n\nlong long catalan[200005];\n\nlong long power(long long a, long long b) {\n    long long res = 1;\n    while (b > 0) {\n        if (b & 1) res = (res * a) % MOD;\n        a = (a * a) % MOD;\n        b >>= 1;\n    }\n    return res;\n}\n\nlong long inv(long long a) {\n    return power(a, MOD - 2);\n}\n\nint main() {\n    int N, T;\n    scanf(\"%d %d\", &N, &T);\n    int a[N], b[N];\n    for (int i = 0; i < N; i++) scanf(\"%d\", &a[i]);\n    for (int i = 0; i < N; i++) scanf(\"%d\", &b[i]);\n    catalan[0] = 1;\n    for (int i = 1; i <= 200000; i++) {\n        catalan[i] = (catalan[i - 1] * (4 * i - 2)) % MOD;\n        catalan[i] = (catalan[i] * inv(i + 1)) % MOD;\n    }\n    while (T--) {\n        int L, R;\n        scanf(\"%d %d\", &L, &R);\n        long long ans = 0;\n        for (int i = L - 1; i < R; i++) {\n            if (a[i] / 2 >= b[i]) {\n                ans = (ans + catalan[a[i] / 2 - b[i]]) % MOD;\n            }\n        }\n        printf(\"%lld\\n\", ans);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\nusing namespace std;\n#define MOD 1000000007\n\nlong long power(long long a, long long b) {\n    long long res = 1;\n    while (b > 0) {\n        if (b & 1) res = (res * a) % MOD;\n        a = (a * a) % MOD;\n        b >>= 1;\n    }\n    return res;\n}\n\nlong long inv(long long a) {\n    return power(a, MOD - 2);\n}\n\nint main() {\n    int N, T;\n    cin >> N >> T;\n    vector<int> a(N), b(N);\n    for (int i = 0; i < N; i++) cin >> a[i];\n    for (int i = 0; i < N; i++) cin >> b[i];\n    vector<long long> catalan(200005, 0);\n    catalan[0] = 1;\n    for (int i = 1; i <= 200000; i++) {\n        catalan[i] = (catalan[i - 1] * (4 * i - 2)) % MOD;\n        catalan[i] = (catalan[i] * inv(i + 1)) % MOD;\n    }\n    while (T--) {\n        int L, R;\n        cin >> L >> R;\n        long long ans = 0;\n        for (int i = L - 1; i < R; i++) {\n            if (a[i] / 2 >= b[i]) {\n                ans = (ans + catalan[a[i] / 2 - b[i]]) % MOD;\n            }\n        }\n        cout << ans << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.io.BufferedReader;\nimport java.io.IOException;\nimport java.io.InputStreamReader;\nimport java.util.StringTokenizer;\npublic class Main {\n    static final int MOD = 1000000007;\n    public static void main(String[] args) throws IOException {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st = new StringTokenizer(br.readLine());\n        int N = Integer.parseInt(st.nextToken());\n        int T = Integer.parseInt(st.nextToken());\n        int[] a = new int[N];\n        int[] b = new int[N];\n        st = new StringTokenizer(br.readLine());\n        for (int i = 0; i < N; i++) a[i] = Integer.parseInt(st.nextToken());\n        st = new StringTokenizer(br.readLine());\n        for (int i = 0; i < N; i++) b[i] = Integer.parseInt(st.nextToken());\n        long[] catalan = new long[200005];\n        catalan[0] = 1;\n        for (int i = 1; i <= 200000; i++) {\n            catalan[i] = (catalan[i - 1] * (4 * i - 2)) % MOD;\n            catalan[i] = (catalan[i] * inv(i + 1)) % MOD;\n        }\n        while (T-- > 0) {\n            st = new StringTokenizer(br.readLine());\n            int L = Integer.parseInt(st.nextToken());\n            int R = Integer.parseInt(st.nextToken());\n            long ans = 0;\n            for (int i = L - 1; i < R; i++) {\n                if (a[i] / 2 >= b[i]) {\n                    ans = (ans + catalan[a[i] / 2 - b[i]]) % MOD;\n                }\n            }\n            System.out.println(ans);\n        }\n    }\n    static long inv(long a) {\n        return power(a, MOD - 2);\n    }\n    static long power(long a, long b) {\n        long res = 1;\n        while (b > 0) {\n            if (b % 2 == 1) res = (res * a) % MOD;\n            a = (a * a) % MOD;\n            b >>= 1;\n        }\n        return res;\n    }\n}",
+      "Python3": "MOD = 1000000007\n\ndef power(a, b):\n    res = 1\n    while b > 0:\n        if b & 1: res = (res * a) % MOD\n        a = (a * a) % MOD\n        b >>= 1\n    return res\n\ndef inv(a):\n    return power(a, MOD - 2)\n\ncatalan = [0] * 200005\nfor i in range(1, 200001):\n    catalan[i] = (catalan[i - 1] * (4 * i - 2)) % MOD\n    catalan[i] = (catalan[i] * inv(i + 1)) % MOD\n\nt = int(input())\nfor _ in range(t):\n    n, m = map(int, input().split())\n    a = list(map(int, input().split()))\n    b = list(map(int, input().split()))\n    l, r = map(int, input().split())\n    ans = 0\n    for i in range(l - 1, r):\n        if a[i] / 2 >= b[i]:\n            ans = (ans + catalan[a[i] // 2 - b[i]]) % MOD\n    print(ans)",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst MOD = 1000000007;\nconst catalan = new Array(200005).fill(0);\n\nfunction power(a, b) {\n    let res = 1;\n    while (b > 0) {\n        if (b & 1) res = (res * a) % MOD;\n        a = (a * a) % MOD;\n        b >>= 1;\n    }\n    return res;\n}\n\nfunction inv(a) {\n    return power(a, MOD - 2);\n}\n\ncatalan[0] = 1;\nfor (let i = 1; i <= 200000; i++) {\n    catalan[i] = (catalan[i - 1] * (4 * i - 2)) % MOD;\n    catalan[i] = (catalan[i] * inv(i + 1)) % MOD;\n}\n\nlet t = +lines[idx++];\nwhile (t--) {\n    let [n, m] = lines[idx++].trim().split(' ').map(Number);\n    let a = lines[idx++].trim().split(' ').map(Number);\n    let b = lines[idx++].trim().split(' ').map(Number);\n    let [l, r] = lines[idx++].trim().split(' ').map(Number);\n    let ans = 0;\n    for (let i = l - 1; i < r; i++) {\n        if (a[i] / 2 >= b[i]) {\n            ans = (ans + catalan[a[i] / 2 - b[i]]) % MOD;\n        }\n    }\n    console.log(ans);\n}"
+    }
+  }
+}

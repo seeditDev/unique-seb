@@ -1,0 +1,119 @@
+{
+  "questionId": "Q11806",
+  "title": "Detect a cycle in a directed graph",
+  "slug": "course-schedule",
+  "version": 1,
+  "createdAt": "2026-07-05",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Graphs",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Directed Graph",
+      "Cycle Detection",
+      "Kahn's Algorithm"
+    ],
+    "companyTags": [],
+    "topicTags": [],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Given a Directed Graph with V vertices and E edges, check whether it contains any cycle or not using BFS.",
+    "constraints": [
+      "1 <= V <= 10^5",
+      "0 <= E <= V*(V-1)",
+      "1 <= u, v <= V"
+    ],
+    "inputFormat": "The first line contains two integers V and E, where V is the number of vertices and E is the number of edges in the graph. The next E lines contain two integers u and v, representing a directed edge from vertex u to vertex v.",
+    "outputFormat": "The output should be 'Cycle detected' if the graph contains a cycle, and 'No cycle' otherwise.",
+    "sampleTestCases": []
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "min boundary",
+        "input": "1 0",
+        "expectedOutput": "No cycle",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "max boundary",
+        "input": "10 9\n1 2\n2 3\n3 4\n4 5\n5 6\n6 7\n7 8\n8 9\n9 10",
+        "expectedOutput": "No cycle",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "uniform/edge cases",
+        "input": "5 5\n1 2\n2 3\n3 4\n4 5\n5 1",
+        "expectedOutput": "Cycle detected",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "tricky case / empty-like",
+        "input": "5 0",
+        "expectedOutput": "No cycle",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general mixed case",
+        "input": "6 7\n1 2\n1 3\n2 4\n3 4\n4 5\n5 6\n6 2",
+        "expectedOutput": "Cycle detected",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The approach is to use Kahn's Algorithm to detect a cycle in the directed graph. The algorithm works by first calculating the in-degree of all vertices. Then, it finds all vertices with in-degree 0 and adds them to a queue. It then removes vertices from the queue, decreases the in-degree of their neighbors, and adds them to the queue if their in-degree becomes 0. If the count of visited vertices is not equal to the total number of vertices, then the graph contains a cycle.",
+    "timeComplexity": "O(V + E)",
+    "spaceComplexity": "O(V + E)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\n// Structure to represent a graph\ntypedef struct Graph {\n    int V;\n    int **adj;\n} Graph;\n\n// Function to create a graph\nGraph* createGraph(int V) {\n    Graph* graph = (Graph*) malloc(sizeof(Graph));\n    graph->V = V;\n    graph->adj = (int**) malloc(V * sizeof(int*));\n    for (int i = 0; i < V; i++) {\n        graph->adj[i] = (int*) malloc(V * sizeof(int));\n        for (int j = 0; j < V; j++) {\n            graph->adj[i][j] = 0;\n        }\n    }\n    return graph;\n}\n\n// Function to add an edge to the graph\nvoid addEdge(Graph* graph, int u, int v) {\n    graph->adj[u][v] = 1;\n}\n\n// Function to detect cycle in the graph\nint hasCycle(Graph* graph) {\n    int* indegree = (int*) malloc(graph->V * sizeof(int));\n    for (int i = 0; i < graph->V; i++) {\n        indegree[i] = 0;\n    }\n    for (int i = 0; i < graph->V; i++) {\n        for (int j = 0; j < graph->V; j++) {\n            if (graph->adj[i][j] == 1) {\n                indegree[j]++;\n            }\n        }\n    }\n    int count = 0;\n    int* queue = (int*) malloc(graph->V * sizeof(int));\n    int front = 0, rear = -1;\n    for (int i = 0; i < graph->V; i++) {\n        if (indegree[i] == 0) {\n            queue[++rear] = i;\n        }\n    }\n    while (front <= rear) {\n        int node = queue[front++];\n        count++;\n        for (int i = 0; i < graph->V; i++) {\n            if (graph->adj[node][i] == 1) {\n                indegree[i]--;\n                if (indegree[i] == 0) {\n                    queue[++rear] = i;\n                }\n            }\n        }\n    }\n    free(indegree);\n    free(queue);\n    return count != graph->V;\n}\n\nint main() {\n    int V, E;\n    scanf(\"%d %d\", &V, &E);\n    Graph* graph = createGraph(V);\n    for (int i = 0; i < E; i++) {\n        int u, v;\n        scanf(\"%d %d\", &u, &v);\n        addEdge(graph, u-1, v-1);\n    }\n    if (hasCycle(graph)) {\n        printf(\"Cycle detected\\n\");\n    } else {\n        printf(\"No cycle\\n\");\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nclass Solution {\npublic:\n    // Function to detect cycle in a directed graph using Kahn's Algorithm\n    bool hasCycle(int V, vector<vector<int>>& adj) {\n        // Store in-degrees of all nodes\n        vector<int> indegree(V, 0);\n        for (int u = 0; u < V; u++) {\n            for (int v : adj[u]) {\n                indegree[v]++;\n            }\n        }\n\n        // Queue for nodes with 0 in-degree\n        queue<int> q;\n        for (int i = 0; i < V; i++) {\n            if (indegree[i] == 0) q.push(i);\n        }\n\n        // Count visited nodes\n        int count = 0;\n        while (!q.empty()) {\n            int node = q.front();\n            q.pop();\n            count++;\n\n            // Reduce in-degree of neighbors\n            for (int neighbor : adj[node]) {\n                indegree[neighbor]--;\n                if (indegree[neighbor] == 0) {\n                    q.push(neighbor);\n                }\n            }\n        }\n\n        // If count != V, cycle exists\n        return count != V;\n    }\n};\n\nint main() {\n    int V, E;\n    cin >> V >> E;\n    vector<vector<int>> adj(V);\n    for (int i = 0; i < E; i++) {\n        int u, v;\n        cin >> u >> v;\n        adj[u-1].push_back(v-1);\n    }\n    Solution obj;\n    if (obj.hasCycle(V, adj))\n        cout << \"Cycle detected\\n\";\n    else\n        cout << \"No cycle\\n\";\n    return 0;\n}",
+      "Java": "import java.util.*;\n\nclass Solution {\n    // Function to detect cycle in a directed graph using Kahn's Algorithm\n    public boolean hasCycle(int V, List<List<Integer>> adj) {\n        // Store in-degrees of all nodes\n        int[] indegree = new int[V];\n        for (int u = 0; u < V; u++) {\n            for (int v : adj.get(u)) {\n                indegree[v]++;\n            }\n        }\n\n        // Queue for nodes with 0 in-degree\n        Queue<Integer> q = new LinkedList<>();\n        for (int i = 0; i < V; i++) {\n            if (indegree[i] == 0) q.add(i);\n        }\n\n        // Count visited nodes\n        int count = 0;\n        while (!q.isEmpty()) {\n            int node = q.poll();\n            count++;\n\n            // Reduce in-degree of neighbors\n            for (int neighbor : adj.get(node)) {\n                indegree[neighbor]--;\n                if (indegree[neighbor] == 0) {\n                    q.add(neighbor);\n                }\n            }\n        }\n\n        // If count != V, cycle exists\n        return count != V;\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int V = sc.nextInt();\n        int E = sc.nextInt();\n        List<List<Integer>> adj = new ArrayList<>();\n        for (int i = 0; i < V; i++) adj.add(new ArrayList<>());\n        for (int i = 0; i < E; i++) {\n            int u = sc.nextInt();\n            int v = sc.nextInt();\n            adj.get(u-1).add(v-1);\n        }\n        Solution obj = new Solution();\n        if (obj.hasCycle(V, adj))\n            System.out.println(\"Cycle detected\");\n        else\n            System.out.println(\"No cycle\");\n    }\n}",
+      "Python3": "from collections import deque\n\nclass Solution:\n    # Function to detect cycle in a directed graph using Kahn's Algorithm\n    def hasCycle(self, V, adj):\n        # Store in-degrees of all nodes\n        indegree = [0] * V\n        for u in range(V):\n            for v in adj[u]:\n                indegree[v] += 1\n\n        # Queue for nodes with 0 in-degree\n        q = deque()\n        for i in range(V):\n            if indegree[i] == 0:\n                q.append(i)\n\n        # Count visited nodes\n        count = 0\n        while q:\n            node = q.popleft()\n            count += 1\n\n            # Reduce in-degree of neighbors\n            for neighbor in adj[node]:\n                indegree[neighbor] -= 1\n                if indegree[neighbor] == 0:\n                    q.append(neighbor)\n\n        # If count != V, cycle exists\n        return count != V\n\nif __name__ == \"__main__\":\n    V, E = map(int, input().split())\n    adj = [[] for _ in range(V)]\n    for _ in range(E):\n        u, v = map(int, input().split())\n        adj[u-1].append(v-1)\n    obj = Solution()\n    if obj.hasCycle(V, adj):\n        print(\"Cycle detected\")\n    else:\n        print(\"No cycle\")",
+      "JavaScript": "class Solution {\n    // Function to detect cycle in a directed graph using Kahn's Algorithm\n    hasCycle(V, adj) {\n        // Store in-degrees of all nodes\n        let indegree = new Array(V).fill(0);\n        for (let u = 0; u < V; u++) {\n            for (let v of adj[u]) {\n                indegree[v]++;\n            }\n        }\n\n        // Queue for nodes with 0 in-degree\n        let q = [];\n        for (let i = 0; i < V; i++) {\n            if (indegree[i] === 0) q.push(i);\n        }\n\n        // Count visited nodes\n        let count = 0;\n        while (q.length > 0) {\n            let node = q.shift();\n            count++;\n\n            // Reduce in-degree of neighbors\n            for (let neighbor of adj[node]) {\n                indegree[neighbor]--;\n                if (indegree[neighbor] === 0) {\n                    q.push(neighbor);\n                }\n            }\n        }\n\n        // If count != V, cycle exists\n        return count !== V;\n    }\n}\n\n// Driver code\nlet input = '';\nprocess.stdin.on('data', c => input += c);\nprocess.stdin.on('end', () => {\n    const {EOL} = require('os');\n    const lines = input.split(EOL);\n    let V = parseInt(lines[0].split(' ')[0]);\n    let E = parseInt(lines[0].split(' ')[1]);\n    let adj = Array(V).fill(0).map(() => []);\n    for (let i = 1; i <= E; i++) {\n        let [u, v] = lines[i].split(' ').map(x => parseInt(x));\n        adj[u-1].push(v-1);\n    }\n    let obj = new Solution();\n    if (obj.hasCycle(V, adj))\n        console.log(\"Cycle detected\");\n    else\n        console.log(\"No cycle\");\n});"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

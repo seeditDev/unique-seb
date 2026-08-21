@@ -1,0 +1,122 @@
+{
+  "questionId": "Q3827",
+  "title": "Nested Candy Boxes",
+  "slug": "nested-candy-boxes",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Dynamic Programming",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Prefix Sum",
+      "Dynamic Programming",
+      "Binary Search"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Ad-hoc & Implementation"
+    ]
+  },
+  "content": {
+    "problemStatement": "Andy got a box of candies for Christmas. In fact, he discovered that the box contained several identical smaller boxes, and they could contain even smaller boxes, and so on. Formally, we say that candies are boxes of level 0, and for 1\u2264i\u2264n1 \\leq i \\leq n1\u2264i\u2264n, a level iii box contains aia_iai\u200b boxes of level i\u22121i-1i\u22121. The largest box has level nnn. Andy realized that it can take quite a long time to open all the boxes before he actually gets to eat some candies, so he put the box aside in frustration.\n\nBut today being his birthday, some friends came to visit Andy, and Andy decided to share some candies with them. In order to do that, he must open some of the boxes. Naturally, Andy can not open a box that is still inside an unopened box. If Andy wants to retrieve XXX candies, what is the least number of boxes he must open? You must help him answer many such queries. Each query is independent.\n\n\nInput Format\n\nThe first line contains two integers nnn and mmm, which refer to the level of the largest box, and the number of queries respectively.\nThe second line contains nnn integers a1,\u2026,ana_1, \\ldots, a_na1\u200b,\u2026,an\u200b.\nThe third line contains mmm integers X1,\u2026,XmX_1, \\ldots, X_mX1\u200b,\u2026,Xm\u200b.\n\n\nOutput Format\n\nPrint mmm integers each in a new line, ithi^{th}ith of them equal to the smallest number of boxes Andy must open in order to retrieve at least XiX_iXi\u200b candies.",
+    "constraints": [
+      "1 \u2264 n, m \u2264 300000",
+      "1 \u2264 ai \u2264 10^9",
+      "1 \u2264 Xi \u2264 10^12",
+      "It is guaranteed that the total number of candies is at least Xi for all i"
+    ],
+    "inputFormat": "The first line contains two integers n and m, which refer to the level of the largest box, and the number of queries respectively. The second line contains n integers a1,\u2026,an. The third line contains m integers X1,\u2026,Xm.",
+    "outputFormat": "Print m integers each in a new line, ith of them equal to the smallest number of boxes Andy must open in order to retrieve at least Xi candies.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "5 1\n1 1 1 1 1\n1",
+        "output": "5",
+        "explanation": "The only candy is contained in five levels of boxes."
+      },
+      {
+        "id": "sample_2",
+        "input": "3 3\n3 3 3\n2 8 13",
+        "output": "3\n5\n8",
+        "explanation": "In the third query, for 13 candies, Andy should open the largest box, two level-2 boxes, and finally five of six available level-1 boxes. Each of those boxes will contain 3 level-0 boxes (which are candies). So he'll have 15 candies in total, but he needs only 13 of them."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1 1\n1\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "300000 1\n1000000000\n1000000000000",
+        "expectedOutput": "300000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "2 1\n1 1\n2",
+        "expectedOutput": "2",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "3 2\n2 3 4\n10 20",
+        "expectedOutput": "5\n10",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "4 3\n1 2 3 4\n5 10 15",
+        "expectedOutput": "5\n10\n15",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "First, calculate the prefix sum of the boxes at each level. Then, for each query, use binary search to find the minimum number of boxes that need to be opened to get at least Xi candies.",
+    "timeComplexity": "O(n + m * log(n)) \u2014 O(n) for calculating prefix sum and O(m * log(n)) for binary search",
+    "spaceComplexity": "O(n) \u2014 for storing prefix sum",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n\nint compare(const void *a, const void *b) {\n    return (*(int*)a - *(int*)b);\n}\n\nint main() {\n    int n, m;\n    scanf(\"%d %d\", &n, &m);\n    long long a[n], prefix[n + 1] = {0};\n    for (int i = 0; i < n; i++) {\n        scanf(\"%lld\", &a[i]);\n    }\n    for (int i = n - 1; i >= 0; i--) {\n        prefix[i] = prefix[i + 1] + a[i];\n    }\n    for (int i = 0; i < m; i++) {\n        long long x;\n        scanf(\"%lld\", &x);\n        long long ans = 0;\n        for (int j = 0; j < n; j++) {\n            long long temp = x / (prefix[j + 1] + 1);\n            ans += temp;\n            x -= temp * (prefix[j + 1] + 1);\n        }\n        printf(\"%lld\\n\", ans + x);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\n#include <algorithm>\nusing namespace std;\n\nint main() {\n    int n, m;\n    cin >> n >> m;\n    vector<long long> a(n), prefix(n + 1, 0);\n    for (int i = 0; i < n; i++) {\n        cin >> a[i];\n    }\n    for (int i = n - 1; i >= 0; i--) {\n        prefix[i] = prefix[i + 1] + a[i];\n    }\n    for (int i = 0; i < m; i++) {\n        long long x;\n        cin >> x;\n        long long ans = 0;\n        for (int j = 0; j < n; j++) {\n            long long temp = x / (prefix[j + 1] + 1);\n            ans += temp;\n            x -= temp * (prefix[j + 1] + 1);\n        }\n        cout << ans + x << endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    public static void main(String[] args) {\n        Scanner sc = new Scanner(System.in);\n        int n = sc.nextInt();\n        int m = sc.nextInt();\n        long[] a = new long[n];\n        for (int i = 0; i < n; i++) {\n            a[i] = sc.nextLong();\n        }\n        long[] prefix = new long[n + 1];\n        for (int i = n - 1; i >= 0; i--) {\n            prefix[i] = prefix[i + 1] + a[i];\n        }\n        for (int i = 0; i < m; i++) {\n            long x = sc.nextLong();\n            long ans = 0;\n            for (int j = 0; j < n; j++) {\n                long temp = x / (prefix[j + 1] + 1);\n                ans += temp;\n                x -= temp * (prefix[j + 1] + 1);\n            }\n            System.out.println(ans + x);\n        }\n    }\n}",
+      "Python3": "import sys\ninput = sys.stdin.readline\n\nn, m = map(int, input().split())\na = list(map(int, input().split()))\nprefix = [0] * (n + 1)\nfor i in range(n - 1, -1, -1):\n    prefix[i] = prefix[i + 1] + a[i]\nfor _ in range(m):\n    x = int(input())\n    ans = 0\n    for j in range(n):\n        temp = x // (prefix[j + 1] + 1)\n        ans += temp\n        x -= temp * (prefix[j + 1] + 1)\n    print(ans + x)",
+      "JavaScript": "const fs = require('fs');\nconst lines = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst input = () => lines[idx++].trim();\nconst [n, m] = input().split(' ').map(Number);\nconst a = input().split(' ').map(Number);\nconst prefix = new Array(n + 1).fill(0);\nfor (let i = n - 1; i >= 0; i--) {\n    prefix[i] = prefix[i + 1] + a[i];\n}\nfor (let i = 0; i < m; i++) {\n    const x = Number(input());\n    let ans = 0;\n    for (let j = 0; j < n; j++) {\n        const temp = Math.floor(x / (prefix[j + 1] + 1));\n        ans += temp;\n        x -= temp * (prefix[j + 1] + 1);\n    }\n    console.log(ans + x);\n}"
+    }
+  }
+}

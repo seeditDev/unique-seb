@@ -1,0 +1,127 @@
+{
+  "questionId": "Q8049",
+  "title": "Uniform",
+  "slug": "uniform",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Graphs | Disjoint Set Union | Math",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "Union‑Find",
+      "Connected Components",
+      "Modular Exponentiation",
+      "Interval Merging"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Mathematics"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "In a school, there are CCC clubs (numbered 111 through CCC) that students can participate in. Each student can be in zero, one or multiple clubs.\n\nTomorrow, there is a school assembly and NNN students (numbered 111 through NNN) will be standing in a line. Each student should wear one of MMM single-colour shirts provided by the school. The only restriction is that for each club, students in this club must wear shirts with the same colour (possibly the same colour for multiple clubs).\n\nStudents in the same clubs try to stand near each other. Formally, for each club iii, you are given xix_ixi​ segments — let's denote them by [l1,r1],[l2,r2],…,[lxi,rxi][l_1,r_1],[l_2,r_2], \\ldots, [l_{x_i},r_{x_i}][l1​,r1​],[l2​,r2​],…,[lxi​​,rxi​​], where 1≤l1≤r1&lt;l2≤r2&lt;…&lt;lxi≤rxi≤N1 \\le l_1 \\le r_1 \\lt l_2 \\le r_2 \\lt \\ldots \\lt l_{x_i} \\le r_{x_i} \\le N1≤l1​≤r1​&lt;l2​≤r2​&lt;…&lt;lxi​​≤rxi​​≤N — such for each valid jjj, the students lj,lj+1,…,rjl_j, l_j+1, \\ldots, r_jlj​,lj​+1,…,rj​ belong to this club.\n\nDetermine the number of ways in which the students can choose the colours of their shirts. Two ways to choose colours are considered different if there is at least one student wearing a shirt with a different colour. Since this number can be very large, compute it modulo 998,244,353998,244,353998,244,353.",
+    "constraints": [
+      "1 ≤ T ≤ 10",
+      "1 ≤ C ≤ 1000",
+      "1 ≤ N, M ≤ 10^9",
+      "1 ≤ xi ≤ 100",
+      "Sum of all xi over a test case ≤ 100 000"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case: first line contains three integers C, N and M — the number of clubs, the number of students (students are numbered 1…N) and the number of available shirt colours. Then for each club i (1 ≤ i ≤ C) two lines follow. The first of these lines contains an integer xi — the number of segments belonging to this club. The second line contains 2·xi integers l1 r1 l2 r2 … lxi rxi describing the segments. For each club the segments are given in strictly increasing order and are pairwise disjoint.",
+    "outputFormat": "For each test case output a single line containing the number of possible colour assignments modulo 998244353.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n2 6 3\n2\n1 2 5 6\n1\n4 6",
+        "output": "9",
+        "explanation": "Explanation:\nExample case 1: Students 555 and 666 are in both clubs, so these two clubs must wear shirts with the same colour. Student 333 does not participate in any club and can wear a shirt with any colour out of the three available options."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Each club forces all its members to wear the same colour. This creates an equivalence relation among students: two students must have the same colour if they belong to the same club, directly or via a chain of clubs. The relation can be represented with a Disjoint Set Union (DSU).\n\n*Every student inside a given segment [l, r] is forced to have the same colour*, therefore the whole segment can be treated as a single DSU element. All positions of a segment are merged into one node.\n\nTwo kinds of merges are required:\n1. **Club merges** – all segments belonging to the same club are united because the club’s members share a colour.\n2. **Overlap merges** – if two segments intersect (share at least one student) they must also be united, because the common student belongs to both segments.\n\nAfter processing all merges we obtain a set of DSU components, each component representing a group of students that must wear the same colour. Students that are not covered by any segment are isolated; each of them forms its own component.\n\nLet:\n- K = number of DSU components among the segments.\n- covered = total number of distinct students that appear in at least one segment (computed by merging all intervals irrespective of clubs).\n- free = N – covered, the students that belong to no club.\n\nEvery component can be coloured independently with any of the M colours, therefore the answer is:\n\n    answer = M^(K + free)  (mod 998244353)\n\nThe exponentiation is performed with fast binary exponentiation.\n\n**Algorithm per test case**\n1. Read all segments, store them with a global index.\n2. Initialise a DSU of size = total number of segments.\n3. For each club, union the indices of all its segments.\n4. Sort all segments by left endpoint. Scan them; whenever the current segment overlaps the previous one, union their indices (overlap merge) and also extend the current merged interval for the covered‑length calculation.\n5. After the scan, count distinct DSU roots → K.\n6. While scanning, also compute `covered` by merging intervals in the usual way (keep the rightmost end of the current merged block).\n7. free = N – covered.\n8. answer = pow_mod(M, K + free, MOD).\n\n**Correctness proof sketch**\n- *Lemma 1*: All students inside a single segment must have the same colour. By construction we treat the whole segment as one DSU element, so the lemma holds.\n- *Lemma 2*: If two segments intersect, all students of both segments must share a colour. The algorithm unions intersecting segments, therefore they belong to the same DSU component.\n- *Lemma 3*: All segments of the same club must share a colour. The algorithm unions all segments of a club, satisfying the lemma.\n- *Corollary*: After performing the two kinds of unions, two students are in the same DSU component iff there exists a chain of clubs and/or overlapping segments connecting them. Hence each DSU component is exactly a maximal set of students that are forced to wear the same colour.\n- *Lemma 4*: Students not appearing in any segment are not constrained by any club, thus each forms an independent component.\n- *Theorem*: The number of valid colourings equals M raised to the total number of independent components (K from DSU + free isolated students). The algorithm computes this exponent and returns the value modulo the given prime, which is therefore the correct answer.\n\n**Complexity analysis**\n- Let S = total number of segments ( ≤ 100 000). Sorting takes O(S log S). All DSU operations are almost O(1) (inverse Ackermann). The scan for covered length is O(S). Hence time per test case: O(S log S).\n- Memory consumption: O(S) for storing segments and DSU arrays.\n\n**Reference implementation** follows the described steps and works for the given limits.",
+    "timeComplexity": "O(S log S) per test case, where S = total number of segments (≤ 100 000).",
+    "spaceComplexity": "O(S) additional memory.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#define MOD 998244353\n\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

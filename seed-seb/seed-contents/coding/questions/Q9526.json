@@ -1,0 +1,143 @@
+{
+  "questionId": "Q9526",
+  "title": "Maximum of GCDs",
+  "slug": "maximum-of-gcds",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Arrays | Number Theory | Sliding Window",
+    "difficulty": "Hard",
+    "isPremium": true,
+    "tags": [
+      "GCD",
+      "Subarray",
+      "Divide and Conquer",
+      "Sparse Table",
+      "Two‑Pointer"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Mathematics"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "**Note the unusual time limit in this problem.**\n\nYou are given an array AAA of NNN positive integers.\n\nThe power of a subarray A[L,R]A[L, R]A[L,R] (1≤L≤R≤N)(1\\le L\\le R \\le N)(1≤L≤R≤N) having size (R−L+1)(R-L+1)(R−L+1) is defined as gcd⁡(AL,A(L+1),…,AR)\\gcd(A_L, A_{(L+1)}, \\ldots, A_R)gcd(AL​,A(L+1)​,…,AR​), where gcd⁡\\gcdgcd denotes the greatest common divisor.\n\nYour task is to find the **maximum** power of a subarray of size kkk, for all 1≤k≤N1\\le k \\le N1≤k≤N.\n\nA subarray is formed by deleting some (possibly zero) elements from the beginning of the array and some (possibly zero) elements from the end of the array.\n\n\nInput Format\n\nThe first line contains a single integer TTT: the number of test cases.\nThe first line of each test case contains a positive integer NNN: the size of array AAA.\nThe second line of each test case contains NNN positive integers: A1,A2,A3,…,ANA_1,A_2,A_3,\\ldots,A_NA1​,A2​,A3​,…,AN​.\n\n\nOutput Format\nFor each test case, output NNN space-separated positive integers.\n\nThe ithi^{th}ith integer should be the **maximum** power among all subarrays of AAA with size iii.",
+    "constraints": [
+      "1 ≤ T ≤ 10^4",
+      "1 ≤ N ≤ 10^5",
+      "1 ≤ Ai ≤ 10^9",
+      "Sum of N over all test cases ≤ 2·10^5"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case: the first line contains an integer N, the length of the array. The second line contains N space‑separated positive integers A1 … AN.",
+    "outputFormat": "For each test case output a single line with N space‑separated integers. The i‑th integer is the maximum possible GCD among all subarrays of length i (1‑based).",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "5\n4\n5 5 5 5\n4\n4 2 3 1\n3\n6 10 15\n5\n2 6 3 9 24\n5\n3 11 7 2 5",
+        "output": "5 5 5 5\n4 2 1 1\n15 5 1\n24 3 3 3 1\n11 1 1 1 1",
+        "explanation": "For each test case we list the maximum GCD for subarray lengths 1..N. The values match the description in the statement."
+      },
+      {
+        "id": "sample_2",
+        "input": "2\n1\n7\n2\n6 10",
+        "output": "7\n10 2",
+        "explanation": "First case: only subarray length 1, GCD=7. Second case: length‑1 maximum is max(6,10)=10, length‑2 GCD(6,10)=2."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\\n4\\n5 7 11 13",
+        "output": "13 1 1 1",
+        "explanation": "Length‑1 maximum is 13. Any longer subarray contains two distinct primes, so GCD=1."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "1\n1\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "1\n1\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "1\n1\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "1\n1\n1",
+        "expectedOutput": "1",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "For each position i we keep a list of pairs (g, start) meaning that there exists a subarray A[start…i] whose GCD is g and that start is the smallest index giving this GCD. When we move to i+1 we create a new list: start with (A[i+1], i+1). For every pair (g, s) from the previous list we compute ng = gcd(g, A[i+1]). If the last pair in the new list has the same ng we keep the earlier start (minimum s); otherwise we append (ng, s). This merges equal GCDs and guarantees the list size is O(log maxAi). For each pair (g, s) in the current list the subarray length is len = i+1‑s+1, and we update answer[len] = max(answer[len], g). After processing the whole array answer[k] holds the required maximum for each length k. The algorithm runs in O(N log maxAi) per test case and uses O(N) additional memory for the answer array.",
+    "timeComplexity": "O(N · log Amax) per test case, where Amax ≤ 10^9. Over all test cases O( ΣN · log Amax ) ≤ 2·10^5 · 30.",
+    "spaceComplexity": "O(N) for the answer array plus O(log Amax) for the temporary GCD list.",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\nstatic int gcd_int(int a, int b) {\n    while (b) { int t = a % b; a = b; b = t; }\n    return a;\n}\n\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    while(T--){\n        int N; scanf(\"%d\", &N);\n        int *A = (int*)malloc(N*sizeof(int));\n        for(int i=0;i<N;i++) scanf(\"%d\", &A[i]);\n        int *ans = (int*)calloc(N+1, sizeof(int)); // 1‑based\n        // vectors for current pairs (gcd, start)\n        int *gcds = (int*)malloc((N+5)*sizeof(int));\n        int *starts = (int*)malloc((N+5)*sizeof(int));\n        int sz = 0;\n        for(int i=0;i<N;i++){\n            int new_sz = 0;\n            // start with the element itself\n            gcds[new_sz] = A[i];\n            starts[new_sz] = i;\n            new_sz++;\n            for(int j=0;j<sz;j++){\n                int ng = gcd_int(gcds[j], A[i]);\n                if(ng == gcds[new_sz-1]){\n                    if(starts[j] < starts[new_sz-1]) starts[new_sz-1] = starts[j];\n                }else{\n                    gcds[new_sz] = ng;\n                    starts[new_sz] = starts[j];\n                    new_sz++;\n                }\n            }\n            // update answers\n            for(int j=0;j<new_sz;j++){\n                int len = i - starts[j] + 1;\n                if(gcds[j] > ans[len]) ans[len] = gcds[j];\n            }\n            // swap buffers\n            sz = new_sz;\n        }\n        // output\n        for(int k=1;k<=N;k++){\n            if(k>1) printf(\" \");\n            printf(\"%d\", ans[k]);\n        }\n        printf(\"\\n\");\n        free(A); free(ans); free(gcds); free(starts);\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N; cin>>N;\n        vector<int> A(N);\n        for(int &x: A) cin>>x;\n        vector<int> ans(N+1,0);\n        vector<pair<int,int>> cur; // (gcd, start)\n        for(int i=0;i<N;i++){\n            vector<pair<int,int>> nxt;\n            nxt.emplace_back(A[i], i);\n            for(auto &p: cur){\n                int ng = std::gcd(p.first, A[i]);\n                if(ng == nxt.back().first){\n                    nxt.back().second = min(nxt.back().second, p.second);\n                }else{\n                    nxt.emplace_back(ng, p.second);\n                }\n            }\n            for(auto &p: nxt){\n                int len = i - p.second + 1;\n                ans[len] = max(ans[len], p.first);\n            }\n            cur.swap(nxt);\n        }\n        for(int k=1;k<=N;k++){\n            if(k>1) cout<<' ';\n            cout<<ans[k];\n        }\n        cout<<'\\n';\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    private static int gcd(int a, int b) {\n        while (b != 0) {\n            int t = a % b;\n            a = b;\n            b = t;\n        }\n        return a;\n    }\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringTokenizer st;\n        int T = Integer.parseInt(br.readLine().trim());\n        StringBuilder out = new StringBuilder();\n        while (T-- > 0) {\n            int N = Integer.parseInt(br.readLine().trim());\n            int[] A = new int[N];\n            st = new StringTokenizer(br.readLine());\n            for (int i = 0; i < N; i++) A[i] = Integer.parseInt(st.nextToken());\n            int[] ans = new int[N + 1];\n            List<int[]> cur = new ArrayList<>(); // each element: [gcd, start]\n            for (int i = 0; i < N; i++) {\n                List<int[]> nxt = new ArrayList<>();\n                nxt.add(new int[]{A[i], i});\n                for (int[] p : cur) {\n                    int ng = gcd(p[0], A[i]);\n                    int[] last = nxt.get(nxt.size() - 1);\n                    if (ng == last[0]) {\n                        last[1] = Math.min(last[1], p[1]);\n                    } else {\n                        nxt.add(new int[]{ng, p[1]});\n                    }\n                }\n                for (int[] p : nxt) {\n                    int len = i - p[1] + 1;\n                    if (p[0] > ans[len]) ans[len] = p[0];\n                }\n                cur = nxt;\n            }\n            for (int k = 1; k <= N; k++) {\n                if (k > 1) out.append(' ');\n                out.append(ans[k]);\n            }\n            out.append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}\n",
+      "Python3": "#!/usr/bin/env python3\nimport sys, math\n\ndef solve():\n    data = list(map(int, sys.stdin.read().split()))\n    it = iter(data)\n    T = next(it)\n    out_lines = []\n    for _ in range(T):\n        N = next(it)\n        A = [next(it) for _ in range(N)]\n        ans = [0] * (N + 1)\n        cur = []  # list of (gcd, start)\n        for i, val in enumerate(A):\n            nxt = [(val, i)]\n            for g, s in cur:\n                ng = math.gcd(g, val)\n                if ng == nxt[-1][0]:\n                    # keep earlier start\n                    if s < nxt[-1][1]:\n                        nxt[-1] = (ng, s)\n                else:\n                    nxt.append((ng, s))\n            for g, s in nxt:\n                length = i - s + 1\n                if g > ans[length]:\n                    ans[length] = g\n            cur = nxt\n        out_lines.append(' '.join(str(ans[k]) for k in range(1, N + 1)))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/).map(Number);\nlet idx = 0;\nconst T = input[idx++];\nlet output = [];\nfunction gcd(a, b) {\n  while (b !== 0) {\n    const t = a % b;\n    a = b;\n    b = t;\n  }\n  return a;\n}\nfor (let tc = 0; tc < T; tc++) {\n  const N = input[idx++];\n  const A = input.slice(idx, idx + N);\n  idx += N;\n  const ans = new Array(N + 1).fill(0);\n  let cur = []; // array of [gcd, start]\n  for (let i = 0; i < N; i++) {\n    const val = A[i];\n    const nxt = [[val, i]];\n    for (const [g, s] of cur) {\n      const ng = gcd(g, val);\n      const last = nxt[nxt.length - 1];\n      if (ng === last[0]) {\n        if (s < last[1]) last[1] = s;\n      } else {\n        nxt.push([ng, s]);\n      }\n    }\n    for (const [g, s] of nxt) {\n      const len = i - s + 1;\n      if (g > ans[len]) ans[len] = g;\n    }\n    cur = nxt;\n  }\n  const line = [];\n  for (let k = 1; k <= N; k++) line.push(String(ans[k]));\n  output.push(line.join(' '));\n}\nconsole.log(output.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

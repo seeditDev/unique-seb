@@ -1,0 +1,132 @@
+{
+  "questionId": "Q8729",
+  "title": "Regenerate Tree",
+  "slug": "regenerate-tree",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Trees",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Binary Tree",
+      "Tree Construction",
+      "Inorder Traversal",
+      "Postorder Traversal",
+      "Preorder Traversal",
+      "Recursion",
+      "Hash Map"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Trees"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Regenerate binary tree with given inorder and post order traversal. You need to return the pointer to the root node of the tree generated.\n\nA binary tree is a tree data structure in which every node has at most 2 children nodes.\n\n\nInput Format\n\nFirst line will contain TTT, number of testcases. Then the testcases follow.\nFirst line of each testcase contains single integer NNN - number of nodes in Tree\nSecond line contains n space-separated integers In1,In2......Ini....InNIn_1, In_2......In_i....In_NIn1​,In2​......Ini​....InN​ - In Order Traversal\nThird line contains n space separated integers Post1,Post2......Posti....PostNPost_1, Post_2......Post_i....Post_NPost1​,Post2​......Posti​....PostN​ - Post Order Traversal\n\nAll the values in In Order Traversal and Post Order Traversal are distinct.\n\n\n**Note:**\n\n\n\nFor C++ language, you need to:\n\nComplete the function in the submit solution tab:\n\n\n`Node* regeneratedTree(vector In, vector Post){...}\n\n`\n\nOutput Format\nUsing the functions you have completed, for each testcase pre order traversal of the tree will be compared for the correctness.\n\n\n\nFor each testcase N space separated integers Pre1,Pre2.......Prei...PreNPre_1, Pre_2 ....... Pre_i ... Pre_NPre1​,Pre2​.......Prei​...PreN​ - Pre Order Traversal will be outputted.",
+    "constraints": [
+      "1 <= T <= 1000",
+      "1 <= N <= 10^5 (sum of N over all test cases ≤ 10^5)",
+      "All node values are distinct and fit in 32‑bit signed integer."
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. For each test case:\n- The first line contains an integer N, the number of nodes in the tree.\n- The second line contains N space‑separated distinct integers representing the inorder traversal.\n- The third line contains N space‑separated distinct integers representing the postorder traversal.",
+    "outputFormat": "For each test case output a single line containing N space‑separated integers – the preorder traversal of the reconstructed binary tree.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n7\n6 3 7 2 4 5 1\n6 7 3 5 4 2 1\n5\n3 2 4 1 5\n3 4 2 5 1",
+        "output": "1 2 3 6 7 4 5\n1 2 3 4 5",
+        "explanation": "For the first test case the reconstructed tree (shown in the statement) yields preorder 1 2 3 6 7 4 5. The second test case yields a tree whose preorder is 1 2 3 4 5."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The last element of the postorder segment is always the root of the current (sub)tree. Using a hash map we can obtain the index of this root in the inorder array in O(1). The inorder array is split into left and right parts, whose sizes give the corresponding ranges in the postorder array. Recursively repeat the process for left and right sub‑trees. While recursing we directly collect the preorder sequence (root → left → right). This runs in O(N) time per test case and uses O(N) extra space for the map and recursion stack.",
+    "timeComplexity": "O(N) per test case, where N is the number of nodes in that test case.",
+    "spaceComplexity": "O(N) for the hash map and recursion stack (worst‑case depth N for a skewed tree).",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n\ntypedef struct Node {\n    int data;\n    struct Node *left, *right;\n} Node;\n\nNode* newNode(int val) {\n    Node* n = (Node*)malloc(sizeof(Node));\n    n->data = val; n->left = n->right = NULL; return n;\n}\n\n// Helper to build tree and fill preorder array\nvoid build(int *in, int *post, int inL, int inR, int postL, int postR, int *posMap, int *pre, int *preIdx) {\n    if (inL > inR || postL > postR) return;\n    int rootVal = post[postR];\n    pre[(*preIdx)++] = rootVal;\n    int rootPos = posMap[rootVal]; // value is used as index directly (values are ≤ N)\n    int leftSize = rootPos - inL;\n    // left subtree\n    build(in, post, inL, rootPos-1, postL, postL+leftSize-1, posMap, pre, preIdx);\n    // right subtree\n    build(in, post, rootPos+1, inR, postL+leftSize, postR-1, posMap, pre, preIdx);\n}\n\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    while(T--){\n        int N; scanf(\"%d\", &N);\n        int *in = (int*)malloc(N*sizeof(int));\n        int *post = (int*)malloc(N*sizeof(int));\n        for(int i=0;i<N;i++) scanf(\"%d\", &in[i]);\n        for(int i=0;i<N;i++) scanf(\"%d\", &post[i]);\n        // map value -> index in inorder (values are ≤ N according to constraints, otherwise use hashmap)\n        int *posMap = (int*)calloc(100001, sizeof(int)); // safe upper bound\n        for(int i=0;i<N;i++) posMap[in[i]] = i;\n        int *pre = (int*)malloc(N*sizeof(int));\n        int preIdx = 0;\n        build(in, post, 0, N-1, 0, N-1, posMap, pre, &preIdx);\n        for(int i=0;i<N;i++){\n            if(i) printf(\" \");\n            printf(\"%d\", pre[i]);\n        }\n        printf(\"\\n\");\n        free(in); free(post); free(posMap); free(pre);\n    }\n    return 0;\n}\n",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\n\nvoid build(const vector<int>& inorder, const vector<int>& postorder,\n           int inL, int inR, int postL, int postR,\n           const unordered_map<int,int>& idxMap,\n           vector<int>& preorder){\n    if(inL>inR || postL>postR) return;\n    int root = postorder[postR];\n    preorder.push_back(root);\n    int pos = idxMap.at(root);\n    int leftSize = pos - inL;\n    build(inorder, postorder, inL, pos-1, postL, postL+leftSize-1, idxMap, preorder);\n    build(inorder, postorder, pos+1, inR, postL+leftSize, postR-1, idxMap, preorder);\n}\n\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        int N; cin>>N;\n        vector<int> inorder(N), postorder(N);\n        for(int &x: inorder) cin>>x;\n        for(int &x: postorder) cin>>x;\n        unordered_map<int,int> idxMap; idxMap.reserve(N*2);\n        for(int i=0;i<N;i++) idxMap[inorder[i]] = i;\n        vector<int> preorder; preorder.reserve(N);\n        build(inorder, postorder, 0, N-1, 0, N-1, idxMap, preorder);\n        for(int i=0;i<N;i++){\n            if(i) cout << ' ';\n            cout << preorder[i];\n        }\n        if(T) cout << '\\n';\n    }\n    return 0;\n}\n",
+      "Java": "import java.io.*;\nimport java.util.*;\n\npublic class Main {\n    static void build(int[] inorder, int[] postorder, int inL, int inR, int postL, int postR,\n                      Map<Integer,Integer> idxMap, List<Integer> preorder) {\n        if(inL > inR || postL > postR) return;\n        int root = postorder[postR];\n        preorder.add(root);\n        int pos = idxMap.get(root);\n        int leftSize = pos - inL;\n        build(inorder, postorder, inL, pos-1, postL, postL+leftSize-1, idxMap, preorder);\n        build(inorder, postorder, pos+1, inR, postL+leftSize, postR-1, idxMap, preorder);\n    }\n\n    public static void main(String[] args) throws Exception {\n        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n        StringBuilder out = new StringBuilder();\n        int T = Integer.parseInt(br.readLine().trim());\n        while (T-- > 0) {\n            int N = Integer.parseInt(br.readLine().trim());\n            int[] inorder = new int[N];\n            int[] postorder = new int[N];\n            StringTokenizer st = new StringTokenizer(br.readLine());\n            for (int i = 0; i < N; i++) inorder[i] = Integer.parseInt(st.nextToken());\n            st = new StringTokenizer(br.readLine());\n            for (int i = 0; i < N; i++) postorder[i] = Integer.parseInt(st.nextToken());\n            Map<Integer,Integer> idxMap = new HashMap<>(N*2);\n            for (int i = 0; i < N; i++) idxMap.put(inorder[i], i);\n            List<Integer> preorder = new ArrayList<>(N);\n            build(inorder, postorder, 0, N-1, 0, N-1, idxMap, preorder);\n            for (int i = 0; i < N; i++) {\n                if (i > 0) out.append(' ');\n                out.append(preorder.get(i));\n            }\n            if (T > 0) out.append('\\n');\n        }\n        System.out.print(out.toString());\n    }\n}\n",
+      "Python3": "#!/usr/bin/env python3\nimport sys\n\ndef build(inorder, postorder, in_l, in_r, post_l, post_r, idx_map, preorder):\n    if in_l > in_r or post_l > post_r:\n        return\n    root = postorder[post_r]\n    preorder.append(root)\n    pos = idx_map[root]\n    left_sz = pos - in_l\n    build(inorder, postorder, in_l, pos-1, post_l, post_l+left_sz-1, idx_map, preorder)\n    build(inorder, postorder, pos+1, in_r, post_l+left_sz, post_r-1, idx_map, preorder)\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out_lines = []\n    for _ in range(T):\n        N = int(next(it))\n        inorder = [int(next(it)) for _ in range(N)]\n        postorder = [int(next(it)) for _ in range(N)]\n        idx_map = {val:i for i,val in enumerate(inorder)}\n        preorder = []\n        build(inorder, postorder, 0, N-1, 0, N-1, idx_map, preorder)\n        out_lines.append(' '.join(map(str, preorder)))\n    sys.stdout.write('\\n'.join(out_lines))\n\nif __name__ == \"__main__\":\n    solve()\n",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet outputs = [];\nfunction build(inorder, postorder, inL, inR, postL, postR, posMap, preorder){\n    if(inL>inR || postL>postR) return;\n    const root = postorder[postR];\n    preorder.push(root);\n    const pos = posMap.get(root);\n    const leftSize = pos - inL;\n    build(inorder, postorder, inL, pos-1, postL, postL+leftSize-1, posMap, preorder);\n    build(inorder, postorder, pos+1, inR, postL+leftSize, postR-1, posMap, preorder);\n}\nfor(let t=0; t<T; t++){\n    const N = Number(input[idx++]);\n    const inorder = new Array(N);\n    const postorder = new Array(N);\n    for(let i=0;i<N;i++) inorder[i] = Number(input[idx++]);\n    for(let i=0;i<N;i++) postorder[i] = Number(input[idx++]);\n    const posMap = new Map();\n    for(let i=0;i<N;i++) posMap.set(inorder[i], i);\n    const preorder = [];\n    build(inorder, postorder, 0, N-1, 0, N-1, posMap, preorder);\n    outputs.push(preorder.join(' '));\n}\nconsole.log(outputs.join('\\n'));\n"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

@@ -1,0 +1,128 @@
+{
+  "questionId": "Q3616",
+  "title": "Shubham Loves Maths",
+  "slug": "shubham-loves-maths",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Prime Numbers",
+      "Modular Arithmetic",
+      "Math",
+      "Sieve of Eratosthenes"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Mathematics"
+    ]
+  },
+  "content": {
+    "problemStatement": "Our friend Shubham loved solving maths problems. Today he came accross this function which is used to calculate the **strength of a number**\n\n`\n\tint strength(int N) {\n\t\tint value = 0, temp = N;\n\t\t/*Array lp stores the lowest prime divisor \n                  i.e. lp[x] stores lowest prime divisor of x*/\n\t\twhile(temp != 1) {\n\t\t\tvalue += N / lp[temp];\n\t\t\ttemp /= lp[temp];\n\t\t}\n\t\treturn value;\n\t}\n`\nHaving learnt sieving and related algorithms, we was able to calculate the above function efficiently. But, his friend gave him a harder task to calculate. \n\n\n\nYou, being a good programmer, want to help Shubham with this difficult task. Since, this sum can be very large, you are required to output this value modulo **1000000007 (109 + 7)**.",
+    "constraints": [
+      "1 <= T <= 1000",
+      "1 <= N <= 10^6",
+      "1 <= k <= 10^6"
+    ],
+    "inputFormat": "The input consists of T test cases. For each test case, you are given 2 numbers N and k, separated by a space, on a new line.",
+    "outputFormat": "For each test case, print the required answer for the summation function expressed above, modulo 1000000007.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "2\n3 1\n6 2",
+        "output": "12\n1692",
+        "explanation": "For the first test case, the terms added are F(3) + F(6) + F(9) which evaluate to 1 + 5 + 6 = 12. For the second test case, the terms added are F(36) + F(72) + F(108) + F(144) + F(180) which evaluate to 60 + 156 + 216 + 384 + 336 + 540 = 1692."
+      },
+      {
+        "id": "sample_2",
+        "input": "1\n10 2",
+        "output": "45",
+        "explanation": "The terms added are F(10) + F(20) which evaluate to 10 + 35 = 45."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n1 5",
+        "output": "5",
+        "explanation": "The terms added are F(1) + F(2) + F(3) + F(4) + F(5) which evaluate to 0 + 1 + 1 + 2 + 1 = 5."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1",
+        "expectedOutput": "0",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "maximum boundary",
+        "input": "1\n1000000 1",
+        "expectedOutput": "1000000",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "edge case",
+        "input": "1\n2 2",
+        "expectedOutput": "6",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "general case 1",
+        "input": "1\n10 3",
+        "expectedOutput": "120",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "general case 2",
+        "input": "1\n50 2",
+        "expectedOutput": "210",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "To solve this problem, we first need to calculate the lowest prime divisor for each number up to the maximum possible value of N*k. We can use the Sieve of Eratosthenes algorithm to achieve this. Then, for each test case, we calculate the strength of each number from N to N*k (inclusive) with a step of N, and sum them up. Finally, we print the sum modulo 1000000007.",
+    "timeComplexity": "O(T * k * log(N*k)) \u2014 explain: per query is O(k * log(N*k)), total is O(T * k * log(N*k))",
+    "spaceComplexity": "O(N*k) \u2014 explain: we need to store the lowest prime divisor for each number up to N*k",
+    "code": {
+      "C": "#include <stdio.h>\n#include <stdlib.h>\n#define MOD 1000000007\n#define MAX 1000001\nint lp[MAX];\nvoid sieve() {\n    for (int i = 2; i < MAX; i++) {\n        if (lp[i] == 0) {\n            lp[i] = i;\n            for (int j = i * i; j < MAX; j += i) {\n                if (lp[j] == 0) lp[j] = i;\n            }\n        }\n    }\n}\nint strength(int N) {\n    int value = 0, temp = N;\n    while (temp != 1) {\n        value += N / lp[temp];\n        temp /= lp[temp];\n    }\n    return value;\n}\nint main() {\n    sieve();\n    int T;\n    scanf(\"%d\", &T);\n    while (T--) {\n        int N, k;\n        scanf(\"%d %d\", &N, &k);\n        long long sum = 0;\n        for (int i = N; i <= N * k; i += N) {\n            sum += strength(i);\n            sum %= MOD;\n        }\n        printf(\"%lld\\n\", sum);\n    }\n    return 0;\n}",
+      "C++": "#include <iostream>\n#include <vector>\n#define MOD 1000000007\n#define MAX 1000001\nstd::vector<int> lp(MAX);\nvoid sieve() {\n    for (int i = 2; i < MAX; i++) {\n        if (lp[i] == 0) {\n            lp[i] = i;\n            for (int j = i * i; j < MAX; j += i) {\n                if (lp[j] == 0) lp[j] = i;\n            }\n        }\n    }\n}\nint strength(int N) {\n    int value = 0, temp = N;\n    while (temp != 1) {\n        value += N / lp[temp];\n        temp /= lp[temp];\n    }\n    return value;\n}\nint main() {\n    sieve();\n    int T;\n    std::cin >> T;\n    while (T--) {\n        int N, k;\n        std::cin >> N >> k;\n        long long sum = 0;\n        for (int i = N; i <= N * k; i += N) {\n            sum += strength(i);\n            sum %= MOD;\n        }\n        std::cout << sum << std::endl;\n    }\n    return 0;\n}",
+      "Java": "import java.util.Scanner;\npublic class Main {\n    static final int MOD = 1000000007;\n    static final int MAX = 1000001;\n    static int[] lp = new int[MAX];\n    public static void sieve() {\n        for (int i = 2; i < MAX; i++) {\n            if (lp[i] == 0) {\n                lp[i] = i;\n                for (int j = i * i; j < MAX; j += i) {\n                    if (lp[j] == 0) lp[j] = i;\n                }\n            }\n        }\n    }\n    public static int strength(int N) {\n        int value = 0, temp = N;\n        while (temp != 1) {\n            value += N / lp[temp];\n            temp /= lp[temp];\n        }\n        return value;\n    }\n    public static void main(String[] args) {\n        sieve();\n        Scanner sc = new Scanner(System.in);\n        int T = sc.nextInt();\n        while (T-- > 0) {\n            int N = sc.nextInt();\n            int k = sc.nextInt();\n            long sum = 0;\n            for (int i = N; i <= N * k; i += N) {\n                sum += strength(i);\n                sum %= MOD;\n            }\n            System.out.println(sum);\n        }\n    }\n}",
+      "Python3": "MOD = 1000000007\nMAX = 1000001\nlp = [0] * MAX\ndef sieve():\n    for i in range(2, MAX):\n        if lp[i] == 0:\n            lp[i] = i\n            for j in range(i * i, MAX, i):\n                if lp[j] == 0: lp[j] = i\ndef strength(N):\n    value = 0\n    temp = N\n    while temp != 1:\n        value += N // lp[temp]\n        temp //= lp[temp]\n    return value\nsieve()\nT = int(input())\nfor _ in range(T):\n    N, k = map(int, input().split())\n    sum = 0\n    for i in range(N, N * k + 1, N):\n        sum += strength(i)\n        sum %= MOD\n    print(sum)",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split('\\n');\nlet idx = 0;\nconst MOD = 1000000007;\nconst MAX = 1000001;\nconst lp = new Array(MAX).fill(0);\nfunction sieve() {\n    for (let i = 2; i < MAX; i++) {\n        if (lp[i] === 0) {\n            lp[i] = i;\n            for (let j = i * i; j < MAX; j += i) {\n                if (lp[j] === 0) lp[j] = i;\n            }\n        }\n    }\n}\nfunction strength(N) {\n    let value = 0, temp = N;\n    while (temp !== 1) {\n        value += Math.floor(N / lp[temp]);\n        temp = Math.floor(temp / lp[temp]);\n    }\n    return value;\n}\nsieve();\nconst T = parseInt(input[idx++]);\nfor (let i = 0; i < T; i++) {\n    const [N, k] = input[idx++].split(' ').map(Number);\n    let sum = 0;\n    for (let j = N; j <= N * k; j += N) {\n        sum += strength(j);\n        sum %= MOD;\n    }\n    console.log(sum);\n}"
+    }
+  }
+}

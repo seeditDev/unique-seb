@@ -1,0 +1,139 @@
+{
+  "questionId": "Q8022",
+  "title": "Dinner by Candlelight",
+  "slug": "dinner-by-candlelight",
+  "version": 1,
+  "createdAt": "2026-07-02",
+  "updatedAt": "2026-07-04",
+  "metadata": {
+    "category": "Math",
+    "difficulty": "Medium",
+    "isPremium": true,
+    "tags": [
+      "Greedy",
+      "Simulation",
+      "Arithmetic"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Ad-hoc & Implementation"
+    ],
+    "QBCategory": "CCD"
+  },
+  "content": {
+    "problemStatement": "Read problem statements in RussianChef is having a candlelit dinner with his girlfriend at his place. Currently, it is time 000, Chef just managed to light a candle, but he is out of matchsticks.\n\nSince Chef has an infinite supply of (unlit) candles, he can use the following strategy: each second (starting at time 000), he takes one lit candle and lights up XXX other candles using it. This process takes 111 unit of time to complete, i.e. if Chef starts lighting up XXX candles at a time t1t_1t1​, he is able to finish at the time t1+1t_1 + 1t1​+1.\n\nHowever, since candle wax is limited, a candle can only burn for YYY units of time and then it is extinguished.\n\nChef's girlfriend arrives at a time AAA — specifically, after all the candles that were supposed to get extinguished at time AAA have been extinguished and after Chef lights up all the candles that he was lighting up since time A−1A-1A−1. Now Chef wants to know the maximum number of candles which can be lit at the time AAA to impress his girlfriend.",
+    "constraints": [
+      "1 ≤ T ≤ 10^5",
+      "1 ≤ A, Y, X ≤ 10^9"
+    ],
+    "inputFormat": "The first line contains an integer T, the number of test cases. Each of the next T lines contains three space‑separated integers A, Y and X.",
+    "outputFormat": "For each test case output a single line containing the maximum possible number of lit candles at time A.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "3\n1 1 1\n1 2 1\n2 2 1",
+        "output": "1\n2\n2",
+        "explanation": "Case 1: A=1, Y=1 → A≥Y, answer = Y·X = 1.\nCase 2: A=1, Y=2 → A<Y, answer = 1 + A·X = 2.\nCase 3: A=2, Y=2 → A≥Y, answer = Y·X = 2."
+      },
+      {
+        "id": "sample_2",
+        "input": "2\n5 10 3\n10 10 5",
+        "output": "16\n50",
+        "explanation": "First test: A=5<Y=10 → 1+5·3=16.\nSecond test: A=10=Y → answer = Y·X = 10·5=50."
+      },
+      {
+        "id": "sample_3",
+        "input": "1\n1000000000 1000000000 1000000000",
+        "output": "1000000000000000000",
+        "explanation": "A=Y, so answer = Y·X = 10^9·10^9 = 10^18."
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "minimum boundary",
+        "input": "1\n1 1 1",
+        "expectedOutput": "1",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "large values, A<Y",
+        "input": "1\n999999999 1000000000 2",
+        "expectedOutput": "1999999999",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "large values, A≥Y",
+        "input": "1\n1000000000 999999999 3",
+        "expectedOutput": "2999999997",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "X=1, A just before Y",
+        "input": "1\n9 10 1",
+        "expectedOutput": "10",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "X=1, A after Y",
+        "input": "1\n10 10 1",
+        "expectedOutput": "10",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "Let L(t) be the number of lit candles just after time t (i.e. after the X candles that were being lit during [t‑1, t) become lit and after all candles whose lifetime ends at t are extinguished).\n- At t = 0 we have the initial candle: L(0) = 1.\n- Every second Chef uses one lit candle to light X new candles. Those X candles become lit at the next integer time.\n- A candle that was lit at time s extinguishes at time s + Y.\nFrom this we obtain the recurrence:\n    L(t+1) = L(t) + X – extinguished(t+1)\nwhere extinguished(t+1) = 1 if t+1 = Y (the initial candle), = X if t+1 > Y (the X candles lit at time t+1‑Y), and = 0 otherwise.\nFor the first Y‑1 seconds no candle extinguishes, so L(t) = 1 + t·X for 0 ≤ t < Y.\nAt t = Y we lose the initial candle and gain X new ones, giving L(Y) = Y·X.\nFor every later second we lose exactly the X candles that were lit Y seconds earlier and gain X new ones, so the net change is zero and L(t) stays constant at Y·X.\nTherefore the answer is:\n    if A < Y : 1 + A·X\n    else      : Y·X\nThe formula is O(1) per test case and fits in 64‑bit signed integer (max 10^18).",
+    "timeComplexity": "O(T)",
+    "spaceComplexity": "O(1)",
+    "code": {
+      "C": "#include <stdio.h>\n#include <inttypes.h>\nint main(){\n    int T; if(scanf(\"%d\", &T)!=1) return 0;\n    while(T--){\n        int64_t A,Y,X; scanf(\"%\" PRId64 \" %\" PRId64 \" %\" PRId64, &A, &Y, &X);\n        int64_t ans = (A < Y) ? (1 + A*X) : (Y*X);\n        printf(\"%\" PRId64 \"\\n\", ans);\n    }\n    return 0;\n}",
+      "C++": "#include <bits/stdc++.h>\nusing namespace std;\nint main(){\n    ios::sync_with_stdio(false);\n    cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0;\n    while(T--){\n        long long A,Y,X; cin>>A>>Y>>X;\n        long long ans = (A < Y) ? (1 + A*X) : (Y*X);\n        cout<<ans<<\"\\n\";\n    }\n    return 0;\n}",
+      "Java": "import java.io.*;\nimport java.util.*;\npublic class Main {\n    public static void main(String[] args) throws Exception {\n        FastScanner fs = new FastScanner(System.in);\n        int T = fs.nextInt();\n        StringBuilder sb = new StringBuilder();\n        while (T-- > 0) {\n            long A = fs.nextLong();\n            long Y = fs.nextLong();\n            long X = fs.nextLong();\n            long ans = (A < Y) ? (1 + A * X) : (Y * X);\n            sb.append(ans).append('\\n');\n        }\n        System.out.print(sb.toString());\n    }\n    static class FastScanner {\n        private final BufferedInputStream in;\n        private final byte[] buffer = new byte[1 << 16];\n        private int ptr = 0, len = 0;\n        FastScanner(InputStream is) { in = new BufferedInputStream(is); }\n        private int readByte() throws IOException {\n            if (ptr >= len) { len = in.read(buffer); ptr = 0; if (len <= 0) return -1; }\n            return buffer[ptr++];\n        }\n        long nextLong() throws IOException { int c; do { c = readByte(); } while (c <= ' ');\n            boolean neg = false; if (c == '-') { neg = true; c = readByte(); }\n            long val = 0; while (c > ' ') { val = val * 10 + (c - '0'); c = readByte(); }\n            return neg ? -val : val; }\n        int nextInt() throws IOException { return (int) nextLong(); }\n    }\n}",
+      "Python3": "import sys\n\ndef solve():\n    data = sys.stdin.read().strip().split()\n    if not data:\n        return\n    it = iter(data)\n    T = int(next(it))\n    out = []\n    for _ in range(T):\n        A = int(next(it)); Y = int(next(it)); X = int(next(it))\n        if A < Y:\n            out.append(str(1 + A * X))\n        else:\n            out.append(str(Y * X))\n    sys.stdout.write('\\n'.join(out))\n\nif __name__ == \"__main__\":\n    solve()",
+      "JavaScript": "const fs = require('fs');\nconst input = fs.readFileSync(0, 'utf-8').trim().split(/\\s+/);\nlet idx = 0;\nconst T = Number(input[idx++]);\nlet out = [];\nfor (let i = 0; i < T; i++) {\n  const A = BigInt(input[idx++]);\n  const Y = BigInt(input[idx++]);\n  const X = BigInt(input[idx++]);\n  let ans;\n  if (A < Y) ans = 1n + A * X;\n  else ans = Y * X;\n  out.push(ans.toString());\n}\nconsole.log(out.join('\\n'));"
+    }
+  },
+  "QBCategory": "CCD",
+  "boilerPlates": {
+    "C": "#include <stdio.h>\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "C++": "#include <iostream>\nusing namespace std;\n\nint main() {\n    // your code goes here\n    return 0;\n}",
+    "Java": "import java.util.*;\nimport java.io.*;\n\npublic class Main {\n    public static void main(String[] args) throws IOException {\n        // your code goes here\n    }\n}",
+    "Python3": "# your code goes here\n",
+    "JavaScript": "// your code goes here\n"
+  },
+  "_internal": {
+    "methodName": "",
+    "params": []
+  }
+}

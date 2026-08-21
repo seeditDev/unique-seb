@@ -1,0 +1,114 @@
+{
+  "questionId": "Q2231",
+  "title": "Happy Days",
+  "slug": "happy-days",
+  "version": 1,
+  "createdAt": "2026-07-01",
+  "updatedAt": "2026-07-05",
+  "metadata": {
+    "category": "Graphs",
+    "difficulty": "Hard",
+    "isPremium": false,
+    "tags": [
+      "Graphs",
+      "Graph Contraction",
+      "Spanning Trees",
+      "Kirchhoff's Matrix\u2011Tree Theorem",
+      "Big Integer"
+    ],
+    "companyTags": [],
+    "topicTags": [
+      "Mathematics"
+    ]
+  },
+  "content": {
+    "problemStatement": "Johnny has a pool in his garden. There are several islands in the pool. Some islands are connected by bridges. Any bridge can be removed. Every day Johnny removes some bridges so that there is only one way from any island to any other. In the evening he returns removed bridges to their places. Also he has some favorite bridges which he never removes. Johnny will be happy if he is able to make a configuration of bridges on the given day which he has never made before. You have to count the amount of days he will be happy. Of course, if the favorite bridges themselves don't satisfy the happiness condition Johnny will not be happy for even single day.",
+    "constraints": [
+      "1\u2264T\u22645",
+      "2\u2264n\u226430",
+      "1\u2264p\u2264min(6,n-1)",
+      "The graph may be disconnected."
+    ],
+    "inputFormat": "First line contains an integer T, the number of test cases. For each test case: an integer n (2\u2264n\u226430), followed by n lines each containing n characters '0' or '1' describing the adjacency matrix of an undirected simple graph (symmetric, diagonal zeros). Then an integer p (1\u2264p\u2264min(6,n-1)), followed by p lines each with two 1\u2011based integers u v denoting a favourite bridge (the edge (u,v) is present in the matrix).",
+    "outputFormat": "For each test case output a single line containing the number of distinct spanning\u2011tree configurations that contain all favourite bridges. If the favourite bridges cannot belong to any spanning tree, output 0.",
+    "sampleTestCases": [
+      {
+        "id": "sample_1",
+        "input": "1\n4\n0111\n1011\n1101\n1110\n2\n1 2\n3 4",
+        "output": "4",
+        "explanation": ""
+      }
+    ]
+  },
+  "testCases": {
+    "hidden": [
+      {
+        "id": "tc_1",
+        "label": "Case 1",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_2",
+        "label": "Case 2",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_3",
+        "label": "Case 3",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_4",
+        "label": "Case 4",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      },
+      {
+        "id": "tc_5",
+        "label": "Case 5",
+        "input": "",
+        "expectedOutput": "",
+        "weight": 2
+      }
+    ],
+    "totalTestCases": 5,
+    "totalWeight": 10
+  },
+  "scoring": {
+    "defaultScoringType": "PARTIAL_SCORE",
+    "testCaseWeights": [
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "maxScore": 10
+  },
+  "judging": {
+    "timeLimitMs": 2000,
+    "memoryLimitMb": 256,
+    "supportedLanguages": [
+      "C",
+      "C++",
+      "Java",
+      "Python3",
+      "JavaScript"
+    ]
+  },
+  "solution": {
+    "approach": "The favourite bridges must be part of the tree, therefore they must be acyclic. If they contain a cycle the answer is 0. Otherwise contract every connected component formed by the favourite edges into a single super\u2011vertex. The number of spanning trees that contain all favourite edges equals the number of spanning trees of the contracted multigraph. This can be obtained with Kirchhoff's Matrix\u2011Tree Theorem: build the Laplacian matrix of the contracted graph, delete any row and column, and compute the determinant of the resulting (k\u20111)\u00d7(k\u20111) matrix, where k is the number of super\u2011vertices. The determinant is an integer; we compute it with exact arithmetic using arbitrary\u2011precision integers (Boost::multiprecision::cpp_int in C++, Python int, etc.). The algorithm runs in O(n\u00b3) per test case, which is trivial for n\u226430.",
+    "timeComplexity": "O(n\u00b3) per test case (Gaussian elimination on at most 30\u00d730 matrix).",
+    "spaceComplexity": "O(n\u00b2) for the Laplacian matrix and O(n) for auxiliary vectors.",
+    "code": {
+      "cpp": "#include <bits/stdc++.h>\n#include <boost/multiprecision/cpp_int.hpp>\nusing namespace std;\nusing boost::multiprecision::cpp_int;\nstruct DSU{vector<int> p;DSU(int n):p(n){iota(p.begin(),p.end(),0);}int find(int x){return p[x]==x?x:p[x]=find(p[x]);}bool unite(int a,int b){a=find(a);b=find(b);if(a==b) return false;p[b]=a;return true;}};\ncpp_int determinantBareiss(vector<vector<cpp_int>> a){int n=a.size();if(n==0) return 1;for(int i=0;i<n-1;i++){\n    for(int j=i+1;j<n;j++){\n        for(int k=i+1;k<n;k++){\n            a[j][k]=(a[j][k]*a[i][i]-a[j][i]*a[i][k]);\n            if(i>0) a[j][k]/=a[i-1][i-1];\n        }\n    }\n    for(int j=i+1;j<n;j++) a[j][i]=0;\n}\nreturn a[n-1][n-1];}\nint main(){ios::sync_with_stdio(false);cin.tie(nullptr);\n    int T; if(!(cin>>T)) return 0; while(T--){int n;cin>>n;vector<string> mat(n);for(int i=0;i<n;i++)cin>>mat[i];int p;cin>>p;DSU dsu(n);\n        bool cycle=false;for(int i=0;i<p;i++){int u,v;cin>>u>>v;--u;--v; if(!dsu.unite(u,v)) cycle=true;}\n        if(cycle){cout<<0<<\"\\n\";continue;}\n        unordered_map<int,int> compId;int id=0;vector<int> comp(n);\n        for(int i=0;i<n;i++){int r=dsu.find(i);if(compId.find(r)==compId.end()) compId[r]=id++; comp[i]=compId[r];}\n        int k=id; if(k==1){cout<<1<<\"\\n\";continue;}\n        vector<vector<cpp_int>> L(k, vector<cpp_int>(k,0));\n        for(int i=0;i<n;i++){\n            for(int j=i+1;j<n;j++) if(mat[i][j]=='1'){\n                int a=comp[i], b=comp[j];\n                if(a==b) continue;\n                L[a][a]++; L[b][b]++; L[a][b]--; L[b][a]--; }\n        }\n        int m=k-1; vector<vector<cpp_int>> M(m, vector<cpp_int>(m));\n        for(int i=0;i<m;i++) for(int j=0;j<m;j++) M[i][j]=L[i][j];\n        cpp_int ans=determinantBareiss(M);\n        cout<<ans<<\"\\n\";\n    }\n    return 0; }\n"
+    }
+  }
+}
