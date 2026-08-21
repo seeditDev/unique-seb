@@ -67,12 +67,11 @@ class MCQService {
      * @param {string} userId      — MUST be Firebase Auth UID
      * @param {string} tenantId   — student's college/tenant code (e.g. "KGKITE")
      */
-    static canonicalPath(assessmentId, userId, tenantId = 'SEED-SEB') {
+    static canonicalPath(assessmentId, userId, tenantId) {
         if (!assessmentId) throw new Error('[MCQService] canonicalPath: assessmentId is required');
         if (!userId) throw new Error('[MCQService] canonicalPath: userId (Firebase Auth UID) is required');
-        const rawTid = String(tenantId ?? '').trim();
-        const tid = (rawTid && !rawTid.includes(' ') && rawTid !== '_unknown_') ? rawTid : 'SEED-SEB';
-        return `assessmentResults/${tid}/${assessmentId}/${userId}`;
+        if (!tenantId) throw new Error('[MCQService] canonicalPath: tenantId is required');
+        return `assessmentResults/${tenantId}/${assessmentId}/${userId}`;
     }
 
 
@@ -88,17 +87,20 @@ class MCQService {
      * @param {{ assessmentId: string, userId: string, userProfile: object }} ctx
      *   userId MUST be auth.currentUser.uid — verified at the call site.
      */
-    static async writeCanonicalResult(payload, { assessmentId, userId, userProfile = {} }) {
+    static async writeCanonicalResult(payload, { assessmentId, userId, userProfile }) {
+        if (!userProfile?.tenantId) {
+            throw new Error('[MCQService] writeCanonicalResult: userProfile.tenantId is required');
+        }
         // Validate UID at write boundary
         const canonicalUid = getCanonicalUid(userId);
-        const tenantId = userProfile.tenantId ?? '';
+        const tenantId = userProfile.tenantId;
         const canonRef = doc(db, this.canonicalPath(assessmentId, canonicalUid, tenantId));
-        await setDoc(canonRef, { ...payload, userId: canonicalUid, tenantId }, { merge: true });
+        await setDoc(canonRef, { ...payload, userId: canonicalUid, tenantId });
 
         // Mark attempt in the completion index so dashboard shows Completed
         try {
             const { markAssessmentCompleted, invalidateCompletionCache } = await import('./attemptStatusService');
-            const email = userProfile.email ?? '';
+            const email = userProfile.email;
             if (email) {
                 await markAssessmentCompleted(userProfile, assessmentId);
                 invalidateCompletionCache(email);

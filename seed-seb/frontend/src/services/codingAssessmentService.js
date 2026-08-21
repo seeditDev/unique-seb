@@ -29,10 +29,11 @@ class CodingAssessmentService {
      * Canonical Firestore path — tenant-first scoped (4 segments).
      * assessmentResults/{tenantId}/{assessmentId}/{userId}
      */
-    static canonicalPath(assessmentId, userId, tenantId = '') {
-        const rawTid = String(tenantId ?? '').trim();
-        const tid = (rawTid && !rawTid.includes(' ') && rawTid !== '_unknown_') ? rawTid : 'SEED-SEB';
-        return `assessmentResults/${tid}/${assessmentId}/${userId}`;
+    static canonicalPath(assessmentId, userId, tenantId) {
+        if (!assessmentId) throw new Error('[CodingAssessmentService] canonicalPath: assessmentId is required');
+        if (!userId) throw new Error('[CodingAssessmentService] canonicalPath: userId (Firebase Auth UID) is required');
+        if (!tenantId) throw new Error('[CodingAssessmentService] canonicalPath: tenantId is required');
+        return `assessmentResults/${tenantId}/${assessmentId}/${userId}`;
     }
 
     /**
@@ -40,9 +41,12 @@ class CodingAssessmentService {
      * assessmentResults/{tenantId}/{assessmentId}/{userId}
      */
     static async writeCanonicalResult(payload, { assessmentId, userId, userProfile }) {
-        const tenantId = userProfile?.tenantId ?? payload.tenantId ?? '';
+        if (!userProfile?.tenantId) {
+            throw new Error('[CodingAssessmentService] writeCanonicalResult: userProfile.tenantId is required');
+        }
+        const tenantId = userProfile.tenantId;
         const canonRef = doc(db, this.canonicalPath(assessmentId, userId, tenantId));
-        await setDoc(canonRef, { ...payload, id: assessmentId, assessmentId, userId, tenantId }, { merge: true });
+        await setDoc(canonRef, { ...payload, id: assessmentId, assessmentId, userId, tenantId });
         return this.canonicalPath(assessmentId, userId, tenantId);
     }
 

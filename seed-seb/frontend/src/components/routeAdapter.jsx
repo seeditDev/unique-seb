@@ -1,17 +1,17 @@
 /**
- * Wraps a legacy CRA screen so it renders only in the browser.
- * These screens read localStorage, webcam and canvas APIs at render time, so
- * they must never execute during SSR.
+ * Wraps browser UI screens so they render in the client with AppShell.
+ * These screens interact with browser APIs (localStorage, webcam, canvas) and
+ * render inside the ClientOnly TanStack boundary.
  */
 import React, { Suspense } from "react";
 import { ClientOnly } from "@tanstack/react-router";
 
 import AppShell, { AppShellLoading } from "./AppShell";
 
-export function createLegacyRoute(importer) {
+export function createRouteAdapter(importer) {
   const LazyScreen = React.lazy(importer);
 
-  return function LegacyRoute() {
+  return function ScreenRoute() {
     return (
       <ClientOnly fallback={<AppShellLoading />}>
         <Suspense fallback={<AppShellLoading />}>

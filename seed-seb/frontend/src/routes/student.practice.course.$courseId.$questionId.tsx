@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { createLegacyRoute } from '@/components/legacyRoute';
+import { createRouteAdapter } from '@/components/routeAdapter';
 
 export const Route = createFileRoute("/student/practice/course/$courseId/$questionId")({
   head: () => ({
@@ -20,5 +20,5 @@ export const Route = createFileRoute("/student/practice/course/$courseId/$questi
       { name: "robots", content: "noindex" },
     ],
   }),
-  component: createLegacyRoute(() => import("@/components/PracticeCourseSandbox")),
+  component: createRouteAdapter(() => import("@/components/PracticeCourseSandbox")),
 });

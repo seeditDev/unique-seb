@@ -82,15 +82,14 @@ export function invalidateCompletionCache(email) {
  * @param {string[]} ids        — assessment IDs to check
  * @returns {Promise<Record<string,boolean>>} id -> completed
  */
-async function queryCanonicalPaths(uid, ids, tenantId = '_unknown_') {
+async function queryCanonicalPaths(uid, ids, tenantId) {
   const found = {};
-  if (!uid || !ids?.length) return found;
-  const tid = tenantId || '_unknown_';
+  if (!uid || !ids?.length || !tenantId) return found;
   // Batch: up to IN_CHUNK parallel reads (4 segments: assessmentResults/{tenantId}/{id}/{uid})
   for (let i = 0; i < ids.length; i += IN_CHUNK) {
     const batch = ids.slice(i, i + IN_CHUNK);
     const snaps = await Promise.allSettled(
-      batch.map((id) => getDoc(doc(db, `assessmentResults/${tid}/${id}/${uid}`)))
+      batch.map((id) => getDoc(doc(db, `assessmentResults/${tenantId}/${id}/${uid}`)))
     );
     snaps.forEach((result, idx) => {
       if (result.status === 'fulfilled' && result.value.exists()) {
@@ -187,12 +186,14 @@ export async function fetchCompletionMap(userData, assessmentIds = [], options =
     if (unknown.length > 0) {
       // Use live Firebase Auth UID for canonical reads
       const liveUid = auth?.currentUser?.uid || userKey;
-      const tenantId = userData?.tenantId ?? user?.tenantId ?? '_unknown_';
-      try {
-        const canonFound = await queryCanonicalPaths(liveUid, unknown, tenantId);
-        Object.keys(canonFound).forEach((id) => { map[id] = true; });
-      } catch (e) {
-        console.warn('[attemptStatusService] canonical fallback failed:', e?.message);
+      const tenantId = userData?.tenantId || user?.tenantId;
+      if (tenantId) {
+        try {
+          const canonFound = await queryCanonicalPaths(liveUid, unknown, tenantId);
+          Object.keys(canonFound).forEach((id) => { map[id] = true; });
+        } catch (e) {
+          console.warn('[attemptStatusService] canonical lookup failed:', e?.message);
+        }
       }
     }
   }
