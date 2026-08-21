@@ -112,6 +112,16 @@ class RulesSimulator {
       block.includes("request.resource.data.get('uid', '') == resource.data.get('uid', '')")
     );
   }
+
+  isTenantReadScoped() {
+    const match = this.rules.match(/match\s+\/tenants\/\{tenantId\}\s*\{([^}]+)\}/);
+    if (!match) return false;
+    const block = match[1];
+    return (
+      block.includes("allow get:    if isAdmin() || (isStaff() && tenantAllowed(tenantId)) || isTenantMember(tenantId);") &&
+      block.includes("allow list:   if isAdmin();")
+    );
+  }
 }
 
 // ── Test Execution ──────────────────────────────────────────────────────────
@@ -152,6 +162,10 @@ console.log('✓ Test 7 Passed: Assessment authoring mutations restricted to por
 assert(sim.isAttemptMetadataLocked(), 'FAIL: Attempt updates must lock durationSeconds, uid, assessmentId and completed state');
 console.log('✓ Test 8 Passed: Attempt metadata (duration, uid, assessmentId) strictly locked against tampering');
 
+// Test 9: Strict Cross-Tenant Read Isolation
+assert(sim.isTenantReadScoped(), 'FAIL: Tenant reads must be strictly scoped to isAdmin() or (isStaff() && tenantAllowed(tenantId))');
+console.log('✓ Test 9 Passed: Cross-tenant isolation strictly enforced (Staff scoped to own tenant only)');
+
 console.log('\n========================================');
-console.log('ALL 8/8 FIRESTORE SECURITY RULES TESTS PASSED (OK)');
+console.log('ALL 9/9 FIRESTORE SECURITY RULES TESTS PASSED (OK)');
 console.log('========================================\n');

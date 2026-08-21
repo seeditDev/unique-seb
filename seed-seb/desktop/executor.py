@@ -91,6 +91,17 @@ class CodeExecutor:
                 "error": str or None # Timeout, Compilation Error, etc.
             }
         """
+        # Enforce cryptographic runtime integrity gate
+        integrity_ok, integrity_info = runtime_manager.verify_runtime_integrity()
+        if not integrity_ok:
+            return {
+                "stdout": "",
+                "stderr": f"Runtime Security Verification Error: {integrity_info}",
+                "exit_code": -1,
+                "execution_time": 0.0,
+                "error": "Compiler integrity verification failed"
+            }
+
         lang = str(language or "").strip().lower()
         run_dir = self._create_temp_run_dir()
         result = {
@@ -401,12 +412,13 @@ class CodeExecutor:
                 "error": f"Compilation Error:\n{compile_res['stderr'] or compile_res['stdout']}"
             }
             
-        # Run with memory cap and network proxy locks
+        # Run with memory cap and SOCKS/HTTP network proxy isolation
         java_bin = runtime_manager.get_binary_path("java")
         run_cmd = [
             java_bin,
             "-Xmx128m", "-Xms16m",
             "-Djava.net.preferIPv4Stack=true",
+            "-DsocksProxyHost=127.0.0.1", "-DsocksProxyPort=0",
             "-Dhttp.proxyHost=127.0.0.1", "-Dhttp.proxyPort=0",
             "-Dhttps.proxyHost=127.0.0.1", "-Dhttps.proxyPort=0",
             "-Djava.awt.headless=true",

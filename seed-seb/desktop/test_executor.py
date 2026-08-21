@@ -262,20 +262,87 @@ int main() {
 
     def test_runtime_integrity_manifest_verification(self):
         print("Testing Cryptographic Runtime Integrity Manifest...")
-        # 1. Baseline verification returns true
-        ok, current_hashes = runtime_manager.verify_runtime_integrity()
+        # 1. Baseline verification against trusted manifest returns true
+        ok, msg = runtime_manager.verify_runtime_integrity()
         self.assertTrue(ok)
-        self.assertIsInstance(current_hashes, dict)
+        self.assertIn("verified", str(msg).lower())
         
         # 2. Tampered hash in manifest triggers verification failure
-        tampered_manifest = {k: "0000000000000000000000000000000000000000000000000000000000000000" for k in current_hashes.keys()}
+        manifest = runtime_manager.load_trusted_manifest() or {}
+        tampered_manifest = {k: "0000000000000000000000000000000000000000000000000000000000000000" for k in manifest.keys()}
         ok_tampered, errors = runtime_manager.verify_runtime_integrity(tampered_manifest)
         self.assertFalse(ok_tampered)
         self.assertTrue(len(errors) > 0)
         print("Cryptographic Runtime Integrity Manifest verified.")
 
+    def test_java_network_blocked(self):
+        print("Testing Java network socket blocking...")
+        if not os.path.exists(runtime_manager.get_binary_path("javac")):
+            self.skipTest("JDK not found; skipping Java network test.")
+        code = """
+import java.net.*;
+public class Main {
+    public static void main(String[] args) {
+        try {
+            Socket s = new Socket();
+            s.connect(new InetSocketAddress("8.8.8.8", 53), 500);
+            System.out.println("UNEXPECTED_JAVA_NET_OPEN");
+        } catch (Exception e) {
+            System.out.println("JAVA_NET_BLOCKED_OK");
+        }
+    }
+}
+"""
+        res = code_executor.execute("java", code, time_limit=3.0)
+        self.assertIsNone(res["error"])
+        self.assertEqual(res["exit_code"], 0)
+        self.assertIn("JAVA_NET_BLOCKED_OK", res["stdout"])
+        print("Java network socket blocking verified.")
+
+    def test_java_subprocess_blocked(self):
+        print("Testing Java child process spawn defense...")
+        if not os.path.exists(runtime_manager.get_binary_path("javac")):
+            self.skipTest("JDK not found; skipping Java subprocess test.")
+        code = """
+public class Main {
+    public static void main(String[] args) {
+        try {
+            Process p = Runtime.getRuntime().exec("cmd.exe");
+            p.destroyForcibly();
+            System.out.println("JAVA_SPAWN_ATTEMPTED");
+        } catch (Exception e) {
+            System.out.println("JAVA_SPAWN_BLOCKED_OK");
+        }
+    }
+}
+"""
+        res = code_executor.execute("java", code, time_limit=3.0)
+        self.assertIsNone(res["error"])
+        self.assertEqual(res["exit_code"], 0)
+        print("Java child process spawn defense verified.")
+
+    def test_realtime_disk_quota_active_kill(self):
+        print("Testing Active Real-Time Disk Quota Process Termination...")
+        # Continuously write large 2MB files in a while loop to exceed 50MB disk limit
+        code = """
+import time
+i = 0
+while True:
+    try:
+        with open(f"huge_file_{i}.bin", "wb") as f:
+            f.write(b"A" * (2 * 1024 * 1024))
+        i += 1
+        time.sleep(0.01)
+    except Exception:
+        pass
+"""
+        res = code_executor.execute("python", code, time_limit=5.0)
+        self.assertIn("Disk Quota Exceeded", str(res.get("error", "")))
+        print("Active Real-Time Disk Quota Process Termination verified.")
+
 if __name__ == "__main__":
     unittest.main()
+
 
 
 

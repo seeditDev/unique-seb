@@ -1,5 +1,6 @@
 import os
 import sys
+import json
 import shutil
 import hashlib
 
@@ -110,25 +111,46 @@ class RuntimeManager:
 
         return True
 
+    def load_trusted_manifest(self):
+        """Loads the cryptographic SHA-256 manifest shipped with SEED-SEB."""
+        manifest_paths = [
+            os.path.join(self.app_root, "resources", "runtime-manifest.json"),
+            os.path.join(os.path.dirname(os.path.abspath(__file__)), "resources", "runtime-manifest.json"),
+            os.path.join(getattr(sys, '_MEIPASS', ''), "resources", "runtime-manifest.json")
+        ]
+        for p in manifest_paths:
+            if p and os.path.exists(p):
+                try:
+                    with open(p, "r", encoding="utf-8") as f:
+                        data = json.load(f)
+                        return data.get("binaries", data)
+                except Exception as e:
+                    print(f"[RuntimeManager] Error reading runtime manifest at {p}: {e}")
+        return None
+
     def verify_runtime_integrity(self, expected_manifest=None):
         """Validates cryptographic SHA-256 checksums of all runtime binaries against an expected manifest."""
-        if not expected_manifest:
-            # Generate baseline hashes for present runtimes
-            current_hashes = {}
-            for name, path in self.binaries.items():
-                if path and os.path.exists(path):
-                    current_hashes[name] = self.compute_sha256(path)
-            return True, current_hashes
+        manifest = expected_manifest if expected_manifest is not None else self.load_trusted_manifest()
+        if not manifest:
+            # In development mode, allow baseline generation if no manifest file exists
+            is_dev = os.environ.get("SEED_SEB_DEV_MODE") == "1" or not getattr(sys, 'frozen', False)
+            if is_dev:
+                current_hashes = {}
+                for name, path in self.binaries.items():
+                    if path and os.path.exists(path):
+                        current_hashes[name] = self.compute_sha256(path)
+                return True, current_hashes
+            return False, ["Trusted runtime manifest 'runtime-manifest.json' is missing from resources directory."]
 
         mismatches = []
-        for name, expected_hash in expected_manifest.items():
+        for name, expected_hash in manifest.items():
             path = self.binaries.get(name)
             if not path or not os.path.exists(path):
                 mismatches.append(f"{name}: binary missing at {path}")
                 continue
             actual_hash = self.compute_sha256(path)
-            if actual_hash.lower() != expected_hash.lower():
-                mismatches.append(f"{name}: hash mismatch (expected {expected_hash[:12]}..., got {actual_hash[:12]}...)")
+            if not actual_hash or actual_hash.lower() != expected_hash.lower():
+                mismatches.append(f"{name}: hash mismatch (expected {expected_hash[:12]}..., got {str(actual_hash)[:12]}...)")
 
         if mismatches:
             return False, mismatches

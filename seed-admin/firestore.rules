@@ -167,12 +167,12 @@ service cloud.firestore {
     // ══════════════════════════════════════════════════════════════════════
 
     match /tenants/{tenantId} {
-      allow get:    if isPortal() || isTenantMember(tenantId);
-      allow list:   if isPortal();
+      allow get:    if isAdmin() || (isStaff() && tenantAllowed(tenantId)) || isTenantMember(tenantId);
+      allow list:   if isAdmin();
       allow create, update, delete: if isAdmin() || (isStaff() && tenantAllowed(tenantId));
 
       match /{sub=**} {
-        allow read:  if isPortal() || isTenantMember(tenantId);
+        allow read:  if isAdmin() || (isStaff() && tenantAllowed(tenantId)) || isTenantMember(tenantId);
         allow write: if isAdmin() || (isStaff() && tenantAllowed(tenantId));
       }
     }
@@ -226,21 +226,21 @@ service cloud.firestore {
     // ══════════════════════════════════════════════════════════════════════
 
     match /assessmentResults/{tenantId} {
-      allow read:  if isPortal() || isTenantMember(tenantId);
-      allow write: if isPortal();
+      allow read:  if isAdmin() || (isStaff() && tenantAllowed(tenantId)) || isTenantMember(tenantId);
+      allow write: if isAdmin() || (isStaff() && tenantAllowed(tenantId));
 
       match /{assessmentId}/{userId} {
-        allow read:   if isPortal() || isUser(userId);
+        allow read:   if isAdmin() || (isStaff() && tenantAllowed(tenantId)) || isUser(userId);
         
         // Strict create: must belong to authenticated user, matching tenantId
-        allow create: if isPortal()
+        allow create: if isAdmin() || (isStaff() && tenantAllowed(tenantId))
           || (isUser(userId)
               && myTenant() != ''
               && request.resource.data.get('tenantId', '') == myTenant()
               && request.resource.data.get('userId', '') == userId);
         
         // Strict update: only permitted while attempt is active. Once submitted, immutable.
-        allow update: if isPortal()
+        allow update: if isAdmin() || (isStaff() && tenantAllowed(tenantId))
           || (isUser(userId)
               && resource.data.get('completed', false) == false
               && resource.data.get('status', '') != 'submitted'
