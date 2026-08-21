@@ -196,44 +196,44 @@ service cloud.firestore {
     }
 
     // ══════════════════════════════════════════════════════════════════════
-    // 3. Courses / Series / Tests
+    // 3. Courses / Series / Tests (Strict Tenant Scoping & Inheritance)
     // ══════════════════════════════════════════════════════════════════════
 
     match /courses/{courseId} {
-      allow read:               if isSignedIn() && (resource == null || resource.data.get('tenantId', '') == '' || isTenantMember(resource.data.get('tenantId', '')));
-      allow create:             if isAdmin() || (isStaff() && (request.resource.data.get('tenantId', '') == '' || tenantAllowed(request.resource.data.get('tenantId', ''))));
-      allow update, delete:     if isAdmin() || (isStaff() && (resource.data.get('tenantId', '') == '' || tenantAllowed(resource.data.get('tenantId', ''))));
+      allow read:               if isTenantMember(resource.data.get('tenantId', ''));
+      allow create:             if isAdmin() || (isStaff() && myTenant() != '' && request.resource.data.get('tenantId', '') == myTenant());
+      allow update, delete:     if isAdmin() || (isStaff() && tenantAllowed(resource.data.get('tenantId', '')));
 
       match /series/{seriesId} {
-        allow read:               if isSignedIn();
-        allow create, update, delete: if isAdmin() || isStaff();
+        allow read:               if isTenantMember(get(/databases/$(database)/documents/courses/$(courseId)).data.get('tenantId', ''));
+        allow create, update, delete: if isAdmin() || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/courses/$(courseId)).data.get('tenantId', '')));
 
         match /tests/{testId} {
-          allow read:               if isSignedIn();
-          allow create, update, delete: if isAdmin() || isStaff();
+          allow read:               if isTenantMember(get(/databases/$(database)/documents/courses/$(courseId)).data.get('tenantId', ''));
+          allow create, update, delete: if isAdmin() || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/courses/$(courseId)).data.get('tenantId', '')));
         }
 
         match /_meta/{trackerId} {
-          allow read, write: if isAdmin() || isStaff();
+          allow read, write: if isAdmin() || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/courses/$(courseId)).data.get('tenantId', '')));
         }
       }
     }
 
     // ══════════════════════════════════════════════════════════════════════
-    // 4. Assessments (Authoring store)
+    // 4. Assessments (Authoring store - Strict Tenant Scoping & Inheritance)
     // ══════════════════════════════════════════════════════════════════════
 
     match /assessments/{assessmentId} {
-      // Students can only read assessments belonging to their tenant (or global/public assessments)
-      allow get: if isSignedIn() && (resource == null || resource.data.get('tenantId', '') == '' || isTenantMember(resource.data.get('tenantId', '')));
-      allow list: if isAdmin() || isStaff();
-      allow create: if isAdmin() || (isStaff() && tenantAllowed(request.resource.data.get('tenantId', '')));
+      // Direct document reads strictly scoped to tenant members
+      allow get: if isTenantMember(resource.data.get('tenantId', ''));
+      // Collection queries strictly scoped to Admin or Staff with non-empty tenant
+      allow list: if isAdmin() || (isStaff() && myTenant() != '');
+      allow create: if isAdmin() || (isStaff() && myTenant() != '' && request.resource.data.get('tenantId', '') == myTenant());
       allow update, delete: if isAdmin() || (isStaff() && tenantAllowed(resource.data.get('tenantId', '')));
 
       match /{document=**} {
-        allow get: if isSignedIn() && (resource == null || resource.data.get('tenantId', '') == '' || isTenantMember(resource.data.get('tenantId', '')) || isTenantMember(get(/databases/$(database)/documents/assessments/$(assessmentId)).data.get('tenantId', '')));
-        allow list: if isAdmin() || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/assessments/$(assessmentId)).data.get('tenantId', '')));
-        allow create, update, delete: if isAdmin() || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/assessments/$(assessmentId)).data.get('tenantId', '')));
+        allow get: if isTenantMember(get(/databases/$(database)/documents/assessments/$(assessmentId)).data.get('tenantId', ''));
+        allow list, create, update, delete: if isAdmin() || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/assessments/$(assessmentId)).data.get('tenantId', '')));
       }
     }
 
@@ -257,7 +257,7 @@ service cloud.firestore {
               && request.resource.data.get('assessmentId', '') == assessmentId
               && request.resource.data.get('userId', '') == userId);
         
-        // Strict update: only permitted while attempt is active. Score/rank/percentage locked against student tampering.
+        // Strict update: only permitted while attempt is active. All evaluation & score fields locked against student tampering.
         allow update: if isAdmin() || (isStaff() && tenantAllowed(tenantId))
           || (isUser(userId)
               && resource.data.get('completed', false) == false
@@ -267,7 +267,13 @@ service cloud.firestore {
               && request.resource.data.get('assessmentId', '') == resource.data.get('assessmentId', '')
               && request.resource.data.get('score', 0) == resource.data.get('score', 0)
               && request.resource.data.get('percentage', 0) == resource.data.get('percentage', 0)
-              && request.resource.data.get('rank', 0) == resource.data.get('rank', 0));
+              && request.resource.data.get('rank', 0) == resource.data.get('rank', 0)
+              && request.resource.data.get('correctAnswers', 0) == resource.data.get('correctAnswers', 0)
+              && request.resource.data.get('totalMarks', 0) == resource.data.get('totalMarks', 0)
+              && request.resource.data.get('maxMarks', 0) == resource.data.get('maxMarks', 0)
+              && request.resource.data.get('evaluationStatus', '') == resource.data.get('evaluationStatus', '')
+              && request.resource.data.get('qualified', false) == resource.data.get('qualified', false)
+              && request.resource.data.get('grade', '') == resource.data.get('grade', ''));
 
         allow delete: if isAdmin();
       }

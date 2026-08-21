@@ -138,7 +138,7 @@ class RulesSimulator {
     if (!match) return false;
     const block = match[1];
     return (
-      block.includes("allow create: if isAdmin() || (isStaff() && tenantAllowed(request.resource.data.get('tenantId', '')));") &&
+      block.includes("allow create: if isAdmin() || (isStaff() && myTenant() != '' && request.resource.data.get('tenantId', '') == myTenant());") &&
       block.includes("allow update, delete: if isAdmin() || (isStaff() && tenantAllowed(resource.data.get('tenantId', '')));")
     );
   }
@@ -186,10 +186,21 @@ class RulesSimulator {
     );
   }
   isAssessmentReadTenantScoped() {
-    const match = this.rules.match(/match\s+\/assessments\/\{assessmentId\}\s*\{([^}]+)\}/);
+    const match = this.rules.match(/match\s+\/assessments\/\{assessmentId\}\s*\{([\s\S]*?)\n\s*match\s+\/assessmentResults/);
     if (!match) return false;
     const block = match[1];
-    return block.includes("allow get: if isSignedIn() && (resource == null || resource.data.get('tenantId', '') == '' || isTenantMember(resource.data.get('tenantId', '')));");
+    return block.includes("allow get: if isTenantMember(resource.data.get('tenantId', ''));") &&
+           block.includes("allow list: if isAdmin() || (isStaff() && myTenant() != '');");
+  }
+
+  isAssessmentSubcollectionTenantScoped() {
+    const match = this.rules.match(/match\s+\/assessments\/\{assessmentId\}\s*\{([\s\S]*?)\n\s*match\s+\/assessmentResults/);
+    if (!match) return false;
+    const block = match[1];
+    return (
+      block.includes("allow get: if isTenantMember(get(/databases/$(database)/documents/assessments/$(assessmentId)).data.get('tenantId', ''));") &&
+      block.includes("isStaff() && tenantAllowed(get(/databases/$(database)/documents/assessments/$(assessmentId)).data.get('tenantId', ''))")
+    );
   }
 
   isResultScoreTamperingBlocked() {
@@ -199,15 +210,25 @@ class RulesSimulator {
     return (
       block.includes("request.resource.data.get('score', 0) == resource.data.get('score', 0)") &&
       block.includes("request.resource.data.get('percentage', 0) == resource.data.get('percentage', 0)") &&
-      block.includes("request.resource.data.get('rank', 0) == resource.data.get('rank', 0)")
+      block.includes("request.resource.data.get('rank', 0) == resource.data.get('rank', 0)") &&
+      block.includes("request.resource.data.get('correctAnswers', 0) == resource.data.get('correctAnswers', 0)") &&
+      block.includes("request.resource.data.get('totalMarks', 0) == resource.data.get('totalMarks', 0)") &&
+      block.includes("request.resource.data.get('maxMarks', 0) == resource.data.get('maxMarks', 0)") &&
+      block.includes("request.resource.data.get('evaluationStatus', '') == resource.data.get('evaluationStatus', '')") &&
+      block.includes("request.resource.data.get('qualified', false) == resource.data.get('qualified', false)") &&
+      block.includes("request.resource.data.get('grade', '') == resource.data.get('grade', '')")
     );
   }
 
   isCoursesTenantScoped() {
-    const match = this.rules.match(/match\s+\/courses\/\{courseId\}\s*\{([^}]+)\}/);
+    const match = this.rules.match(/match\s+\/courses\/\{courseId\}\s*\{([\s\S]*?)\n\s*match\s+\/assessments/);
     if (!match) return false;
     const block = match[1];
-    return block.includes("isTenantMember(resource.data.get('tenantId', ''))");
+    return (
+      block.includes("allow read:               if isTenantMember(resource.data.get('tenantId', ''));") &&
+      block.includes("allow read:               if isTenantMember(get(/databases/$(database)/documents/courses/$(courseId)).data.get('tenantId', ''));") &&
+      block.includes("allow create, update, delete: if isAdmin() || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/courses/$(courseId)).data.get('tenantId', '')));")
+    );
   }
 }
 
@@ -273,17 +294,17 @@ console.log('✓ Test 13 Passed: Proctoring creation strictly fails closed on mi
 assert(sim.isProctoringUpdateIdentityLocked(), 'FAIL: Proctoring update must lock tenantId, attemptId, and userId');
 console.log('✓ Test 14 Passed: Proctoring updates strictly lock tenantId, attemptId, and userId');
 
-// Test 15: Assessment Read Tenant Scoping
-assert(sim.isAssessmentReadTenantScoped(), 'FAIL: Student assessment read must be tenant-scoped');
-console.log('✓ Test 15 Passed: Student assessment read access strictly tenant-scoped');
+// Test 15: Assessment Read Tenant Scoping & List Scoping
+assert(sim.isAssessmentReadTenantScoped(), 'FAIL: Student assessment read and staff list must be tenant-scoped');
+console.log('✓ Test 15 Passed: Student assessment read access and staff list queries strictly tenant-scoped');
 
-// Test 16: Result Score & Rank Tamper Protection
-assert(sim.isResultScoreTamperingBlocked(), 'FAIL: Score, percentage, and rank must be immutable during student result updates');
-console.log('✓ Test 16 Passed: Result scoring fields (score, percentage, rank) strictly locked against tampering');
+// Test 16: Complete Score, Marks, Grade & Rank Tamper Protection
+assert(sim.isResultScoreTamperingBlocked(), 'FAIL: All scoring fields (score, marks, grade, rank) must be immutable during student result updates');
+console.log('✓ Test 16 Passed: Result scoring fields (score, percentage, rank, marks, grade) strictly locked against tampering');
 
-// Test 17: Courses Tenant Scoping
-assert(sim.isCoursesTenantScoped(), 'FAIL: Courses access must be tenant-scoped');
-console.log('✓ Test 17 Passed: Course read and write access strictly tenant-scoped');
+// Test 17: Course & Subcollections Strict Tenant Scoping
+assert(sim.isCoursesTenantScoped(), 'FAIL: Courses and nested series/tests must be tenant-scoped');
+console.log('✓ Test 17 Passed: Course, series, and test read/write access strictly tenant-scoped');
 
 console.log('\n========================================');
 console.log('ALL 17/17 FIRESTORE SECURITY RULES TESTS PASSED (OK)');
