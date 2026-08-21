@@ -81,7 +81,7 @@ class RulesSimulator {
     if (!match) return false;
     const block = match[1];
     return (
-      block.includes("request.resource.data.get('tenantId', '') == tenantId") &&
+      block.includes("request.resource.data.get('tenantId', '') == myTenant()") &&
       block.includes("request.resource.data.get('assessmentId', '') == assessmentId") &&
       block.includes("request.resource.data.get('userId', '') == userId") &&
       block.includes("request.resource.data.get('assessmentId', '') == resource.data.get('assessmentId', '')")
@@ -238,6 +238,21 @@ class RulesSimulator {
     );
   }
 
+  isAssessmentSubcollectionTenantScoped() {
+    const match = this.rules.match(/match\s+\/assessments\/\{assessmentId\}\s*\{([\s\S]*?)\n\s*match\s+\/assessmentResults/);
+    if (!match) return false;
+    const block = match[1];
+    return (
+      !block.includes("match /{document=**}") &&
+      block.includes("match /questions/{questionId}") &&
+      block.includes("match /sections/{sectionId}") &&
+      block.includes("match /metadata/{docId}") &&
+      block.includes("match /config/{docId}") &&
+      block.includes("isTenantMember(get(/databases/$(database)/documents/assessments/$(assessmentId)).data.get('tenantId', ''))") &&
+      block.includes("isStaff() && tenantAllowed(get(/databases/$(database)/documents/assessments/$(assessmentId)).data.get('tenantId', ''))")
+    );
+  }
+
   isTenantSubcollectionsExplicit() {
     const match = this.rules.match(/match\s+\/tenants\/\{tenantId\}\s*\{([\s\S]*?)\n\s*match\s+\/courses/);
     if (!match) return false;
@@ -250,7 +265,7 @@ class RulesSimulator {
   }
 
   isAssessmentListTenantBound() {
-    const match = this.rules.match(/match\s+\/assessments\/\{assessmentId\}\s*\{([\s\S]*?)\n\s*match\s+\/\{document=\*\*\}/);
+    const match = this.rules.match(/match\s+\/assessments\/\{assessmentId\}\s*\{([\s\S]*?)\n\s*match\s+\/questions/);
     if (!match) return false;
     const block = match[1];
     return block.includes("allow list: if isAdmin() || (isStaff() && tenantAllowed(resource.data.get('tenantId', '')));");
@@ -277,6 +292,30 @@ class RulesSimulator {
     return checkA(blockA) && checkC(blockC);
   }
 
+  isResultParentListLockedToStaffAndAdmin() {
+    const match = this.rules.match(/match\s+\/assessmentResults\/\{tenantId\}\s*\{([\s\S]*?)\n\s*match\s+\/\{assessmentId\}/);
+    if (!match) return false;
+    const block = match[1];
+    return (
+      block.includes("allow get:   if isAdmin() || (isStaff() && tenantAllowed(tenantId)) || isTenantMember(tenantId);") &&
+      block.includes("allow list:  if isAdmin() || (isStaff() && tenantAllowed(tenantId));") &&
+      !block.includes("allow write:")
+    );
+  }
+
+  isResultBoundToAssessmentTenant() {
+    const match = this.rules.match(/match\s+\/assessmentResults\/\{tenantId\}\s*\{[\s\S]*?match\s+\/\{assessmentId\}\/\{userId\}\s*\{([\s\S]*?)\n\s*\/\/\s*Strict update/);
+    if (!match) return false;
+    const block = match[1];
+    return (
+      block.includes("tenantId == myTenant()") &&
+      block.includes("request.resource.data.get('tenantId', '') == myTenant()") &&
+      block.includes("request.resource.data.get('assessmentId', '') == assessmentId") &&
+      block.includes("request.resource.data.get('userId', '') == userId") &&
+      block.includes("isTenantMember(get(/databases/$(database)/documents/assessments/$(assessmentId)).data.get('tenantId', ''))")
+    );
+  }
+
   isNestedResultListLockedToStaffAndAdmin() {
     const match = this.rules.match(/match\s+\/assessmentResults\/\{tenantId\}\s*\{[\s\S]*?match\s+\/\{assessmentId\}\/\{userId\}\s*\{([\s\S]*?)\n\s*\/\/\s*Strict create/);
     if (!match) return false;
@@ -284,6 +323,27 @@ class RulesSimulator {
     return (
       block.includes("allow get:    if isAdmin() || (isStaff() && tenantAllowed(tenantId)) || isUser(userId);") &&
       block.includes("allow list:   if isAdmin() || (isStaff() && tenantAllowed(tenantId));")
+    );
+  }
+
+  isUserSelfProvisioningTenantRequired() {
+    const match = this.rules.match(/match\s+\/users\/\{userId\}\s*\{([\s\S]*?)\n\s*\/\/\s*Updates restricted/);
+    if (!match) return false;
+    const block = match[1];
+    return (
+      block.includes("request.resource.data.get('role', 'student') == 'student'") &&
+      block.includes("request.resource.data.get('uid', '') == userId") &&
+      block.includes("request.resource.data.get('tenantId', '') != ''")
+    );
+  }
+
+  isCourseProgressTamperLocked() {
+    const match = this.rules.match(/match\s+\/courseProgress\/\{courseId\}\s*\{([\s\S]*?)\n\s*\}/);
+    if (!match) return false;
+    const block = match[1];
+    return (
+      block.includes("request.resource.data.get('verified', false) == false") &&
+      block.includes("request.resource.data.get('certified', false) == false")
     );
   }
 }
@@ -386,6 +446,18 @@ console.log('✓ Test 22 Passed: Student attempt creation strictly binds attempt
 assert(sim.isNestedResultListLockedToStaffAndAdmin(), 'FAIL: Nested result list permission must be restricted to Admin and Staff only');
 console.log('✓ Test 23 Passed: Nested result list permission restricted to Admin and Staff only (students limited strictly to getDoc for own result)');
 
+// Test 24: Result Creation Bound to Assessment Tenant
+assert(sim.isResultBoundToAssessmentTenant(), 'FAIL: Result creation must validate that assessment belongs to user tenant');
+console.log('✓ Test 24 Passed: Result creation strictly validates matching tenantId with referenced assessment (cross-tenant result spoofing blocked)');
+
+// Test 25: User Self-Provisioning Tenant Required
+assert(sim.isUserSelfProvisioningTenantRequired(), 'FAIL: User self-provisioning must require non-empty tenantId');
+console.log('✓ Test 25 Passed: User self-provisioning requires explicit non-empty tenantId (broken onboarding prevented)');
+
+// Test 26: Course Progress Certification/Verification Tamper Locked
+assert(sim.isCourseProgressTamperLocked(), 'FAIL: Course progress must lock verified and certified status against student manipulation');
+console.log('✓ Test 26 Passed: Course progress certification/verification fields strictly locked against student tampering');
+
 console.log('\n========================================');
-console.log('ALL 23/23 FIRESTORE SECURITY RULES TESTS PASSED (OK)');
+console.log('ALL 26/26 FIRESTORE SECURITY RULES TESTS PASSED (OK)');
 console.log('========================================\n');

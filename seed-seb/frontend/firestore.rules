@@ -97,10 +97,11 @@ service cloud.firestore {
       allow get:    if isUser(userId) || isAdmin() || (isStaff() && tenantAllowed(resource.data.get('tenantId', '')));
       allow list:   if isAdmin();
 
-      // Student can self-provision during initial sign-up
+      // Student can self-provision during initial sign-up (requires non-empty tenantId)
       allow create: if (isUser(userId)
           && request.resource.data.get('role', 'student') == 'student'
-          && request.resource.data.get('uid', '') == userId)
+          && request.resource.data.get('uid', '') == userId
+          && request.resource.data.get('tenantId', '') != '')
         || isAdmin()
         || (isStaff()
             && tenantAllowed(request.resource.data.get('tenantId', ''))
@@ -122,7 +123,13 @@ service cloud.firestore {
 
       // Explicitly matched user subcollections (wildcard match removed)
       match /courseProgress/{courseId} {
-        allow read, write: if isUser(userId) || isAdmin() || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/users/$(userId)).data.get('tenantId', '')));
+        allow read: if isUser(userId) || isAdmin() || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/users/$(userId)).data.get('tenantId', '')));
+        allow create, update: if isAdmin()
+          || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/users/$(userId)).data.get('tenantId', '')))
+          || (isUser(userId)
+              && request.resource.data.get('verified', false) == false
+              && request.resource.data.get('certified', false) == false);
+        allow delete: if isAdmin();
       }
 
       match /contestAttempts/{attemptId} {
@@ -132,10 +139,7 @@ service cloud.firestore {
             && request.resource.data.get('uid', '') == userId
             && myTenant() != ''
             && request.resource.data.get('tenantId', '') == myTenant()
-            && (
-              !('assessmentId' in request.resource.data)
-              || isTenantMember(get(/databases/$(database)/documents/assessments/$(request.resource.data.get('assessmentId', ''))).data.get('tenantId', ''))
-            )
+            && isTenantMember(get(/databases/$(database)/documents/assessments/$(request.resource.data.get('assessmentId', ''))).data.get('tenantId', ''))
           )
           || isAdmin()
           || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/users/$(userId)).data.get('tenantId', '')));
@@ -233,7 +237,7 @@ service cloud.firestore {
     }
 
     // ══════════════════════════════════════════════════════════════════════
-    // 4. Assessments (Authoring store - Strict Tenant Scoping & Inheritance)
+    // 4. Assessments (Authoring store - Explicit Subcollections & Tenant Scoping)
     // ══════════════════════════════════════════════════════════════════════
 
     match /assessments/{assessmentId} {
@@ -244,7 +248,23 @@ service cloud.firestore {
       allow create: if isAdmin() || (isStaff() && myTenant() != '' && request.resource.data.get('tenantId', '') == myTenant());
       allow update, delete: if isAdmin() || (isStaff() && tenantAllowed(resource.data.get('tenantId', '')));
 
-      match /{document=**} {
+      // Explicit subcollections (wildcard removed)
+      match /questions/{questionId} {
+        allow get, list: if isTenantMember(get(/databases/$(database)/documents/assessments/$(assessmentId)).data.get('tenantId', ''));
+        allow create, update, delete: if isAdmin() || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/assessments/$(assessmentId)).data.get('tenantId', '')));
+      }
+
+      match /sections/{sectionId} {
+        allow get, list: if isTenantMember(get(/databases/$(database)/documents/assessments/$(assessmentId)).data.get('tenantId', ''));
+        allow create, update, delete: if isAdmin() || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/assessments/$(assessmentId)).data.get('tenantId', '')));
+      }
+
+      match /metadata/{docId} {
+        allow get: if isTenantMember(get(/databases/$(database)/documents/assessments/$(assessmentId)).data.get('tenantId', ''));
+        allow list, create, update, delete: if isAdmin() || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/assessments/$(assessmentId)).data.get('tenantId', '')));
+      }
+
+      match /config/{docId} {
         allow get: if isTenantMember(get(/databases/$(database)/documents/assessments/$(assessmentId)).data.get('tenantId', ''));
         allow list, create, update, delete: if isAdmin() || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/assessments/$(assessmentId)).data.get('tenantId', '')));
       }
@@ -258,19 +278,20 @@ service cloud.firestore {
     match /assessmentResults/{tenantId} {
       allow get:   if isAdmin() || (isStaff() && tenantAllowed(tenantId)) || isTenantMember(tenantId);
       allow list:  if isAdmin() || (isStaff() && tenantAllowed(tenantId));
-      allow write: if isAdmin() || (isStaff() && tenantAllowed(tenantId));
 
       match /{assessmentId}/{userId} {
         allow get:    if isAdmin() || (isStaff() && tenantAllowed(tenantId)) || isUser(userId);
         allow list:   if isAdmin() || (isStaff() && tenantAllowed(tenantId));
         
-        // Strict create: must belong to authenticated user, matching tenantId and assessmentId
+        // Strict create: must belong to authenticated user, matching tenantId and assessmentId, and assessment must belong to tenant
         allow create: if isAdmin() || (isStaff() && tenantAllowed(tenantId))
           || (isUser(userId)
               && myTenant() != ''
-              && request.resource.data.get('tenantId', '') == tenantId
+              && tenantId == myTenant()
+              && request.resource.data.get('tenantId', '') == myTenant()
               && request.resource.data.get('assessmentId', '') == assessmentId
-              && request.resource.data.get('userId', '') == userId);
+              && request.resource.data.get('userId', '') == userId
+              && isTenantMember(get(/databases/$(database)/documents/assessments/$(assessmentId)).data.get('tenantId', '')));
         
         // Strict update: only permitted while attempt is active. All evaluation & score fields locked against student tampering.
         allow update: if isAdmin() || (isStaff() && tenantAllowed(tenantId))

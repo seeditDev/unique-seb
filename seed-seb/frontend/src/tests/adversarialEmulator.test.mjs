@@ -124,6 +124,28 @@ class AdversarialContext {
     return this.isUser(targetUserId);
   }
 
+  canCreateResult(tenantId, assessmentId, targetUserId, payload) {
+    if (this.isAdmin()) return true;
+    if (this.isStaff() && this.tenantAllowed(tenantId)) return true;
+
+    // Student rule:
+    // isUser(targetUserId) && myTenant != '' && tenantId == myTenant && payload.tenantId == myTenant
+    // && payload.assessmentId == assessmentId && payload.userId == targetUserId
+    // && isTenantMember(get(/assessments/{assessmentId}).data.tenantId)
+    if (!this.isUser(targetUserId)) return false;
+    if (!this.myTenant()) return false;
+    if (tenantId !== this.myTenant()) return false;
+    if (payload.tenantId !== this.myTenant()) return false;
+    if (payload.assessmentId !== assessmentId) return false;
+    if (payload.userId !== targetUserId) return false;
+
+    const assessmentDoc = this.getDoc(`assessments/${assessmentId}`);
+    if (!assessmentDoc) return false;
+    if (!this.isTenantMember(assessmentDoc.tenantId || '')) return false;
+
+    return true;
+  }
+
   canListResultsParent(tenantId) {
     return this.isAdmin() || (this.isStaff() && this.tenantAllowed(tenantId));
   }
@@ -259,6 +281,28 @@ console.log('  ✓ Student A -> list parent assessmentResults/TN000026: BLOCKED'
 
 assert.strictEqual(studentA.canListResultsNested('TN000026', 'asm_alpha_1'), false, 'Student A MUST NOT be allowed to list leaf results');
 console.log('  ✓ Student A -> list nested leaf assessmentResults/TN000026/asm_alpha_1: BLOCKED (Least Privilege)');
+
+// Result Creation Defense Matrix
+assert.strictEqual(
+  studentA.canCreateResult('TN000026', 'asm_alpha_1', 'student_A', { tenantId: 'TN000026', assessmentId: 'asm_alpha_1', userId: 'student_A', score: 90 }),
+  true,
+  'Student A MUST be allowed to create legitimate result for own Tenant A assessment'
+);
+console.log('  ✓ Student A -> create result for own Tenant A assessment: ALLOWED');
+
+assert.strictEqual(
+  studentA.canCreateResult('TN000026', 'asm_beta_1', 'student_A', { tenantId: 'TN000026', assessmentId: 'asm_beta_1', userId: 'student_A', score: 90 }),
+  false,
+  'Student A MUST NOT be allowed to create result referencing Tenant B assessment (asm_beta_1)'
+);
+console.log('  ✓ Student A -> create result referencing Tenant B assessment (asm_beta_1): BLOCKED (Assessment tenant mismatch)');
+
+assert.strictEqual(
+  studentA.canCreateResult('TN000027', 'asm_beta_1', 'student_A', { tenantId: 'TN000027', assessmentId: 'asm_beta_1', userId: 'student_A', score: 90 }),
+  false,
+  'Student A MUST NOT be allowed to create result under Tenant B path'
+);
+console.log('  ✓ Student A -> create result under Tenant B path: BLOCKED (Path tenant mismatch)');
 
 assert.strictEqual(staffA.canListResultsParent('TN000026'), true, 'Staff A MUST be allowed to list Tenant A results');
 console.log('  ✓ Staff A -> list Tenant A results: ALLOWED');
