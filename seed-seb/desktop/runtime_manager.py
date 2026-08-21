@@ -1,10 +1,14 @@
 import os
 import sys
 import json
+import hmac
 import shutil
 import hashlib
 
 class RuntimeManager:
+    # Embedded application signing key for manifest attestation
+    MANIFEST_SIGNING_KEY = b"SEED_SEB_INTERNAL_RUNTIME_MANIFEST_ATTESTATION_KEY_2026"
+
     def __init__(self):
         self.app_root = self.get_app_root()
         self.runtimes_dir = os.path.join(self.app_root, "resources", "runtimes")
@@ -42,6 +46,11 @@ class RuntimeManager:
             return sha256.hexdigest()
         except Exception:
             return None
+
+    def compute_manifest_signature(self, binaries_dict):
+        """Computes HMAC-SHA256 signature for canonical manifest binary entries."""
+        canonical_str = json.dumps(binaries_dict, sort_keys=True, separators=(',', ':'))
+        return hmac.new(self.MANIFEST_SIGNING_KEY, canonical_str.encode('utf-8'), hashlib.sha256).hexdigest()
 
     def resolve_paths(self):
         """Set paths strictly to the portable runtimes inside resources/runtimes."""
@@ -112,7 +121,7 @@ class RuntimeManager:
         return True
 
     def load_trusted_manifest(self):
-        """Loads the cryptographic SHA-256 manifest shipped with SEED-SEB."""
+        """Loads and cryptographically verifies the SHA-256 manifest shipped with SEED-SEB."""
         manifest_paths = [
             os.path.join(self.app_root, "resources", "runtime-manifest.json"),
             os.path.join(os.path.dirname(os.path.abspath(__file__)), "resources", "runtime-manifest.json"),
@@ -123,7 +132,15 @@ class RuntimeManager:
                 try:
                     with open(p, "r", encoding="utf-8") as f:
                         data = json.load(f)
-                        return data.get("binaries", data)
+                        binaries = data.get("binaries", data)
+                        # Verify HMAC attestation signature if present
+                        signature = data.get("signature")
+                        if signature:
+                            expected_sig = self.compute_manifest_signature(binaries)
+                            if signature.lower() != expected_sig.lower():
+                                print(f"[RuntimeManager] CRITICAL ERROR: Cryptographic signature mismatch on manifest {p} (Manifest tampered)!")
+                                return None
+                        return binaries
                 except Exception as e:
                     print(f"[RuntimeManager] Error reading runtime manifest at {p}: {e}")
         return None

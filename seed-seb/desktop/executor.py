@@ -396,6 +396,21 @@ class CodeExecutor:
         
         with open(source_path, "w", encoding="utf-8") as f:
             f.write(code)
+
+        # Write strict sandbox.policy for Java execution
+        policy_path = os.path.join(run_dir, "sandbox.policy")
+        policy_content = (
+            "grant {\n"
+            "    permission java.util.PropertyPermission \"*\", \"read\";\n"
+            "    permission java.lang.RuntimePermission \"getenv.*\";\n"
+            "    permission java.lang.RuntimePermission \"exitVM.*\";\n"
+            "    permission java.lang.reflect.ReflectPermission \"suppressAccessChecks\";\n"
+            "    permission java.io.FilePermission \"<<ALL FILES>>\", \"read\";\n"
+            "    permission java.io.FilePermission \"${user.dir}/-\", \"read,write,delete\";\n"
+            "};\n"
+        )
+        with open(policy_path, "w", encoding="utf-8") as f:
+            f.write(policy_content)
             
         javac_bin = runtime_manager.get_binary_path("javac")
         compile_cmd = [javac_bin, "-d", ".", "Main.java"]
@@ -412,11 +427,13 @@ class CodeExecutor:
                 "error": f"Compilation Error:\n{compile_res['stderr'] or compile_res['stdout']}"
             }
             
-        # Run with memory cap and SOCKS/HTTP network proxy isolation
+        # Run with security manager policy, memory cap, and SOCKS/HTTP proxy isolation
         java_bin = runtime_manager.get_binary_path("java")
         run_cmd = [
             java_bin,
             "-Xmx128m", "-Xms16m",
+            "-Djava.security.manager",
+            f"-Djava.security.policy={policy_path}",
             "-Djava.net.preferIPv4Stack=true",
             "-DsocksProxyHost=127.0.0.1", "-DsocksProxyPort=0",
             "-Dhttp.proxyHost=127.0.0.1", "-Dhttp.proxyPort=0",

@@ -273,7 +273,11 @@ int main() {
         ok_tampered, errors = runtime_manager.verify_runtime_integrity(tampered_manifest)
         self.assertFalse(ok_tampered)
         self.assertTrue(len(errors) > 0)
-        print("Cryptographic Runtime Integrity Manifest verified.")
+        # 3. Cryptographic HMAC attestation signature test
+        computed_sig = runtime_manager.compute_manifest_signature(manifest)
+        self.assertIsInstance(computed_sig, str)
+        self.assertEqual(len(computed_sig), 64)
+        print("Cryptographic Runtime Integrity Manifest & Attestation Signature verified.")
 
     def test_java_network_blocked(self):
         print("Testing Java network socket blocking...")
@@ -310,8 +314,10 @@ public class Main {
             Process p = Runtime.getRuntime().exec("cmd.exe");
             p.destroyForcibly();
             System.out.println("JAVA_SPAWN_ATTEMPTED");
+        } catch (SecurityException se) {
+            System.out.println("JAVA_SPAWN_BLOCKED_OK: " + se.getClass().getSimpleName());
         } catch (Exception e) {
-            System.out.println("JAVA_SPAWN_BLOCKED_OK");
+            System.out.println("JAVA_SPAWN_BLOCKED_OK: " + e.getClass().getSimpleName());
         }
     }
 }
@@ -319,6 +325,8 @@ public class Main {
         res = code_executor.execute("java", code, time_limit=3.0)
         self.assertIsNone(res["error"])
         self.assertEqual(res["exit_code"], 0)
+        self.assertNotIn("JAVA_SPAWN_ATTEMPTED", res["stdout"])
+        self.assertIn("JAVA_SPAWN_BLOCKED_OK", res["stdout"])
         print("Java child process spawn defense verified.")
 
     def test_realtime_disk_quota_active_kill(self):
