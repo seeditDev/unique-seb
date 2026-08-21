@@ -127,7 +127,7 @@ class MCQService {
                 isGuest: true,
                 guestId,
                 name: guestSession.name ?? '',
-                rollNo: guestSession.rollNo ?? '',
+                rollNumber: guestSession.rollNumber ?? '',
                 college: guestSession.college ?? '',
                 department: guestSession.department ?? '',
                 year: guestSession.year ?? '',
@@ -255,7 +255,7 @@ class MCQService {
             // CANONICAL: require live Firebase Auth UID
             const uid = getCanonicalUid();
 
-            const { Email, College, Year, Department, Name, 'Roll Number': rollNumber, tenantId, cohortId } = userData;
+            const { email, college, year, department, name, rollNumber, tenantId, cohortId } = userData;
             const assessmentId = testData.testInfo?.id || testData.id || 'unknown';
 
             // CREATE-ONCE guard:
@@ -444,7 +444,7 @@ class MCQService {
                 totalScore: score || 0,
                 totalQuestions: totalQuestions || 0,
                 maxScore: resultData.maxScore || resultData.totalQuestions || 0,
-                totalMarks: resultData.maxScore || resultData.totalQuestions || 0,
+                maxScore: resultData.maxScore || resultData.totalQuestions || 0,
                 correctAnswers: correctAnswers || 0,
                 incorrectAnswers: incorrectAnswers || 0,
                 percentage: percentage || 0,
@@ -540,11 +540,11 @@ class MCQService {
         } = progressData;
 
         // Canonical path now uses Firebase Auth UID and tenantId
-        let tenantId = progressData.tenantId || (progressData.collegeCode  ?? '');
+        let tenantId = progressData.tenantId ?? '';
         if (!tenantId || tenantId.includes(' ')) {
             try {
                 const storedAuth = JSON.parse(localStorage.getItem('auth_data') ?? '{}');
-                tenantId = storedAuth.tenantId || (storedAuth.collegeCode  ?? '');
+                tenantId = storedAuth.tenantId ?? '';
             } catch (_) {}
         }
         if (!tenantId || tenantId.includes(' ')) {

@@ -187,7 +187,7 @@ export async function fetchCompletionMap(userData, assessmentIds = [], options =
     if (unknown.length > 0) {
       // Use live Firebase Auth UID for canonical reads
       const liveUid = auth?.currentUser?.uid || userKey;
-      const tenantId = userData?.tenantId || userData?.TenantId || user?.tenantId || '_unknown_';
+      const tenantId = userData?.tenantId ?? user?.tenantId ?? '_unknown_';
       try {
         const canonFound = await queryCanonicalPaths(liveUid, unknown, tenantId);
         Object.keys(canonFound).forEach((id) => { map[id] = true; });
@@ -230,7 +230,7 @@ export async function markAssessmentCompleted(userData, assessmentId) {
   writeCompletionCache(tenant.email, { ...cached, [assessmentId]: true });
 
   // 2. Try updating Firestore remote user document
-  const userKey = userData?.uid || userData?.UID || tenant.email;
+  const userKey = userData?.uid || tenant.email;
   const ref = doc(db, 'users', userKey);
   try {
     await runTransaction(db, async (tx) => {

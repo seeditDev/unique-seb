@@ -360,7 +360,7 @@ export async function completeAssessmentSession(assessmentId, opts = {}) {
     autoSubmitted:    opts.autoSubmitted || false,
     autoSubmitReason: opts.reason || null,
     completedAt:      serverTimestamp(),
-    completedAtISO:   new Date().toISOString(),
+    submittedAt: new Date().toISOString(),
     activeSection:    null,
     lastSavedAt:      serverTimestamp(),
     scoring_authority: 'client_provisional',
@@ -371,7 +371,7 @@ export async function completeAssessmentSession(assessmentId, opts = {}) {
     assessmentId,
     uid,
     status:         targetState,
-    completedAtISO: updateData.completedAtISO,
+    submittedAt: updateData.submittedAt,
     ...(opts.finalPayload || {}),
   });
 

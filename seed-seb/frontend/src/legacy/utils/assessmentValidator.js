@@ -36,10 +36,10 @@ const MSA_REQUIRED_PAYLOAD_FIELDS     = ['sections'];
  */
 function resolvePayloadAssessmentId(payload) {
     return (
-        payload?.assessmentId   ||
-        payload?.assessmentID   ||
+        payload?.id ||
+        payload?.id ||
         payload?.id             ||
-        payload?.assessmentId         || (payload?.assessmentId  ?? '')
+        payload?.id || (payload?.assessmentId  ?? '')
     );
 }
 

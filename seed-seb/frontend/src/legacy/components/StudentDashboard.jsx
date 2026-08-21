@@ -187,7 +187,7 @@ const StudentDashboard = () => {
       Name: editName.trim(),
       name: editName.trim(),
       displayName: editName.trim(),
-      'Roll Number': editRollNo.trim(),
+      rollNumber: editRollNo.trim(),
       rollNumber: editRollNo.trim(),
       phone: editPhone.trim(),
       photoURL: avatarUrl
@@ -571,7 +571,7 @@ const StudentDashboard = () => {
   const activitySnapshotStats = useMemo(() => {
     const details = progressData?.problemDetails || {};
     const activity = progressData?.activity || {};
-    const solvedList = progressData?.solvedProblems || progressData?.completedQuestions || [];
+    const solvedList = progressData?.solvedProblems || [];
     const totalSolved = solvedList.length;
 
     // Accuracy Calculation
@@ -632,7 +632,7 @@ const StudentDashboard = () => {
   }, [progressData]);
 
   const solvedIdsSet = useMemo(() => {
-    const ids = progressData?.solvedProblems || progressData?.completedQuestions || [];
+    const ids = progressData?.solvedProblems || [];
     return new Set(ids.map(String));
   }, [progressData]);
 
@@ -836,7 +836,7 @@ const StudentDashboard = () => {
           }
 
           const lastSavedAt = data.lastSavedAt?.toDate ? data.lastSavedAt.toDate() : null;
-          const lastActiveMs = lastSavedAt ? lastSavedAt.getTime() : (data.completedAtISO ? new Date(data.completedAtISO).getTime() : 0);
+          const lastActiveMs = lastSavedAt ? lastSavedAt.getTime() : (data.submittedAt ? new Date(data.submittedAt).getTime() : 0);
           const elapsedOfflineSec = lastActiveMs ? Math.floor((nowMs - lastActiveMs) / 1000) : Infinity;
 
           if (elapsedOfflineSec <= 300) {
@@ -1534,7 +1534,7 @@ const StudentDashboard = () => {
 
       // 2. Instant eligibility / duplicate check
       // All assessments write their result to the canonical assessmentResults path.
-      const tenantId = user?.tenantId || (user?.tenant_id  ?? '');
+      const tenantId = user?.tenantId ?? '';
       const canonDocPath = `assessmentResults/${tenantId}/${selectedAssessment.id}/${liveUid}`;
       const docSnap = await getDoc(doc(db, canonDocPath));
       const isCompleted = docSnap.exists() && (docSnap.data().completed === true || docSnap.data().status === 'submitted');
@@ -1630,7 +1630,7 @@ const StudentDashboard = () => {
   const name = user?.name || "Student";
   const email = user?.email;
   const college = user?.college;
-  const rollNumber = user?.["Roll Number"] || user?.roll || "22CSE001";
+  const rollNumber = user?.rollNumber ?? "";
   const year = user?.Year || "2027";
   const dept = user?.Department || "CSE";
 

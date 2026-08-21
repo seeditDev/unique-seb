@@ -179,7 +179,7 @@ export const fetchQuestionsForContest = async (questionIds = []) => {
       if (originalItem && typeof originalItem === 'object' && (originalItem.title || originalItem.id)) {
         return originalItem; // preserve inline object if fetch failed
       }
-      const id = typeof originalItem === 'object' ? (originalItem?.id || originalItem?.questionId) : originalItem;
+      const id = typeof originalItem === 'object' ? (originalItem?.id ?? originalItem?.questionId) : originalItem;
       console.warn(`[QuestionBankService] Failed to fetch question ${id}:`, r.reason?.message);
       return null;
     })

@@ -246,7 +246,7 @@ const desktopBridge = {
                 title: questionId === "hello_world" ? "1. Hello, World!" : "Assessment Question",
                 statement: "Write a program that outputs exactly Hello, World!",
                 sampleTests: [{ input: "", expected: "Hello, World!\n" }],
-                boilerplates: {
+                boilerPlates: {
                     c: "#include <stdio.h>\n\nint main() {\n    printf(\"Hello, World!\\n\");\n    return 0;\n}",
                     cpp: "#include <iostream>\nusing namespace std;\n\nint main() {\n    cout << \"Hello, World!\" << endl;\n    return 0;\n}",
                     python: "print(\"Hello, World!\")",

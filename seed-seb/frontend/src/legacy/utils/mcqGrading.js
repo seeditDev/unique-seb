@@ -15,13 +15,13 @@
 function selectedIndexFor(answers, index, question) {
   if (!answers) return undefined;
   if (answers[index] !== undefined) return answers[index];
-  const qid = question?.id ?? question?.questionId;
+  const qid = question?.id;
   if (qid !== undefined && answers[qid] !== undefined) return answers[qid];
   return undefined;
 }
 
 function marksFor(question) {
-  const m = Number(question?.marks ?? question?.mark ?? 1);
+  const m = Number(question?.marks ?? 1);
   return Number.isFinite(m) && m > 0 ? m : 1;
 }
 
@@ -31,7 +31,7 @@ function marksFor(question) {
  * @param {object} params.answers     map of questionIndex -> selected option index
  * @param {object} [params.timeSpentPerQuestion] map of index -> seconds
  * @param {object} [params.meta]      difficulty/topic fallbacks
- * @returns {{score:number,totalMarks:number,totalQuestions:number,correctAnswers:number,
+ * @returns {{score:number,maxScore:number,totalQuestions:number,correctAnswers:number,
  *            incorrectAnswers:number,unanswered:number,percentage:number,questionsDetails:Array}}
  */
 export function gradeMcqAttempt({ questions, answers, timeSpentPerQuestion = {}, meta = {} } = {}) {
@@ -41,11 +41,11 @@ export function gradeMcqAttempt({ questions, answers, timeSpentPerQuestion = {},
   let correctAnswers = 0;
   let answered = 0;
   let score = 0;
-  let totalMarks = 0;
+  let maxScore = 0;
 
   const questionsDetails = questionSet.map((q, idx) => {
     const marks = marksFor(q);
-    totalMarks += marks;
+    maxScore += marks;
 
     const selectedIdx = selectedIndexFor(answers, idx, q);
     const hasAnswer = selectedIdx !== undefined && selectedIdx !== null && selectedIdx !== '';
@@ -73,7 +73,7 @@ export function gradeMcqAttempt({ questions, answers, timeSpentPerQuestion = {},
       questionNumber: idx + 1,
       questionText: q?.question || (q?.text  ?? ''),
       difficulty: String(q?.difficulty || meta.difficulty || 'medium').toLowerCase(),
-      topic: q?.topic || q?.tag || (Array.isArray(q?.tags) ? q.tags[0] : q?.tags) || 'General',
+      topic: q?.topic ?? (Array.isArray(q?.tags) ? q.tags[0] : 'General'),
       tags: Array.isArray(q?.tags) ? q.tags : (q?.tags ? [q.tags] : (q?.topic ? [q.topic] : ['General'])),
       marks,
       isCorrect,
@@ -83,11 +83,11 @@ export function gradeMcqAttempt({ questions, answers, timeSpentPerQuestion = {},
     };
   });
 
-  const percentage = totalMarks > 0 ? Math.round((score / totalMarks) * 100) : 0;
+  const percentage = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
 
   return {
     score,
-    totalMarks,
+    maxScore,
     totalQuestions,
     correctAnswers,
     incorrectAnswers: Math.max(0, answered - correctAnswers),
