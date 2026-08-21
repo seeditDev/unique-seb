@@ -284,8 +284,32 @@ class CodeExecutor:
         
         return self._run_process(cmd, run_dir, stdin, time_limit, env=env)
 
+    def _is_path_contained(self, target_path, base_dir):
+        """Case-insensitive, path-component-aware containment check on Windows."""
+        try:
+            norm_base = os.path.normcase(os.path.realpath(base_dir))
+            norm_target = os.path.normcase(os.path.realpath(target_path))
+            common = os.path.commonpath([norm_base, norm_target])
+            return common == norm_base
+        except Exception:
+            return False
+
+    def _is_reparse_or_link(self, path):
+        """Detects symlinks, directory junctions, and all Windows reparse points."""
+        if os.path.islink(path):
+            return True
+        if sys.platform == "win32":
+            try:
+                import ctypes
+                attrs = ctypes.windll.kernel32.GetFileAttributesW(str(path))
+                if attrs != -1 and (attrs & 0x0400):  # FILE_ATTRIBUTE_REPARSE_POINT (0x0400)
+                    return True
+            except Exception:
+                pass
+        return False
+
     def _check_disk_quota(self, run_dir, max_bytes=50*1024*1024, max_files=100):
-        """Validates that the execution run directory does not exceed disk quota, file count limit, or create symlink escapes."""
+        """Validates that the execution run directory does not exceed disk quota, file count limit, or create symlink/junction escapes."""
         total_size = 0
         total_files = 0
         canonical_run_dir = os.path.realpath(run_dir)
@@ -293,7 +317,7 @@ class CodeExecutor:
             # Check directory junctions or symlinks
             for d in dirs:
                 dp = os.path.join(root, d)
-                if os.path.islink(dp):
+                if self._is_reparse_or_link(dp):
                     return False, "Sandbox Security Violation: Directory symlink/junction detected in workspace"
             for f in files:
                 total_files += 1
@@ -301,10 +325,10 @@ class CodeExecutor:
                     return False, f"File Count Quota Exceeded (Max {max_files} files limit exceeded)"
                 try:
                     fp = os.path.join(root, f)
-                    if os.path.islink(fp):
+                    if self._is_reparse_or_link(fp):
                         real_target = os.path.realpath(fp)
-                        if not real_target.startswith(canonical_run_dir):
-                            return False, "Sandbox Security Violation: Symlink targeting outside workspace detected"
+                        if not self._is_path_contained(real_target, canonical_run_dir):
+                            return False, "Sandbox Security Violation: Symlink/reparse point targeting outside workspace detected"
                     total_size += os.path.getsize(fp)
                     if total_size > max_bytes:
                         return False, f"Disk Quota Exceeded (Max {max_bytes // (1024*1024)}MB limit exceeded)"
@@ -458,7 +482,7 @@ class CodeExecutor:
         return self._run_process(run_cmd, run_dir, stdin, time_limit, env=env_run)
 
     def _run_process(self, cmd, run_dir, stdin, time_limit, env=None):
-        """Helper to spawn, feed stdin, enforce time limits, and clean process handles and child trees."""
+        """Helper to spawn suspended, assign to Windows Job Object, enforce CPU/RAM/process limits, and resume execution."""
         stdout = ""
         stderr = ""
         exit_code = -1
@@ -468,22 +492,7 @@ class CodeExecutor:
         job = None
         
         try:
-            # Hide command windows and break away from parent console if needed
-            creationflags = 0x08000000 if sys.platform == "win32" else 0
-            
-            # Create process with redirected streams
-            proc = subprocess.Popen(
-                cmd,
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-                cwd=run_dir,
-                env=env,
-                creationflags=creationflags
-            )
-            
-            # Attach to Windows Job Object with KILL_ON_JOB_CLOSE & UI Restrictions
+            # 1. Pre-configure Windows Job Object with comprehensive resource and security boundaries
             if sys.platform == "win32":
                 try:
                     import ctypes
@@ -504,9 +513,12 @@ class CodeExecutor:
                                         ("PeakProcessMemoryUsed", ctypes.c_size_t), ("PeakJobMemoryUsed", ctypes.c_size_t)]
                         
                         limits = EXTENDED_LIMITS()
-                        # JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE (0x2000) | PROCESS_MEMORY (0x0100) | JOB_MEMORY (0x0200) | DIE_ON_UNHANDLED_EXCEPTION (0x0400) | ACTIVE_PROCESS (0x0008)
-                        limits.Basic.LimitFlags = 0x2000 | 0x0100 | 0x0200 | 0x0400 | 0x0008
-                        limits.Basic.ActiveProc = 16  # Max 16 concurrent processes to prevent fork-bombs
+                        # JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE (0x2000) | PROCESS_MEMORY (0x0100) | JOB_MEMORY (0x0200) | DIE_ON_UNHANDLED_EXCEPTION (0x0400) | ACTIVE_PROCESS (0x0008) | PROCESS_TIME (0x0002)
+                        limits.Basic.LimitFlags = 0x2000 | 0x0100 | 0x0200 | 0x0400 | 0x0008 | 0x0002
+                        # Enforce hard CPU user time limit (100ns units)
+                        cpu_limit_100ns = int(max(1.0, float(time_limit) + 1.0) * 10_000_000)
+                        limits.Basic.PUser = cpu_limit_100ns
+                        limits.Basic.ActiveProc = 8  # Strict process budget to eliminate fork-bombs
                         mem_limit_bytes = 512 * 1024 * 1024  # 512 MB RAM limit
                         limits.ProcessMemoryLimit = mem_limit_bytes
                         limits.JobMemoryLimit = mem_limit_bytes
@@ -517,15 +529,43 @@ class CodeExecutor:
                             _fields_ = [("UIRestrictionsClass", wintypes.DWORD)]
                         ui_limits = UI_RESTRICTIONS(0x00FF)
                         kernel32.SetInformationJobObject(job, 4, ctypes.byref(ui_limits), ctypes.sizeof(ui_limits))
-                        
-                        kernel32.AssignProcessToJobObject(job, int(proc._handle))
                 except Exception:
                     pass
+
+            # 2. Spawn suspended (CREATE_SUSPENDED: 0x00000004 | CREATE_NO_WINDOW: 0x08000000)
+            creationflags = (0x08000000 | 0x00000004) if (sys.platform == "win32" and job) else (0x08000000 if sys.platform == "win32" else 0)
             
-            # Start real-time active disk & file count quota monitor
+            proc = subprocess.Popen(
+                cmd,
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                cwd=run_dir,
+                env=env,
+                creationflags=creationflags
+            )
+            
+            # 3. Assign suspended process to Job Object BEFORE any untrusted instructions execute
+            if sys.platform == "win32" and job:
+                try:
+                    import ctypes
+                    kernel32 = ctypes.windll.kernel32
+                    kernel32.AssignProcessToJobObject(job, int(proc._handle))
+                    # 4. Resume execution now that containment boundaries are 100% established
+                    ntdll = ctypes.windll.ntdll
+                    ntdll.NtResumeProcess(int(proc._handle))
+                except Exception:
+                    try:
+                        ctypes.windll.ntdll.NtResumeProcess(int(proc._handle))
+                    except Exception:
+                        pass
+            
+            # Start real-time active disk, reparse point & file count quota monitor
             stop_monitor = threading.Event()
             quota_violated = threading.Event()
             quota_reason = [""]
+            canonical_run_dir = os.path.realpath(run_dir)
 
             def _active_disk_monitor():
                 while not stop_monitor.is_set():
@@ -535,7 +575,7 @@ class CodeExecutor:
                         for root, dirs, files in os.walk(run_dir, followlinks=False):
                             for d in dirs:
                                 dp = os.path.join(root, d)
-                                if os.path.islink(dp):
+                                if self._is_reparse_or_link(dp):
                                     quota_reason[0] = "Sandbox Security Violation: Directory symlink/junction detected"
                                     quota_violated.set()
                                     try:
@@ -554,6 +594,16 @@ class CodeExecutor:
                                 return
                             for f in files:
                                 fp = os.path.join(root, f)
+                                if self._is_reparse_or_link(fp):
+                                    real_target = os.path.realpath(fp)
+                                    if not self._is_path_contained(real_target, canonical_run_dir):
+                                        quota_reason[0] = "Sandbox Security Violation: Symlink/reparse point targeting outside workspace detected"
+                                        quota_violated.set()
+                                        try:
+                                            proc.kill()
+                                        except Exception:
+                                            pass
+                                        return
                                 total_size += os.path.getsize(fp)
                                 if total_size > 50 * 1024 * 1024:
                                     quota_reason[0] = "Disk Quota Exceeded (50MB limit exceeded during execution)"
@@ -565,7 +615,7 @@ class CodeExecutor:
                                     return
                     except Exception:
                         pass
-                    stop_monitor.wait(0.04) # Check every 40ms
+                    stop_monitor.wait(0.03) # Check every 30ms
 
             monitor_thread = threading.Thread(target=_active_disk_monitor, daemon=True)
             monitor_thread.start()

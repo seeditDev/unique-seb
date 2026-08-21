@@ -389,6 +389,15 @@ except Exception as e:
             self.assertTrue("Sandbox Security Violation" in str(res.get("error", "")) or res["exit_code"] != 0)
         print("Symlink/Junction Escape Detection verified.")
 
+    def test_path_containment_unit(self):
+        print("Testing Path Containment & Sibling Collision Defense...")
+        # Sibling directory prefix collision test
+        self.assertFalse(code_executor._is_path_contained("C:\\Sandbox\\run10\\secret.txt", "C:\\Sandbox\\run1"))
+        self.assertFalse(code_executor._is_path_contained("C:\\Sandbox\\run1_fake\\data", "C:\\Sandbox\\run1"))
+        self.assertTrue(code_executor._is_path_contained("C:\\Sandbox\\run1\\subfolder\\file.txt", "C:\\Sandbox\\run1"))
+        self.assertTrue(code_executor._is_path_contained("C:\\Sandbox\\run1", "C:\\Sandbox\\run1"))
+        print("Path Containment & Sibling Collision Defense verified.")
+
 if __name__ == "__main__":
     unittest.main()
 
