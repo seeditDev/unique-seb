@@ -1,5 +1,5 @@
 #define MyAppName "SEED-SEB"
-#define MyAppVersion "1.0.4"
+#define MyAppVersion "1.0.4"  ; AUTO-STAMPED by compile_nuitka.bat from version.txt -- do not edit manually
 #define MyAppPublisher "SEED-IT Institute of Training"
 #define MyAppURL "https://seedit.site"
 #define MyAppExeName "SEED-SEB.exe"
@@ -78,11 +78,37 @@ Filename: "icacls"; Parameters: """{app}"" /grant:r *S-1-5-32-545:(OI)(CI)(IO)RX
 ;           Use specific right strings: "RD" = Read Data, which maps to List Folder on directories
 Filename: "icacls"; Parameters: """{app}"" /deny *S-1-5-32-545:(RD)"; Flags: runhidden
 
-; Step 5 – Grant Everyone full control recursively on resources, data, and temp_workspace subfolders
-;           so compiler processes and student logs can read/write freely
-Filename: "icacls"; Parameters: """{app}\resources"" /grant:r *S-1-1-0:(OI)(CI)F"; Flags: runhidden
-Filename: "icacls"; Parameters: """{app}\data"" /grant:r *S-1-1-0:(OI)(CI)F"; Flags: runhidden
-Filename: "icacls"; Parameters: """{app}\temp_workspace"" /grant:r *S-1-1-0:(OI)(CI)F"; Flags: runhidden
+; Step 5 – Lock subdirectories to correct least-privilege ACL model.
+;
+;  {app}\resources  — application JS, manifests, Qt assets: Users get RX (read+execute) only
+;  {app}\data       — question bank, hidden tests:            Users get RX only (NO write!)
+;  {app}\temp_workspace — coding sandbox working dir:         Users get write-only INSIDE
+;                         (IO = Inherit-Only: applies to content, not the folder itself)
+;
+;  NEVER grant Everyone:(OI)(CI)F — that gives students write access to hidden tests.
+
+; ── {app}\resources : Admins=Full, SYSTEM=Full, Users=RX ──────────────────────
+Filename: "icacls"; Parameters: """{app}\resources"" /inheritance:d"; Flags: runhidden
+Filename: "icacls"; Parameters: """{app}\resources"" /grant:r *S-1-5-32-544:(OI)(CI)F"; Flags: runhidden
+Filename: "icacls"; Parameters: """{app}\resources"" /grant:r *S-1-5-18:(OI)(CI)F"; Flags: runhidden
+Filename: "icacls"; Parameters: """{app}\resources"" /grant:r *S-1-5-32-545:(OI)(CI)RX"; Flags: runhidden
+
+; ── {app}\data : Admins=Full, SYSTEM=Full, Users=RX (hidden tests — NO write!) ─
+Filename: "icacls"; Parameters: """{app}\data"" /inheritance:d"; Flags: runhidden
+Filename: "icacls"; Parameters: """{app}\data"" /grant:r *S-1-5-32-544:(OI)(CI)F"; Flags: runhidden
+Filename: "icacls"; Parameters: """{app}\data"" /grant:r *S-1-5-18:(OI)(CI)F"; Flags: runhidden
+Filename: "icacls"; Parameters: """{app}\data"" /grant:r *S-1-5-32-545:(OI)(CI)RX"; Flags: runhidden
+
+; ── {app}\temp_workspace : Admins=Full, SYSTEM=Full, Users=inherit-only Write ──
+;    Students need to create per-run directories inside temp_workspace for the
+;    coding sandbox, but must NOT be able to list or read other runs.
+;    (IO) = Inherit-Only: the ACE does not apply to the temp_workspace folder itself.
+;    (OI)(CI) on content means files and subdirs created inside inherit Write.
+Filename: "icacls"; Parameters: """{app}\temp_workspace"" /inheritance:d"; Flags: runhidden
+Filename: "icacls"; Parameters: """{app}\temp_workspace"" /grant:r *S-1-5-32-544:(OI)(CI)F"; Flags: runhidden
+Filename: "icacls"; Parameters: """{app}\temp_workspace"" /grant:r *S-1-5-18:(OI)(CI)F"; Flags: runhidden
+Filename: "icacls"; Parameters: """{app}\temp_workspace"" /grant:r *S-1-5-32-545:(OI)(CI)(IO)W"; Flags: runhidden
+
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}"

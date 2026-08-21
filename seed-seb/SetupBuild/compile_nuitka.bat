@@ -4,7 +4,21 @@ echo SEED-SEB Native C++ Compilation using Nuitka
 echo ===================================================
 echo.
 
-:: Sync latest source files from desktop folder cleanly
+:: ── G FIX: Read canonical version from version.txt and stamp setup.iss ────────
+:: version.txt is the single source of truth for the app version.
+:: Both this script and register_build_hash.py read from it so that
+:: bumping version.txt is the only change needed at release time.
+set /p APP_VERSION=<version.txt
+if "%APP_VERSION%"=="" (
+    echo [ERROR] version.txt is empty or missing. Cannot determine build version.
+    exit /b 1
+)
+echo Build version: %APP_VERSION%
+
+:: Stamp version into setup.iss so the installer always matches the binary
+powershell -Command "(Get-Content setup.iss) -replace '^#define MyAppVersion .*$', '#define MyAppVersion \"%APP_VERSION%\"  ; AUTO-STAMPED by compile_nuitka.bat from version.txt — do not edit manually' | Set-Content setup.iss"
+echo Stamped setup.iss with version %APP_VERSION%
+echo.
 echo Syncing latest source files from desktop folder...
 if exist "app_source" rmdir /s /q "app_source"
 mkdir "app_source"
@@ -53,7 +67,15 @@ if not "%DATA_SRC%"=="" (
     echo Copying data from %DATA_SRC% to dist\SEED-SEB\data...
     xcopy /E /I /Y "%DATA_SRC%" "dist\SEED-SEB\data"
 ) else (
-    echo WARNING: data folder not found anywhere!
+    echo [ERROR] data folder not found anywhere. Build aborted.
+    echo   Checked: ..\data  ..\..\seed-website-desktop-edition\data  absolute path
+    exit /b 1
+)
+
+:: Preflight: verify data was actually staged
+if not exist "dist\SEED-SEB\data" (
+    echo [ERROR] dist\SEED-SEB\data is missing after copy. Build aborted.
+    exit /b 1
 )
 
 echo Locating and copying resources folder...
@@ -70,7 +92,15 @@ if not "%RESOURCES_SRC%"=="" (
     echo Copying resources from %RESOURCES_SRC% to dist\SEED-SEB\resources...
     xcopy /E /I /Y "%RESOURCES_SRC%" "dist\SEED-SEB\resources"
 ) else (
-    echo WARNING: resources folder not found anywhere!
+    echo [ERROR] resources folder not found anywhere. Build aborted.
+    echo   Checked: ..\resources  ..\..\seed-website-desktop-edition\resources  absolute path
+    exit /b 1
+)
+
+:: Preflight: verify resources was actually staged
+if not exist "dist\SEED-SEB\resources" (
+    echo [ERROR] dist\SEED-SEB\resources is missing after copy. Build aborted.
+    exit /b 1
 )
 
 echo Locating and copying runtimes folder...
@@ -91,7 +121,15 @@ if not "%RUNTIMES_SRC%"=="" (
         exit /b 1
     )
 ) else (
-    echo WARNING: runtimes folder not found anywhere!
+    echo [ERROR] runtimes folder not found anywhere. Build aborted.
+    echo   Checked: ..\..\runtimes  ..\runtimes  absolute path
+    exit /b 1
+)
+
+:: Preflight: verify runtimes was actually staged
+if not exist "dist\SEED-SEB\resources\runtimes" (
+    echo [ERROR] dist\SEED-SEB\resources\runtimes is missing after copy. Build aborted.
+    exit /b 1
 )
 
 echo Copying qwebchannel.js into distribution...
@@ -101,6 +139,16 @@ if exist "..\frontend\public\qwebchannel.js" (
     copy /Y "..\frontend\public\qwebchannel.js" "dist\SEED-SEB\public\qwebchannel.js"
 ) else if exist "..\build\qwebchannel.js" (
     copy /Y "..\build\qwebchannel.js" "dist\SEED-SEB\qwebchannel.js"
+) else (
+    echo [ERROR] qwebchannel.js not found in frontend\public or build\. Build aborted.
+    echo   The QWebChannel bridge cannot function without this file.
+    exit /b 1
+)
+
+:: Preflight: final verification that qwebchannel.js is present
+if not exist "dist\SEED-SEB\qwebchannel.js" (
+    echo [ERROR] dist\SEED-SEB\qwebchannel.js is missing. Build aborted.
+    exit /b 1
 )
 
 echo.

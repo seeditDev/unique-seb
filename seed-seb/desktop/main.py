@@ -62,6 +62,18 @@ logging.info("Application starting up...")
 # App version
 CURRENT_VERSION = "1.0.4"
 
+# ── Trusted origin allowlist for QWebChannel native bridge ─────────────────
+# Only pages served from these origins receive the Python bridge.
+# The local fallback server uses 127.0.0.1, matched by prefix.
+# Any navigation outside this set is blocked during an active session.
+TRUSTED_ORIGINS = frozenset([
+    "https://seed-seb.seed-skillup.workers.dev",
+])
+TRUSTED_ORIGIN_PREFIXES = (
+    "http://127.0.0.1",   # local fallback HTTP server (any port)
+    "http://localhost",   # development fallback
+)
+
 # - Binary Integrity Check -
 # Computes SHA-256 hash of the running EXE and validates it against the server.
 # Even if a student has admin rights and modifies the EXE, the server will
@@ -338,9 +350,42 @@ class CustomWebEnginePage(QWebEnginePage):
         super().__init__(*args, **kwargs)
         self.featurePermissionRequested.connect(self.handleFeaturePermissionRequested)
 
+    def _is_trusted_origin(self, origin_str: str) -> bool:
+        """Returns True only for origins in TRUSTED_ORIGINS / TRUSTED_ORIGIN_PREFIXES."""
+        if origin_str in TRUSTED_ORIGINS:
+            return True
+        for prefix in TRUSTED_ORIGIN_PREFIXES:
+            if origin_str.startswith(prefix):
+                return True
+        return False
+
+    def acceptNavigationRequest(self, url, nav_type, is_main_frame):
+        """Block navigations to untrusted origins while the application is active.
+
+        The QWebChannel bridge is set on this page object unconditionally at
+        startup, so any page that loads into it gains bridge access.  This
+        override ensures only TRUSTED_ORIGINS can actually load, preventing
+        XSS redirects or unexpected navigations from reaching the bridge.
+        """
+        if is_main_frame:
+            origin = f"{url.scheme()}://{url.host()}"
+            if url.port() != -1:
+                origin += f":{url.port()}"
+            if not self._is_trusted_origin(origin):
+                logging.warning(
+                    f"[Security] Navigation to untrusted origin BLOCKED: {url.toString()}"
+                )
+                return False
+        return super().acceptNavigationRequest(url, nav_type, is_main_frame)
+
     def handleFeaturePermissionRequested(self, securityOrigin, feature):
-        logging.info(f"Permission requested by origin {securityOrigin.toString()} for feature {feature}")
-        self.setFeaturePermission(securityOrigin, feature, QWebEnginePage.PermissionPolicy.PermissionGrantedByUser)
+        origin_str = securityOrigin.toString()
+        if self._is_trusted_origin(origin_str):
+            logging.info(f"Permission granted for trusted origin {origin_str}: {feature}")
+            self.setFeaturePermission(securityOrigin, feature, QWebEnginePage.PermissionPolicy.PermissionGrantedByUser)
+        else:
+            logging.warning(f"[Security] Permission DENIED for untrusted origin {origin_str}: {feature}")
+            self.setFeaturePermission(securityOrigin, feature, QWebEnginePage.PermissionPolicy.PermissionDeniedByUser)
 
     def javaScriptConsoleMessage(self, level, message, line, source_id):
         logging.info(f"[JS Console] Line {line} ({source_id}): {message}")
@@ -1753,24 +1798,44 @@ window.QWebChannel = QWebChannel;
         logging.info(f"URL changed: {url.toString()} (Assessment Active: {is_assessment})")
 
     def disable_swipe_gestures(self):
-        """Disable Windows three-finger swipe and virtual desktop gesture via registry at runtime."""
+        """Disable Windows touchpad gestures, saving original values for clean restore.
+
+        Original registry values are stored in self._saved_gesture_values so that
+        _restore_swipe_gestures() can write them back rather than hardcoded 1s.
+        If a key does not exist on this system, its saved value is recorded as
+        None so restore can skip it.
+        """
         try:
             import winreg
-            # Disable touchpad three-finger and four-finger gestures (Windows 10/11)
-            keys_to_disable = [
-                (r"SOFTWARE\Microsoft\Windows\CurrentVersion\PrecisionTouchPad", "ThreeFingerSlideEnabled", 0),
-                (r"SOFTWARE\Microsoft\Windows\CurrentVersion\PrecisionTouchPad", "FourFingerSlideEnabled", 0),
-                (r"SOFTWARE\Microsoft\Windows\CurrentVersion\PrecisionTouchPad", "ThreeFingerTapEnabled", 0),
-                (r"SOFTWARE\Microsoft\Windows\CurrentVersion\PrecisionTouchPad", "FourFingerTapEnabled", 0),
+            gesture_keys = [
+                (r"SOFTWARE\Microsoft\Windows\CurrentVersion\PrecisionTouchPad", "ThreeFingerSlideEnabled"),
+                (r"SOFTWARE\Microsoft\Windows\CurrentVersion\PrecisionTouchPad", "FourFingerSlideEnabled"),
+                (r"SOFTWARE\Microsoft\Windows\CurrentVersion\PrecisionTouchPad", "ThreeFingerTapEnabled"),
+                (r"SOFTWARE\Microsoft\Windows\CurrentVersion\PrecisionTouchPad", "FourFingerTapEnabled"),
             ]
-            for reg_path, name, val in keys_to_disable:
+            # ── Save original values before overwriting ───────────────────────────
+            self._saved_gesture_values = {}
+            for reg_path, name in gesture_keys:
+                try:
+                    key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, reg_path, 0, winreg.KEY_READ)
+                    val, _ = winreg.QueryValueEx(key, name)
+                    winreg.CloseKey(key)
+                    self._saved_gesture_values[(reg_path, name)] = val
+                except FileNotFoundError:
+                    # Key/value does not exist on this machine — record None so restore skips it
+                    self._saved_gesture_values[(reg_path, name)] = None
+                except Exception:
+                    self._saved_gesture_values[(reg_path, name)] = None
+
+            # ── Write 0 to disable gestures ──────────────────────────────────────
+            for reg_path, name in gesture_keys:
                 try:
                     key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, reg_path, 0, winreg.KEY_SET_VALUE)
-                    winreg.SetValueEx(key, name, 0, winreg.REG_DWORD, val)
+                    winreg.SetValueEx(key, name, 0, winreg.REG_DWORD, 0)
                     winreg.CloseKey(key)
                 except Exception:
                     pass  # Key may not exist on all systems
-            logging.info("[Security] Three-finger swipe gestures disabled via registry.")
+            logging.info("[Security] Touchpad gestures disabled via registry (original values saved).")
         except Exception as e:
             logging.warning(f"[Security] Could not disable swipe gestures: {e}")
 
@@ -1856,8 +1921,11 @@ window.QWebChannel = QWebChannel;
             self.update_wifi_button_status(False)
 
     def start_logout_sequence(self):
-        """Immediate exit on Logout click. Servers are shut down in daemon threads."""
-        logging.info("Logout clicked. Exiting immediately.")
+        """Graceful logout: wait up to 2 s for background servers to shut down
+        before exiting.  Uses sys.exit() so Python atexit handlers and
+        buffered I/O flushes run cleanly (os._exit bypasses these).
+        """
+        logging.info("Logout clicked. Initiating graceful shutdown.")
 
         # Stop periodic Qt timers.
         try:
@@ -1879,20 +1947,28 @@ window.QWebChannel = QWebChannel;
         except Exception:
             pass
 
-        # Shutdown servers in daemon threads (non-blocking).
-        def _shutdown_server(srv):
-            try:
-                if srv:
-                    srv.shutdown()
-                    srv.server_close()
-            except Exception:
-                pass
+        # Shutdown servers in threads; wait up to 2 s for clean close.
+        shutdown_done = threading.Event()
 
-        threading.Thread(target=_shutdown_server, args=(self.local_server,), daemon=True).start()
-        threading.Thread(target=_shutdown_server, args=(self.model_server,), daemon=True).start()
+        def _shutdown_all():
+            for srv in (getattr(self, 'local_server', None), getattr(self, 'model_server', None)):
+                try:
+                    if srv:
+                        srv.shutdown()
+                        srv.server_close()
+                except Exception:
+                    pass
+            shutdown_done.set()
 
-        logging.info("Logout: exiting immediately.")
-        os._exit(0)
+        t = threading.Thread(target=_shutdown_all, daemon=True)
+        t.start()
+        if not shutdown_done.wait(timeout=2.0):
+            logging.warning("Logout: server shutdown timed out (2 s), proceeding with exit.")
+        else:
+            logging.info("Logout: servers shut down cleanly.")
+
+        logging.info("Logout: exiting via sys.exit.")
+        sys.exit(0)
 
     def closeEvent(self, event):
         """Asks for confirmation using custom ExitConfirmDialog, blocking it entirely during assessments."""
@@ -1942,29 +2018,51 @@ window.QWebChannel = QWebChannel;
                     pass
                 logging.info("Model HTTP Server shut down.")
             event.accept()
-            os._exit(0)
+            sys.exit(0)
         else:
             logging.info("Application close prevented.")
             event.ignore()
 
     def _restore_swipe_gestures(self):
-        """Restore three-finger and four-finger touchpad gestures after the app exits cleanly."""
+        """Restore touchpad gestures to their original values captured by disable_swipe_gestures().
+
+        Writes back the exact values that were present before the SEB disabled
+        them.  If a key did not exist before (saved value is None), it is not
+        created.  Falls back to enabling all gestures (value=1) only when
+        self._saved_gesture_values is absent (e.g. disable was never called).
+        """
         try:
             import winreg
-            keys_to_restore = [
-                (r"SOFTWARE\Microsoft\Windows\CurrentVersion\PrecisionTouchPad", "ThreeFingerSlideEnabled", 1),
-                (r"SOFTWARE\Microsoft\Windows\CurrentVersion\PrecisionTouchPad", "FourFingerSlideEnabled",  1),
-                (r"SOFTWARE\Microsoft\Windows\CurrentVersion\PrecisionTouchPad", "ThreeFingerTapEnabled",   1),
-                (r"SOFTWARE\Microsoft\Windows\CurrentVersion\PrecisionTouchPad", "FourFingerTapEnabled",    1),
-            ]
-            for reg_path, name, val in keys_to_restore:
-                try:
-                    key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, reg_path, 0, winreg.KEY_SET_VALUE)
-                    winreg.SetValueEx(key, name, 0, winreg.REG_DWORD, val)
-                    winreg.CloseKey(key)
-                except Exception:
-                    pass
-            logging.info("[Security] Touchpad gestures restored on exit.")
+            saved = getattr(self, '_saved_gesture_values', None)
+
+            if saved is not None:
+                # Restore to pre-exam values
+                for (reg_path, name), original_val in saved.items():
+                    if original_val is None:
+                        continue  # key did not exist before; don't create it
+                    try:
+                        key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, reg_path, 0, winreg.KEY_SET_VALUE)
+                        winreg.SetValueEx(key, name, 0, winreg.REG_DWORD, int(original_val))
+                        winreg.CloseKey(key)
+                    except Exception:
+                        pass
+                logging.info("[Security] Touchpad gestures restored to original pre-exam values.")
+            else:
+                # Fallback: disable_swipe_gestures was never called; enable all
+                fallback_keys = [
+                    (r"SOFTWARE\Microsoft\Windows\CurrentVersion\PrecisionTouchPad", "ThreeFingerSlideEnabled", 1),
+                    (r"SOFTWARE\Microsoft\Windows\CurrentVersion\PrecisionTouchPad", "FourFingerSlideEnabled",  1),
+                    (r"SOFTWARE\Microsoft\Windows\CurrentVersion\PrecisionTouchPad", "ThreeFingerTapEnabled",   1),
+                    (r"SOFTWARE\Microsoft\Windows\CurrentVersion\PrecisionTouchPad", "FourFingerTapEnabled",    1),
+                ]
+                for reg_path, name, val in fallback_keys:
+                    try:
+                        key = winreg.OpenKey(winreg.HKEY_CURRENT_USER, reg_path, 0, winreg.KEY_SET_VALUE)
+                        winreg.SetValueEx(key, name, 0, winreg.REG_DWORD, val)
+                        winreg.CloseKey(key)
+                    except Exception:
+                        pass
+                logging.info("[Security] Touchpad gestures restored via fallback (original values unavailable).")
         except Exception as e:
             logging.warning(f"[Security] Could not restore swipe gestures: {e}")
 

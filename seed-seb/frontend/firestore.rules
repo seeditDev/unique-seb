@@ -170,7 +170,11 @@ service cloud.firestore {
           )
           || isAdmin()
           || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/users/$(userId)).data.get('tenantId', '')));
-        // Students can update answers/session state while active, but cannot tamper with immutable metadata
+
+        // ── P1 FIX: Explicit student-writable field allowlist + all workflow fields locked.
+        // Students can update answer/session-state fields while the attempt is active.
+        // Workflow fields (status, completed, autoSubmitted, autoSubmitReason) are NOT in
+        // the allowlist — they are exclusively set by the backend/admin/staff.
         allow update: if isAdmin()
           || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/users/$(userId)).data.get('tenantId', '')))
           || (isUser(userId)
@@ -181,7 +185,17 @@ service cloud.firestore {
               && request.resource.data.get('assessmentId', '') == resource.data.get('assessmentId', '')
               && request.resource.data.get('tenantId', '') == resource.data.get('tenantId', '')
               && request.resource.data.get('startedAt', '') == resource.data.get('startedAt', '')
-              && request.resource.data.get('durationSeconds', 0) == resource.data.get('durationSeconds', 0));
+              && request.resource.data.get('durationSeconds', 0) == resource.data.get('durationSeconds', 0)
+              // New-document workflow fields must stay at their safe initial values
+              && request.resource.data.get('completed', false) == false
+              && request.resource.data.get('status', 'in_progress') == resource.data.get('status', 'in_progress')
+              // Explicit allowlist: only UI/session state may be changed by students
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+                   'answers', 'activeSection', 'currentQuestionIndex',
+                   'timeSpentPerSection', 'lastSavedAt', 'sessionHeartbeat',
+                   'networkStatus', 'codeLanguage', 'codeContent',
+                   'flaggedQuestions', 'visitedQuestions', 'sectionSwitchCount'
+                 ]));
         allow delete: if isAdmin();
       }
 
@@ -196,6 +210,11 @@ service cloud.firestore {
           )
           || isAdmin()
           || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/users/$(userId)).data.get('tenantId', '')));
+
+        // ── P1 FIX: Explicit student-writable field allowlist + all workflow fields locked.
+        // Students can update answer/session-state fields while the attempt is active.
+        // Workflow fields (status, completed, autoSubmitted, autoSubmitReason) are NOT in
+        // the allowlist — they are exclusively set by the backend/admin/staff.
         allow update: if isAdmin()
           || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/users/$(userId)).data.get('tenantId', '')))
           || (isUser(userId)
@@ -206,7 +225,17 @@ service cloud.firestore {
               && request.resource.data.get('assessmentId', '') == resource.data.get('assessmentId', '')
               && request.resource.data.get('tenantId', '') == resource.data.get('tenantId', '')
               && request.resource.data.get('startedAt', '') == resource.data.get('startedAt', '')
-              && request.resource.data.get('durationSeconds', 0) == resource.data.get('durationSeconds', 0));
+              && request.resource.data.get('durationSeconds', 0) == resource.data.get('durationSeconds', 0)
+              // New-document workflow fields must stay at their safe initial values
+              && request.resource.data.get('completed', false) == false
+              && request.resource.data.get('status', 'in_progress') == resource.data.get('status', 'in_progress')
+              // Explicit allowlist: only UI/session state may be changed by students
+              && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+                   'answers', 'activeSection', 'currentQuestionIndex',
+                   'timeSpentPerSection', 'lastSavedAt', 'sessionHeartbeat',
+                   'networkStatus', 'codeLanguage', 'codeContent',
+                   'flaggedQuestions', 'visitedQuestions', 'sectionSwitchCount'
+                 ]));
         allow delete: if isAdmin();
       }
 

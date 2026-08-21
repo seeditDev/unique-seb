@@ -169,59 +169,78 @@ class AssessmentEngine:
             print(f"[AssessmentEngine] Error loading user_profile cache for {uid}: {e}")
             return ""
 
-    # ── Dynamic AES-256 & Local Cache Decryption ──────────────────────────────
+    # ── AES-256-GCM Local Cache Encryption ────────────────────────────────────
     def _encode_local_cache(self, data_str, key_hex=None):
-        """Encodes test data using AES-256-GCM if key provided, with fallback to XOR."""
-        if HAS_CRYPTOGRAPHY and key_hex:
-            try:
-                key_bytes = bytes.fromhex(key_hex) if len(key_hex) == 64 else key_hex.encode('utf-8').ljust(32, b'0')[:32]
-                iv = os.urandom(12)
-                aesgcm = AESGCM(key_bytes)
-                ct = aesgcm.encrypt(iv, data_str.encode('utf-8'), None)
-                payload = {
-                    "algorithm": "AES-256-GCM",
-                    "iv": iv.hex(),
-                    "ciphertext": ct.hex()
-                }
-                return json.dumps(payload)
-            except Exception as e:
-                print(f"[AssessmentEngine] AES encryption error: {e}")
+        """Encodes test data using AES-256-GCM with the provided Firestore-fetched key.
 
-        key = "KITE_SECURE_KEY_2026"
-        xored = "".join(chr(ord(c) ^ ord(key[i % len(key)])) for i, c in enumerate(data_str))
-        return base64.b64encode(xored.encode("utf-8")).decode("utf-8")
+        No hardcoded fallback keys exist. If no key is supplied the function
+        returns None and the caller must handle the absence of an encoded result.
+        This prevents silent encoding with a known-weak cipher.
+        """
+        if not HAS_CRYPTOGRAPHY or not key_hex:
+            print("[AssessmentEngine] _encode_local_cache: no key provided — encoding skipped.")
+            return None
+        try:
+            key_bytes = bytes.fromhex(key_hex) if len(key_hex) == 64 else key_hex.encode('utf-8').ljust(32, b'0')[:32]
+            iv = os.urandom(12)
+            aesgcm = AESGCM(key_bytes)
+            ct = aesgcm.encrypt(iv, data_str.encode('utf-8'), None)
+            payload = {
+                "algorithm": "AES-256-GCM",
+                "iv": iv.hex(),
+                "ciphertext": ct.hex()
+            }
+            return json.dumps(payload)
+        except Exception as e:
+            print(f"[AssessmentEngine] AES encryption error: {e}")
+            return None
 
     def _decode_local_cache(self, encoded_str, question_id=None, contest_id=None):
-        """Decodes test data in memory using AES-256-GCM or XOR."""
-        # 1. Try parsing as AES-256-GCM JSON envelope
+        """Decodes test data in memory using AES-256-GCM with a Firestore-fetched key.
+
+        Security guarantees:
+          - No hardcoded fallback AES key.  If the Firestore key cannot be
+            retrieved, decryption fails closed with a RuntimeError.
+          - The legacy XOR cipher has been removed.  Any data not wrapped in
+            an AES-256-GCM JSON envelope is rejected.
+        """
+        if not encoded_str:
+            return None
+
+        # Only accept AES-256-GCM JSON envelopes
         if HAS_CRYPTOGRAPHY and encoded_str.startswith("{"):
             try:
                 payload = json.loads(encoded_str)
                 if isinstance(payload, dict) and payload.get("algorithm") == "AES-256-GCM":
                     iv = bytes.fromhex(payload["iv"])
                     ct = bytes.fromhex(payload["ciphertext"])
-                    
+
                     target_contest = contest_id or self._active_contest_id
                     key = self._active_keys.get(target_contest) or self.fetch_contest_key_from_firestore(target_contest)
                     if not key:
-                        # Default fallback key for standard offline question banks
-                        key = b"KITE_SECURE_SEED_AES_KEY_2026_00"[:32]
-                    
+                        # Fail closed: refuse to decrypt without a server-issued key.
+                        # No hardcoded fallback key is provided.
+                        raise RuntimeError(
+                            f"[AssessmentEngine] No AES key available for contest "
+                            f"'{target_contest}'. Decryption refused. "
+                            "Ensure the device is online and the contest key is provisioned."
+                        )
+
                     aesgcm = AESGCM(key)
                     decrypted_bytes = aesgcm.decrypt(iv, ct, None)
                     return decrypted_bytes.decode('utf-8')
+            except RuntimeError:
+                raise  # propagate fail-closed errors unchanged
             except Exception as e:
-                print(f"[AssessmentEngine] Notice: AES decode failed or invalid key: {e}")
+                print(f"[AssessmentEngine] AES decode failed: {e}")
+                return None
 
-        # 2. XOR legacy / standard fallback
-        try:
-            key = "KITE_SECURE_KEY_2026"
-            decoded = base64.b64decode(encoded_str.encode("utf-8")).decode("utf-8")
-            xored = "".join(chr(ord(c) ^ ord(key[i % len(key)])) for i, c in enumerate(decoded))
-            return xored
-        except Exception as e:
-            print(f"[AssessmentEngine] Error decoding local cache for hidden tests: {e}")
-            return None
+        # Legacy XOR data is no longer supported — reject it explicitly
+        print(
+            "[AssessmentEngine] _decode_local_cache: encountered non-AES data. "
+            "Legacy XOR encoding is not supported. Data rejected."
+        )
+        return None
 
     def load_question(self, question_id):
         """Loads and returns public question details (excluding hidden test cases)."""

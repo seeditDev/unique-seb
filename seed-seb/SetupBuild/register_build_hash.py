@@ -31,7 +31,31 @@ except ImportError:
 FIREBASE_PROJECT_ID = "daily-tracker-a4092"
 FIREBASE_API_KEY    = "AIzaSyANO2d-RUXV0x5fvTjRT1UkpssP-T_Qz1Q"
 
-APP_VERSION = "1.0.4"  # must match CURRENT_VERSION in desktop/main.py
+# ── Single Version Source ──────────────────────────────────────────────────────
+# APP_VERSION is read from SetupBuild/version.txt at runtime so that bumping the
+# version in one place is sufficient.  Hardcoding was removed (G fix).
+def _read_version() -> str:
+    """Read version from version.txt next to this script, or fall back to setup.iss."""
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    version_file = os.path.join(script_dir, "version.txt")
+    if os.path.exists(version_file):
+        with open(version_file, "r", encoding="utf-8") as f:
+            return f.read().strip()
+    # Fallback: parse #define MyAppVersion from setup.iss
+    iss_file = os.path.join(script_dir, "setup.iss")
+    if os.path.exists(iss_file):
+        import re
+        with open(iss_file, "r", encoding="utf-8") as f:
+            for line in f:
+                m = re.match(r'#define\s+MyAppVersion\s+"([^"]+)"', line.strip())
+                if m:
+                    return m.group(1)
+    raise RuntimeError(
+        "Cannot determine APP_VERSION: neither version.txt nor setup.iss found. "
+        "Create SetupBuild/version.txt containing the version string (e.g. '1.0.4')."
+    )
+
+APP_VERSION = _read_version()  # must match CURRENT_VERSION in desktop/main.py
 
 # Path to compiled SEED-SEB.exe (relative to this script)
 POSSIBLE_EXE_PATHS = [
