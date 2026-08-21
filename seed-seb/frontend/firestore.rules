@@ -200,8 +200,9 @@ service cloud.firestore {
     // ══════════════════════════════════════════════════════════════════════
 
     match /courses/{courseId} {
-      allow read:               if isSignedIn();
-      allow create, update, delete: if isAdmin() || isStaff();
+      allow read:               if isSignedIn() && (resource == null || resource.data.get('tenantId', '') == '' || isTenantMember(resource.data.get('tenantId', '')));
+      allow create:             if isAdmin() || (isStaff() && (request.resource.data.get('tenantId', '') == '' || tenantAllowed(request.resource.data.get('tenantId', ''))));
+      allow update, delete:     if isAdmin() || (isStaff() && (resource.data.get('tenantId', '') == '' || tenantAllowed(resource.data.get('tenantId', ''))));
 
       match /series/{seriesId} {
         allow read:               if isSignedIn();
@@ -223,13 +224,14 @@ service cloud.firestore {
     // ══════════════════════════════════════════════════════════════════════
 
     match /assessments/{assessmentId} {
-      allow get: if isSignedIn();
+      // Students can only read assessments belonging to their tenant (or global/public assessments)
+      allow get: if isSignedIn() && (resource == null || resource.data.get('tenantId', '') == '' || isTenantMember(resource.data.get('tenantId', '')));
       allow list: if isAdmin() || isStaff();
       allow create: if isAdmin() || (isStaff() && tenantAllowed(request.resource.data.get('tenantId', '')));
       allow update, delete: if isAdmin() || (isStaff() && tenantAllowed(resource.data.get('tenantId', '')));
 
       match /{document=**} {
-        allow get: if isSignedIn();
+        allow get: if isSignedIn() && (resource == null || resource.data.get('tenantId', '') == '' || isTenantMember(resource.data.get('tenantId', '')) || isTenantMember(get(/databases/$(database)/documents/assessments/$(assessmentId)).data.get('tenantId', '')));
         allow list: if isAdmin() || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/assessments/$(assessmentId)).data.get('tenantId', '')));
         allow create, update, delete: if isAdmin() || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/assessments/$(assessmentId)).data.get('tenantId', '')));
       }
@@ -255,14 +257,17 @@ service cloud.firestore {
               && request.resource.data.get('assessmentId', '') == assessmentId
               && request.resource.data.get('userId', '') == userId);
         
-        // Strict update: only permitted while attempt is active. Once submitted, immutable.
+        // Strict update: only permitted while attempt is active. Score/rank/percentage locked against student tampering.
         allow update: if isAdmin() || (isStaff() && tenantAllowed(tenantId))
           || (isUser(userId)
               && resource.data.get('completed', false) == false
               && resource.data.get('status', '') != 'submitted'
               && request.resource.data.get('userId', '') == userId
               && request.resource.data.get('tenantId', '') == resource.data.get('tenantId', '')
-              && request.resource.data.get('assessmentId', '') == resource.data.get('assessmentId', ''));
+              && request.resource.data.get('assessmentId', '') == resource.data.get('assessmentId', '')
+              && request.resource.data.get('score', 0) == resource.data.get('score', 0)
+              && request.resource.data.get('percentage', 0) == resource.data.get('percentage', 0)
+              && request.resource.data.get('rank', 0) == resource.data.get('rank', 0));
 
         allow delete: if isAdmin();
       }

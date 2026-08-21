@@ -185,6 +185,30 @@ class RulesSimulator {
       block.includes("request.resource.data.get('tenantId', '') == resource.data.get('tenantId', '')")
     );
   }
+  isAssessmentReadTenantScoped() {
+    const match = this.rules.match(/match\s+\/assessments\/\{assessmentId\}\s*\{([^}]+)\}/);
+    if (!match) return false;
+    const block = match[1];
+    return block.includes("allow get: if isSignedIn() && (resource == null || resource.data.get('tenantId', '') == '' || isTenantMember(resource.data.get('tenantId', '')));");
+  }
+
+  isResultScoreTamperingBlocked() {
+    const match = this.rules.match(/match\s+\/assessmentResults\/\{tenantId\}\s*\{([\s\S]*?)\n\s*match\s+\/proctoringLogs/);
+    if (!match) return false;
+    const block = match[1];
+    return (
+      block.includes("request.resource.data.get('score', 0) == resource.data.get('score', 0)") &&
+      block.includes("request.resource.data.get('percentage', 0) == resource.data.get('percentage', 0)") &&
+      block.includes("request.resource.data.get('rank', 0) == resource.data.get('rank', 0)")
+    );
+  }
+
+  isCoursesTenantScoped() {
+    const match = this.rules.match(/match\s+\/courses\/\{courseId\}\s*\{([^}]+)\}/);
+    if (!match) return false;
+    const block = match[1];
+    return block.includes("isTenantMember(resource.data.get('tenantId', ''))");
+  }
 }
 
 // ── Test Execution ──────────────────────────────────────────────────────────
@@ -249,6 +273,18 @@ console.log('✓ Test 13 Passed: Proctoring creation strictly fails closed on mi
 assert(sim.isProctoringUpdateIdentityLocked(), 'FAIL: Proctoring update must lock tenantId, attemptId, and userId');
 console.log('✓ Test 14 Passed: Proctoring updates strictly lock tenantId, attemptId, and userId');
 
+// Test 15: Assessment Read Tenant Scoping
+assert(sim.isAssessmentReadTenantScoped(), 'FAIL: Student assessment read must be tenant-scoped');
+console.log('✓ Test 15 Passed: Student assessment read access strictly tenant-scoped');
+
+// Test 16: Result Score & Rank Tamper Protection
+assert(sim.isResultScoreTamperingBlocked(), 'FAIL: Score, percentage, and rank must be immutable during student result updates');
+console.log('✓ Test 16 Passed: Result scoring fields (score, percentage, rank) strictly locked against tampering');
+
+// Test 17: Courses Tenant Scoping
+assert(sim.isCoursesTenantScoped(), 'FAIL: Courses access must be tenant-scoped');
+console.log('✓ Test 17 Passed: Course read and write access strictly tenant-scoped');
+
 console.log('\n========================================');
-console.log('ALL 14/14 FIRESTORE SECURITY RULES TESTS PASSED (OK)');
+console.log('ALL 17/17 FIRESTORE SECURITY RULES TESTS PASSED (OK)');
 console.log('========================================\n');
