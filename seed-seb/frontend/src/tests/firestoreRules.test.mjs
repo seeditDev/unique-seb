@@ -9,6 +9,10 @@
  *  4. Assessment Keys Lockdown (Admin Only)
  *  5. Wildcard Subcollection Denial under /users/{uid}
  *  6. Proctoring Event Log Integrity & Immutability
+ *  7. User Role & Tenant Privilege Escalation Defense (Admin Only)
+ *  8. User Collection Listing Isolation (Admin Only)
+ *  9. Assessment Results Path-Payload Integrity (tenantId, assessmentId, userId)
+ *  10. Proctoring Logs & Assessment Authoring Tenant Scoping
  */
 
 import fs from 'fs';
@@ -69,14 +73,15 @@ class RulesSimulator {
     );
   }
 
-  isResultTenantLockedOnCreation() {
+  isResultPathPayloadIntegrityEnforced() {
     const match = this.rules.match(/match\s+\/assessmentResults\/\{tenantId\}\s*\{([\s\S]*?)\n\s*match\s+\/proctoringLogs/);
     if (!match) return false;
     const block = match[1];
     return (
-      block.includes("request.resource.data.get('tenantId', '') == myTenant()") &&
-      block.includes("myTenant() != ''") &&
-      block.includes("isUser(userId)")
+      block.includes("request.resource.data.get('tenantId', '') == tenantId") &&
+      block.includes("request.resource.data.get('assessmentId', '') == assessmentId") &&
+      block.includes("request.resource.data.get('userId', '') == userId") &&
+      block.includes("request.resource.data.get('assessmentId', '') == resource.data.get('assessmentId', '')")
     );
   }
 
@@ -91,13 +96,23 @@ class RulesSimulator {
     );
   }
 
-  isAuthoringStoreProtected() {
+  isProctoringLogTenantScoped() {
+    const match = this.rules.match(/match\s+\/proctoringLogs\/\{attemptId\}\s*\{([\s\S]*?)\n\s*match\s+\/events/);
+    if (!match) return false;
+    const block = match[1];
+    return (
+      block.includes("isStaff() && (resource == null || tenantAllowed(resource.data.get('tenantId', '')))") &&
+      block.includes("allow delete: if isAdmin();")
+    );
+  }
+
+  isAuthoringStoreTenantScoped() {
     const match = this.rules.match(/match\s+\/assessments\/\{assessmentId\}\s*\{([\s\S]*?)\n\s*match\s+\/assessmentResults/);
     if (!match) return false;
     const block = match[1];
     return (
-      block.includes("allow list, create, update, delete: if isPortal();") &&
-      block.includes("allow get: if isSignedIn();")
+      block.includes("allow create: if isAdmin() || (isStaff() && tenantAllowed(request.resource.data.get('tenantId', '')));") &&
+      block.includes("allow update, delete: if isAdmin() || (isStaff() && tenantAllowed(resource.data.get('tenantId', '')));")
     );
   }
 
@@ -120,6 +135,18 @@ class RulesSimulator {
     return (
       block.includes("allow get:    if isAdmin() || (isStaff() && tenantAllowed(tenantId)) || isTenantMember(tenantId);") &&
       block.includes("allow list:   if isAdmin();")
+    );
+  }
+
+  isUserRoleAndTenantLockedAgainstPrivilegeEscalation() {
+    const match = this.rules.match(/match\s+\/users\/\{userId\}\s*\{([\s\S]*?)\n\s*allow delete:/);
+    if (!match) return false;
+    const block = match[1];
+    return (
+      block.includes("allow list:   if isAdmin();") &&
+      block.includes("allow get:    if isUser(userId) || isAdmin() || (isStaff() && tenantAllowed(resource.data.get('tenantId', '')));") &&
+      block.includes("request.resource.data.get('role', '') == resource.data.get('role', '')") &&
+      block.includes("request.resource.data.get('tenantId', '') == resource.data.get('tenantId', '')")
     );
   }
 }
@@ -146,17 +173,17 @@ console.log('✓ Test 3 Passed: Explicit subcollections defined (courseProgress,
 assert(sim.isResultImmutableAfterSubmission(), 'FAIL: Results must be strictly immutable once submitted');
 console.log('✓ Test 4 Passed: Results immutable once completed/submitted');
 
-// Test 5: Result Creation Tenant-Locked & Fail-Closed
-assert(sim.isResultTenantLockedOnCreation(), 'FAIL: Result creation must require matching tenantId and non-empty tenant');
-console.log('✓ Test 5 Passed: Result creation strictly validates matching tenant and UID');
+// Test 5: Result Creation Path-Payload Integrity & Tenant Lock
+assert(sim.isResultPathPayloadIntegrityEnforced(), 'FAIL: Result creation must require matching tenantId, assessmentId, and userId with path');
+console.log('✓ Test 5 Passed: Result creation strictly validates matching tenantId, assessmentId, and UID');
 
 // Test 6: Proctoring Event Immutability & Attempt Lock
 assert(sim.isProctoringEventImmutableAndAttemptLocked(), 'FAIL: Proctoring events must be immutable and locked to attemptId and auth.uid');
 console.log('✓ Test 6 Passed: Proctoring events strictly attempt-locked and immutable');
 
-// Test 7: Authoring Store Protection
-assert(sim.isAuthoringStoreProtected(), 'FAIL: Authoring mutations and collection listings must require isPortal()');
-console.log('✓ Test 7 Passed: Assessment authoring mutations restricted to portal staff/admin');
+// Test 7: Authoring Store Protection & Tenant Scoping
+assert(sim.isAuthoringStoreTenantScoped(), 'FAIL: Authoring mutations must be scoped to admin or staff of matching tenant');
+console.log('✓ Test 7 Passed: Assessment authoring mutations strictly tenant-scoped to staff/admin');
 
 // Test 8: Attempt Metadata Immutability & Submission Lock
 assert(sim.isAttemptMetadataLocked(), 'FAIL: Attempt updates must lock durationSeconds, uid, assessmentId and completed state');
@@ -166,6 +193,14 @@ console.log('✓ Test 8 Passed: Attempt metadata (duration, uid, assessmentId) s
 assert(sim.isTenantReadScoped(), 'FAIL: Tenant reads must be strictly scoped to isAdmin() or (isStaff() && tenantAllowed(tenantId))');
 console.log('✓ Test 9 Passed: Cross-tenant isolation strictly enforced (Staff scoped to own tenant only)');
 
+// Test 10: User Role & Tenant Privilege Escalation Prevention & User List Lock
+assert(sim.isUserRoleAndTenantLockedAgainstPrivilegeEscalation(), 'FAIL: Users list must be admin-only, role and tenantId must be immutable for staff/students');
+console.log('✓ Test 10 Passed: User list is admin-only, user role & tenantId strictly immutable (privilege escalation locked)');
+
+// Test 11: Proctoring Logs Tenant Scoping
+assert(sim.isProctoringLogTenantScoped(), 'FAIL: Proctoring logs must be scoped to admin, staff of matching tenant, or attempt owner');
+console.log('✓ Test 11 Passed: Proctoring logs strictly tenant-scoped');
+
 console.log('\n========================================');
-console.log('ALL 9/9 FIRESTORE SECURITY RULES TESTS PASSED (OK)');
+console.log('ALL 11/11 FIRESTORE SECURITY RULES TESTS PASSED (OK)');
 console.log('========================================\n');

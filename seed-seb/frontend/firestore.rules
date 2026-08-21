@@ -93,17 +93,26 @@ service cloud.firestore {
     // ══════════════════════════════════════════════════════════════════════
 
     match /users/{userId} {
-      allow get:    if isUser(userId) || isPortal();
-      allow list:   if isPortal();
+      // Staff can only get users within their own tenant; Admins can get all; Users can get self
+      allow get:    if isUser(userId) || isAdmin() || (isStaff() && tenantAllowed(resource.data.get('tenantId', '')));
+      allow list:   if isAdmin();
 
       // Student can self-provision during initial sign-up
-      allow create: if isUser(userId)
-        && request.resource.data.get('role', 'student') == 'student'
-        && request.resource.data.get('uid', '') == userId
-        || isPortal();
+      allow create: if (isUser(userId)
+          && request.resource.data.get('role', 'student') == 'student'
+          && request.resource.data.get('uid', '') == userId)
+        || isAdmin()
+        || (isStaff()
+            && tenantAllowed(request.resource.data.get('tenantId', ''))
+            && request.resource.data.get('role', 'student') == 'student');
 
-      // Updates restricted: role and tenantId cannot be modified by student
-      allow update: if isPortal()
+      // Updates restricted: role and tenantId are strictly immutable for staff and students (Admin only)
+      allow update: if isAdmin()
+        || (isStaff()
+            && tenantAllowed(resource.data.get('tenantId', ''))
+            && request.resource.data.get('role', '') == resource.data.get('role', '')
+            && request.resource.data.get('tenantId', '') == resource.data.get('tenantId', '')
+            && request.resource.data.get('uid', '') == resource.data.get('uid', ''))
         || (isUser(userId)
             && request.resource.data.get('role', '') == resource.data.get('role', '')
             && request.resource.data.get('tenantId', '') == resource.data.get('tenantId', '')
@@ -113,16 +122,18 @@ service cloud.firestore {
 
       // Explicitly matched user subcollections (wildcard match removed)
       match /courseProgress/{courseId} {
-        allow read, write: if isUser(userId) || isPortal();
+        allow read, write: if isUser(userId) || isAdmin() || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/users/$(userId)).data.get('tenantId', '')));
       }
 
       match /contestAttempts/{attemptId} {
-        allow read: if isUser(userId) || isPortal();
+        allow read: if isUser(userId) || isAdmin() || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/users/$(userId)).data.get('tenantId', '')));
         allow create: if isUser(userId)
           && request.resource.data.get('uid', '') == userId
-          || isPortal();
+          || isAdmin()
+          || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/users/$(userId)).data.get('tenantId', '')));
         // Students can update answers/session state while active, but cannot tamper with immutable metadata
-        allow update: if isPortal()
+        allow update: if isAdmin()
+          || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/users/$(userId)).data.get('tenantId', '')))
           || (isUser(userId)
               && resource.data.get('completed', false) == false
               && resource.data.get('status', '') != 'submitted'
@@ -136,11 +147,13 @@ service cloud.firestore {
       }
 
       match /assessmentAttempts/{attemptId} {
-        allow read: if isUser(userId) || isPortal();
+        allow read: if isUser(userId) || isAdmin() || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/users/$(userId)).data.get('tenantId', '')));
         allow create: if isUser(userId)
           && request.resource.data.get('uid', '') == userId
-          || isPortal();
-        allow update: if isPortal()
+          || isAdmin()
+          || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/users/$(userId)).data.get('tenantId', '')));
+        allow update: if isAdmin()
+          || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/users/$(userId)).data.get('tenantId', '')))
           || (isUser(userId)
               && resource.data.get('completed', false) == false
               && resource.data.get('status', '') != 'submitted'
@@ -154,11 +167,11 @@ service cloud.firestore {
       }
 
       match /profile/{docId} {
-        allow read, write: if isUser(userId) || isPortal();
+        allow read, write: if isUser(userId) || isAdmin() || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/users/$(userId)).data.get('tenantId', '')));
       }
 
       match /settings/{docId} {
-        allow read, write: if isUser(userId) || isPortal();
+        allow read, write: if isUser(userId) || isAdmin() || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/users/$(userId)).data.get('tenantId', '')));
       }
     }
 
@@ -188,20 +201,19 @@ service cloud.firestore {
 
     match /courses/{courseId} {
       allow read:               if isSignedIn();
-      allow create, update, delete: if isPortal();
+      allow create, update, delete: if isAdmin() || isStaff();
 
       match /series/{seriesId} {
         allow read:               if isSignedIn();
-        allow create, update, delete: if isPortal();
+        allow create, update, delete: if isAdmin() || isStaff();
 
         match /tests/{testId} {
           allow read:               if isSignedIn();
-          allow create, update, delete: if isPortal();
+          allow create, update, delete: if isAdmin() || isStaff();
         }
 
         match /_meta/{trackerId} {
-          allow read:  if isPortal();
-          allow write: if isPortal();
+          allow read, write: if isAdmin() || isStaff();
         }
       }
     }
@@ -212,11 +224,14 @@ service cloud.firestore {
 
     match /assessments/{assessmentId} {
       allow get: if isSignedIn();
-      allow list, create, update, delete: if isPortal();
+      allow list: if isAdmin() || isStaff();
+      allow create: if isAdmin() || (isStaff() && tenantAllowed(request.resource.data.get('tenantId', '')));
+      allow update, delete: if isAdmin() || (isStaff() && tenantAllowed(resource.data.get('tenantId', '')));
 
       match /{document=**} {
         allow get: if isSignedIn();
-        allow list, create, update, delete: if isPortal();
+        allow list: if isAdmin() || isStaff();
+        allow create, update, delete: if isAdmin() || isStaff();
       }
     }
 
@@ -232,11 +247,12 @@ service cloud.firestore {
       match /{assessmentId}/{userId} {
         allow read:   if isAdmin() || (isStaff() && tenantAllowed(tenantId)) || isUser(userId);
         
-        // Strict create: must belong to authenticated user, matching tenantId
+        // Strict create: must belong to authenticated user, matching tenantId and assessmentId
         allow create: if isAdmin() || (isStaff() && tenantAllowed(tenantId))
           || (isUser(userId)
               && myTenant() != ''
-              && request.resource.data.get('tenantId', '') == myTenant()
+              && request.resource.data.get('tenantId', '') == tenantId
+              && request.resource.data.get('assessmentId', '') == assessmentId
               && request.resource.data.get('userId', '') == userId);
         
         // Strict update: only permitted while attempt is active. Once submitted, immutable.
@@ -245,22 +261,26 @@ service cloud.firestore {
               && resource.data.get('completed', false) == false
               && resource.data.get('status', '') != 'submitted'
               && request.resource.data.get('userId', '') == userId
-              && request.resource.data.get('tenantId', '') == resource.data.get('tenantId', ''));
+              && request.resource.data.get('tenantId', '') == resource.data.get('tenantId', '')
+              && request.resource.data.get('assessmentId', '') == resource.data.get('assessmentId', ''));
 
         allow delete: if isAdmin();
       }
     }
 
     // ══════════════════════════════════════════════════════════════════════
-    // 6. Proctoring Logs & Events (Immutable Event Log)
+    // 6. Proctoring Logs & Events (Tenant Scoped & Immutable Event Log)
     // ══════════════════════════════════════════════════════════════════════
 
     match /proctoringLogs/{attemptId} {
-      allow read: if isPortal()
+      allow read: if isAdmin()
+        || (isStaff() && (resource == null || tenantAllowed(resource.data.get('tenantId', ''))))
         || (isSignedIn() && (resource == null || resource.data.get('userId', '') == request.auth.uid));
       allow create: if isSignedIn()
-        && request.resource.data.get('userId', '') == request.auth.uid;
-      allow update: if isPortal()
+        && request.resource.data.get('userId', '') == request.auth.uid
+        && (myTenant() == '' || request.resource.data.get('tenantId', '') == myTenant());
+      allow update: if isAdmin()
+        || (isStaff() && tenantAllowed(resource.data.get('tenantId', '')))
         || (isSignedIn()
             && resource.data.get('userId', '') == request.auth.uid
             && resource.data.get('status', '') != 'finalized'
@@ -268,7 +288,8 @@ service cloud.firestore {
       allow delete: if isAdmin();
 
       match /events/{eventId} {
-        allow read: if isPortal()
+        allow read: if isAdmin()
+          || (isStaff() && (resource == null || tenantAllowed(get(/databases/$(database)/documents/proctoringLogs/$(attemptId)).data.get('tenantId', ''))))
           || (isSignedIn() && (resource == null || resource.data.get('userId', '') == request.auth.uid));
         allow create: if isSignedIn()
           && request.resource.data.get('userId', '') == request.auth.uid
@@ -283,18 +304,18 @@ service cloud.firestore {
     // ══════════════════════════════════════════════════════════════════════
 
     match /codingProgress/{uid} {
-      allow read, write: if isUser(uid) || isPortal();
+      allow read, write: if isUser(uid) || isAdmin() || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/users/$(uid)).data.get('tenantId', '')));
 
       match /{document=**} {
-        allow read, write: if isUser(uid) || isPortal();
+        allow read, write: if isUser(uid) || isAdmin() || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/users/$(uid)).data.get('tenantId', '')));
       }
     }
 
     match /userActivities/{uid} {
-      allow read, write: if isUser(uid) || isPortal();
+      allow read, write: if isUser(uid) || isAdmin() || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/users/$(uid)).data.get('tenantId', '')));
 
       match /{allPaths=**} {
-        allow read, write: if isUser(uid) || isPortal();
+        allow read, write: if isUser(uid) || isAdmin() || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/users/$(uid)).data.get('tenantId', '')));
       }
     }
 
