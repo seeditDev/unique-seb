@@ -262,7 +262,7 @@ int main() {
 
     def test_runtime_integrity_manifest_verification(self):
         print("Testing Cryptographic Runtime Integrity Manifest...")
-        # 1. Baseline verification against trusted manifest returns true
+        # 1. Baseline verification against trusted Ed25519 signed manifest returns true
         ok, msg = runtime_manager.verify_runtime_integrity()
         self.assertTrue(ok)
         self.assertIn("verified", str(msg).lower())
@@ -273,11 +273,55 @@ int main() {
         ok_tampered, errors = runtime_manager.verify_runtime_integrity(tampered_manifest)
         self.assertFalse(ok_tampered)
         self.assertTrue(len(errors) > 0)
-        # 3. Cryptographic HMAC attestation signature test
-        computed_sig = runtime_manager.compute_manifest_signature(manifest)
-        self.assertIsInstance(computed_sig, str)
-        self.assertEqual(len(computed_sig), 64)
-        print("Cryptographic Runtime Integrity Manifest & Attestation Signature verified.")
+
+        # 3. Missing signature in manifest must fail closed
+        unsigned_manifest = {"binaries": manifest}
+        self.assertFalse(runtime_manager.verify_manifest_signature(unsigned_manifest, ""))
+
+        # 4. Tampered Ed25519 signature must fail verification
+        tampered_sig = "0" * 128
+        self.assertFalse(runtime_manager.verify_manifest_signature(manifest, tampered_sig))
+        print("Cryptographic Runtime Integrity Manifest & Ed25519 Attestation verified.")
+
+    def test_java_filesystem_sandbox_blocked(self):
+        print("Testing Java filesystem sandbox boundary enforcement...")
+        if not os.path.exists(runtime_manager.get_binary_path("javac")):
+            self.skipTest("JDK not found; skipping Java filesystem test.")
+        code = """
+import java.io.*;
+import java.nio.file.*;
+public class Main {
+    public static void main(String[] args) {
+        // 1. Reading outside sandbox must throw SecurityException / AccessControlException
+        try {
+            String win = Files.readString(Path.of("C:/Windows/win.ini"));
+            System.out.println("UNEXPECTED_JAVA_FS_READ_OUTSIDE");
+        } catch (SecurityException se) {
+            System.out.println("JAVA_FS_BLOCKED_OK");
+        } catch (Exception e) {
+            System.out.println("JAVA_FS_BLOCKED_OK");
+        }
+
+        // 2. Reading/writing inside local run directory must succeed
+        try {
+            Files.writeString(Path.of("local_test.txt"), "sandboxed_data");
+            String readBack = Files.readString(Path.of("local_test.txt"));
+            if ("sandboxed_data".equals(readBack)) {
+                System.out.println("JAVA_LOCAL_FS_OK");
+            }
+        } catch (Exception e) {
+            System.out.println("JAVA_LOCAL_FS_FAILED");
+        }
+    }
+}
+"""
+        res = code_executor.execute("java", code, time_limit=3.0)
+        self.assertIsNone(res["error"])
+        self.assertEqual(res["exit_code"], 0)
+        self.assertNotIn("UNEXPECTED_JAVA_FS_READ_OUTSIDE", res["stdout"])
+        self.assertIn("JAVA_FS_BLOCKED_OK", res["stdout"])
+        self.assertIn("JAVA_LOCAL_FS_OK", res["stdout"])
+        print("Java filesystem sandbox boundary enforcement verified.")
 
     def test_java_network_blocked(self):
         print("Testing Java network socket blocking...")

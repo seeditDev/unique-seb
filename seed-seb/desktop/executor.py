@@ -404,8 +404,7 @@ class CodeExecutor:
             "    permission java.util.PropertyPermission \"*\", \"read\";\n"
             "    permission java.lang.RuntimePermission \"getenv.*\";\n"
             "    permission java.lang.RuntimePermission \"exitVM.*\";\n"
-            "    permission java.lang.reflect.ReflectPermission \"suppressAccessChecks\";\n"
-            "    permission java.io.FilePermission \"<<ALL FILES>>\", \"read\";\n"
+            "    permission java.io.FilePermission \"${java.home}/-\", \"read\";\n"
             "    permission java.io.FilePermission \"${user.dir}/-\", \"read,write,delete\";\n"
             "};\n"
         )

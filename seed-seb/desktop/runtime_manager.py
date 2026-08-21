@@ -6,8 +6,11 @@ import shutil
 import hashlib
 
 class RuntimeManager:
-    # Embedded application signing key for manifest attestation
-    MANIFEST_SIGNING_KEY = b"SEED_SEB_INTERNAL_RUNTIME_MANIFEST_ATTESTATION_KEY_2026"
+    # Embedded public key for Ed25519 digital signature attestation
+    MANIFEST_PUBLIC_KEY = "a9f8e90b70d2316f31e3a903730142bb2cc987571961d91b2f0d0d70798d7f3a"
+    
+    # Exact required runtime binaries
+    REQUIRED_RUNTIMES = ["gcc", "g++", "javac", "java", "python", "node"]
 
     def __init__(self):
         self.app_root = self.get_app_root()
@@ -47,10 +50,21 @@ class RuntimeManager:
         except Exception:
             return None
 
-    def compute_manifest_signature(self, binaries_dict):
-        """Computes HMAC-SHA256 signature for canonical manifest binary entries."""
-        canonical_str = json.dumps(binaries_dict, sort_keys=True, separators=(',', ':'))
-        return hmac.new(self.MANIFEST_SIGNING_KEY, canonical_str.encode('utf-8'), hashlib.sha256).hexdigest()
+    def verify_manifest_signature(self, binaries_dict, signature_hex):
+        """Verifies Ed25519 digital signature of canonical manifest binaries dictionary using embedded public key."""
+        if not signature_hex or not isinstance(signature_hex, str):
+            return False
+        try:
+            from cryptography.hazmat.primitives.asymmetric import ed25519
+            canonical_str = json.dumps(binaries_dict, sort_keys=True, separators=(',', ':'))
+            pub_bytes = bytes.fromhex(self.MANIFEST_PUBLIC_KEY)
+            sig_bytes = bytes.fromhex(signature_hex)
+            pub_key = ed25519.Ed25519PublicKey.from_public_bytes(pub_bytes)
+            pub_key.verify(sig_bytes, canonical_str.encode('utf-8'))
+            return True
+        except Exception as e:
+            print(f"[RuntimeManager] Cryptographic signature verification failed: {e}")
+            return False
 
     def resolve_paths(self):
         """Set paths strictly to the portable runtimes inside resources/runtimes."""
@@ -121,7 +135,7 @@ class RuntimeManager:
         return True
 
     def load_trusted_manifest(self):
-        """Loads and cryptographically verifies the SHA-256 manifest shipped with SEED-SEB."""
+        """Loads, validates strict schema, and cryptographically verifies the Ed25519 signed manifest."""
         manifest_paths = [
             os.path.join(self.app_root, "resources", "runtime-manifest.json"),
             os.path.join(os.path.dirname(os.path.abspath(__file__)), "resources", "runtime-manifest.json"),
@@ -132,17 +146,44 @@ class RuntimeManager:
                 try:
                     with open(p, "r", encoding="utf-8") as f:
                         data = json.load(f)
-                        binaries = data.get("binaries", data)
-                        # Verify HMAC attestation signature if present
-                        signature = data.get("signature")
-                        if signature:
-                            expected_sig = self.compute_manifest_signature(binaries)
-                            if signature.lower() != expected_sig.lower():
-                                print(f"[RuntimeManager] CRITICAL ERROR: Cryptographic signature mismatch on manifest {p} (Manifest tampered)!")
-                                return None
-                        return binaries
+
+                    # 1. Strict Schema Validation
+                    if not isinstance(data, dict):
+                        print(f"[RuntimeManager] CRITICAL: Manifest at {p} is not a valid JSON object.")
+                        return None
+
+                    binaries = data.get("binaries")
+                    if not isinstance(binaries, dict):
+                        print(f"[RuntimeManager] CRITICAL: Manifest at {p} missing 'binaries' dictionary.")
+                        return None
+
+                    # 2. Strict Signature Requirement (FAIL-CLOSED if missing or empty)
+                    signature = data.get("signature")
+                    if not signature or not isinstance(signature, str):
+                        print(f"[RuntimeManager] CRITICAL: Manifest at {p} missing required cryptographic signature. Fail-closed.")
+                        return None
+
+                    # 3. Exact 6 Runtime Binaries Schema Enforcement
+                    bin_keys = set(binaries.keys())
+                    expected_keys = set(self.REQUIRED_RUNTIMES)
+                    if bin_keys != expected_keys:
+                        print(f"[RuntimeManager] CRITICAL: Manifest schema mismatch. Expected: {expected_keys}, Found: {bin_keys}")
+                        return None
+
+                    for name, hash_val in binaries.items():
+                        if not isinstance(hash_val, str) or len(hash_val) != 64:
+                            print(f"[RuntimeManager] CRITICAL: Manifest contains malformed SHA-256 hash for {name}: {hash_val}")
+                            return None
+
+                    # 4. Asymmetric Ed25519 Signature Verification
+                    if not self.verify_manifest_signature(binaries, signature):
+                        print(f"[RuntimeManager] CRITICAL: Cryptographic Ed25519 signature mismatch on manifest {p} (Manifest tampered)!")
+                        return None
+
+                    return binaries
                 except Exception as e:
                     print(f"[RuntimeManager] Error reading runtime manifest at {p}: {e}")
+                    return None
         return None
 
     def verify_runtime_integrity(self, expected_manifest=None):
