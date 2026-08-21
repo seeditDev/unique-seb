@@ -20,6 +20,7 @@ import {
   serverTimestamp,
   setDoc,
   updateDoc,
+  where,
   writeBatch,
 } from "firebase/firestore";
 import { getDb } from "@/lib/firebase";
@@ -272,8 +273,12 @@ const testsCol = (courseId: string, seriesId: string) =>
 
 /* ─────────────────────── Course CRUD ──────────────────────────── */
 
-export async function listCourses(): Promise<CourseDoc[]> {
-  const snap = await getDocs(query(coursesCol(), orderBy("display_order")));
+export async function listCourses(tenantId?: string | { queryKey: unknown }): Promise<CourseDoc[]> {
+  const actualTenantId = typeof tenantId === 'string' ? tenantId : undefined;
+  const q = actualTenantId
+    ? query(coursesCol(), where("tenantId", "==", actualTenantId), orderBy("display_order"))
+    : query(coursesCol(), orderBy("display_order"));
+  const snap = await getDocs(q);
   return snap.docs.map((d) => mapCourse(d.id, d.data() as Record<string, unknown>));
 }
 

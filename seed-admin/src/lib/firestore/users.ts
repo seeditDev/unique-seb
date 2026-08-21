@@ -86,8 +86,11 @@ export async function listUsersByRole(role: Role, tenantId?: string): Promise<Ap
   return snap.docs.map((d) => mapUser(d.id, d.data() as Record<string, unknown>));
 }
 
-export async function listAllUsers(): Promise<AppUser[]> {
-  const snap = await getDocs(collection(getDb(), USERS));
+export async function listAllUsers(tenantId?: string | { queryKey: unknown }): Promise<AppUser[]> {
+  const actualTenantId = typeof tenantId === 'string' ? tenantId : undefined;
+  const base = collection(getDb(), USERS);
+  const q = actualTenantId ? query(base, where("tenantId", "==", actualTenantId)) : base;
+  const snap = await getDocs(q);
   return snap.docs.map((d) => mapUser(d.id, d.data() as Record<string, unknown>));
 }
 

@@ -198,8 +198,12 @@ export async function getAssessmentByCode(code: string): Promise<AssessmentDoc |
   return mapAssessment(snap.docs[0]!.id, snap.docs[0]!.data() as Record<string, unknown>);
 }
 
-export async function listAssessments(): Promise<AssessmentDoc[]> {
-  const snap = await getDocs(collection(getDb(), ASSESSMENTS));
+export async function listAssessments(tenantId?: string | { queryKey: unknown }): Promise<AssessmentDoc[]> {
+  const actualTenantId = typeof tenantId === 'string' ? tenantId : undefined;
+  const { query: fsQuery, where } = await import("firebase/firestore");
+  const colRef = collection(getDb(), ASSESSMENTS);
+  const q = actualTenantId ? fsQuery(colRef, where("tenantId", "==", actualTenantId)) : colRef;
+  const snap = await getDocs(q);
   return snap.docs
     .map((d) => mapAssessment(d.id, d.data() as Record<string, unknown>))
     .sort((a, b) => a.title.localeCompare(b.title));
