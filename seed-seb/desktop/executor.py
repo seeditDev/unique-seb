@@ -285,16 +285,26 @@ class CodeExecutor:
         return self._run_process(cmd, run_dir, stdin, time_limit, env=env)
 
     def _check_disk_quota(self, run_dir, max_bytes=50*1024*1024, max_files=100):
-        """Validates that the execution run directory does not exceed disk quota or file count limit."""
+        """Validates that the execution run directory does not exceed disk quota, file count limit, or create symlink escapes."""
         total_size = 0
         total_files = 0
-        for root, dirs, files in os.walk(run_dir):
+        canonical_run_dir = os.path.realpath(run_dir)
+        for root, dirs, files in os.walk(run_dir, followlinks=False):
+            # Check directory junctions or symlinks
+            for d in dirs:
+                dp = os.path.join(root, d)
+                if os.path.islink(dp):
+                    return False, "Sandbox Security Violation: Directory symlink/junction detected in workspace"
             for f in files:
                 total_files += 1
                 if total_files > max_files:
                     return False, f"File Count Quota Exceeded (Max {max_files} files limit exceeded)"
                 try:
                     fp = os.path.join(root, f)
+                    if os.path.islink(fp):
+                        real_target = os.path.realpath(fp)
+                        if not real_target.startswith(canonical_run_dir):
+                            return False, "Sandbox Security Violation: Symlink targeting outside workspace detected"
                     total_size += os.path.getsize(fp)
                     if total_size > max_bytes:
                         return False, f"Disk Quota Exceeded (Max {max_bytes // (1024*1024)}MB limit exceeded)"
@@ -494,8 +504,9 @@ class CodeExecutor:
                                         ("PeakProcessMemoryUsed", ctypes.c_size_t), ("PeakJobMemoryUsed", ctypes.c_size_t)]
                         
                         limits = EXTENDED_LIMITS()
-                        # JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE (0x2000) | PROCESS_MEMORY (0x0100) | JOB_MEMORY (0x0200) | DIE_ON_UNHANDLED_EXCEPTION (0x0400)
-                        limits.Basic.LimitFlags = 0x2000 | 0x0100 | 0x0200 | 0x0400
+                        # JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE (0x2000) | PROCESS_MEMORY (0x0100) | JOB_MEMORY (0x0200) | DIE_ON_UNHANDLED_EXCEPTION (0x0400) | ACTIVE_PROCESS (0x0008)
+                        limits.Basic.LimitFlags = 0x2000 | 0x0100 | 0x0200 | 0x0400 | 0x0008
+                        limits.Basic.ActiveProc = 16  # Max 16 concurrent processes to prevent fork-bombs
                         mem_limit_bytes = 512 * 1024 * 1024  # 512 MB RAM limit
                         limits.ProcessMemoryLimit = mem_limit_bytes
                         limits.JobMemoryLimit = mem_limit_bytes
@@ -521,7 +532,17 @@ class CodeExecutor:
                     total_size = 0
                     total_files = 0
                     try:
-                        for root, dirs, files in os.walk(run_dir):
+                        for root, dirs, files in os.walk(run_dir, followlinks=False):
+                            for d in dirs:
+                                dp = os.path.join(root, d)
+                                if os.path.islink(dp):
+                                    quota_reason[0] = "Sandbox Security Violation: Directory symlink/junction detected"
+                                    quota_violated.set()
+                                    try:
+                                        proc.kill()
+                                    except Exception:
+                                        pass
+                                    return
                             total_files += len(files)
                             if total_files > 100:
                                 quota_reason[0] = "File Count Quota Exceeded (Max 100 files limit exceeded during execution)"

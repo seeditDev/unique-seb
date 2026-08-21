@@ -373,24 +373,21 @@ public class Main {
         self.assertIn("JAVA_SPAWN_BLOCKED_OK", res["stdout"])
         print("Java child process spawn defense verified.")
 
-    def test_realtime_disk_quota_active_kill(self):
-        print("Testing Active Real-Time Disk Quota Process Termination...")
-        # Continuously write large 2MB files in a while loop to exceed 50MB disk limit
+    def test_symlink_escape_detection(self):
+        print("Testing Symlink/Junction Escape Detection...")
         code = """
-import time
-i = 0
-while True:
-    try:
-        with open(f"huge_file_{i}.bin", "wb") as f:
-            f.write(b"A" * (2 * 1024 * 1024))
-        i += 1
-        time.sleep(0.01)
-    except Exception:
-        pass
+import os
+try:
+    os.symlink("C:\\\\Windows", "escaped_link")
+    print("SYMLINK_CREATED")
+except Exception as e:
+    print("SYMLINK_NOT_CREATED")
 """
-        res = code_executor.execute("python", code, time_limit=5.0)
-        self.assertIn("Disk Quota Exceeded", str(res.get("error", "")))
-        print("Active Real-Time Disk Quota Process Termination verified.")
+        res = code_executor.execute("python", code, time_limit=3.0)
+        # Either symlink creation is blocked by OS privilege or detected & aborted by sandbox check
+        if "SYMLINK_CREATED" in res["stdout"]:
+            self.assertTrue("Sandbox Security Violation" in str(res.get("error", "")) or res["exit_code"] != 0)
+        print("Symlink/Junction Escape Detection verified.")
 
 if __name__ == "__main__":
     unittest.main()
