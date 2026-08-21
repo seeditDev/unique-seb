@@ -354,13 +354,30 @@ export async function completeAssessmentSession(assessmentId, opts = {}) {
     ? ATTEMPT_STATES.AUTO_SUBMITTED
     : ATTEMPT_STATES.SUBMITTED;
 
+  const attemptRef = getAttemptRef(uid, assessmentId);
+
+  // Idempotency check: if already submitted, return success immediately
+  try {
+    const snap = await getDoc(attemptRef);
+    if (snap.exists()) {
+      const current = snap.data();
+      if (isTerminal(current?.status) || current?.completed === true) {
+        console.log('[SessionService] Attempt already finalized for assessment', assessmentId, '| status:', current?.status);
+        clearLocalSubmissionEnvelope(uid, assessmentId);
+        return { success: true, alreadySubmitted: true };
+      }
+    }
+  } catch (err) {
+    console.warn('[SessionService] Pre-submission idempotency check notice:', err?.message);
+  }
+
   const updateData = {
     status:           targetState,
     completed:        true,
     autoSubmitted:    opts.autoSubmitted || false,
     autoSubmitReason: opts.reason || null,
     completedAt:      serverTimestamp(),
-    submittedAt: new Date().toISOString(),
+    submittedAt:      new Date().toISOString(),
     activeSection:    null,
     lastSavedAt:      serverTimestamp(),
     scoring_authority: 'client_provisional',
@@ -371,12 +388,12 @@ export async function completeAssessmentSession(assessmentId, opts = {}) {
     assessmentId,
     uid,
     status:         targetState,
-    submittedAt: updateData.submittedAt,
+    submittedAt:    updateData.submittedAt,
     ...(opts.finalPayload || {}),
   });
 
   try {
-    await withRetry(() => updateDoc(getAttemptRef(uid, assessmentId), updateData));
+    await withRetry(() => updateDoc(attemptRef, updateData));
     clearLocalSubmissionEnvelope(uid, assessmentId);
     console.log('[SessionService] Session completed for assessment', assessmentId, '| state:', targetState);
     return { success: true };
