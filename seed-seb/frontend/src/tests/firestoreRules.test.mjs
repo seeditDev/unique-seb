@@ -343,7 +343,17 @@ class RulesSimulator {
     const block = match[1];
     return (
       block.includes("request.resource.data.get('verified', false) == false") &&
-      block.includes("request.resource.data.get('certified', false) == false")
+      block.includes("request.resource.data.get('certified', false) == false") &&
+      block.includes("request.resource.data.get('eligible', false) == false") &&
+      block.includes("request.resource.data.get('completed', false) == false") &&
+      block.includes("request.resource.data.get('score', 0) == 0") &&
+      block.includes("request.resource.data.get('percentage', 0) == 0") &&
+      block.includes("request.resource.data.get('verified', false) == resource.data.get('verified', false)") &&
+      block.includes("request.resource.data.get('certified', false) == resource.data.get('certified', false)") &&
+      block.includes("request.resource.data.get('eligible', false) == resource.data.get('eligible', false)") &&
+      block.includes("request.resource.data.get('completed', false) == resource.data.get('completed', false)") &&
+      block.includes("request.resource.data.get('score', 0) == resource.data.get('score', 0)") &&
+      block.includes("request.resource.data.get('percentage', 0) == resource.data.get('percentage', 0)")
     );
   }
 }

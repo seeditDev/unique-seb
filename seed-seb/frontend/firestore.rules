@@ -124,11 +124,27 @@ service cloud.firestore {
       // Explicitly matched user subcollections (wildcard match removed)
       match /courseProgress/{courseId} {
         allow read: if isUser(userId) || isAdmin() || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/users/$(userId)).data.get('tenantId', '')));
-        allow create, update: if isAdmin()
+        // Students can initialize learning state, but cannot manufacture verified, certified, eligible, completed status, score, or percentage
+        allow create: if isAdmin()
           || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/users/$(userId)).data.get('tenantId', '')))
           || (isUser(userId)
               && request.resource.data.get('verified', false) == false
-              && request.resource.data.get('certified', false) == false);
+              && request.resource.data.get('certified', false) == false
+              && request.resource.data.get('eligible', false) == false
+              && request.resource.data.get('completed', false) == false
+              && request.resource.data.get('score', 0) == 0
+              && request.resource.data.get('percentage', 0) == 0);
+        // Student updates are restricted to client-owned learning state (notes, bookmarks, currentStep, lastLesson)
+        // All authoritative placement/completion fields are strictly locked against student modification
+        allow update: if isAdmin()
+          || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/users/$(userId)).data.get('tenantId', '')))
+          || (isUser(userId)
+              && request.resource.data.get('verified', false) == resource.data.get('verified', false)
+              && request.resource.data.get('certified', false) == resource.data.get('certified', false)
+              && request.resource.data.get('eligible', false) == resource.data.get('eligible', false)
+              && request.resource.data.get('completed', false) == resource.data.get('completed', false)
+              && request.resource.data.get('score', 0) == resource.data.get('score', 0)
+              && request.resource.data.get('percentage', 0) == resource.data.get('percentage', 0));
         allow delete: if isAdmin();
       }
 
@@ -259,14 +275,15 @@ service cloud.firestore {
         allow create, update, delete: if isAdmin() || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/assessments/$(assessmentId)).data.get('tenantId', '')));
       }
 
+      // Metadata & Config restricted to staff/admin of matching tenant (sensitive internal evaluation/answer rules protected)
       match /metadata/{docId} {
-        allow get: if isTenantMember(get(/databases/$(database)/documents/assessments/$(assessmentId)).data.get('tenantId', ''));
-        allow list, create, update, delete: if isAdmin() || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/assessments/$(assessmentId)).data.get('tenantId', '')));
+        allow get, list: if isAdmin() || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/assessments/$(assessmentId)).data.get('tenantId', '')));
+        allow create, update, delete: if isAdmin() || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/assessments/$(assessmentId)).data.get('tenantId', '')));
       }
 
       match /config/{docId} {
-        allow get: if isTenantMember(get(/databases/$(database)/documents/assessments/$(assessmentId)).data.get('tenantId', ''));
-        allow list, create, update, delete: if isAdmin() || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/assessments/$(assessmentId)).data.get('tenantId', '')));
+        allow get, list: if isAdmin() || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/assessments/$(assessmentId)).data.get('tenantId', '')));
+        allow create, update, delete: if isAdmin() || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/assessments/$(assessmentId)).data.get('tenantId', '')));
       }
     }
 
