@@ -26,28 +26,28 @@ class CodingAssessmentService {
     }
 
     /**
-     * Canonical Firestore path — tenant-first scoped (4 segments).
+     * Firestore path — tenant-scoped (4 segments).
      * assessmentResults/{tenantId}/{assessmentId}/{userId}
      */
-    static canonicalPath(assessmentId, userId, tenantId) {
-        if (!assessmentId) throw new Error('[CodingAssessmentService] canonicalPath: assessmentId is required');
-        if (!userId) throw new Error('[CodingAssessmentService] canonicalPath: userId (Firebase Auth UID) is required');
-        if (!tenantId) throw new Error('[CodingAssessmentService] canonicalPath: tenantId is required');
+    static getResultPath(assessmentId, userId, tenantId) {
+        if (!assessmentId) throw new Error('[CodingAssessmentService] getResultPath: assessmentId is required');
+        if (!userId) throw new Error('[CodingAssessmentService] getResultPath: userId (Firebase Auth UID) is required');
+        if (!tenantId) throw new Error('[CodingAssessmentService] getResultPath: tenantId is required');
         return `assessmentResults/${tenantId}/${assessmentId}/${userId}`;
     }
 
     /**
-     * Write result to the single canonical path.
+     * Write result to the single result path.
      * assessmentResults/{tenantId}/{assessmentId}/{userId}
      */
-    static async writeCanonicalResult(payload, { assessmentId, userId, userProfile }) {
+    static async writeResult(payload, { assessmentId, userId, userProfile }) {
         if (!userProfile?.tenantId) {
-            throw new Error('[CodingAssessmentService] writeCanonicalResult: userProfile.tenantId is required');
+            throw new Error('[CodingAssessmentService] writeResult: userProfile.tenantId is required');
         }
         const tenantId = userProfile.tenantId;
-        const canonRef = doc(db, this.canonicalPath(assessmentId, userId, tenantId));
-        await setDoc(canonRef, { ...payload, id: assessmentId, assessmentId, userId, tenantId });
-        return this.canonicalPath(assessmentId, userId, tenantId);
+        const resRef = doc(db, this.getResultPath(assessmentId, userId, tenantId));
+        await setDoc(resRef, { ...payload, id: assessmentId, assessmentId, userId, tenantId });
+        return this.getResultPath(assessmentId, userId, tenantId);
     }
 
     /**
@@ -61,13 +61,12 @@ class CodingAssessmentService {
             }
 
             const uid = auth?.currentUser?.uid;
-            if (uid) {
+            if (uid && college) {
                 try {
-                    const tenantId = college || '_unknown_';
-                    const v2Ref = doc(db, this.canonicalPath(assessmentId, uid, tenantId));
-                    const v2Snap = await getDoc(v2Ref);
-                    if (v2Snap.exists()) {
-                        const data = v2Snap.data();
+                    const resRef = doc(db, this.getResultPath(assessmentId, uid, college));
+                    const resSnap = await getDoc(resRef);
+                    if (resSnap.exists()) {
+                        const data = resSnap.data();
                         return {
                             exists: true,
                             data,
@@ -123,17 +122,20 @@ class CodingAssessmentService {
                 createdAt: serverTimestamp()
             };
 
-            const authData = JSON.parse(localStorage.getItem('auth_data') ?? '{}');
-            const liveUid = auth?.currentUser?.uid ?? authData.uid ?? '';
-            const tenantId = authData.tenantId ?? userData?.tenantId ?? '';
+            const authData = JSON.parse(localStorage.getItem('auth_data') || '{}');
+            const liveUid = auth?.currentUser?.uid || authData.uid || '';
+            const tenantId = authData.tenantId || userData?.tenantId;
+            if (!tenantId) {
+                throw new Error('[CodingAssessmentService] createInitialAttempt: tenantId is required');
+            }
 
-            const canonPath = await this.writeCanonicalResult(initialData, {
+            const docPath = await this.writeResult(initialData, {
                 assessmentId,
                 userId: liveUid,
                 userProfile: { ...userData, tenantId }
             });
 
-            return { success: true, docPath: canonPath };
+            return { success: true, docPath };
         } catch (error) {
             console.warn('[CodingAssessmentService] Could not register attempt in Firestore (non-blocking):', error.message);
             return { success: false, error: error.message };
@@ -149,10 +151,11 @@ class CodingAssessmentService {
                 status: 'submitting',
                 submittedAt: serverTimestamp(),
             };
-            const authData = JSON.parse(localStorage.getItem('auth_data') ?? '{}');
-            const liveUid = auth?.currentUser?.uid ?? authData.uid ?? '';
-            const tenantId = authData.tenantId ?? college ?? '';
-            await this.writeCanonicalResult(update, {
+            const authData = JSON.parse(localStorage.getItem('auth_data') || '{}');
+            const liveUid = auth?.currentUser?.uid || authData.uid || '';
+            const tenantId = authData.tenantId || college;
+            if (!tenantId) return false;
+            await this.writeResult(update, {
                 assessmentId,
                 userId: liveUid,
                 userProfile: { ...authData, tenantId, email }
@@ -166,7 +169,7 @@ class CodingAssessmentService {
     }
 
     /**
-     * Save result to Firestore — writes to canonical assessmentResults path
+     * Save result to Firestore — writes to assessmentResults path
      */
     static async saveResultToFirestore(resultData) {
         try {
@@ -189,20 +192,20 @@ class CodingAssessmentService {
                 executionStats
             } = resultData;
 
-            const targetId = resultData.id ?? resultData.assessmentId ?? 'unknown';
-            const maxScore = resultData.maxScore ?? 100;
+            const targetId = resultData.id || resultData.assessmentId || 'unknown';
+            const maxScore = resultData.maxScore || 100;
             const { partialScore, fullScore } = this.computeScoreFields(score, maxScore, percentage);
 
             const resultDocument = {
                 id: targetId,
                 assessmentId: targetId,
-                rollNumber: rollNumber ?? '',
-                name: name ?? '',
-                email: email ?? '',
-                college: college ?? '',
-                year: year ?? '',
-                department: department ?? '',
-                assessmentTitle: assessmentTitle ?? 'Unknown Coding Assessment',
+                rollNumber: rollNumber || '',
+                name: name || '',
+                email: email || '',
+                college: college || '',
+                year: year || '',
+                department: department || '',
+                assessmentTitle: assessmentTitle || 'Unknown Coding Assessment',
                 type: 'coding',
                 totalScore: score || 0,
                 maxScore,
@@ -214,9 +217,9 @@ class CodingAssessmentService {
                 submittedAt: timeService.getNow().toISOString(),
                 completed: true,
                 status: 'submitted',
-                autoSubmitted: autoSubmitted || false,
-                submissionReason: submissionReason ?? 'manual',
-                languageUsed: languageUsed ?? '',
+                autoSubmitted: Boolean(autoSubmitted),
+                submissionReason: submissionReason || 'manual',
+                languageUsed: languageUsed || '',
                 executionStats: executionStats || {},
                 coding: resultData.coding || [],
                 violations: violations || [],
@@ -224,17 +227,20 @@ class CodingAssessmentService {
                 updatedAt: serverTimestamp()
             };
 
-            const authData = JSON.parse(localStorage.getItem('auth_data') ?? '{}');
-            const liveUid = auth?.currentUser?.uid ?? authData.uid ?? '';
-            const tenantId = authData.tenantId ?? resultData.tenantId ?? '';
+            const authData = JSON.parse(localStorage.getItem('auth_data') || '{}');
+            const liveUid = auth?.currentUser?.uid || authData.uid || '';
+            const tenantId = authData.tenantId || resultData.tenantId;
+            if (!tenantId) {
+                throw new Error('[CodingAssessmentService] saveResultToFirestore: tenantId is required');
+            }
 
-            const canonPath = await this.writeCanonicalResult(resultDocument, {
+            const docPath = await this.writeResult(resultDocument, {
                 assessmentId: targetId,
                 userId: liveUid,
                 userProfile: { ...authData, tenantId, email }
             });
 
-            return { success: true, docId: canonPath };
+            return { success: true, docId: docPath };
         } catch (error) {
             console.error('[CodingAssessmentService] Error saving to Firestore:', error);
             throw error;
@@ -273,15 +279,18 @@ class CodingAssessmentService {
                 codeMap
             } = progressData;
 
-            const targetId = progressData.assessmentId ?? 'unknown';
-            const authDataSync = JSON.parse(localStorage.getItem('auth_data') ?? '{}');
-            const liveUid = auth?.currentUser?.uid ?? authDataSync.uid ?? '';
-            const tenantId = authDataSync.tenantId ?? '';
+            const targetId = progressData.assessmentId || 'unknown';
+            const authDataSync = JSON.parse(localStorage.getItem('auth_data') || '{}');
+            const liveUid = auth?.currentUser?.uid || authDataSync.uid || '';
+            const tenantId = authDataSync.tenantId || progressData.tenantId;
+            if (!tenantId) {
+                throw new Error('[CodingAssessmentService] syncProgress: tenantId is required');
+            }
 
-            const canonPath = this.canonicalPath(targetId, liveUid, tenantId);
-            const canonRef = doc(db, canonPath);
+            const docPath = this.getResultPath(targetId, liveUid, tenantId);
+            const docRef = doc(db, docPath);
             try {
-                const docSnap = await getDoc(canonRef);
+                const docSnap = await getDoc(docRef);
                 if (docSnap.exists() && docSnap.data().completed) {
                     return { success: true, skipped: true };
                 }
@@ -290,13 +299,13 @@ class CodingAssessmentService {
             const progressDocument = {
                 id: targetId,
                 assessmentId: targetId,
-                rollNumber: rollNumber ?? '',
-                name: name ?? '',
-                email: email ?? '',
-                college: college ?? '',
-                year: year ?? '',
-                department: department ?? '',
-                assessmentTitle: assessmentTitle ?? 'Unknown Coding Assessment',
+                rollNumber: rollNumber || '',
+                name: name || '',
+                email: email || '',
+                college: college || '',
+                year: year || '',
+                department: department || '',
+                assessmentTitle: assessmentTitle || 'Unknown Coding Assessment',
                 type: 'coding',
                 timeTakenSeconds: timeTakenSeconds || 0,
                 startedAt: progressData.startedAt || timeService.getNow().toISOString(),
@@ -308,7 +317,7 @@ class CodingAssessmentService {
                 updatedAt: serverTimestamp()
             };
 
-            await this.writeCanonicalResult(progressDocument, {
+            await this.writeResult(progressDocument, {
                 assessmentId: targetId,
                 userId: liveUid,
                 userProfile: { ...authDataSync, tenantId, email }

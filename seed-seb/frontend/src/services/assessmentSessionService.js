@@ -73,15 +73,15 @@ import {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Get the canonical user ID: Firebase Auth UID.
+ * Get current user ID: Firebase Auth UID.
  * MUST be auth.currentUser.uid — never fall back to email or localStorage.
  *
  * @returns {string|null}
  */
-function getCanonicalUid() {
+function getCurrentUid() {
   const uid = auth?.currentUser?.uid;
   if (!uid) {
-    console.error('[SessionService] No Firebase Auth user. Cannot derive canonical UID. Student must be logged in via Firebase Auth before any attempt operation.');
+    console.error('[SessionService] No Firebase Auth user. Student must be logged in via Firebase Auth before any attempt operation.');
     return null;
   }
   return uid;
@@ -112,7 +112,7 @@ function getAttemptRef(uid, assessmentId) {
  * @returns {Promise<{outcome, attempt?, reason?, error?}>}
  */
 export async function startAssessmentSession(assessment, slug = '') {
-  const uid = getCanonicalUid();
+  const uid = getCurrentUid();
   if (!uid) {
     return { outcome: 'error', error: 'Not authenticated. Please log in before starting an assessment.' };
   }
@@ -200,7 +200,7 @@ export async function startAssessmentSession(assessment, slug = '') {
  * @returns {Promise<object|null>}
  */
 export async function getActiveAttempt(assessmentId) {
-  const uid = getCanonicalUid();
+  const uid = getCurrentUid();
   if (!uid || !assessmentId) return null;
   try {
     const snap = await getDoc(getAttemptRef(uid, assessmentId));
@@ -222,7 +222,7 @@ export async function getActiveAttempt(assessmentId) {
  * @returns {Promise<boolean>}    — true on success
  */
 export async function transitionAttemptState(assessmentId, toState, extraData = {}) {
-  const uid = getCanonicalUid();
+  const uid = getCurrentUid();
   if (!uid || !assessmentId) return false;
 
   try {
@@ -263,7 +263,7 @@ export async function transitionAttemptState(assessmentId, toState, extraData = 
  * @param {{ sectionId, name, secIdx, durationMinutes }} section
  */
 export async function markSectionStarted(assessmentId, section) {
-  const uid = getCanonicalUid();
+  const uid = getCurrentUid();
   if (!uid || !assessmentId) return;
   try {
     const now = new Date().toISOString();
@@ -295,7 +295,7 @@ export async function markSectionStarted(assessmentId, section) {
  * @param {object} answers  — { [qIdx]: selectedOptionIdx | null }
  */
 export async function saveSessionProgress(assessmentId, sectionId, answers) {
-  const uid = getCanonicalUid();
+  const uid = getCurrentUid();
   if (!uid || !assessmentId) return;
   try {
     await setDoc(getAttemptRef(uid, assessmentId), {
@@ -314,7 +314,7 @@ export async function saveSessionProgress(assessmentId, sectionId, answers) {
  * @param {string} sectionId
  */
 export async function markSectionCompleted(assessmentId, sectionId) {
-  const uid = getCanonicalUid();
+  const uid = getCurrentUid();
   if (!uid || !assessmentId) return;
   try {
     await updateDoc(getAttemptRef(uid, assessmentId), {
@@ -347,7 +347,7 @@ export async function markSectionCompleted(assessmentId, sectionId) {
  * @returns {Promise<{ success: boolean, pending?: boolean }>}
  */
 export async function completeAssessmentSession(assessmentId, opts = {}) {
-  const uid = getCanonicalUid();
+  const uid = getCurrentUid();
   if (!uid || !assessmentId) return { success: false };
 
   const targetState = opts.autoSubmitted

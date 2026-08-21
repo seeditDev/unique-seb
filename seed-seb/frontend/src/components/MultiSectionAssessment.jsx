@@ -1377,7 +1377,11 @@ const MultiSectionAssessment = () => {
           console.warn('[MSA] checkAttempt: not authenticated, skipping server check.');
           return;
         }
-        const tenantId = authData.tenantId || 'SEED-SEB';
+        const tenantId = authData.tenantId;
+        if (!tenantId) {
+          console.warn('[MSA] checkAttempt: missing tenantId, skipping server check.');
+          return;
+        }
         const canonDocPath = `assessmentResults/${tenantId}/${assessmentData.id}/${uid}`;
         const docSnap = await getDoc(doc(db, canonDocPath));
         if (docSnap.exists()) {

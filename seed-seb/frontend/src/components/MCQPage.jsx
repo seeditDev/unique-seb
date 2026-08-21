@@ -1160,14 +1160,12 @@ const MCQPage = ({ isEmbedded = false, testData = null, secTimer = 0, onSectionS
             const percentage = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
             const elapsedSeconds = startTime ? Math.round((timeService.now() - startTime) / 1000) : 0;
 
-            // BUG FIX (P0): uid MUST be present so saveProgressToFirestore
-            // can call getCanonicalUid() and build the correct Firestore path.
-            // Without uid, it falls back to auth.currentUser.uid directly, but
-            // passing it explicitly also enables logging and future assertions.
-            const uid = auth?.currentUser?.uid || (user?.uid  ?? '');
+            // uid MUST be present so saveProgressToFirestore
+            // can verify Firebase Auth UID and build the correct Firestore path.
+            const uid = auth?.currentUser?.uid || user?.uid;
 
             const progressPayload = {
-                uid,                          // ← Required for canonical path construction
+                uid,                          // ← Required for result path construction
                 email: user.email,
                 college: user.college,
                 year: user.year,

@@ -82,7 +82,7 @@ export function invalidateCompletionCache(email) {
  * @param {string[]} ids        — assessment IDs to check
  * @returns {Promise<Record<string,boolean>>} id -> completed
  */
-async function queryCanonicalPaths(uid, ids, tenantId) {
+async function queryResultPaths(uid, ids, tenantId) {
   const found = {};
   if (!uid || !ids?.length || !tenantId) return found;
   // Batch: up to IN_CHUNK parallel reads (4 segments: assessmentResults/{tenantId}/{id}/{uid})
@@ -178,21 +178,20 @@ export async function fetchCompletionMap(userData, assessmentIds = [], options =
     }
   }
 
-  // 2. Canonical fallback: read assessmentResults/{tenantId}/{id}/{uid} for each
+  // 2. Result lookup: read assessmentResults/{tenantId}/{id}/{uid} for each
   // unknown assessment. Capped at 50 items to prevent runaway reads.
   if (!denormalisedComplete) {
     // Only read up to 50 unknown IDs to bound Firestore cost
     const unknown = ids.filter((id) => !map[id]).slice(0, 50);
     if (unknown.length > 0) {
-      // Use live Firebase Auth UID for canonical reads
       const liveUid = auth?.currentUser?.uid || userKey;
       const tenantId = userData?.tenantId || user?.tenantId;
       if (tenantId) {
         try {
-          const canonFound = await queryCanonicalPaths(liveUid, unknown, tenantId);
-          Object.keys(canonFound).forEach((id) => { map[id] = true; });
+          const resFound = await queryResultPaths(liveUid, unknown, tenantId);
+          Object.keys(resFound).forEach((id) => { map[id] = true; });
         } catch (e) {
-          console.warn('[attemptStatusService] canonical lookup failed:', e?.message);
+          console.warn('[attemptStatusService] result lookup failed:', e?.message);
         }
       }
     }

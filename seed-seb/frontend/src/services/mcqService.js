@@ -18,7 +18,7 @@ import timeService from './timeService';
 
 
 /**
- * getCanonicalUid — resolve Firebase Auth UID for Firestore path construction.
+ * getCurrentUid — resolve Firebase Auth UID for Firestore path construction.
  *
  * PRIORITY:
  *   1. auth.currentUser.uid  (live Firebase Auth — canonical)
@@ -33,7 +33,7 @@ import timeService from './timeService';
  * @returns {string}
  * @throws {Error} when no UID is available
  */
-function getCanonicalUid(explicitUid) {
+function getCurrentUid(explicitUid) {
     const uid = explicitUid || auth?.currentUser?.uid;
     if (!uid) {
         throw new Error(
@@ -59,7 +59,7 @@ class MCQService {
     }
 
     /**
-     * Canonical Firestore path — tenant-first scoped (4 segments).
+     * Firestore path — tenant-scoped (4 segments).
      *
      * assessmentResults/{tenantId}/{assessmentId}/{userId}
      *
@@ -67,35 +67,31 @@ class MCQService {
      * @param {string} userId      — MUST be Firebase Auth UID
      * @param {string} tenantId   — student's college/tenant code (e.g. "KGKITE")
      */
-    static canonicalPath(assessmentId, userId, tenantId) {
-        if (!assessmentId) throw new Error('[MCQService] canonicalPath: assessmentId is required');
-        if (!userId) throw new Error('[MCQService] canonicalPath: userId (Firebase Auth UID) is required');
-        if (!tenantId) throw new Error('[MCQService] canonicalPath: tenantId is required');
+    static getResultPath(assessmentId, userId, tenantId) {
+        if (!assessmentId) throw new Error('[MCQService] getResultPath: assessmentId is required');
+        if (!userId) throw new Error('[MCQService] getResultPath: userId (Firebase Auth UID) is required');
+        if (!tenantId) throw new Error('[MCQService] getResultPath: tenantId is required');
         return `assessmentResults/${tenantId}/${assessmentId}/${userId}`;
     }
 
 
     /**
-     * Write result to the single canonical path.
+     * Write result to the single result path.
      *
      * assessmentResults/{tenantId}/{assessmentId}/{userId}
-     *
-     * This is the ONLY Firestore write on submission. No secondary mirrors.
-     * Admin, Staff, and Student all read from this single document.
      *
      * @param {object} payload
      * @param {{ assessmentId: string, userId: string, userProfile: object }} ctx
      *   userId MUST be auth.currentUser.uid — verified at the call site.
      */
-    static async writeCanonicalResult(payload, { assessmentId, userId, userProfile }) {
+    static async writeResult(payload, { assessmentId, userId, userProfile }) {
         if (!userProfile?.tenantId) {
-            throw new Error('[MCQService] writeCanonicalResult: userProfile.tenantId is required');
+            throw new Error('[MCQService] writeResult: userProfile.tenantId is required');
         }
-        // Validate UID at write boundary
-        const canonicalUid = getCanonicalUid(userId);
+        const uid = getCurrentUid(userId);
         const tenantId = userProfile.tenantId;
-        const canonRef = doc(db, this.canonicalPath(assessmentId, canonicalUid, tenantId));
-        await setDoc(canonRef, { ...payload, userId: canonicalUid, tenantId });
+        const resRef = doc(db, this.getResultPath(assessmentId, uid, tenantId));
+        await setDoc(resRef, { ...payload, userId: uid, tenantId });
 
         // Mark attempt in the completion index so dashboard shows Completed
         try {
@@ -107,7 +103,7 @@ class MCQService {
             }
         } catch (_) { /* non-fatal */ }
 
-        return this.canonicalPath(assessmentId, canonicalUid, tenantId);
+        return this.getResultPath(assessmentId, uid, tenantId);
     }
 
 
@@ -155,7 +151,7 @@ class MCQService {
 
     /**
      * Mark course progress after a test submission.
-     * Non-fatal — does not throw. Call after any writeCanonicalResult or writeGuestResult.
+     * Non-fatal — does not throw. Call after any writeResult or writeGuestResult.
      * @param {object} params
      * @param {string} params.uid - Firebase UID (null for guests — skipped)
      * @param {string} params.courseId - From TestDoc
@@ -194,17 +190,14 @@ class MCQService {
                 return { exists: false, data: null, completed: false, offline: true };
             }
 
-            // CANONICAL: Firebase Auth UID is the identity for Firestore paths
             const uid = auth?.currentUser?.uid;
 
-            // 1. Try canonical path with Firebase Auth UID
-            if (uid) {
+            if (uid && college) {
                 try {
-                    const tenantId = college || '_unknown_';
-                    const v2Ref = doc(db, this.canonicalPath(assessmentId, uid, tenantId));
-                    const v2Snap = await getDoc(v2Ref);
-                    if (v2Snap.exists()) {
-                        const data = v2Snap.data();
+                    const resRef = doc(db, this.getResultPath(assessmentId, uid, college));
+                    const resSnap = await getDoc(resRef);
+                    if (resSnap.exists()) {
+                        const data = resSnap.data();
                         return {
                             exists: true,
                             data,
@@ -226,20 +219,9 @@ class MCQService {
 
     /**
      * Fetch MCQ completion status for the current student.
-     *
-     * @deprecated  The legacy `colleges/.../mcq_results` path is never written by the
-     *   current system. This method now returns an empty map and logs a deprecation notice.
-     *   Callers should use `attemptStatusService.fetchCompletionMap()` which reads from
-     *   `users/{uid}/assessmentAttempts` — the canonical completion index.
-     *
-     * @returns {Promise<object>} Empty object — use fetchCompletionMap() instead.
+     * @returns {Promise<object>}
      */
     static async fetchUserAttempts(email, college, year, department) {
-        console.warn(
-            '[MCQService] fetchUserAttempts() is deprecated and returns empty. ' +
-            'Use attemptStatusService.fetchCompletionMap() which reads from ' +
-            'users/{uid}/assessmentAttempts — the canonical completion index.'
-        );
         return {};
     }
 
@@ -247,62 +229,50 @@ class MCQService {
      * Create initial test attempt document when test starts.
      * Uses Firebase Auth UID as the canonical document identity.
      *
-     * @param {object} userData - User data from auth_data (Name, Email, College, etc.)
+     * @param {object} userData - User data
      * @param {object} testData - Test information
      * @returns {Promise<{success: boolean, docPath: string}>}
      */
     static async createInitialAttempt(userData, testData) {
         try {
-            // CANONICAL: require live Firebase Auth UID
-            const uid = getCanonicalUid();
-
+            const uid = getCurrentUid();
             const { email, college, year, department, name, rollNumber, tenantId, cohortId } = userData;
+            const effectiveTenantId = tenantId || college;
+            if (!effectiveTenantId) {
+                throw new Error('[MCQService] createInitialAttempt: tenantId is required');
+            }
             const assessmentId = testData.testInfo?.id || testData.id || 'unknown';
 
-            // CREATE-ONCE guard:
-            // Check if already exists (using UID-keyed canonical path)
-            const existing = await this.checkExistingAttempt(Email, assessmentId, College, Year, Department);
+            const existing = await this.checkExistingAttempt(email, assessmentId, effectiveTenantId, year, department);
 
             if (existing.exists && existing.completed) {
-                // Terminal state — submission already confirmed. Block.
                 throw new Error('DUPLICATE_SUBMISSION: Test already completed. You cannot retake this test.');
             }
 
             if (existing.exists && !existing.completed) {
-                // Active/in-progress attempt already exists — RESUME, never overwrite.
-                // This handles: reload, crash-recovery, dashboard → MCQ re-entry.
                 console.log('[MCQService] Resuming existing in-progress MCQ attempt for assessmentId:', assessmentId);
                 return {
                     success: true,
-                    docPath: this.canonicalPath(assessmentId, uid),
+                    docPath: this.getResultPath(assessmentId, uid, effectiveTenantId),
                     resumed: true,
                     existing: existing.data,
                 };
             }
 
             const initialData = {
-                // ── Identity (canonical) ──────────────────────────────────────
                 userId: uid,
-                uid,
-                email: Email,
-                // ── Profile (for reporting) ───────────────────────────────────
-                rollNumber: rollNumber ?? '',
-                name: Name ?? '',
-                college: College,
-                year: Year,
-                department: Department,
-                tenantId: tenantId ?? '',
-                cohortId: cohortId ?? '',
-                // ── Assessment ────────────────────────────────────────────────
+                email: email || '',
+                rollNumber: rollNumber || '',
+                name: name || '',
+                college: college || '',
+                year: year || '',
+                department: department || '',
+                tenantId: effectiveTenantId,
+                cohortId: cohortId || '',
                 assessmentId,
-                assessmentId: assessmentId,
-                assessmentTitle: testData.name || testData.testInfo?.name || 'Unknown Test',
                 assessmentTitle: testData.name || testData.testInfo?.name || 'Unknown Test',
                 totalQuestions: testData.questions?.length || testData.totalQuestions || 0,
                 type: 'mcq',
-                // ── Attempt lifecycle ─────────────────────────────────────────
-                startedAt: serverTimestamp(),
-                timeStarted: serverTimestamp(),
                 startedAt: timeService.getNow().toISOString(),
                 status: 'started',
                 completed: false,
@@ -313,13 +283,13 @@ class MCQService {
                 createdAt: serverTimestamp(),
             };
 
-            const canonPath = await this.writeCanonicalResult(
+            const docPath = await this.writeResult(
                 initialData,
-                { assessmentId: assessmentId, userId: uid, userProfile: userData }
+                { assessmentId, userId: uid, userProfile: { ...userData, tenantId: effectiveTenantId } }
             );
 
-            console.log('[MCQService] Initial attempt created:', canonPath);
-            return { success: true, docPath: canonPath, resumed: false };
+            console.log('[MCQService] Initial attempt created:', docPath);
+            return { success: true, docPath, resumed: false };
         } catch (error) {
             console.error('[MCQService] Error creating initial attempt:', error);
             throw error;
@@ -332,17 +302,15 @@ class MCQService {
      */
     static async markTestAsSubmitting(email, assessmentId, college, year, department) {
         try {
-            // BUG FIXED: this used to set `completed: true` *before* the result
-            // was written. With attempt-immutability enforced in firestore.rules
-            // that would lock the document and make the real result write fail;
-            // it also meant a crash mid-submit left a "completed" attempt with
-            // no score at all. `status: 'submitting'` is enough to block a
-            // refresh re-attempt (checkExistingAttempt treats it as taken),
-            // while leaving the document writable for the final result.
-            const authData = JSON.parse(localStorage.getItem('auth_data') ?? '{}');
-            const liveUid = auth?.currentUser?.uid ?? authData.uid ?? '';
-            const tenantId = authData.tenantId ?? '';
-            await this.writeCanonicalResult(update, {
+            const authData = JSON.parse(localStorage.getItem('auth_data') || '{}');
+            const liveUid = auth?.currentUser?.uid || authData.uid || '';
+            const tenantId = authData.tenantId || college || '';
+            if (!tenantId) return false;
+            const update = {
+                status: 'submitting',
+                lastUpdatedAt: serverTimestamp(),
+            };
+            await this.writeResult(update, {
                 assessmentId: assessmentId,
                 userId: liveUid,
                 userProfile: { ...authData, tenantId, email }
@@ -357,9 +325,6 @@ class MCQService {
 
     /**
      * Save MCQ result to Firestore.
-     *
-     * Identity: uses auth.currentUser.uid via writeBothPaths() → writeCanonicalResult().
-     * The path is ALWAYS assessmentResults/{assessmentId}/students/{firebase-uid}.
      *
      * @param {object} resultData - Result data object
      * @returns {Promise<{success: boolean, docId: string}>}
@@ -381,35 +346,33 @@ class MCQService {
                 incorrectAnswers,
                 percentage,
                 timeTaken,
-                timeStarted,
-                timeEnded,
                 answers,
                 autoSubmitted
             } = resultData;
 
-            // Check if document already exists and is completed
+            const tenantId = resultData.tenantId || college;
+            if (!tenantId) {
+                throw new Error('[MCQService] saveResultToFirestore: tenantId is required');
+            }
+
             try {
-                const existing = await this.checkExistingAttempt(email, assessmentId, college, year, department);
+                const existing = await this.checkExistingAttempt(email, assessmentId, tenantId, year, department);
                 if (existing.exists && existing.completed && !existing.offline && existing.data?.status !== 'submitting') {
                     throw new Error('DUPLICATE_SUBMISSION: Test has already been submitted. Multiple submissions are not allowed.');
                 }
             } catch (checkError) {
-                // If offline, allow to proceed (will be saved to localStorage for retry)
                 if (checkError.message?.includes('NETWORK_ERROR') || !navigator.onLine) {
                     throw new Error('NETWORK_ERROR: No internet connection. Your answers will be saved and submitted when connection is restored.');
                 }
-                // If duplicate submission error, re-throw it
                 if (checkError.message?.includes('DUPLICATE_SUBMISSION')) {
                     throw checkError;
                 }
-                // For other errors, log and continue (Firestore will handle duplicate check)
                 console.warn('[MCQService] Error checking existing attempt during save, continuing:', checkError);
             }
 
-            // Get existing data if available (for attempts count)
             let existingData = null;
             try {
-                const existingCheck = await this.checkExistingAttempt(email, assessmentId, college, year, department);
+                const existingCheck = await this.checkExistingAttempt(email, assessmentId, tenantId, year, department);
                 if (existingCheck.exists) {
                     existingData = existingCheck.data;
                 }
@@ -419,32 +382,24 @@ class MCQService {
                 score, resultData.maxScore || resultData.totalQuestions || 0, percentage
             );
 
-            // CANONICAL: require live Firebase Auth UID
-            const uid = getCanonicalUid();
+            const uid = getCurrentUid();
 
             const resultDocument = {
-                // ── Identity (canonical) ──────────────────────────────────────
                 userId: uid,
-                uid,
-                email,
-                rollNumber: rollNumber ?? '',
-                name: name ?? '',
-                college,
-                year,
-                department,
-                tenantId: resultData.tenantId ?? '',
-                cohortId: resultData.cohortId ?? '',
-                // ── Assessment ────────────────────────────────────────────────
+                email: email || '',
+                rollNumber: rollNumber || '',
+                name: name || '',
+                college: college || '',
+                year: year || '',
+                department: department || '',
+                tenantId: tenantId,
+                cohortId: resultData.cohortId || '',
                 assessmentId,
-                assessmentId: assessmentId,
-                assessmentTitle: testName || 'Unknown Test',
                 assessmentTitle: testName || 'Unknown Test',
                 type: 'mcq',
-                // ── Scores ────────────────────────────────────────────────────
                 score: score || 0,
                 totalScore: score || 0,
                 totalQuestions: totalQuestions || 0,
-                maxScore: resultData.maxScore || resultData.totalQuestions || 0,
                 maxScore: resultData.maxScore || resultData.totalQuestions || 0,
                 correctAnswers: correctAnswers || 0,
                 incorrectAnswers: incorrectAnswers || 0,
@@ -452,31 +407,21 @@ class MCQService {
                 passed: percentage >= (resultData.passMark || 50),
                 partialScore,
                 fullScore,
-                // ── Timing ────────────────────────────────────────────────────
                 timeTaken: timeTaken || 0,
                 timeTakenSeconds: timeTaken || 0,
                 timeTakenFormatted: this.formatTime(timeTaken || 0),
-                startedAt: timeStarted || serverTimestamp(),
-                timeStarted: timeStarted || serverTimestamp(),
                 startedAt: resultData.startedAt || timeService.getNow().toISOString(),
-                submittedAt: serverTimestamp(),
-                timeEnded: timeEnded || serverTimestamp(),
-                timeEndedISO: timeService.getNow().toISOString(),
                 submittedAt: timeService.getNow().toISOString(),
-                // ── Status ────────────────────────────────────────────────────
                 status: 'submitted',
                 completed: true,
                 submitted: true,
-                autoSubmitted: autoSubmitted || false,
-                autoSubmitReason: resultData.autoSubmitReason ?? '',
+                autoSubmitted: Boolean(autoSubmitted),
                 submissionReason: autoSubmitted ? (resultData.autoSubmitReason || 'timer_expired') : 'manual',
-                // ── Data ──────────────────────────────────────────────────────
                 attempts: existingData?.attempts || 1,
                 from: 'student',
                 syncedToSheets: false,
                 answers: answers || {},
                 questions: resultData.questions || [],
-                // ── Proctoring ────────────────────────────────────────────────
                 violationCount: resultData.violationCount || 0,
                 totalNoFace: resultData.totalNoFace || 0,
                 totalMultipleFaces: resultData.totalMultipleFaces || 0,
@@ -485,14 +430,13 @@ class MCQService {
                 updatedAt: serverTimestamp(),
             };
 
-            // Canonical write via writeCanonicalResult (uses uid from getCanonicalUid)
-            const canonPath = await this.writeCanonicalResult(
+            const docPath = await this.writeResult(
                 resultDocument,
-                { assessmentId: assessmentId, userId: uid, userProfile: { uid, email, tenantId: resultData.tenantId ?? '' } }
+                { assessmentId, userId: uid, userProfile: { uid, email, tenantId } }
             );
-            console.log('[MCQService] Result saved to canonical path:', canonPath);
+            console.log('[MCQService] Result saved to result path:', docPath);
 
-            return { success: true, docId: canonPath };
+            return { success: true, docId: docPath };
         } catch (error) {
             console.error('[MCQService] Error saving to Firestore:', error);
             throw error;
@@ -503,23 +447,10 @@ class MCQService {
     /**
      * Save in-progress MCQ data to Firestore.
      *
-     * BUG FIXED (P0): The previous implementation called:
-     *   this.canonicalPath(assessmentId, college, year, email)
-     * canonicalPath() takes exactly 2 args: (assessmentId, userId).
-     * JavaScript silently discarded 'year' and 'email' — the second arg
-     * ('college') became the userId, producing paths like:
-     *   assessmentResults/{assessmentId}/students/KGKITE
-     * instead of:
-     *   assessmentResults/{assessmentId}/students/{firebase-uid}
-     *
-     * Fix: derive userId exclusively from auth.currentUser.uid.
-     * Progress saves MUST NOT overwrite final submission fields.
-     *
      * @param {object} progressData
      */
     static async saveProgressToFirestore(progressData) {
-        // BUG FIX P0: get uid from live Firebase Auth — never from legacy args
-        const uid = getCanonicalUid(progressData.uid);
+        const uid = getCurrentUid(progressData.uid);
 
         const {
             email,
@@ -536,32 +467,23 @@ class MCQService {
             incorrectAnswers,
             percentage,
             timeTaken,
-            timeStarted,
             answers
         } = progressData;
 
-        // Canonical path now uses Firebase Auth UID and tenantId
-        let tenantId = progressData.tenantId ?? '';
-        if (!tenantId || tenantId.includes(' ')) {
-            try {
-                const storedAuth = JSON.parse(localStorage.getItem('auth_data') ?? '{}');
-                tenantId = storedAuth.tenantId ?? '';
-            } catch (_) {}
+        const tenantId = progressData.tenantId || college;
+        if (!tenantId) {
+            throw new Error('[MCQService] saveProgressToFirestore: tenantId is required');
         }
-        if (!tenantId || tenantId.includes(' ')) {
-            tenantId = 'SEED-SEB';
-        }
-        const canonPath = this.canonicalPath(assessmentId, uid, tenantId);
-        const docRef = doc(db, canonPath);
+        const docPath = this.getResultPath(assessmentId, uid, tenantId);
+        const docRef = doc(db, docPath);
 
         // Fetch existing document to prevent overwriting completed/submitted status
         try {
             const docSnap = await getDoc(docRef);
             if (docSnap.exists()) {
                 const existingData = docSnap.data();
-                // CRITICAL: never overwrite a submitted/completed result with progress data
                 if (existingData.completed === true || existingData.submitted === true || existingData.status === 'submitted') {
-                    console.warn('[MCQService] Skipping progress sync: attempt is already submitted in Firestore. Path:', canonPath);
+                    console.warn('[MCQService] Skipping progress sync: attempt is already submitted in Firestore. Path:', docPath);
                     return { success: true, skipped: true };
                 }
             }
@@ -570,48 +492,36 @@ class MCQService {
         }
 
         const progressDocument = {
-            // ── Identity ──────────────────────────────────────────────────────
             userId: uid,
-            uid,
-            email,
-            rollNumber: rollNumber ?? '',
-            name: name ?? '',
-            college,
-            year,
-            department,
-            tenantId: progressData.tenantId ?? '',
-            // ── Assessment ────────────────────────────────────────────────────
+            email: email || '',
+            rollNumber: rollNumber || '',
+            name: name || '',
+            college: college || '',
+            year: year || '',
+            department: department || '',
+            tenantId: tenantId,
             assessmentId,
-            assessmentId: assessmentId,
-            assessmentTitle: testName || 'Unknown Test',
             assessmentTitle: testName || 'Unknown Test',
             totalQuestions: totalQuestions || 0,
-            // ── In-progress scores (prefixed to distinguish from final score) ─
             inProgressScore: score || 0,
             inProgressPercentage: percentage || 0,
             correctAnswers: correctAnswers || 0,
             incorrectAnswers: incorrectAnswers || 0,
-            // ── Timing ────────────────────────────────────────────────────────
             progressTimeTaken: timeTaken || 0,
             progressTimeTakenFormatted: this.formatTime(timeTaken || 0),
-            startedAt: timeStarted || serverTimestamp(),
-            timeStarted: timeStarted || serverTimestamp(),
             startedAt: progressData.startedAt || timeService.getNow().toISOString(),
-            lastProgressAt: serverTimestamp(),
-            lastProgressAtISO: timeService.getNow().toISOString(),
-            // ── Answers ───────────────────────────────────────────────────────
+            lastProgressAt: timeService.getNow().toISOString(),
             answers: answers || {},
-            // ── Status (must NOT set completed/submitted — only final submit does that) ──
             status: 'in_progress',
             completed: false,
             submitted: false,
             syncedToSheets: false,
             updatedAt: serverTimestamp(),
-            autoSubmitReason: progressData.autoSubmitReason ?? '',
+            autoSubmitReason: progressData.autoSubmitReason || '',
         };
 
         await setDoc(docRef, progressDocument, { merge: true });
-        console.log('[MCQService] Progress saved to canonical path:', canonPath);
+        console.log('[MCQService] Progress saved to path:', docPath);
         return { success: true };
     }
 
