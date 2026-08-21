@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { createLegacyRoute } from "@/legacy/legacyRoute";
+import { createLegacyRoute } from '@/components/legacyRoute';
 
 export const Route = createFileRoute("/guest")({
   head: () => ({
@@ -14,5 +14,5 @@ export const Route = createFileRoute("/guest")({
       { name: "robots", content: "noindex" },
     ],
   }),
-  component: createLegacyRoute(() => import("@/legacy/components/GuestPortal")),
+  component: createLegacyRoute(() => import("@/components/GuestPortal")),
 });

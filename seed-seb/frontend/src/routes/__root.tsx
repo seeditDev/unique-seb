@@ -12,7 +12,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import SecurityWatermark from "@/legacy/components/SecurityWatermark";
+import SecurityWatermark from '@/components/SecurityWatermark';
 
 function NotFoundComponent() {
   return (

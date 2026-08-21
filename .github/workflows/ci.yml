@@ -1,0 +1,66 @@
+name: SEED-IT CI/CD Production Gate
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  admin-hub:
+    name: SEED Admin Hub (Typecheck, Lint & Build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: seed-admin
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: seed-admin/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript Verification (Strict)
+        run: npx tsc --noEmit
+
+      - name: ESLint Verification (Strict)
+        run: npm run lint
+
+      - name: Production Bundle Build
+        run: npm run build
+
+  seb-client:
+    name: SEED-SEB Client (Typecheck, Lint & Nitro Build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: seed-seb/frontend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: seed-seb/frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript Verification (Strict)
+        run: npx tsc --noEmit
+
+      - name: ESLint Verification (Strict)
+        run: npm run lint
+
+      - name: Production Nitro Bundle Build
+        run: npm run build

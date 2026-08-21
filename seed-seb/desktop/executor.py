@@ -129,19 +129,49 @@ class CodeExecutor:
         return result
 
     def _get_run_env(self, binary_path):
-        """Prepares environment variables by placing the binary directory at the front of the PATH."""
-        env = os.environ.copy()
+        """Prepares a sanitized, isolated environment with sensitive credentials and tokens stripped."""
+        # Whitelist safe standard system environment variables
+        safe_keys = {
+            "SystemRoot", "SYSTEMROOT", "SYSTEMDRIVE", "TEMP", "TMP", "COMSPEC", "PATHEXT",
+            "WINDIR", "USERPROFILE", "HOMEDRIVE", "HOMEPATH", "APPDATA", "LOCALAPPDATA",
+            "PROGRAMDATA", "ALLUSERSPROFILE", "NUMBER_OF_PROCESSORS", "PROCESSOR_ARCHITECTURE",
+            "OS", "PROCESSOR_IDENTIFIER", "PROCESSOR_LEVEL", "PROCESSOR_REVISION"
+        }
+        env = {k: v for k, v in os.environ.items() if k in safe_keys or k.upper() in safe_keys}
+
+        # Ensure SystemRoot and SYSTEMROOT are guaranteed set
+        sys_root = os.environ.get("SystemRoot", os.environ.get("SYSTEMROOT", "C:\\Windows"))
+        env["SystemRoot"] = sys_root
+        env["SYSTEMROOT"] = sys_root
+
+        path_additions = []
         if binary_path:
             bin_dir = os.path.dirname(os.path.abspath(binary_path))
-            path_additions = [bin_dir]
+            path_additions.append(bin_dir)
             arch_bin = os.path.join(os.path.dirname(bin_dir), "x86_64-w64-mingw32", "bin")
             if os.path.exists(arch_bin):
                 path_additions.append(arch_bin)
-            env["PATH"] = os.pathsep.join(path_additions) + os.pathsep + env.get("PATH", "")
-        # Clean PyInstaller / Nuitka environment variables to avoid runtime conflicts in child subprocesses
-        for var in ["PYTHONHOME", "PYTHONPATH", "PYTHONIOENCODING"]:
+
+        # Retain standard Windows system paths for system DLLs & core executables
+        sys_root = os.environ.get("SystemRoot", "C:\\Windows")
+        path_additions.extend([
+            os.path.join(sys_root, "System32"),
+            sys_root,
+            os.path.join(sys_root, "System32", "Wbem")
+        ])
+        env["PATH"] = os.pathsep.join(path_additions)
+
+        # Block any proxy or credential injection
+        banned_prefixes = ("HTTP_", "HTTPS_", "ALL_", "NO_", "VITE_", "REACT_APP_", "GITHUB_", "SUPABASE_", "AWS_", "GOOGLE_", "FIREBASE_")
+        for k in list(env.keys()):
+            if any(k.upper().startswith(p) for p in banned_prefixes):
+                del env[k]
+
+        # Prevent Node / Python runtime environment poisoning
+        for var in ["PYTHONHOME", "PYTHONPATH", "PYTHONIOENCODING", "NODE_OPTIONS", "NODE_PATH"]:
             if var in env:
                 del env[var]
+
         return env
 
     def _execute_javascript(self, run_dir, code, stdin, time_limit):

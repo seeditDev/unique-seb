@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { createLegacyRoute } from "@/legacy/legacyRoute";
+import { createLegacyRoute } from '@/components/legacyRoute';
 
 /**
  * Canonical Assessment route.
@@ -30,6 +30,6 @@ export const Route = createFileRoute("/student/assessment/id/$assessmentSlug")({
     ],
   }),
   component: createLegacyRoute(
-    () => import("@/legacy/components/MultiSectionAssessment")
+    () => import("@/components/MultiSectionAssessment")
   ),
 });
