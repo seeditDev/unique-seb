@@ -88,20 +88,19 @@ class MCQService {
      * @param {{ assessmentId: string, userId: string, userProfile: object }} ctx
      *   userId MUST be auth.currentUser.uid — verified at the call site.
      */
-    static async writeCanonicalResult(payload, { assessmentId, userId, userProfile }) {
-        // Belt-and-braces: validate UID one more time at write boundary
+    static async writeCanonicalResult(payload, { assessmentId, userId, userProfile = {} }) {
+        // Validate UID at write boundary
         const canonicalUid = getCanonicalUid(userId);
-        const normUser = userProfile || {};
-        const tenantId = normUser.tenantId ?? '';
+        const tenantId = userProfile.tenantId ?? '';
         const canonRef = doc(db, this.canonicalPath(assessmentId, canonicalUid, tenantId));
         await setDoc(canonRef, { ...payload, userId: canonicalUid, tenantId }, { merge: true });
 
         // Mark attempt in the completion index so dashboard shows Completed
         try {
             const { markAssessmentCompleted, invalidateCompletionCache } = await import('./attemptStatusService');
-            const email = normUser.email ?? '';
+            const email = userProfile.email ?? '';
             if (email) {
-                await markAssessmentCompleted(normUser, assessmentId);
+                await markAssessmentCompleted(userProfile, assessmentId);
                 invalidateCompletionCache(email);
             }
         } catch (_) { /* non-fatal */ }
