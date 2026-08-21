@@ -230,8 +230,8 @@ service cloud.firestore {
 
       match /{document=**} {
         allow get: if isSignedIn();
-        allow list: if isAdmin() || isStaff();
-        allow create, update, delete: if isAdmin() || isStaff();
+        allow list: if isAdmin() || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/assessments/$(assessmentId)).data.get('tenantId', '')));
+        allow create, update, delete: if isAdmin() || (isStaff() && tenantAllowed(get(/databases/$(database)/documents/assessments/$(assessmentId)).data.get('tenantId', '')));
       }
     }
 
@@ -277,14 +277,18 @@ service cloud.firestore {
         || (isStaff() && (resource == null || tenantAllowed(resource.data.get('tenantId', ''))))
         || (isSignedIn() && (resource == null || resource.data.get('userId', '') == request.auth.uid));
       allow create: if isSignedIn()
+        && myTenant() != ''
         && request.resource.data.get('userId', '') == request.auth.uid
-        && (myTenant() == '' || request.resource.data.get('tenantId', '') == myTenant());
+        && request.resource.data.get('tenantId', '') == myTenant()
+        && request.resource.data.get('attemptId', '') == attemptId;
       allow update: if isAdmin()
         || (isStaff() && tenantAllowed(resource.data.get('tenantId', '')))
         || (isSignedIn()
             && resource.data.get('userId', '') == request.auth.uid
             && resource.data.get('status', '') != 'finalized'
-            && request.resource.data.get('userId', '') == request.auth.uid);
+            && request.resource.data.get('userId', '') == resource.data.get('userId', '')
+            && request.resource.data.get('tenantId', '') == resource.data.get('tenantId', '')
+            && request.resource.data.get('attemptId', '') == resource.data.get('attemptId', ''));
       allow delete: if isAdmin();
 
       match /events/{eventId} {
@@ -293,7 +297,8 @@ service cloud.firestore {
           || (isSignedIn() && (resource == null || resource.data.get('userId', '') == request.auth.uid));
         allow create: if isSignedIn()
           && request.resource.data.get('userId', '') == request.auth.uid
-          && request.resource.data.get('attemptId', '') == attemptId;
+          && request.resource.data.get('attemptId', '') == attemptId
+          && request.resource.data.get('tenantId', '') == get(/databases/$(database)/documents/proctoringLogs/$(attemptId)).data.get('tenantId', '');
         allow update: if false; // Strict immutability
         allow delete: if isAdmin();
       }

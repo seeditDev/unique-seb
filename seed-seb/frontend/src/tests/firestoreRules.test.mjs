@@ -13,6 +13,9 @@
  *  8. User Collection Listing Isolation (Admin Only)
  *  9. Assessment Results Path-Payload Integrity (tenantId, assessmentId, userId)
  *  10. Proctoring Logs & Assessment Authoring Tenant Scoping
+ *  11. Assessment Subcollection Wildcard Tenant Inheritance
+ *  12. Fail-Closed Proctoring Creation (Non-empty tenant required)
+ *  13. Proctoring Update Attempt & Tenant Identity Locks
  */
 
 import fs from 'fs';
@@ -92,7 +95,8 @@ class RulesSimulator {
     return (
       block.includes("allow update: if false;") &&
       block.includes("request.resource.data.get('attemptId', '') == attemptId") &&
-      block.includes("request.resource.data.get('userId', '') == request.auth.uid")
+      block.includes("request.resource.data.get('userId', '') == request.auth.uid") &&
+      block.includes("request.resource.data.get('tenantId', '') == get(/databases/$(database)/documents/proctoringLogs/$(attemptId)).data.get('tenantId', '')")
     );
   }
 
@@ -106,6 +110,29 @@ class RulesSimulator {
     );
   }
 
+  isProctoringCreationFailClosed() {
+    const match = this.rules.match(/match\s+\/proctoringLogs\/\{attemptId\}\s*\{([\s\S]*?)\n\s*match\s+\/events/);
+    if (!match) return false;
+    const block = match[1];
+    return (
+      block.includes("myTenant() != ''") &&
+      block.includes("request.resource.data.get('tenantId', '') == myTenant()") &&
+      block.includes("request.resource.data.get('attemptId', '') == attemptId") &&
+      !block.includes("myTenant() == '' ||")
+    );
+  }
+
+  isProctoringUpdateIdentityLocked() {
+    const match = this.rules.match(/match\s+\/proctoringLogs\/\{attemptId\}\s*\{([\s\S]*?)\n\s*match\s+\/events/);
+    if (!match) return false;
+    const block = match[1];
+    return (
+      block.includes("request.resource.data.get('userId', '') == resource.data.get('userId', '')") &&
+      block.includes("request.resource.data.get('tenantId', '') == resource.data.get('tenantId', '')") &&
+      block.includes("request.resource.data.get('attemptId', '') == resource.data.get('attemptId', '')")
+    );
+  }
+
   isAuthoringStoreTenantScoped() {
     const match = this.rules.match(/match\s+\/assessments\/\{assessmentId\}\s*\{([\s\S]*?)\n\s*match\s+\/assessmentResults/);
     if (!match) return false;
@@ -113,6 +140,15 @@ class RulesSimulator {
     return (
       block.includes("allow create: if isAdmin() || (isStaff() && tenantAllowed(request.resource.data.get('tenantId', '')));") &&
       block.includes("allow update, delete: if isAdmin() || (isStaff() && tenantAllowed(resource.data.get('tenantId', '')));")
+    );
+  }
+
+  isAssessmentSubcollectionTenantScoped() {
+    const match = this.rules.match(/match\s+\/assessments\/\{assessmentId\}\s*\{([\s\S]*?)\n\s*match\s+\/assessmentResults/);
+    if (!match) return false;
+    const block = match[1];
+    return (
+      block.includes("isStaff() && tenantAllowed(get(/databases/$(database)/documents/assessments/$(assessmentId)).data.get('tenantId', ''))")
     );
   }
 
@@ -178,8 +214,8 @@ assert(sim.isResultPathPayloadIntegrityEnforced(), 'FAIL: Result creation must r
 console.log('✓ Test 5 Passed: Result creation strictly validates matching tenantId, assessmentId, and UID');
 
 // Test 6: Proctoring Event Immutability & Attempt Lock
-assert(sim.isProctoringEventImmutableAndAttemptLocked(), 'FAIL: Proctoring events must be immutable and locked to attemptId and auth.uid');
-console.log('✓ Test 6 Passed: Proctoring events strictly attempt-locked and immutable');
+assert(sim.isProctoringEventImmutableAndAttemptLocked(), 'FAIL: Proctoring events must be immutable and locked to attemptId, auth.uid, and parent tenantId');
+console.log('✓ Test 6 Passed: Proctoring events strictly attempt-locked, tenant-locked, and immutable');
 
 // Test 7: Authoring Store Protection & Tenant Scoping
 assert(sim.isAuthoringStoreTenantScoped(), 'FAIL: Authoring mutations must be scoped to admin or staff of matching tenant');
@@ -201,6 +237,18 @@ console.log('✓ Test 10 Passed: User list is admin-only, user role & tenantId s
 assert(sim.isProctoringLogTenantScoped(), 'FAIL: Proctoring logs must be scoped to admin, staff of matching tenant, or attempt owner');
 console.log('✓ Test 11 Passed: Proctoring logs strictly tenant-scoped');
 
+// Test 12: Assessment Subcollections Tenant Scoping (Wildcard inheritance)
+assert(sim.isAssessmentSubcollectionTenantScoped(), 'FAIL: Assessment subcollections must inherit parent assessment tenant scoping');
+console.log('✓ Test 12 Passed: Assessment subcollections inherit parent assessment tenant scoping');
+
+// Test 13: Fail-Closed Proctoring Creation
+assert(sim.isProctoringCreationFailClosed(), 'FAIL: Proctoring creation must fail closed on missing tenant');
+console.log('✓ Test 13 Passed: Proctoring creation strictly fails closed on missing/empty tenant');
+
+// Test 14: Proctoring Update Identity Locks
+assert(sim.isProctoringUpdateIdentityLocked(), 'FAIL: Proctoring update must lock tenantId, attemptId, and userId');
+console.log('✓ Test 14 Passed: Proctoring updates strictly lock tenantId, attemptId, and userId');
+
 console.log('\n========================================');
-console.log('ALL 11/11 FIRESTORE SECURITY RULES TESTS PASSED (OK)');
+console.log('ALL 14/14 FIRESTORE SECURITY RULES TESTS PASSED (OK)');
 console.log('========================================\n');

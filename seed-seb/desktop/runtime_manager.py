@@ -1,8 +1,6 @@
 import os
 import sys
 import json
-import hmac
-import shutil
 import hashlib
 
 class RuntimeManager:
@@ -115,10 +113,12 @@ class RuntimeManager:
 
     def load_trusted_manifest(self):
         """Loads, validates strict schema, and cryptographically verifies the Ed25519 signed manifest."""
-        manifest_paths = [
-            r"C:\Program Files (x86)\SEED-SEB\resources\runtime-manifest.json",
-            os.path.join(os.path.dirname(os.path.abspath(__file__)), "resources", "runtime-manifest.json")
-        ]
+        prod_manifest = r"C:\Program Files (x86)\SEED-SEB\resources\runtime-manifest.json"
+        is_dev = os.environ.get("SEED_SEB_DEV_MODE") == "1" or not getattr(sys, 'frozen', False)
+        manifest_paths = [prod_manifest]
+        if is_dev:
+            manifest_paths.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "resources", "runtime-manifest.json"))
+
         for p in manifest_paths:
             if p and os.path.exists(p):
                 try:
@@ -193,7 +193,10 @@ class RuntimeManager:
         return True, "All runtime binaries verified against cryptographic manifest."
 
     def get_binary_path(self, binary_name):
-        return self.binaries.get(binary_name, binary_name)
+        """Retrieves absolute binary path from strict allow-list; rejects unknown runtime names."""
+        if binary_name not in self.binaries:
+            raise ValueError(f"CRITICAL: Unknown or unsupported runtime binary requested: '{binary_name}'")
+        return self.binaries[binary_name]
 
 
 # Singleton instance
