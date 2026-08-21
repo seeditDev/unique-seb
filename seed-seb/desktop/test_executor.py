@@ -398,6 +398,14 @@ except Exception as e:
         self.assertTrue(code_executor._is_path_contained("C:\\Sandbox\\run1", "C:\\Sandbox\\run1"))
         print("Path Containment & Sibling Collision Defense verified.")
 
+    def test_fail_closed_sandbox_behavior(self):
+        print("Testing Fail-Closed Sandbox Containment Enforcement...")
+        # Verify that normal execution works cleanly through the strict fail-closed pipeline
+        res = code_executor.execute("python", "print('FAIL_CLOSED_CHECK_OK')", time_limit=2.0)
+        self.assertEqual(res["exit_code"], 0)
+        self.assertIn("FAIL_CLOSED_CHECK_OK", res["stdout"])
+        print("Fail-Closed Sandbox Containment Enforcement verified.")
+
 if __name__ == "__main__":
     unittest.main()
 

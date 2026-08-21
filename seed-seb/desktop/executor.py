@@ -482,7 +482,9 @@ class CodeExecutor:
         return self._run_process(run_cmd, run_dir, stdin, time_limit, env=env_run)
 
     def _run_process(self, cmd, run_dir, stdin, time_limit, env=None):
-        """Helper to spawn suspended, assign to Windows Job Object, enforce CPU/RAM/process limits, and resume execution."""
+        """Helper to spawn suspended, assign to Windows Job Object, enforce CPU/RAM/process limits, and resume execution.
+        STRICTLY FAILS CLOSED: If any sandbox boundary fails to initialize, the process is instantly terminated.
+        """
         stdout = ""
         stderr = ""
         exit_code = -1
@@ -491,49 +493,94 @@ class CodeExecutor:
         start_time = time.perf_counter()
         job = None
         
-        try:
-            # 1. Pre-configure Windows Job Object with comprehensive resource and security boundaries
-            if sys.platform == "win32":
-                try:
-                    import ctypes
-                    from ctypes import wintypes
-                    kernel32 = ctypes.windll.kernel32
-                    job = kernel32.CreateJobObjectW(None, None)
-                    if job:
-                        class IO_COUNTERS(ctypes.Structure):
-                            _fields_ = [("R", ctypes.c_uint64), ("W", ctypes.c_uint64), ("O", ctypes.c_uint64),
-                                        ("RB", ctypes.c_uint64), ("WB", ctypes.c_uint64), ("OB", ctypes.c_uint64)]
-                        class BASIC_LIMITS(ctypes.Structure):
-                            _fields_ = [("PUser", ctypes.c_int64), ("JUser", ctypes.c_int64), ("LimitFlags", wintypes.DWORD),
-                                        ("MinWS", ctypes.c_size_t), ("MaxWS", ctypes.c_size_t), ("ActiveProc", wintypes.DWORD),
-                                        ("Affinity", ctypes.c_size_t), ("Priority", wintypes.DWORD), ("Sched", wintypes.DWORD)]
-                        class EXTENDED_LIMITS(ctypes.Structure):
-                            _fields_ = [("Basic", BASIC_LIMITS), ("Io", IO_COUNTERS),
-                                        ("ProcessMemoryLimit", ctypes.c_size_t), ("JobMemoryLimit", ctypes.c_size_t),
-                                        ("PeakProcessMemoryUsed", ctypes.c_size_t), ("PeakJobMemoryUsed", ctypes.c_size_t)]
-                        
-                        limits = EXTENDED_LIMITS()
-                        # JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE (0x2000) | PROCESS_MEMORY (0x0100) | JOB_MEMORY (0x0200) | DIE_ON_UNHANDLED_EXCEPTION (0x0400) | ACTIVE_PROCESS (0x0008) | PROCESS_TIME (0x0002)
-                        limits.Basic.LimitFlags = 0x2000 | 0x0100 | 0x0200 | 0x0400 | 0x0008 | 0x0002
-                        # Enforce hard CPU user time limit (100ns units)
-                        cpu_limit_100ns = int(max(1.0, float(time_limit) + 1.0) * 10_000_000)
-                        limits.Basic.PUser = cpu_limit_100ns
-                        limits.Basic.ActiveProc = 8  # Strict process budget to eliminate fork-bombs
-                        mem_limit_bytes = 512 * 1024 * 1024  # 512 MB RAM limit
-                        limits.ProcessMemoryLimit = mem_limit_bytes
-                        limits.JobMemoryLimit = mem_limit_bytes
-                        kernel32.SetInformationJobObject(job, 9, ctypes.byref(limits), ctypes.sizeof(limits))
-                        
-                        # Apply UI restrictions (0x00FF = handles, clipboard, desktop, system parameters)
-                        class UI_RESTRICTIONS(ctypes.Structure):
-                            _fields_ = [("UIRestrictionsClass", wintypes.DWORD)]
-                        ui_limits = UI_RESTRICTIONS(0x00FF)
-                        kernel32.SetInformationJobObject(job, 4, ctypes.byref(ui_limits), ctypes.sizeof(ui_limits))
-                except Exception:
-                    pass
+        # 1. On Windows, initialize and strictly validate the Job Object security boundaries (FAIL-CLOSED)
+        if sys.platform == "win32":
+            try:
+                import ctypes
+                from ctypes import wintypes
+                kernel32 = ctypes.windll.kernel32
+                job = kernel32.CreateJobObjectW(None, None)
+                if not job:
+                    err = kernel32.GetLastError()
+                    return {
+                        "stdout": "",
+                        "stderr": f"Sandbox Security Error: Failed to create Windows Job Object (Win32 Code {err})",
+                        "exit_code": -1,
+                        "execution_time": 0.0,
+                        "error": "Sandbox Initialization Failure"
+                    }
+                
+                class IO_COUNTERS(ctypes.Structure):
+                    _fields_ = [("R", ctypes.c_uint64), ("W", ctypes.c_uint64), ("O", ctypes.c_uint64),
+                                ("RB", ctypes.c_uint64), ("WB", ctypes.c_uint64), ("OB", ctypes.c_uint64)]
+                class BASIC_LIMITS(ctypes.Structure):
+                    _fields_ = [("PUser", ctypes.c_int64), ("JUser", ctypes.c_int64), ("LimitFlags", wintypes.DWORD),
+                                ("MinWS", ctypes.c_size_t), ("MaxWS", ctypes.c_size_t), ("ActiveProc", wintypes.DWORD),
+                                ("Affinity", ctypes.c_size_t), ("Priority", wintypes.DWORD), ("Sched", wintypes.DWORD)]
+                class EXTENDED_LIMITS(ctypes.Structure):
+                    _fields_ = [("Basic", BASIC_LIMITS), ("Io", IO_COUNTERS),
+                                ("ProcessMemoryLimit", ctypes.c_size_t), ("JobMemoryLimit", ctypes.c_size_t),
+                                ("PeakProcessMemoryUsed", ctypes.c_size_t), ("PeakJobMemoryUsed", ctypes.c_size_t)]
+                
+                limits = EXTENDED_LIMITS()
+                # Limits: KILL_ON_JOB_CLOSE (0x2000) | PROCESS_MEMORY (0x0100) | JOB_MEMORY (0x0200) | DIE_ON_UNHANDLED_EXCEPTION (0x0400) | ACTIVE_PROCESS (0x0008) | PROCESS_TIME (0x0002)
+                limits.Basic.LimitFlags = 0x2000 | 0x0100 | 0x0200 | 0x0400 | 0x0008 | 0x0002
+                cpu_limit_100ns = int(max(1.0, float(time_limit) + 1.0) * 10_000_000)
+                limits.Basic.PUser = cpu_limit_100ns
+                limits.Basic.ActiveProc = 8  # Strict process budget to eliminate fork-bombs
+                mem_limit_bytes = 512 * 1024 * 1024  # 512 MB RAM limit
+                limits.ProcessMemoryLimit = mem_limit_bytes
+                limits.JobMemoryLimit = mem_limit_bytes
+                
+                res_limits = kernel32.SetInformationJobObject(job, 9, ctypes.byref(limits), ctypes.sizeof(limits))
+                if not res_limits:
+                    err = kernel32.GetLastError()
+                    kernel32.CloseHandle(job)
+                    return {
+                        "stdout": "",
+                        "stderr": f"Sandbox Security Error: Failed to configure Job Object limits (Win32 Code {err})",
+                        "exit_code": -1,
+                        "execution_time": 0.0,
+                        "error": "Sandbox Configuration Failure"
+                    }
+                
+                class UI_RESTRICTIONS(ctypes.Structure):
+                    _fields_ = [("UIRestrictionsClass", wintypes.DWORD)]
+                ui_limits = UI_RESTRICTIONS(0x00FF)
+                res_ui = kernel32.SetInformationJobObject(job, 4, ctypes.byref(ui_limits), ctypes.sizeof(ui_limits))
+                if not res_ui:
+                    err = kernel32.GetLastError()
+                    kernel32.CloseHandle(job)
+                    return {
+                        "stdout": "",
+                        "stderr": f"Sandbox Security Error: Failed to configure Job Object UI restrictions (Win32 Code {err})",
+                        "exit_code": -1,
+                        "execution_time": 0.0,
+                        "error": "Sandbox Configuration Failure"
+                    }
+            except Exception as e:
+                if job:
+                    try:
+                        kernel32.CloseHandle(job)
+                    except Exception:
+                        pass
+                return {
+                    "stdout": "",
+                    "stderr": f"Sandbox Security Error: Failed initializing OS sandbox: {str(e)}",
+                    "exit_code": -1,
+                    "execution_time": 0.0,
+                    "error": "Sandbox Initialization Failure"
+                }
 
-            # 2. Spawn suspended (CREATE_SUSPENDED: 0x00000004 | CREATE_NO_WINDOW: 0x08000000)
-            creationflags = (0x08000000 | 0x00000004) if (sys.platform == "win32" and job) else (0x08000000 if sys.platform == "win32" else 0)
+        proc = None
+        stop_monitor = threading.Event()
+        quota_violated = threading.Event()
+        quota_reason = [""]
+        canonical_run_dir = os.path.realpath(run_dir)
+
+        try:
+            # 2. Spawn process suspended (CREATE_SUSPENDED: 0x00000004 | CREATE_NO_WINDOW: 0x08000000)
+            creationflags = (0x08000000 | 0x00000004) if sys.platform == "win32" else 0
             
             proc = subprocess.Popen(
                 cmd,
@@ -546,27 +593,37 @@ class CodeExecutor:
                 creationflags=creationflags
             )
             
-            # 3. Assign suspended process to Job Object BEFORE any untrusted instructions execute
-            if sys.platform == "win32" and job:
-                try:
-                    import ctypes
-                    kernel32 = ctypes.windll.kernel32
-                    kernel32.AssignProcessToJobObject(job, int(proc._handle))
-                    # 4. Resume execution now that containment boundaries are 100% established
-                    ntdll = ctypes.windll.ntdll
-                    ntdll.NtResumeProcess(int(proc._handle))
-                except Exception:
-                    try:
-                        ctypes.windll.ntdll.NtResumeProcess(int(proc._handle))
-                    except Exception:
-                        pass
+            # 3. Assign process to Job Object and verify assignment BEFORE resuming
+            if sys.platform == "win32":
+                import ctypes
+                kernel32 = ctypes.windll.kernel32
+                assigned = kernel32.AssignProcessToJobObject(job, int(proc._handle))
+                if not assigned:
+                    err = kernel32.GetLastError()
+                    # CRITICAL FAIL-CLOSED GUARD: Terminate process immediately, NEVER resume unassigned!
+                    kernel32.TerminateProcess(int(proc._handle), 1)
+                    return {
+                        "stdout": "",
+                        "stderr": f"Sandbox Security Error: Failed to assign process to Job Object (Win32 Code {err})",
+                        "exit_code": -1,
+                        "execution_time": 0.0,
+                        "error": "Sandbox Containment Failure"
+                    }
+                
+                # 4. Resume execution now that process is strictly trapped inside Job Object
+                ntdll = ctypes.windll.ntdll
+                status = ntdll.NtResumeProcess(int(proc._handle))
+                if status != 0:
+                    kernel32.TerminateProcess(int(proc._handle), 1)
+                    return {
+                        "stdout": "",
+                        "stderr": f"Sandbox Security Error: Failed to resume process in Job Object (NTSTATUS {hex(status)})",
+                        "exit_code": -1,
+                        "execution_time": 0.0,
+                        "error": "Sandbox Resume Failure"
+                    }
             
             # Start real-time active disk, reparse point & file count quota monitor
-            stop_monitor = threading.Event()
-            quota_violated = threading.Event()
-            quota_reason = [""]
-            canonical_run_dir = os.path.realpath(run_dir)
-
             def _active_disk_monitor():
                 while not stop_monitor.is_set():
                     total_size = 0
