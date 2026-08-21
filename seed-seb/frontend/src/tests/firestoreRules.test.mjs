@@ -234,6 +234,27 @@ class RulesSimulator {
   isGuestBackdoorRemoved() {
     return !this.rules.includes('publicTenants') && !this.rules.includes('guestTests') && !this.rules.includes('isGuest');
   }
+
+  isResultParentListLockedToStaffAndAdmin() {
+    const match = this.rules.match(/match\s+\/assessmentResults\/\{tenantId\}\s*\{([\s\S]*?)\n\s*match\s+\/\{assessmentId\}/);
+    if (!match) return false;
+    const block = match[1];
+    return (
+      block.includes("allow get:   if isAdmin() || (isStaff() && tenantAllowed(tenantId)) || isTenantMember(tenantId);") &&
+      block.includes("allow list:  if isAdmin() || (isStaff() && tenantAllowed(tenantId));")
+    );
+  }
+
+  isTenantSubcollectionsExplicit() {
+    const match = this.rules.match(/match\s+\/tenants\/\{tenantId\}\s*\{([\s\S]*?)\n\s*match\s+\/courses/);
+    if (!match) return false;
+    const block = match[1];
+    return (
+      !block.includes("match /{sub=**}") &&
+      block.includes("match /cohorts/{cohortId}") &&
+      block.includes("match /settings/{docId}")
+    );
+  }
 }
 
 // ── Test Execution ──────────────────────────────────────────────────────────
@@ -314,6 +335,14 @@ console.log('✓ Test 17 Passed: Course, series, and test read/write access stri
 assert(sim.isGuestBackdoorRemoved(), 'FAIL: publicTenants and unauthenticated read backdoors must be completely removed');
 console.log('✓ Test 18 Passed: Unauthenticated guest backdoors and publicTenants completely excised');
 
+// Test 19: Assessment Results Parent Collection List Lock (P1 Student Enumeration Lock)
+assert(sim.isResultParentListLockedToStaffAndAdmin(), 'FAIL: Students must NOT be able to list parent assessmentResults/{tenantId}');
+console.log('✓ Test 19 Passed: Parent assessmentResults/{tenantId} list permission strictly locked to Admin/Staff (students cannot enumerate all tenant results)');
+
+// Test 20: Explicit Tenant Subcollection Access (No Broad Wildcard)
+assert(sim.isTenantSubcollectionsExplicit(), 'FAIL: /tenants/{tenantId} must not contain broad wildcard /{sub=**} and must define explicit subcollections');
+console.log('✓ Test 20 Passed: /tenants/{tenantId} uses explicit subcollection rules (cohorts, settings) with no blanket wildcard');
+
 console.log('\n========================================');
-console.log('ALL 18/18 FIRESTORE SECURITY RULES TESTS PASSED (OK)');
+console.log('ALL 20/20 FIRESTORE SECURITY RULES TESTS PASSED (OK)');
 console.log('========================================\n');

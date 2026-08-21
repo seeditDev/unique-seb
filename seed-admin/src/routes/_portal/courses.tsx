@@ -391,7 +391,13 @@ function CoursesPage() {
 
   /* ─── course mutations ─── */
   const saveCourseMut = useMutation({
-    mutationFn: () => saveCourse(courseForm, courseIsNew),
+    mutationFn: () => {
+      const effTenantId = scopedTenantId || courseForm.tenantId;
+      if (!effTenantId.trim()) {
+        throw new Error("A valid College / Tenant is required to save a course.");
+      }
+      return saveCourse({ ...courseForm, tenantId: effTenantId }, courseIsNew);
+    },
     onSuccess: () => { toast.success("Course saved"); setCourseDialog(false); void qc.invalidateQueries({ queryKey: ["courses"] }); },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Save failed"),
   });
@@ -515,7 +521,14 @@ function CoursesPage() {
 
   /* ─── openers ─── */
   function openNewCourse() {
-    setCourseForm({ id: "", title: "", description: "", tenantId: scopedTenantId ?? "", display_order: (coursesQ.data?.length ?? 0) + 1, active: true });
+    setCourseForm({
+      id: "",
+      title: "",
+      description: "",
+      tenantId: scopedTenantId ?? (tenants[0]?.id ?? ""),
+      display_order: (coursesQ.data?.length ?? 0) + 1,
+      active: true,
+    });
     setCourseIsNew(true);
     setCourseDialog(true);
   }
@@ -828,6 +841,33 @@ function CoursesPage() {
                 onChange={(e) => setCourseForm((p) => ({ ...p, title: e.target.value }))} />
             </div>
             <div className="space-y-2">
+              <Label htmlFor="course-tenant">College / Tenant <span className="text-destructive">*</span></Label>
+              {scopedTenantId ? (
+                <Input
+                  id="course-tenant"
+                  value={tenants.find((t) => t.id === scopedTenantId)?.name ?? scopedTenantId}
+                  disabled
+                  className="rounded-xl font-mono bg-muted"
+                />
+              ) : (
+                <Select
+                  value={courseForm.tenantId}
+                  onValueChange={(tId) => setCourseForm((p) => ({ ...p, tenantId: tId }))}
+                >
+                  <SelectTrigger id="course-tenant" className="rounded-xl font-mono">
+                    <SelectValue placeholder="Select target college" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {tenants.map((t) => (
+                      <SelectItem key={t.id} value={t.id} className="font-mono">
+                        {t.name} ({t.id})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="course-desc">Description</Label>
               <Textarea id="course-desc" className="rounded-xl" rows={2}
                 value={courseForm.description}
@@ -849,8 +889,15 @@ function CoursesPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" className="rounded-xl" onClick={() => setCourseDialog(false)}>Cancel</Button>
-            <Button className="rounded-xl" disabled={!courseForm.title.trim() || saveCourseMut.isPending}
-              onClick={() => saveCourseMut.mutate()}>
+            <Button
+              className="rounded-xl"
+              disabled={
+                !courseForm.title.trim() ||
+                !(scopedTenantId || courseForm.tenantId) ||
+                saveCourseMut.isPending
+              }
+              onClick={() => saveCourseMut.mutate()}
+            >
               {saveCourseMut.isPending && <Loader2 className="size-4 animate-spin" />}
               Save course
             </Button>

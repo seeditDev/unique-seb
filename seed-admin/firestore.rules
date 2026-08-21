@@ -184,9 +184,14 @@ service cloud.firestore {
       allow list:   if isAdmin();
       allow create, update, delete: if isAdmin() || (isStaff() && tenantAllowed(tenantId));
 
-      match /{sub=**} {
-        allow read:  if isAdmin() || (isStaff() && tenantAllowed(tenantId)) || isTenantMember(tenantId);
-        allow write: if isAdmin() || (isStaff() && tenantAllowed(tenantId));
+      match /cohorts/{cohortId} {
+        allow get, list: if isAdmin() || (isStaff() && tenantAllowed(tenantId)) || isTenantMember(tenantId);
+        allow create, update, delete: if isAdmin() || (isStaff() && tenantAllowed(tenantId));
+      }
+
+      match /settings/{docId} {
+        allow get: if isAdmin() || (isStaff() && tenantAllowed(tenantId)) || isTenantMember(tenantId);
+        allow list, create, update, delete: if isAdmin() || (isStaff() && tenantAllowed(tenantId));
       }
     }
 
@@ -238,11 +243,13 @@ service cloud.firestore {
     // ══════════════════════════════════════════════════════════════════════
 
     match /assessmentResults/{tenantId} {
-      allow read:  if isAdmin() || (isStaff() && tenantAllowed(tenantId)) || isTenantMember(tenantId);
+      allow get:   if isAdmin() || (isStaff() && tenantAllowed(tenantId)) || isTenantMember(tenantId);
+      allow list:  if isAdmin() || (isStaff() && tenantAllowed(tenantId));
       allow write: if isAdmin() || (isStaff() && tenantAllowed(tenantId));
 
       match /{assessmentId}/{userId} {
-        allow read:   if isAdmin() || (isStaff() && tenantAllowed(tenantId)) || isUser(userId);
+        allow get:    if isAdmin() || (isStaff() && tenantAllowed(tenantId)) || isUser(userId);
+        allow list:   if isAdmin() || (isStaff() && tenantAllowed(tenantId)) || isUser(userId);
         
         // Strict create: must belong to authenticated user, matching tenantId and assessmentId
         allow create: if isAdmin() || (isStaff() && tenantAllowed(tenantId))
