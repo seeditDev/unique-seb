@@ -117,11 +117,37 @@ service cloud.firestore {
       }
 
       match /contestAttempts/{attemptId} {
-        allow read, write: if isUser(userId) || isPortal();
+        allow read: if isUser(userId) || isPortal();
+        allow create: if isUser(userId)
+          && request.resource.data.get('uid', '') == userId
+          || isPortal();
+        // Students can update answers/session state while active, but cannot tamper with immutable metadata
+        allow update: if isPortal()
+          || (isUser(userId)
+              && resource.data.get('completed', false) == false
+              && resource.data.get('status', '') != 'submitted'
+              && resource.data.get('status', '') != 'auto_submitted'
+              && request.resource.data.get('uid', '') == resource.data.get('uid', '')
+              && request.resource.data.get('assessmentId', '') == resource.data.get('assessmentId', '')
+              && request.resource.data.get('tenantId', '') == resource.data.get('tenantId', '')
+              && request.resource.data.get('durationSeconds', 0) == resource.data.get('durationSeconds', 0));
+        allow delete: if isAdmin();
       }
 
       match /assessmentAttempts/{attemptId} {
-        allow read, write: if isUser(userId) || isPortal();
+        allow read: if isUser(userId) || isPortal();
+        allow create: if isUser(userId)
+          && request.resource.data.get('uid', '') == userId
+          || isPortal();
+        allow update: if isPortal()
+          || (isUser(userId)
+              && resource.data.get('completed', false) == false
+              && resource.data.get('status', '') != 'submitted'
+              && resource.data.get('status', '') != 'auto_submitted'
+              && request.resource.data.get('uid', '') == resource.data.get('uid', '')
+              && request.resource.data.get('assessmentId', '') == resource.data.get('assessmentId', '')
+              && request.resource.data.get('tenantId', '') == resource.data.get('tenantId', ''));
+        allow delete: if isAdmin();
       }
 
       match /profile/{docId} {

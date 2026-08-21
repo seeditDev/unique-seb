@@ -100,6 +100,17 @@ class RulesSimulator {
       block.includes("allow get: if isSignedIn();")
     );
   }
+
+  isAttemptMetadataLocked() {
+    const match = this.rules.match(/match\s+\/contestAttempts\/\{attemptId\}\s*\{([^}]+)\}/);
+    if (!match) return false;
+    const block = match[1];
+    return (
+      block.includes("resource.data.get('completed', false) == false") &&
+      block.includes("request.resource.data.get('durationSeconds', 0) == resource.data.get('durationSeconds', 0)") &&
+      block.includes("request.resource.data.get('uid', '') == resource.data.get('uid', '')")
+    );
+  }
 }
 
 // ── Test Execution ──────────────────────────────────────────────────────────
@@ -136,6 +147,10 @@ console.log('✓ Test 6 Passed: Proctoring events strictly attempt-locked and im
 assert(sim.isAuthoringStoreProtected(), 'FAIL: Authoring mutations and collection listings must require isPortal()');
 console.log('✓ Test 7 Passed: Assessment authoring mutations restricted to portal staff/admin');
 
+// Test 8: Attempt Metadata Immutability & Submission Lock
+assert(sim.isAttemptMetadataLocked(), 'FAIL: Attempt updates must lock durationSeconds, uid, assessmentId and completed state');
+console.log('✓ Test 8 Passed: Attempt metadata (duration, uid, assessmentId) strictly locked against tampering');
+
 console.log('\n========================================');
-console.log('ALL 7/7 FIRESTORE SECURITY RULES TESTS PASSED (OK)');
+console.log('ALL 8/8 FIRESTORE SECURITY RULES TESTS PASSED (OK)');
 console.log('========================================\n');

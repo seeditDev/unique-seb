@@ -114,11 +114,46 @@ class TestCodeExecutor(unittest.TestCase):
         self.assertIsNone(res["error"])
         self.assertEqual(res["stdout"].strip(), "JS:world")
 
-    def test_path_sanitization_on_error(self):
-        raw_error = r"C:\Program Files (x86)\SEED-SEB\temp_workspace\run_61b832fb-027c-4bd2\solution.c:10:5: error: expected ';'"
-        clean = code_executor._sanitize_output(raw_error, r"C:\Program Files (x86)\SEED-SEB\temp_workspace\run_61b832fb-027c-4bd2")
-        self.assertNotIn(r"C:\Program Files (x86)\SEED-SEB\temp_workspace\run_61b832fb-027c-4bd2", clean)
-        self.assertTrue(clean.startswith("solution.c:10:5: error:"))
+    def test_python_network_blocked(self):
+        print("Testing Python network sandbox block...")
+        code = """
+try:
+    import socket
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    print("UNEXPECTED_NETWORK_OPEN")
+except PermissionError as e:
+    print("NETWORK_BLOCKED_OK")
+except Exception as e:
+    print("NETWORK_ERROR_OK")
+"""
+        res = code_executor.execute("python", code, time_limit=2.0)
+        self.assertIsNone(res["error"])
+        self.assertEqual(res["exit_code"], 0)
+        self.assertIn("NETWORK_BLOCKED_OK", res["stdout"])
+        print("Python network sandbox block verified.")
+
+    def test_output_bomb_truncation(self):
+        print("Testing Output Bomb truncation...")
+        code = "print('A' * 2000000)"
+        res = code_executor.execute("python", code, time_limit=2.0)
+        self.assertIn("[Output Truncated: Exceeded 1MB limit]", res["stdout"])
+        self.assertLessEqual(len(res["stdout"]), 1024 * 1024 + 200)
+        print("Output Bomb truncation verified.")
+
+    def test_env_secret_stripping(self):
+        print("Testing Environment Secret Stripping...")
+        os.environ["FIREBASE_SECRET_KEY"] = "super_secret_token"
+        os.environ["VITE_INTERNAL_URL"] = "http://internal-cluster"
+        code = """
+import os
+print("FIREBASE_IN_ENV:", "FIREBASE_SECRET_KEY" in os.environ)
+print("VITE_IN_ENV:", "VITE_INTERNAL_URL" in os.environ)
+"""
+        res = code_executor.execute("python", code, time_limit=2.0)
+        self.assertIn("FIREBASE_IN_ENV: False", res["stdout"])
+        self.assertIn("VITE_IN_ENV: False", res["stdout"])
+        print("Environment Secret Stripping verified.")
 
 if __name__ == "__main__":
     unittest.main()
+

@@ -185,8 +185,27 @@ class CodeExecutor:
 
     def _execute_javascript(self, run_dir, code, stdin, time_limit):
         file_path = os.path.join(run_dir, "solution.js")
+        
+        # Self-contained Node sandbox network guard (allows stdio pipes, blocks network sockets)
+        js_prelude = (
+            "try {\n"
+            "  const _net = require('net');\n"
+            "  const _OrigSocket = _net.Socket;\n"
+            "  const _block = () => { throw new Error('Sandbox Security: Network operations are disabled during assessment execution.'); };\n"
+            "  _net.Socket = function(options) {\n"
+            "    if (options && (typeof options.fd === 'number' || options.handle)) {\n"
+            "      return new _OrigSocket(options);\n"
+            "    }\n"
+            "    _block();\n"
+            "  };\n"
+            "  _net.Socket.prototype = _OrigSocket.prototype;\n"
+            "  _net.connect = _block;\n"
+            "  _net.createConnection = _block;\n"
+            "} catch(e) {}\n"
+        )
+        
         with open(file_path, "w", encoding="utf-8") as f:
-            f.write(code)
+            f.write(js_prelude + code)
 
         node_bin = runtime_manager.get_binary_path("node")
         if not node_bin or not os.path.exists(node_bin):
@@ -204,9 +223,23 @@ class CodeExecutor:
 
     def _execute_python(self, run_dir, code, stdin, time_limit):
         file_path = os.path.join(run_dir, "solution.py")
+        
+        # Self-contained Python sandbox network guard
+        py_prelude = (
+            "# --- SEED-SEB Sandbox Security Isolation ---\n"
+            "import socket as _sec_socket\n"
+            "def _sec_block_net(*a, **kw):\n"
+            "    raise PermissionError('Sandbox Security: Network operations are disabled during assessment execution.')\n"
+            "_sec_socket.socket = _sec_block_net\n"
+            "_sec_socket.create_connection = _sec_block_net\n"
+            "_sec_socket.getaddrinfo = _sec_block_net\n"
+            "_sec_socket.gethostbyname = _sec_block_net\n"
+            "# --------------------------------------------\n"
+        )
+        
         with open(file_path, "w", encoding="utf-8") as f:
-            f.write(code)
-            
+            f.write(py_prelude + code)
+
         python_bin = runtime_manager.get_binary_path("python")
         cmd = [python_bin, "solution.py"]
         env = self._get_run_env(python_bin)
@@ -224,27 +257,15 @@ class CodeExecutor:
         compile_cmd = [gcc_bin, "-O2", "-o", exe_path, source_path]
         env = self._get_run_env(gcc_bin)
         
-        # Hide command windows on Windows
-        creationflags = 0x08000000 if sys.platform == "win32" else 0
-        
-        # Compile
-        compile_res = subprocess.run(
-            compile_cmd,
-            capture_output=True,
-            text=True,
-            cwd=run_dir,
-            timeout=10.0, # Compile timeout
-            env=env,
-            creationflags=creationflags
-        )
-        
-        if compile_res.returncode != 0:
+        # Compile inside protected run process with 10s compile limit
+        compile_res = self._run_process(compile_cmd, run_dir, "", time_limit=10.0, env=env)
+        if compile_res["exit_code"] != 0:
             return {
                 "stdout": "",
-                "stderr": compile_res.stderr,
-                "exit_code": compile_res.returncode,
+                "stderr": compile_res["stderr"] or compile_res["stdout"],
+                "exit_code": compile_res["exit_code"],
                 "execution_time": 0.0,
-                "error": f"Compilation Error:\n{compile_res.stderr}"
+                "error": f"Compilation Error:\n{compile_res['stderr'] or compile_res['stdout']}"
             }
             
         # Run
@@ -261,27 +282,15 @@ class CodeExecutor:
         compile_cmd = [gpp_bin, "-O2", "-std=c++17", "-o", exe_path, source_path]
         env = self._get_run_env(gpp_bin)
         
-        # Hide command windows on Windows
-        creationflags = 0x08000000 if sys.platform == "win32" else 0
-        
-        # Compile
-        compile_res = subprocess.run(
-            compile_cmd,
-            capture_output=True,
-            text=True,
-            cwd=run_dir,
-            timeout=10.0,
-            env=env,
-            creationflags=creationflags
-        )
-        
-        if compile_res.returncode != 0:
+        # Compile inside protected run process with 10s compile limit
+        compile_res = self._run_process(compile_cmd, run_dir, "", time_limit=10.0, env=env)
+        if compile_res["exit_code"] != 0:
             return {
                 "stdout": "",
-                "stderr": compile_res.stderr,
-                "exit_code": compile_res.returncode,
+                "stderr": compile_res["stderr"] or compile_res["stdout"],
+                "exit_code": compile_res["exit_code"],
                 "execution_time": 0.0,
-                "error": f"Compilation Error:\n{compile_res.stderr}"
+                "error": f"Compilation Error:\n{compile_res['stderr'] or compile_res['stdout']}"
             }
             
         # Run
@@ -295,35 +304,23 @@ class CodeExecutor:
             f.write(code)
             
         javac_bin = runtime_manager.get_binary_path("javac")
-        compile_cmd = [javac_bin, source_path]
+        compile_cmd = [javac_bin, "-d", ".", "Main.java"]
         env = self._get_run_env(javac_bin)
         
-        # Hide command windows on Windows
-        creationflags = 0x08000000 if sys.platform == "win32" else 0
-        
-        # Compile
-        compile_res = subprocess.run(
-            compile_cmd,
-            capture_output=True,
-            text=True,
-            cwd=run_dir,
-            timeout=15.0,
-            env=env,
-            creationflags=creationflags
-        )
-        
-        if compile_res.returncode != 0:
+        # Compile inside protected run process with 15s compile limit
+        compile_res = self._run_process(compile_cmd, run_dir, "", time_limit=15.0, env=env)
+        if compile_res["exit_code"] != 0:
             return {
                 "stdout": "",
-                "stderr": compile_res.stderr,
-                "exit_code": compile_res.returncode,
+                "stderr": compile_res["stderr"] or compile_res["stdout"],
+                "exit_code": compile_res["exit_code"],
                 "execution_time": 0.0,
-                "error": f"Compilation Error:\n{compile_res.stderr}"
+                "error": f"Compilation Error:\n{compile_res['stderr'] or compile_res['stdout']}"
             }
             
         # Run
         java_bin = runtime_manager.get_binary_path("java")
-        run_cmd = [java_bin, "Main"]
+        run_cmd = [java_bin, "-Xmx128m", "-Xms16m", "-cp", ".", "Main"]
         env_run = self._get_run_env(java_bin)
         return self._run_process(run_cmd, run_dir, stdin, time_limit, env=env_run)
 
@@ -374,8 +371,8 @@ class CodeExecutor:
                                         ("PeakProcessMemoryUsed", ctypes.c_size_t), ("PeakJobMemoryUsed", ctypes.c_size_t)]
                         
                         limits = EXTENDED_LIMITS()
-                        # JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE (0x2000) | JOB_OBJECT_LIMIT_PROCESS_MEMORY (0x0100) | JOB_OBJECT_LIMIT_JOB_MEMORY (0x0200)
-                        limits.Basic.LimitFlags = 0x2000 | 0x0100 | 0x0200
+                        # JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE (0x2000) | PROCESS_MEMORY (0x0100) | JOB_MEMORY (0x0200) | DIE_ON_UNHANDLED_EXCEPTION (0x0400)
+                        limits.Basic.LimitFlags = 0x2000 | 0x0100 | 0x0200 | 0x0400
                         mem_limit_bytes = 512 * 1024 * 1024  # 512 MB RAM limit
                         limits.ProcessMemoryLimit = mem_limit_bytes
                         limits.JobMemoryLimit = mem_limit_bytes
