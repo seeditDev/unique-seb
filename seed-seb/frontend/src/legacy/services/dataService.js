@@ -34,29 +34,26 @@ import { cacheManager } from '../utils/cacheManager';
 
 /**
  * Merges Firebase Auth identity with the canonical Firestore user document.
- * Guarantees tenantId and core identity fields are always defined and canonical.
+ * Strictly canonical fields only — no legacy alias chains.
  */
 function buildAuthData(firebaseUser, profile = {}) {
-    const rawTenantId = profile.tenantId ?? profile.TenantId ?? profile.collegeCode ?? '';
-    const tenantId = (typeof rawTenantId === 'string' && rawTenantId.trim()) ? rawTenantId.trim() : '';
-
     return {
         ...profile,
         uid:             firebaseUser.uid,
-        email:           (firebaseUser.email ?? profile?.email ?? '').toLowerCase(),
-        tenantId:        tenantId,
-        college:         profile?.college ?? profile?.College ?? '',
-        name:            profile?.name ?? profile?.Name ?? profile?.displayName ?? '',
-        rollNumber:      profile?.rollNumber ?? profile?.rollNo ?? profile?.['Roll Number'] ?? '',
-        cohortId:        profile?.cohortId ?? profile?.cohort ?? '',
-        year:            profile?.year ?? profile?.Year ?? '',
-        department:      profile?.department ?? profile?.Department ?? '',
-        role:            profile?.role ?? 'student',
-        isPremium:       !!(profile?.isPremium ?? profile?.premium),
-        seedCredits:     typeof profile?.seedCredits === 'number' ? profile.seedCredits : 0,
-        streak:          typeof profile?.streak === 'number' ? profile.streak : 0,
-        lastStreakDate:  profile?.lastStreakDate ?? null,
-        photoURL:        firebaseUser.photoURL ?? profile?.photoURL ?? profile?.photoUrl ?? '',
+        email:           (firebaseUser.email ?? profile.email ?? '').toLowerCase(),
+        tenantId:        profile.tenantId ?? '',
+        college:         profile.college ?? '',
+        name:            profile.name ?? '',
+        rollNumber:      profile.rollNumber ?? '',
+        cohortId:        profile.cohortId ?? '',
+        year:            profile.year ?? '',
+        department:      profile.department ?? '',
+        role:            profile.role ?? 'student',
+        isPremium:       Boolean(profile.isPremium),
+        seedCredits:     typeof profile.seedCredits === 'number' ? profile.seedCredits : 0,
+        streak:          typeof profile.streak === 'number' ? profile.streak : 0,
+        lastStreakDate:  profile.lastStreakDate ?? null,
+        photoURL:        firebaseUser.photoURL ?? profile.photoURL ?? '',
         isAuthenticated: true,
     };
 }

@@ -62,6 +62,11 @@ export interface AppUser {
   department?: string | undefined;
   rollNumber?: string | undefined;
   premium: boolean;
+  isPremium?: boolean | undefined;
+  seedCredits?: number | undefined;
+  streak?: number | undefined;
+  lastStreakDate?: string | null | undefined;
+  photoURL?: string | undefined;
   active?: boolean | undefined;
   createdAt?: Timestamp | null | undefined;
   lastLoginAt?: Timestamp | null | undefined;

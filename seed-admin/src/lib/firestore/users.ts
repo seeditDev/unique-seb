@@ -20,32 +20,32 @@ const USERS = "users";
 const BATCH_LIMIT = 400;
 
 function mapUser(id: string, data: Record<string, unknown>): AppUser {
-  const email = String(data['email'] ?? data['Email'] ?? "").trim().toLowerCase();
-  const name = String(data['name'] ?? data['Name'] ?? "").trim();
+  const email = String(data['email'] ?? "").trim().toLowerCase();
+  const name = String(data['name'] ?? "").trim();
   const tenantId = String(data['tenantId'] ?? "").trim();
-  const cohortId = String(data['cohortId'] ?? data['CohortId'] ?? data['year'] ?? data['Year'] ?? "").trim();
-  const rollNumber = String(
-    data['rollNumber'] ?? data['Roll Number'] ?? data['rollNo'] ?? data['RollNo'] ?? 
-    data['regNo'] ?? data['registerNumber'] ?? data['roll'] ?? ""
-  ).trim();
-  const department = String(data['department'] ?? data['Department'] ?? data['dept'] ?? "").trim();
-  const college = String(data['college'] ?? tenantId).trim();
-  const year = String(data['year'] ?? data['Year'] ?? cohortId).trim();
+  const cohortId = String(data['cohortId'] ?? "").trim();
+  const rollNumber = String(data['rollNumber'] ?? "").trim();
+  const department = String(data['department'] ?? "").trim();
+  const college = String(data['college'] ?? "").trim();
+  const year = String(data['year'] ?? "").trim();
 
   return {
-    uid: String(data['uid'] ?? data['UID'] ?? id).trim(),
+    uid: String(data['uid'] ?? id).trim(),
     email,
     name,
-    role: (String(data['role'] ?? data['Role'] ?? "student") as Role) ?? "student",
-    tenantId: tenantId || college,
+    role: (String(data['role'] ?? "student") as Role) ?? "student",
+    tenantId,
     cohortId,
     college: college || undefined,
     year: year || undefined,
     department: department || undefined,
     rollNumber: rollNumber || undefined,
-    premium: Boolean(data['premium'] === true || data['Premium'] === true || data['isPremium'] === true),
-    createdAt: (data['createdAt'] ?? null) as AppUser["createdAt"],
-    lastLoginAt: (data['lastLoginAt'] ?? null) as AppUser["lastLoginAt"],
+    premium: Boolean(data['isPremium']),
+    isPremium: typeof data['isPremium'] === "boolean" ? data['isPremium'] : false,
+    seedCredits: typeof data['seedCredits'] === "number" ? data['seedCredits'] : 0,
+    streak: typeof data['streak'] === "number" ? data['streak'] : 0,
+    lastStreakDate: (data['lastStreakDate'] as string) ?? null,
+    photoURL: (data['photoURL'] as string) ?? undefined,
   };
 }
 
